@@ -56,14 +56,14 @@ def _prepare_view(driver) -> DiagramView:
     driver.window().mdiArea().activateSubWindow(sub)
     view.setFocus()
     driver.processEvents()
-    view.ui.viewZoomAll()
+    view.viewZoomAll()
     driver.processEvents()
     return view
 
 
 def _run_step(driver, view: DiagramView, step: DrawingStep) -> None:
     if isinstance(step, DrawingPlaceModeStep):
-        place = getattr(view.ui, step.mode, None)
+        place = getattr(view, step.mode, None)
         assert place is not None, f"unknown place mode: {step.mode}"
         place()
         driver.processEvents()

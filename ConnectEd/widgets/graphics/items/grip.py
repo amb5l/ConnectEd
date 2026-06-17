@@ -135,8 +135,8 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         entries = [
-            view.action("Slide", lambda: view.ui.editSlide([self.item()], self.scenePos())),
-            view.action("Move", lambda: view.ui.editMove([self.item()], self.scenePos()))
+            view.action("Slide", lambda: view.editSlide([self.item()], self.scenePos())),
+            view.action("Move", lambda: view.editMove([self.item()], self.scenePos()))
         ]
         item : "ItemTransformMixin" = self.item()
         if item.origin() is not None:
@@ -145,7 +145,7 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
                 view.separator(),
                 view.action(
                     "Assign Origin",
-                    lambda: view.ui.editAssignOrigin(self.item(), h.id())
+                    lambda: view.editAssignOrigin(self.item(), h.id())
                 )
             ])
         return entries
@@ -161,7 +161,7 @@ class ResizeGripItem(OriginGripShapeMixin, GripItem):
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         entries = [
-            view.action("Resize", lambda: view.ui.editResize(self, self.scenePos())),
+            view.action("Resize", lambda: view.editResize(self, self.scenePos())),
         ]
         entries.extend(MoveGripItem.ctxMenuItems(self, view, _spos))
         return entries

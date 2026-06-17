@@ -6,9 +6,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.check import checked
-from .....core.defs  import APP_NAME
+from .....core.xml   import toXmlBegin, toXmlEnd, fromXml
 
-from ...xml import toXmlBegin, toXmlProperties, toXmlEnd, fromXmlProperties
+from ...xml import toXmlProperties, fromXmlProperties
 
 from ...items.role    import DocumentItem
 from ...items.symbol  import SymbolItem
@@ -26,10 +26,15 @@ if TYPE_CHECKING:
 
 class DiagramSceneXmlMixin:
     @checked
-    def toXml(self : "Self | DiagramScene", xw : QXmlStreamWriter) -> None:
+    def toXml(
+        self : "Self | DiagramScene",
+        xw   : QXmlStreamWriter,
+        tag  : str | None = None
+    ) -> None:
         items = self.items()
         # scene root
-        toXmlBegin(self.__class__.__name__.replace("Scene", ""), xw)
+        tag = tag or self.__class__.__name__.replace("Scene", "")
+        toXmlBegin(xw, tag)
         # attributes
         toXmlProperties(self, xw)
         # symbol definitions
@@ -89,20 +94,21 @@ class DiagramSceneXmlMixin:
 
     @classmethod
     @checked
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        scene = cls(fresh=False)
+    def fromXml(cls : "Self | DiagramScene", xr : QXmlStreamReader) -> Self:
+        scene : "Self | DiagramScene" = cls(fresh=False)
         scene.loadFromXml(xr)
         return scene
 
     @checked
-    def loadFromXml(self : "Self | DiagramScene", xr : QXmlStreamReader) -> None:
-        # lookups accessed by helpers
+    def loadFromXml(
+        self : "Self | DiagramScene",
+        xr   : QXmlStreamReader
+    ) -> None:
         node_by_id : dict[int, NodeItem] = {}
         id_by_node : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
-        # subnet helper
-        def fromXmlSubnet() -> None:
-            # read attributes
+
+        def fromXmlSubnet(xr : QXmlStreamReader) -> None:
             xml_subnet_id = int(xr.attributes().value("ID"))
             xml_subnet_node_ids = {
                 int(part)
@@ -110,7 +116,6 @@ class DiagramSceneXmlMixin:
                 if part
             }
             xr.readNext()
-            # load segments
             subnet_ids_before = set(self._subnets.keys())
             while not (xr.isEndElement() and xr.name() == "Subnet"):
                 if xr.isStartElement():
@@ -123,7 +128,7 @@ class DiagramSceneXmlMixin:
                         node1 = node_by_id.get(node_id1)
                         node2 = node_by_id.get(node_id2)
                         segment = SegmentItem(node1, node2)
-                        self._scene.addItem(segment)
+                        self.addItem(segment)
                         self.addSegment(segment)
                         node1.onConnectionChanged()
                         node2.onConnectionChanged()
@@ -136,7 +141,7 @@ class DiagramSceneXmlMixin:
             # resolve newly created subnet
             added_subnet_ids = subnet_ids_after - subnet_ids_before
             if len(added_subnet_ids) == 1:
-                subnet = self._subnets[added_subnet_ids.pop()]
+                subnet = self.netlist.subnets()[added_subnet_ids.pop()]
                 subnet_node_ids = {
                     id_by_node[node] for node in subnet.nodes
                 }
@@ -158,8 +163,8 @@ class DiagramSceneXmlMixin:
                     f"subnet, got {sorted(added_subnet_ids)}"
                 )
             xr.readNext()
-        # net helper
-        def fromXmlNet() -> None:
+
+        def fromXmlNet(xr : QXmlStreamReader) -> None:
             xml_net_name = xr.attributes().value("Name")
             xml_net_base_name, _ = \
                 _netNameAndSuffix(xml_net_name)
@@ -202,40 +207,39 @@ class DiagramSceneXmlMixin:
                         f"got {sorted(net.subnets)}"
                     )
             xr.readNext()
-        # read start element
+
+        def fromXmlNetlist(xr : QXmlStreamReader) -> None:
+            xr.readNext()
+            fromXml(xr, {
+                "Subnet" : fromXmlSubnet,
+                "Net"    : fromXmlNet,
+            }, ptag="Netlist")
+            return None
+
+        def fromXmlItem(
+            xr       : QXmlStreamReader,
+            item_cls : type[ItemXmlMixin]
+        ) -> ItemXmlMixin:
+            item = item_cls.fromXml(xr)
+            self.addItem(item)
+            return None
+
         top_element_name = self.__class__.__name__.replace("Scene", "")
         if xr.name() != top_element_name:
-            raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        # read attributes
-        fromXmlProperties(self.properties, xr)
-        # read items
+            raise ValueError(
+                f"Expected {top_element_name} element, got {xr.name()}"
+            )
+        fromXmlProperties(self, xr)
+
         from ...items import _item_classes
-        while not (xr.isEndElement() and xr.name() == top_element_name):
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                element_name = xr.name()
-                item_name = element_name + "Item"
-                if element_name == "Netlist":
-                    while not (xr.isEndElement() and xr.name() == "Netlist"):
-                        element_name = xr.name()
-                        match element_name:
-                            case "Subnet":
-                                fromXmlSubnet()
-                            case "Net":
-                                fromXmlNet()
-                            case _:
-                                logger().warning(f"Unexpected element: {element_name}")
-                                xr.readNext()
-                    xr.readNext()
-                elif item_name in _item_classes:
-                    # read item
-                    item_cls : "ItemXmlMixin" = _item_classes[item_name]
-                    item = item_cls.fromXml(xr)
-                    self.addItem(item)
-                else:
-                    logger().warning(f"Unexpected element: {element_name}")
-                    xr.readNext()
-            xr.readNext()
-        self.properties.setNotify(True)  # enable property change signalling
+        xref = {"Netlist" : fromXmlNetlist}
+        for item_name, item_cls in _item_classes.items():
+            tag = item_name.removesuffix("Item")
+            xref[tag] = lambda xr, cls=item_cls: fromXmlItem(xr, cls)
+
+        xr.readNext()
+        fromXml(xr, xref, ptag=top_element_name)
+        self.properties.setNotify(True)
 
     @checked
     def fromXmlClipboard(

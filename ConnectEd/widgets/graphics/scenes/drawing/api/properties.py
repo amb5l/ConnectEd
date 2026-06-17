@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Self, Any
 
 from PyQt6.QtGui import QColor
 
@@ -23,11 +23,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....properties import PropertiesMixin
     from .. import DrawingScene
+    MixinSelf = Self | DrawingScene
 
 class DrawingSceneApiPropertiesMixin:
     @checked
     def addProperty(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         object   : "PropertiesMixin",
         name     : str,
         kind     : DataKind,
@@ -39,7 +40,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def editProperty(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         object   : "PropertiesMixin",
         name     : str | tuple[str, str] | NoChange = NO_CHANGE,
         kind     : DataKind              | NoChange = NO_CHANGE,
@@ -51,7 +52,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def delProperty(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         object   : "PropertiesMixin",
         name     : str,
         undoable : bool = False
@@ -61,7 +62,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def addPropertyText(
-        self       : "DrawingScene",
+        self       : "MixinSelf",
         object     : "PropertiesMixin",
         name       : str,
         visible    : bool,
@@ -100,7 +101,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def editPropertyText(
-        self       : "DrawingScene",
+        self       : "MixinSelf",
         object     : "PropertiesMixin",
         name       : str,
         visible    : bool         | NoChange = NO_CHANGE,
@@ -159,7 +160,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def delPropertyText(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         object   : "PropertiesMixin",
         name     : str,
         undoable : bool = False
@@ -169,7 +170,7 @@ class DrawingSceneApiPropertiesMixin:
 
     @checked
     def editProperties(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         object   : "PropertiesMixin",
         changes  : list[PropertyChangeBase],
         undoable : bool = False

@@ -1,134 +1,133 @@
-from typing import TypeAlias, Union, Any
+from typing import Self, Protocol, Any
+from collections.abc import Callable
 
-from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
-                            QFile, QIODevice, QMimeData, QPointF
+from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader, \
+                            QFile, QIODevice, QByteArray, QMimeData
 from PyQt6.QtWidgets import QApplication
 
 from ..app import logger
 
 from .check import checked
 from .defs  import APP_NAME, MIME_TYPE
-from .utils import val2str, str2val, space2underscore, underscore2space
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .db import DesignDbNode, LibraryDbNode, SymbolNode
-    from ..widgets.graphics.properties import PropertiesMixin
-    from ..widgets.graphics.items import ItemMixin
+from .utils import cleanPath
 
 
-XmlItemTypes: TypeAlias = Union[
-    "DesignDbNode",
-    "LibraryDbNode",
-    "SymbolNode",
-    "ItemMixin"
-]
+XmlHandler = Callable[[QXmlStreamReader], Any]
+
+
+class PathProtocol(Protocol):
+    def path(self : Self) -> str:
+        ...
+
+    def setPath(self : Self, path : str) -> None:
+        ...
+
+class XmlProtocol(Protocol):
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        ...
+
+    @classmethod
+    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
+        ...
+
+
+def toXmlBegin(
+    xw         : QXmlStreamWriter,
+    tag        : str,
+    attributes : dict[str, str] | None = None
+) -> None:
+    xw.writeStartElement(tag)
+    if attributes is not None:
+        for name, value in attributes.items():
+            xw.writeAttribute(name, value)
+
+
+def toXmlEnd(xw : QXmlStreamWriter) -> None:
+    xw.writeEndElement()
+
+
+def fromXml(
+    xr   : QXmlStreamReader,
+    xref : dict[str, XmlHandler | type[XmlProtocol]],  # tag : handler mapping
+    path : str | None = None,                          # path of loaded file
+    ptag : str | None = None,                          # parent tag
+) -> list[Any]:
+    output = []
+    while not xr.atEnd():
+        if ptag is not None and xr.isEndElement() and xr.name() == ptag:
+            break
+        if xr.isStartElement():
+            tag = xr.name()
+            handler = xref.get(tag)
+            if handler is None:
+                logger().warning(f"Unknown element: {tag}")
+            else:
+                obj = handler.fromXml(xr) if isinstance(handler, type) else handler(xr)
+                if obj is not None:
+                    if path and hasattr(obj, "setPath"):
+                        obj.setPath(path)
+                    output.append(obj)
+        xr.readNext()
+    return output
+
+
+def fromXmlWrapper(
+    xr   : QXmlStreamReader,
+    tag  : str,
+    xref : dict[str, XmlHandler | type[XmlProtocol]]
+) -> tuple[list[Any], dict[str, str]]:
+    if not xr.readNextStartElement() or xr.name() != tag:
+        logger().warning(f"No {tag} element found")
+        return [], {}
+    attributes = {a.name(): a.value() for a in xr.attributes()}
+    return fromXml(xr, xref), attributes
+
 
 @checked
-def toXmlBegin(xw : QXmlStreamWriter) -> None:
+def saveXml(
+    instance : PathProtocol | XmlProtocol,
+    path     : str | None = None
+) -> bool:
+    if path is None:
+        path = instance.path()
+    else:
+        path = cleanPath(path)
+        instance.setPath(path)
+    if path == "":
+        logger().warning(f"Document has no path to save to: {instance}")
+        return False
+    file = QFile(path)
+    if not file.open(
+        QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text
+    ):
+        logger().warning(f"Failed to open file {path} for writing")
+        return False
+    xw = QXmlStreamWriter(file)
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
-    xw.writeStartElement(APP_NAME) # TODO: version
-
-@checked
-def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
-    for name in instance.properties.names():
-        if not instance.properties.worthy(name):
-            continue
-        value = instance.properties.value(name)
-        xw.writeAttribute(space2underscore(name), val2str(value))
-
-@checked
-def toXmlEnd(xw : QXmlStreamWriter) -> None:
-    xw.writeEndDocument()
-
-@checked
-def fromXmlBegin(xr : QXmlStreamReader, element_name : str) -> None:
-    xr.readNext()
-    while not (xr.isStartElement() and xr.name() == element_name):
-        xr.readNext()
-
-@checked
-def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
-    while not (xr.isEndElement() and xr.name() == element_name):
-        xr.readNext()
-
-@checked
-def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
-    xml_attrs = xr.attributes()
-    for xml_attr in xml_attrs:
-        instance.properties.init(underscore2space(xml_attr.name()), xml_attr.value())
-    xr.readNext()
-
-@checked
-def fromXmlItems(
-    xr : QXmlStreamReader
-) -> tuple[list[Any], QPointF | None]:
-    from .db import DesignDbNode, LibraryDbNode, SymbolNode
-    from ..widgets.graphics.items import _item_classes
-    pos = None
-    items = []
-    fromXmlBegin(xr, APP_NAME)
-    xr.readNext()
-    while not (xr.isEndElement() and xr.name() == APP_NAME):
-        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-            if xr.name() == "Metadata":
-                attributes = xr.attributes()
-                for attr in attributes:
-                    if attr.name() == "pos":
-                        pos = str2val(attr.value(), "QPointF")
-                xr.readNext()
-                while not (xr.isEndElement() and xr.name() == "Metadata"):
-                    xr.readNext()
-            else:
-                match xr.name():
-                    case "Design":
-                        item = DesignDbNode.fromXml(xr)
-                    case "Library":
-                        item = LibraryDbNode.fromXml(xr)
-                    case "Symbol":
-                        item = SymbolNode.fromXml(xr)
-                    case _:  # Assume it's an Item
-                        item_name = xr.name() + "Item"
-                        if item_name in _item_classes:
-                            item_class = _item_classes[item_name]
-                            item = item_class.fromXml(xr)
-                        else:
-                            item = None
-                            logger().warning(f"Unexpected element: {xr.name()}")
-                if item:
-                    items.append(item)
-        xr.readNext()
-    return items, pos
-
-def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
-    # TODO: handle file open error
-    file = QFile(path)
-    if file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text):
-        xw = QXmlStreamWriter(file)
-        toXmlBegin(xw)
-        return xw, file
-
-@checked
-def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
-    xw.writeEndElement() # ConnectEd
-    toXmlEnd(xw)
-    file.close()
-
-def save(instance : Any, path : str) -> None:
-    xw, file = saveBegin(path)
+    toXmlBegin(xw, APP_NAME)
     instance.toXml(xw)
-    saveEnd(xw, file)
+    toXmlEnd(xw)
+    xw.writeEndDocument()
+    file.close()
+    return True
 
-@checked
-def loadItems(path : str) -> list[Any]:
-    # TODO: handle file open error
+
+def loadXml(
+    path     : str,
+    elements : dict[str, type[XmlProtocol]]
+) -> list[XmlProtocol]:
+    """
+    Loads children of the first <ConnectEd> element from the file.
+    """
     file = QFile(path)
-    if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
-        xr = QXmlStreamReader(file)
-        items, pos = fromXmlItems(xr)
-        file.close()
-    else:
-        items = []
-    return items
+    flag_enum = QIODevice.OpenModeFlag
+    if not file.open(flag_enum.ReadOnly | flag_enum.Text):
+        logger().warning(f"Failed to open file {path} for reading")
+        return False
+    xr = QXmlStreamReader(file)
+    if not xr.readNextStartElement() or xr.name() != APP_NAME:
+        logger().warning(f"No {APP_NAME} root element in {path}")
+        return False
+    fromXml(xr, elements, path)

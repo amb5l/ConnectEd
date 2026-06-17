@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
@@ -6,137 +8,160 @@ from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from ....query import QueryWindow
 
+from ....scenes import withScene
+
 from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ....scenes.drawing   import DrawingScene
     from ....items.mixin      import ItemMixin
     from ....items.text       import TextItem
     from ....items.grip       import ResizeGripItem
     from ....items.symbol_pin import SymbolPinItem
-    from .                    import DrawingViewUi
+    from .. import DrawingView
+    MixinSelf = Self | DrawingView
 
 
-class DrawingViewUiEditMixin:
-    def editUndo(self : "DrawingViewUi") -> None:
-        self._scene.undo()
+class DrawingViewApiEditMixin:
+    @withScene
+    def editUndo(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.undo()
 
-    def editRedo(self : "DrawingViewUi") -> None:
-        self._scene.redo()
+    @withScene
+    def editRedo(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.redo()
 
-    def editRepeat(self : "DrawingViewUi") -> None:
+    @withScene
+    def editRepeat(self : "MixinSelf") -> None:
         raise NotImplementedError("editRepeat not implemented")
 
-    def editCancel(self : "DrawingViewUi") -> None:
-        self._scene.clearSelection()
-        self._view.state.go(self._view.stateIdle)
+    @withScene
+    def editCancel(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.clearSelection()
+        self.state.go(self.stateIdle)
 
-    def editCut(self : "DrawingViewUi") -> None:
-        self._scene.editCut(
-            self._snap(self._view.mouse.current.logical), undoable=True
+    @withScene
+    def editCut(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.editCut(
+            self._snap(self.mouse.current.logical), undoable=True
         )
 
-    def editCopy(self : "DrawingViewUi") -> None:
-        self._scene.editCopy(self._snap(self._view.mouse.current.logical))
+    @withScene
+    def editCopy(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.editCopy(self._snap(self.mouse.current.logical))
 
-    def editPaste(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditPaste)
+    def editPaste(self : "MixinSelf") -> None:
+        self.state.go(self.stateEditPaste)
 
-    def editDelete(self : "DrawingViewUi") -> None:
-        self._scene.editDelete(undoable=True)
+    @withScene
+    def editDelete(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.editDelete(undoable=True)
 
-    def editDuplicate(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditDuplicate)
+    def editDuplicate(self : "MixinSelf") -> None:
+        self.state.go(self.stateEditDuplicate)
 
-    def editSelectArea(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditSelectArea1)
+    def editSelectArea(self : "MixinSelf") -> None:
+        self.state.go(self.stateEditSelectArea1)
 
-    def editSelectAll(self : "DrawingViewUi") -> None:
-        self._scene.editSelectAll()
+    @withScene
+    def editSelectAll(self : "MixinSelf", scene : "DrawingScene") -> None:
+        scene.editSelectAll()
 
     def editSlide(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         self._editMove(items, pos, True)
 
     def editMove(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         self._editMove(items, pos, False)
 
     def editResize(
-        self : "DrawingViewUi",
+        self : "MixinSelf",
         grip : "ResizeGripItem",
         pos  : QPoint | QPointF | None = None
     ) -> None:
-        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-        self._view.state.interact(
+        pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
+        self.state.interact(
             EditMoveInteraction(self._view, [grip], pos),
-            self._view.stateEditResize
+            self.stateEditResize
         )
 
+    @withScene
     def editRotateCW(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
+        scene : "DrawingScene",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        if self._view.interaction:  # interaction in progress
-            if isinstance(self._view.interaction, RotateItemMixin):
-                self._view.interaction.rotateCW()
+        if self.interaction:  # interaction in progress
+            if isinstance(self.interaction, RotateItemMixin):
+                self.interaction.rotateCW()
         else:
             if items is None:
-                items = self._scene.selectedItems()
-            pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-            self._scene.editRotateCW(items, pos, undoable=True)
+                items = scene.selectedItems()
+            pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            scene.editRotateCW(items, pos, undoable=True)
 
+    @withScene
     def editRotateCCW(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
+        scene : "DrawingScene",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        if self._view.interaction:  # interaction in progress
-            if isinstance(self._view.interaction, RotateItemMixin):
-                self._view.interaction.rotateCCW()
+        if self.interaction:  # interaction in progress
+            if isinstance(self.interaction, RotateItemMixin):
+                self.interaction.rotateCCW()
         else:
             if items is None:
-                items = self._scene.selectedItems()
-            pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-            self._scene.editRotateCCW(items, pos, undoable=True)
+                items = scene.selectedItems()
+            pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            scene.editRotateCCW(items, pos, undoable=True)
 
+    @withScene
     def editAssignOrigin(
-        self    : "DrawingViewUi",
+        self    : "MixinSelf",
+        scene   : "DrawingScene",
         item    : "ItemMixin",
         ap_name : str
     ) -> None:
-        self._scene.editAssignOrigin(item, ap_name, undoable=True)
+        scene.editAssignOrigin(item, ap_name, undoable=True)
 
     def editAppearance(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
         items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
         from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
-        self._view.state.go(self._view.stateEditAppearance, items)
+        self.state.go(self.stateEditAppearance, items)
 
     def editItemProperties(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
         items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
         from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
-        self._view.state.go(self._view.stateEditItemProperties, items)
+        self.state.go(self.stateEditItemProperties, items)
 
-    def editDrawingProperties(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditDrawingProperties)
+    def editDrawingProperties(self : "MixinSelf") -> None:
+        self.state.go(self.stateEditDrawingProperties)
 
-    def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
+    @withScene
+    def editQuery(
+        self  : "MixinSelf",
+        scene : "DrawingScene",
+        vpos  : QPoint | None = None
+    ) -> None:
         if vpos is None:
-            initial_items = self._scene.selectedItems()
+            initial_items = scene.selectedItems()
             items = []
             # add (unselected) children
             def _addChildren(item : QGraphicsItem) -> None:
@@ -148,7 +173,7 @@ class DrawingViewUiEditMixin:
             for item in initial_items:
                 _addChildren(item)
         else:
-            items = self._view._itemsAt(vpos)
+            items = self._itemsAt(vpos)
         query_window = QueryWindow(items)
         if not hasattr(self, '_query_windows'):
             self._query_windows = []
@@ -175,41 +200,46 @@ class DrawingViewUiEditMixin:
         query_window.destroyed.connect(cleanup)
 
     def editPort(
-        self : "DrawingViewUi",
+        self : "MixinSelf",
         item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditPort, [item] if item else None)
+        self.state.go(self.stateEditPort, [item] if item else None)
 
     def editBlockPin(
-        self : "DrawingViewUi",
+        self : "MixinSelf",
         item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditBlockPin, [item] if item else None)
+        self.state.go(self.stateEditBlockPin, [item] if item else None)
 
+    @withScene
     def editSymbolPinDot(
-        self   : "DrawingViewUi",
+        self   : "MixinSelf",
+        scene  : "DrawingScene",
         item   : "SymbolPinItem",
         enable : bool
     ):
         if enable == item.dot():
             return
-        self._scene.editSymbolPinDot(item, enable, undoable=True)
+        scene.editSymbolPinDot(item, enable, undoable=True)
 
+    @withScene
     def editSymbolPinClock(
-        self   : "DrawingViewUi",
+        self   : "MixinSelf",
+        scene  : "DrawingScene",
         item   : "SymbolPinItem",
         enable : bool
     ):
         if enable == item.clock():
             return
-        self._scene.editSymbolPinClock(item, enable, undoable=True)
+        scene.editSymbolPinClock(item, enable, undoable=True)
 
-    def editTextDialog(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditText)
+    def editTextDialog(self : "MixinSelf") -> None:
+        self.state.go(self.stateEditText)
 
-    # TODO remove this, use scene method, rename above method
+    @withScene
     def editText(
-        self      : "DrawingViewUi",
+        self      : "MixinSelf",
+        scene     : "DrawingScene",
         item      : "TextItem",
         mirror_h  : bool   | NoChange = NO_CHANGE,
         mirror_v  : bool   | NoChange = NO_CHANGE,
@@ -219,7 +249,7 @@ class DrawingViewUiEditMixin:
         width     : float  | NoChange = NO_CHANGE,
         height    : float  | NoChange = NO_CHANGE,
     ) -> None:
-        self._scene.editText(
+        scene.editText(
             item     = item,
             mirror_h = mirror_h,
             mirror_v = mirror_v,
@@ -232,30 +262,32 @@ class DrawingViewUiEditMixin:
         )
 
     def editPropertyTextDialog(
-        self : "DrawingViewUi",
+        self : "MixinSelf",
         item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(
-            self._view.stateEditPropertyText, [item] if item else None
+        self.state.go(
+            self.stateEditPropertyText, [item] if item else None
         )
 
+    @withScene
     def _editMove(
-        self  : "DrawingViewUi",
+        self  : "MixinSelf",
+        scene : "DrawingScene",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None,
         slide : bool = False
     ) -> None:
         from ....items.mixin import ItemMixin
         if items is None:
-            items = self._scene.selectedItems()
-        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            items = scene.selectedItems()
+        pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
         # exclude: non-items and child items
         for item in items:
             if not isinstance(item, ItemMixin) \
             or item.topParentItem() in items:
                 items.remove(item)
         # slide/move
-        self._view.state.interact(
+        self.state.interact(
             EditMoveInteraction(self._view, items, pos, slide),
-            self._view.stateEditSlide if slide else self._view.stateEditMove
+            self.stateEditSlide if slide else self.stateEditMove
         )

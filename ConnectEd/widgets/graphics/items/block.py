@@ -58,10 +58,10 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
-            view.action("Add Pin...", view.ui.placeBlockPin),
+            view.action("Add Pin...", view.placeBlockPin),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+            view.action("Appearance...", lambda: view.editAppearance(self)),
+            view.action("Properties...", lambda: view.editItemProperties(self))
         ]
 
     @checked

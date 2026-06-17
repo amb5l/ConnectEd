@@ -49,12 +49,12 @@ class Navigator(NavigatorApiMixin, TreeView):
 
     def onItemChanged(self : Self, item : NavItem) -> None:
         """Handle changes to items in the model. Assumption: renaming only."""
-        item_binding : DocBinding | None = \
+        binding : DocBinding | None = \
             item.data(Qt.ItemDataRole.UserRole)
-        if item_binding is None:
+        if binding is None:
             logger().error(f"NavigatorItem has no UserRole: {item.text()}")
             return
-        item_binding.doc.rename(item_binding.widget)
+        binding.doc.rename(binding.widget, item.text())
 
     def _addDoc(
         self   : Self,
@@ -62,25 +62,22 @@ class Navigator(NavigatorApiMixin, TreeView):
         doc    : Doc,
         path   : str = ""
     ) -> None:
-        doc_item = NavItem(doc.displayName())
-        user_role = DocBinding(doc, None)
-        doc_item.setData(user_role, Qt.ItemDataRole.UserRole)
-        # add child rows
-        def _addChildren(item : NavItem, child_specs : list[NavItemSpec]) -> None:
-            for child_spec in child_specs:
-                child_item = NavItem(child_spec.label)
-                child_user_role = DocBinding(
-                    doc, child_spec
-                )
-                child_item.setData(child_user_role, Qt.ItemDataRole.UserRole)
-                item.appendRow(child_item)
-                if child_spec.child_specs is not None:
-                    _addChildren(child_item, child_spec.child_specs)
-        child_specs = doc.navChildSpecs()
-        _addChildren(doc_item, child_specs)
-        # finalise
-        doc_item.setToolTip(path or "(not saved)")
-        parent.appendRow(doc_item)
+        def _addRows(
+            parent : NavItem,
+            specs  : NavItemSpec | list[NavItemSpec]
+        ) -> None:
+            if not isinstance(specs, list):
+                specs = [specs]
+            for spec in specs:
+                item = NavItem(spec.subject.name())
+                user_role = DocBinding(doc, spec.subject)
+                item.setData(user_role, Qt.ItemDataRole.UserRole)
+                if spec.tip is not None:
+                    item.setToolTip(spec.tip)
+                parent.appendRow(item)
+                if spec.children is not None:
+                    _addRows(item, spec.children)
+        _addRows(self._model, doc.navItemSpec())
 
 
 class NavigatorDock(TreeViewDock):

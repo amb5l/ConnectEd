@@ -19,12 +19,12 @@ from ...scenes.drawing import DrawingScene
 
 from ...views.drawing.interaction import DrawingInteraction
 
+from .api     import DrawingViewApiMixin
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
 from .state   import DrawingViewStateMixin, DrawingViewStateBase
 from .menu    import DrawingViewMenuMixin
 from .defs    import DrawingViewLayer, DrawingViewGrid, DrawingViewMouse
-from .ui      import DrawingViewUi
 
 
 def getView(pos : QPoint):
@@ -37,14 +37,13 @@ def getView(pos : QPoint):
 
 
 class DrawingView(
+    DrawingViewApiMixin,
     DrawingViewMouseMixin,
     DrawingViewStateMixin,
     DrawingViewMenuMixin,
     DrawingViewPrivateMixin,
     QGraphicsView
 ):
-    UI_CLS : ClassVar[type["DrawingViewUi"]] = DrawingViewUi
-
     _shown      : bool = False
     _zoomed     : bool = False
     marquee     : Marquee
@@ -55,7 +54,6 @@ class DrawingView(
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
     interaction : DrawingInteraction | None
-    ui          : DrawingViewUi
 
     @checked
     def __init__(self : Self, scene : DrawingScene) -> None:
@@ -75,7 +73,6 @@ class DrawingView(
         self.grid        = DrawingViewGrid()
         self.mouse       = DrawingViewMouse()
         self.interaction = None
-        self.ui          = self.UI_CLS(self)
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -96,7 +93,7 @@ class DrawingView(
         super().resizeEvent(event)
         if self._shown and not self._zoomed:
             self._zoomed = True
-            self.ui.viewZoomAll()
+            self.viewZoomAll()
 
     def drawForeground(self : Self, painter : QPainter, rect : QRectF) -> None:
         # draw grid

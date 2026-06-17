@@ -174,6 +174,13 @@ def snake2proper(s : str) -> str:
     return s.replace("_", " ").title()
 
 
+def cleanPath(path: str) -> str:
+    path = path.strip()
+    if path == "":
+        return ""
+    return os.path.normcase(os.path.normpath(os.path.abspath(path)))
+
+
 @checked
 def getDefaultPath() -> str:
     if platform.system() == "Windows":

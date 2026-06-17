@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 from PyQt6.QtCore import QPointF
 
 
-class DiagramViewUiPlaceMixin:
+class DiagramViewApiPlaceMixin:
     def placePort(self : "DiagramViewUi") -> None:
         self._view.state.go(self._view.statePlacePort)
 

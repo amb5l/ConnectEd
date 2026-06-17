@@ -76,7 +76,7 @@ scene APIs.
 
 - **Scripting stack** — [`doc/SCRIPTING.md`](SCRIPTING.md):
   - `cs.gui(window)` → `GuiDriver` (menus, modals, mouse, docks).
-  - `view.ui.*` — Place / Edit / View on active MDI subwindow.
+  - `view.*` — Place / Edit / View on active MDI subwindow.
   - Scene API — `addItems`, `editMove`, diagram APIs with `undoable=True`.
 - **Command trees are manual** — [`tests/integration/gui/specs.py`](../tests/integration/gui/specs.py)
   (`MAIN_WIDGETS`, `MENUS_*`); no runtime introspection registry.
@@ -438,7 +438,7 @@ Independent review of a Grok-generated outline. **Adopt** what fits ConnectEd;
 - **Provider registry** for LLM backends (see above).
 - **Security** — never log API keys; optional local models.
 - **Streaming** responses where the API supports it.
-- **Reuse scripting** — `cs.gui(window)`, `view.ui.*`, scene API for tool implementations.
+- **Reuse scripting** — `cs.gui(window)`, `view.*`, scene API for tool implementations.
 - **Project style** — PyQt6, `@checked`, `| None`, mixins; `openai` / `anthropic` in core deps.
 
 ### Corrected (Grok sample code issues)
@@ -550,8 +550,8 @@ No **`AiEditLock`** required (may run while another chat holds the lease).
 | Tool | Delegates to |
 |------|----------------|
 | `run_menu_action` | `MenuBar` path → `Action.trigger()` + `withModal` where needed |
-| `place_rectangle`, `place_line`, … | `view.ui.place*` + optional `mouseDrag` helper |
-| `edit_delete`, `edit_undo`, `edit_redo` | `view.ui.edit*` |
+| `place_rectangle`, `place_line`, … | `view.place*` + optional `mouseDrag` helper |
+| `edit_delete`, `edit_undo`, `edit_redo` | `view.edit*` |
 | `edit_item_properties` | Properties API / dialog automation (harder; defer) |
 | `scene_add_items` | `scene.addItems(..., undoable=True)` |
 | `scene_edit_move` | `scene.editMove(...)` |

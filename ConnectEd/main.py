@@ -11,7 +11,6 @@ from .core.log      import logger
 from .core.args     import known_args
 from .core.settings import Settings
 from .core.session  import Session
-from .core.db       import Model
 
 from .resources  import getIconPath, initResources
 
@@ -64,7 +63,6 @@ def main(func : Callable | None = None) -> int:
                 pass
         initResources()
     app.setSession(Session())
-    app.setModel(Model())
     if not known_args.cli:
         Window() # create window
     app.processEvents()

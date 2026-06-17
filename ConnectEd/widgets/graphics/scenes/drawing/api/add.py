@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import QPointF
 
 from ......core.check import checked
@@ -12,6 +14,7 @@ from ..cmd.polyline import CmdAddPolyVtx
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
+    MixinSelf = Self | DrawingScene
 
 
 class DrawingSceneApiAddMixin:
@@ -19,7 +22,7 @@ class DrawingSceneApiAddMixin:
 
     @checked
     def addItems(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         items    : list[ItemType],
         undoable : bool = False
     ) -> None:
@@ -29,7 +32,7 @@ class DrawingSceneApiAddMixin:
 
     @checked
     def addPolyVtx(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         polyline : PolylineItem,
         pos      : QPointF,
         sweep    : float | None = None,

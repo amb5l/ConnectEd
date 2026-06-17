@@ -61,13 +61,13 @@ class PortItem(
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
-                "Rotate CW", lambda: view.ui.editRotateCW([self]), shortcut="]"
+                "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
             ),
             view.action(
-                "Rotate CCW", lambda: view.ui.editRotateCCW([self]), shortcut="["
+                "Rotate CCW", lambda: view.editRotateCCW([self]), shortcut="["
             ),
-            view.action("Edit...", view.ui.editPort),
+            view.action("Edit...", view.editPort),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+            view.action("Appearance...", lambda: view.editAppearance(self)),
+            view.action("Properties...", lambda: view.editItemProperties(self))
         ]

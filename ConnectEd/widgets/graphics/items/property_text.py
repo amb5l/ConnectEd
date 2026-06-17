@@ -292,7 +292,7 @@ class PropertyTextItem(TextItem):
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         items = [
-            view.action("Edit...", lambda: view.ui.editPropertyTextDialog(self)),
+            view.action("Edit...", lambda: view.editPropertyTextDialog(self)),
             view.separator(),
             view.action(
                 "Auto Width",
@@ -309,7 +309,7 @@ class PropertyTextItem(TextItem):
                 self._height < 0.0
             ),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+            view.action("Appearance...", lambda: view.editAppearance(self)),
+            view.action("Properties...", lambda: view.editItemProperties(self))
         ]
         return items

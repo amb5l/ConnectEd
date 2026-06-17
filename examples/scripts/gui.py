@@ -29,12 +29,12 @@ def test(app : cs.App):
     assert sub is not None
     view = sub.widget()
     assert view is not None
-    view.ui.viewZoomAll()
+    view.viewZoomAll()
     driver.processEvents()
 
     pos = QPointF(100, 100)
     size = QSizeF(100, 100)
-    view.ui.placeRectangle()
+    view.placeRectangle()
     driver.processEvents()
 
     p1 = driver.viewPos(view, pos)

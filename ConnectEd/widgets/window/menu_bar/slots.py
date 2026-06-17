@@ -9,6 +9,8 @@ from ....app import logger, settings, window
 
 from ....core.defs import APP_NAME
 
+from ....widgets.window.navigator import Navigator
+
 from ....widgets.graphics.views.drawing import DrawingView
 from ....widgets.graphics.views.diagram import DiagramView
 from ....widgets.graphics.views.symbol  import SymbolView
@@ -19,7 +21,26 @@ from ..sub_window import DocSubWindow
 T = TypeVar("T")
 
 
-def withCurrentSubWindow(
+def withFocusWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
+    """
+    Decorator that gets the current widget from the focus widget and checks if it's
+    of the specified type or a subclass of it before calling the decorated method.
+    """
+    def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
+        @functools.wraps(func)
+        def wrapper(self : "Slots") -> None:
+            current_widget = window().focusWidget()
+            if current_widget is None:
+                return
+            if isinstance(current_widget, widget_type):
+                func(self, cast(T, current_widget))
+            else:
+                raise ValueError(f"{current_widget} is not a {widget_type} or subclass")
+        return wrapper
+    return decorator
+
+
+def withMdiSubWindow(
     func : Callable[["Slots", DocSubWindow], None],
 ) -> Callable[["Slots"], None]:
     """
@@ -38,7 +59,7 @@ def withCurrentSubWindow(
     return wrapper
 
 
-def withCurrentWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
+def withMdiWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
     """
     Decorator that gets the current widget from the MDI area and checks if it's
     of the specified type or a subclass of it before calling the decorated method.
@@ -65,7 +86,7 @@ def withCurrentWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], 
     return decorator
 
 
-def withCurrentWidgetCheckable(
+def withMdiWidgetCheckable(
     widget_type : type[T],
     action_name : str
 ) -> Callable[[Callable[["Slots", T, bool], None]], Callable[["Slots"], None]]:
@@ -107,21 +128,21 @@ class Slots:
     def fileOpen(self : Self) -> None:
         window().navigator().fileOpen()
 
-    @withCurrentSubWindow
+    @withMdiSubWindow
     def fileSave(self : Self, subwindow : QMdiSubWindow) -> None:
         if isinstance(subwindow, DocSubWindow):
             window().navigator().fileSave(subwindow)
         else:
             logger().error("Subwindow is not a DocSubWindow")
 
-    @withCurrentSubWindow
+    @withMdiSubWindow
     def fileSaveAs(self : Self, subwindow : QMdiSubWindow) -> None:
         if isinstance(subwindow, DocSubWindow):
             window().navigator().fileSaveAs(subwindow)
         else:
             logger().error("Subwindow is not a DocSubWindow")
 
-    @withCurrentSubWindow
+    @withMdiSubWindow
     def fileClose(self : Self, subwindow : QMdiSubWindow) -> None:
         if isinstance(subwindow, DocSubWindow):
             window().navigator().fileClose(subwindow)
@@ -159,175 +180,175 @@ class Slots:
     def fileExit(self : Self) -> None:
         window().close()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editCancel(self : Self, view : DrawingView) -> None:
-        view.ui.editCancel()
+        view.editCancel()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editUndo(self : Self, view : DrawingView) -> None:
-        view.ui.editUndo()
+        view.editUndo()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editRedo(self : Self, view : DrawingView) -> None:
-        view.ui.editRedo()
+        view.editRedo()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editCut(self : Self, view : DrawingView) -> None:
-        view.ui.editCut()
+        view.editCut()
 
-    @withCurrentWidget(DrawingView)
-    def editCopy(self : Self, view : DrawingView) -> None:
-        view.ui.editCopy()
+    @withFocusWidget(DrawingView | Navigator)
+    def editCopy(self : Self, widget : DrawingView) -> None:
+        widget.ui.editCopy()
 
-    @withCurrentWidget(DrawingView)
-    def editPaste(self : Self, view : DrawingView) -> None:
-        view.ui.editPaste()
+    @withFocusWidget(DrawingView | Navigator)
+    def editPaste(self : Self, widget : DrawingView) -> None:
+        widget.ui.editPaste()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editDelete(self : Self, view : DrawingView) -> None:
-        view.ui.editDelete()
+        view.editDelete()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editDuplicate(self : Self, view : DrawingView) -> None:
-        view.ui.editDuplicate()
+        view.editDuplicate()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editSelectArea(self : Self, view : DrawingView) -> None:
-        view.ui.editSelectArea()
+        view.editSelectArea()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editSelectAll(self : Self, view : DrawingView) -> None:
-        view.ui.editSelectAll()
+        view.editSelectAll()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editRotateCW(self : Self, view : DrawingView) -> None:
-        view.ui.editRotateCW()
+        view.editRotateCW()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editRotateCCW(self : Self, view : DrawingView) -> None:
-        view.ui.editRotateCCW()
+        view.editRotateCCW()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editProperties(self : Self, view : DrawingView) -> None:
-        view.ui.editItemProperties()
+        view.editItemProperties()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editAppearance(self : Self, view : DrawingView) -> None:
-        view.ui.editAppearance()
+        view.editAppearance()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def editQuery(self : Self, view : DrawingView) -> None:
-        view.ui.editQuery()
+        view.editQuery()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewZoomAll(self : Self, view : DrawingView) -> None:
-        view.ui.viewZoomAll()
+        view.viewZoomAll()
 
-    @withCurrentWidget(DiagramView)
+    @withMdiWidget(DiagramView)
     def viewZoomSheet(self : Self, view : DiagramView) -> None:
-        view.ui.viewZoomSheet()
+        view.viewZoomSheet()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewZoomArea(self : Self, view : DrawingView) -> None:
-        view.ui.viewZoomArea()
+        view.viewZoomArea()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewZoomIn(self : Self, view : DrawingView) -> None:
-        view.ui.viewZoomIn()
+        view.viewZoomIn()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewZoomOut(self : Self, view : DrawingView) -> None:
-        view.ui.viewZoomOut()
+        view.viewZoomOut()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewPan(self : Self, view : DrawingView) -> None:
-        view.ui.viewPan()
+        view.viewPan()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewPanUp(self : Self, view : DrawingView) -> None:
-        view.ui.viewPanUp()
+        view.viewPanUp()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewPanDown(self : Self, view : DrawingView) -> None:
-        view.ui.viewPanDown()
+        view.viewPanDown()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewPanLeft(self : Self, view : DrawingView) -> None:
-        view.ui.viewPanLeft()
+        view.viewPanLeft()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewPanRight(self : Self, view : DrawingView) -> None:
-        view.ui.viewPanRight()
+        view.viewPanRight()
 
-    @withCurrentWidgetCheckable(DrawingView, "viewGridDisplay")
+    @withMdiWidgetCheckable(DrawingView, "viewGridDisplay")
     def viewGridDisplay(self : Self, view : DrawingView, checked : bool) -> None:
-        view.ui.viewGridDisplay(checked)
+        view.viewGridDisplay(checked)
 
-    @withCurrentWidgetCheckable(DrawingView, "viewGridSnap")
+    @withMdiWidgetCheckable(DrawingView, "viewGridSnap")
     def viewGridSnap(self : Self, view : DrawingView, checked : bool) -> None:
-        view.ui.viewGridSnap(checked)
+        view.viewGridSnap(checked)
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewThemeDark(self : Self, view : DrawingView) -> None:
         settings().set("display/theme", "dark")
         view.scene().update()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def viewThemeLightMono(self : Self, view : DrawingView) -> None:
         settings().set("display/theme", "light_mono")
         view.scene().update()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placePort(self : Self, view : DiagramView) -> None:
-        view.ui.placePort()
+        view.placePort()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeGate(self : Self, view : DrawingView) -> None:
-        view.ui.placeGate()
+        view.placeGate()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeBlock(self : Self, view : DiagramView) -> None:
-        view.ui.placeBlock()
+        view.placeBlock()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeBlockPin(self : Self, view : DiagramView) -> None:
-        view.ui.placeBlockPin()
+        view.placeBlockPin()
 
-    @withCurrentWidget(SymbolView)
+    @withMdiWidget(SymbolView)
     def placeSymbolPin(self : Self, view : SymbolView) -> None:
-        view.ui.placeSymbolPin()
+        view.placeSymbolPin()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeConnection(self : Self, view : DiagramView) -> None:
-        view.ui.placeConnection()
+        view.placeConnection()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeTap(self : Self, view : DrawingView) -> None:
-        view.ui.placeTap()
+        view.placeTap()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeNetLabel(self : Self, view : DrawingView) -> None:
-        view.ui.placeNetLabel()
+        view.placeNetLabel()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeLine(self : Self, view : DrawingView) -> None:
-        view.ui.placeLine()
+        view.placeLine()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeRectangle(self : Self, view : DrawingView) -> None:
-        view.ui.placeRectangle()
+        view.placeRectangle()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeEllipse(self : Self, view : DrawingView) -> None:
-        view.ui.placeEllipse()
+        view.placeEllipse()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placePolyline(self : Self, view : DrawingView) -> None:
-        view.ui.placePolyline()
+        view.placePolyline()
 
-    @withCurrentWidget(DrawingView)
+    @withMdiWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
-        view.ui.placeText()
+        view.placeText()
 
     def windowNavigator(self : Self) -> None:
         window().navigatorDock().show()
@@ -365,6 +386,3 @@ class Slots:
     def helpAbout(self : Self) -> None:
         QMessageBox.about(window(), "About", APP_NAME)
 
-    @withCurrentWidget(DiagramView)
-    def test(self : Self, view : DiagramView) -> None:
-        view.ui.test()

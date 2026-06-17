@@ -4,19 +4,19 @@ from PyQt6.QtCore import QEvent
 
 from ..drawing import DrawingView, DrawingSubWindow
 
+from .api   import DiagramViewApiMixin
 from .state import DiagramViewStateMixin
-from .ui    import DiagramViewUi
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...scenes.diagram import DiagramScene
 
 
-class DiagramView(DiagramViewStateMixin, DrawingView):
-    UI_CLS = DiagramViewUi
-
-    ui : DiagramViewUi
-
+class DiagramView(
+    DiagramViewApiMixin,
+    DiagramViewStateMixin,
+    DrawingView
+):
     def viewZoomSheet(self : Self) -> None:
         scene : "DiagramScene | None" = self.scene()
         if scene is None:

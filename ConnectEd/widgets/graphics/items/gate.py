@@ -90,13 +90,13 @@ class GateItem(
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
-                "Rotate CW", lambda: view.ui.editRotateCW([self]), shortcut="]"
+                "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
             ),
             view.action(
-                "Rotate CCW", lambda: view.ui.editRotateCCW([self]), shortcut="["
+                "Rotate CCW", lambda: view.editRotateCCW([self]), shortcut="["
             ),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Appearance...", lambda: view.editAppearance(self)),
         ]
 
 

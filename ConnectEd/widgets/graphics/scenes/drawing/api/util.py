@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import QPointF, QRectF, Qt
 from PyQt6.QtGui  import QImage, QPainter
 
@@ -8,6 +10,7 @@ from ......core.check import checked
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
+    MixinSelf = Self | DrawingScene
 
 
 _BITMAP_MAX_PX = 2048
@@ -17,7 +20,7 @@ class DrawingSceneApiUtilMixin:
     """Utility methods for drawing scenes."""
 
     @checked
-    def bitmap(self : "DrawingScene") -> QImage:
+    def bitmap(self : "MixinSelf") -> QImage:
         """
         Render the scene to a raster image suitable for PNG export.
 
@@ -50,7 +53,7 @@ class DrawingSceneApiUtilMixin:
         painter.end()
         return image
 
-    def _bitmapSourceRect(self : "DrawingScene") -> QRectF:
+    def _bitmapSourceRect(self : "MixinSelf") -> QRectF:
         sheet = getattr(self, "sheet", None)
         if sheet is not None:
             return QRectF(sheet.rect)
@@ -59,7 +62,7 @@ class DrawingSceneApiUtilMixin:
             return items_rect
         return QRectF(QPointF(0.0, 0.0), settings().get("defaults/extents"))
 
-    def _bitmapItemsRect(self : "DrawingScene") -> QRectF | None:
+    def _bitmapItemsRect(self : "MixinSelf") -> QRectF | None:
         items_rect : QRectF | None = None
         for item in self.items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()

@@ -220,8 +220,8 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
                 self._height < 0.0
             ),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+            view.action("Appearance...", lambda: view.editAppearance(self)),
+            view.action("Properties...", lambda: view.editItemProperties(self))
         ]
 
     def _notifyNetlist(self : Self) -> None:

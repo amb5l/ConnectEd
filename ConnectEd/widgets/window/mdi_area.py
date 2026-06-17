@@ -1,30 +1,77 @@
+import os
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget
 from PyQt6.QtGui     import QAction
 
-from ...app import logger,model, window
+from ...app import window
 
 from ...core.check import checked
+from ...core.doc   import Doc, DocSubjectProtocol
 
 from ..action import Action
 
 from .sub_window  import DocSubWindow
-from .spreadsheet import SpreadsheetSubWindow
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...widgets.graphics.scenes.drawing import DrawingScene
 
 
 class MdiArea(QMdiArea):
-    _scene_subwindow_actions : dict["DrawingScene", list[Action]]
+    _subwindow_actions : dict[Doc, dict[DocSubjectProtocol, list[Action]]]
 
     @checked
     def __init__(self : Self) -> None:
         super().__init__()
-        self._scene_subwindow_actions = {}
+        self._subwindow_actions = {}
+
+    def onSubWindowsChanged(self : Self) -> None:
+        # build tree of subwindows by doc and subject
+        tree : dict[Doc, dict[DocSubjectProtocol, list[DocSubWindow]]] = {}
+        for subwindow in self.subWindowList():
+            if not isinstance(subwindow, DocSubWindow):
+                continue
+            binding = subwindow.docBinding()
+            if binding is None:
+                continue
+            doc = binding.doc
+            subject = binding.subject
+            tree.setdefault(doc, {})
+            tree[doc].setdefault(subject, []).append(subwindow)
+        # update titles and actions
+        # (sort docs by path basename; sort subjects by window title)
+        def _doc_key(doc : Doc) -> tuple[bool, str, str]:
+            path = doc.path()
+            return (
+                path == "",
+                os.path.basename(path).casefold() if path else "",
+                path.casefold()
+            )
+        def _subject_key(
+            doc     : Doc,
+            subject : DocSubjectProtocol,
+        ) -> str:
+            return doc.windowTitle(subject).casefold()
+        actions : dict[Doc, dict[DocSubjectProtocol, list[Action]]] = {}
+        for doc in sorted(tree, key=_doc_key):
+            subjects = tree[doc]
+            for subject in sorted(subjects, key=lambda s: _subject_key(doc, s)):
+                subwindows = subjects[subject]
+                title = doc.windowTitle(subject)
+                for i, subwindow in enumerate(subwindows):
+                    suffix = f" ({i + 1})" if len(subwindows) > 1 else ""
+                    subwindow.setWindowTitle(title + suffix)
+                    action = QAction(window())
+                    action.setText(title + suffix)
+                    def showSubWindow(checked=False, window=subwindow) -> None:
+                        window.show()
+                        window.raise_()
+                        window.setFocus()
+                    action.triggered.connect(showSubWindow)
+                    actions.setdefault(doc, {})
+                    actions[doc].setdefault(subject, []).append(action)
+        self._subwindow_actions = actions
+        # propagate changes to menu bar
+        window().menuBar().updateWindowMenu()
 
     @checked
     def addSubWindow(
@@ -35,18 +82,14 @@ class MdiArea(QMdiArea):
         super().addSubWindow(subwindow, flags)
         if isinstance(subwindow, DocSubWindow):
             # Connect to destroyed signal to update menu when window is closed
-            subwindow.destroyed.connect(self.update)
-        self.update()
+            subwindow.destroyed.connect(self.onSubWindowsChanged)
+        self.onSubWindowsChanged()
 
     def nextSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(1)
 
     def previousSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(-1)
-
-    def update(self : Self) -> None:
-        self._updateSubWindows()
-        window().menuBar().updateWindowMenu()
 
     @checked
     def activateSubWindow(self : Self, subwindow : DocSubWindow) -> None:
@@ -55,95 +98,10 @@ class MdiArea(QMdiArea):
         subwindow.raise_()
         subwindow.setFocus()
 
-    @checked
-    def sceneSubWindows(self : Self, scene : "DrawingScene") -> list[DocSubWindow]:
-        """Return all scene subwindows in top down Z order."""
-        r = []
-        for w in reversed(self.subWindowList()):
-            if hasattr(w, "scene") and w.scene() == scene:
-                r.append(w)
-        return r
-
-    def scenesActions(self : Self) -> dict["DrawingScene", list[Action]]:
-        return self._scene_subwindow_actions
-
-    @checked
-    def closeScene(self : Self, scene : "DrawingScene") -> None:
-        """Close all subwindows related to the specified scene."""
-        for w in self.subWindowList():
-            if hasattr(w, "scene") and w.scene() == scene:
-                w.close()
-
-    def _updateSubWindows(self : Self) -> None:
-        from ...widgets.graphics.scenes.diagram import DiagramScene
-        from ...widgets.graphics.scenes.symbol  import SymbolScene
-        from ...widgets.graphics.views.drawing  import DrawingSubWindow
-        # create dictionaries
-        scene_subwindows : dict["DrawingScene" | None, list[DocSubWindow]] = {}
-        self._scene_subwindow_actions = {}
-        # build scene => subwindow list dictionary
-        for w in self.subWindowList():
-            if isinstance(w, DocSubWindow):
-                if hasattr(w, "scene"):
-                    scene = w.scene()
-                    scene_subwindows.setdefault(scene, []).append(w)
-                else:
-                    logger().warning(f"Subwindow {w} has no scene method")
-        # set titles
-        for scene in scene_subwindows.keys():
-            if scene is None:
-                continue
-            # get DB name
-            db_node = model().getDbNodeFromScene(scene)
-            if db_node is None:
-                logger().warning(f"No db node found for scene: {scene}")
-                db_name = "???"
-            else:
-                db_name = db_node.text()
-            # build lists of subwindows
-            drawing_subwindows : list[DrawingSubWindow] = []
-            spreadsheet_subwindows : list[SpreadsheetSubWindow] = []
-            for w in scene_subwindows[scene]:
-                if isinstance(w, DrawingSubWindow):
-                    drawing_subwindows.append(w)
-                elif isinstance(w, SpreadsheetSubWindow):
-                    spreadsheet_subwindows.append(w)
-            # drawing subwindow titles and actions
-            for i, w in enumerate(drawing_subwindows):
-                if isinstance(scene, DiagramScene):
-                    title = f"{db_name} - Diagram Editor"
-                elif isinstance(scene, SymbolScene):
-                    title = f"{db_name}:{scene.name()} - Symbol Editor"
-                else:
-                    title = f"{db_name}:{scene.name()} - Drawing Editor"
-                suffix = "" if len(drawing_subwindows) == 1 else f" ({i + 1})"
-                w.setWindowTitle(title + suffix)
-                action = QAction(window())
-                action.setText(title + suffix)
-                def showSubWindow(checked=False, window=w) -> None:
-                    window.show()
-                    window.raise_()
-                    window.setFocus()
-                action.triggered.connect(showSubWindow)
-                self._scene_subwindow_actions.setdefault(scene, []).append(action)
-            # spreadsheet subwindow titles and actions
-            for i, w in enumerate(spreadsheet_subwindows):
-                if isinstance(scene, DiagramScene):
-                    title = f"{db_name} - Diagram Properties"
-                elif isinstance(scene, SymbolScene):
-                    title = f"{db_name}:{scene.name()} - Symbol Properties"
-                else:
-                    title = f"{db_name}:{scene.name()} - Drawing Properties"
-                suffix = "" if len(spreadsheet_subwindows) == 1 else f" ({i + 1})"
-                w.setWindowTitle(title + suffix)
-                action = QAction(window())
-                action.setText(title + suffix)
-                def showSubWindow(checked=False, window=w) -> None:
-                    window.show()
-                    window.raise_()
-                    window.setFocus()
-                action.triggered.connect(showSubWindow)
-                self._scene_subwindow_actions.setdefault(scene, []).append(action)
+    def subWindowActions(
+        self : Self
+    ) -> dict[Doc, dict[DocSubjectProtocol, list[Action]]]:
+        return self._subwindow_actions
 
     def _activateSubWindowIndexOffset(self : Self, offset : int) -> None:
         windows = self.subWindowList()

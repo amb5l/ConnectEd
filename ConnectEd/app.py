@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .core.settings  import Settings
     from .core.session   import Session
-    from .core.db        import Model
     from .widgets.window import Window
 
 
@@ -23,7 +22,6 @@ class ConnectEdApp(QApplication):
     _logger   : "Logger | None"
     _settings : "Settings | None"
     _session  : "Session | None"
-    _model    : "Model | None"
     _window   : "Window | None"
     _cli      : bool
     ready     : Ready
@@ -64,14 +62,6 @@ class ConnectEdApp(QApplication):
         self._session = session
 
     @checked
-    def model(self : Self) -> "Model":
-        return self._model
-
-    @checked
-    def setModel(self : Self, model : "Model") -> None:
-        self._model = model
-
-    @checked
     def window(self : Self) -> "Window | None":
         return None if self._cli else self._window
 
@@ -108,11 +98,6 @@ def settings() -> "Settings | None":
 @checked
 def session() -> "Session | None":
     return app().session()
-
-
-@checked
-def model() -> "Model | None":
-    return app().model()
 
 
 @checked

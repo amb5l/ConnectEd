@@ -20,7 +20,7 @@ def clone(items : list["ItemMixin"]) -> list["ItemMixin"]:
     return r
 
 
-_item_classes = {}
+_item_classes : dict[str, type[ItemType]] = {}
 registerClass( _item_classes , "PortItem"                  )
 registerClass( _item_classes , "BufGateItem"      , "gate" )
 registerClass( _item_classes , "AndGateItem"      , "gate" )

@@ -67,12 +67,12 @@ class SymbolPinItem(
             return [
                 view.action(
                     "Dot",
-                    lambda: view.ui.editSymbolPinDot(self, not self._dot),
+                    lambda: view.editSymbolPinDot(self, not self._dot),
                     checked=self._dot
                 ),
                 view.action(
                     "Clock",
-                    lambda: view.ui.editSymbolPinClock(self, not self._clock),
+                    lambda: view.editSymbolPinClock(self, not self._clock),
                     checked=self._clock
                 )
             ]

@@ -306,11 +306,11 @@ class MenuBar(QMenuBar):
         mdi_area = window.mdiArea()
         if mdi_area is None:
             return
-
-        for scene in mdi_area.scenesActions().keys():
+        for subjects in mdi_area.subWindowActions().values():
             self.window_menu.addSeparator()
-            for action in mdi_area.scenesActions()[scene]:
-                self.window_menu.addAction(action)
+            for actions in subjects.values():
+                for action in actions:
+                    self.window_menu.addAction(action)
 
     def _connectActionsToSlots(
         self    : Self,

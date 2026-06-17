@@ -207,7 +207,7 @@ etc.). Secondary: segment context menu **Add Net Label** (same commit path).
 | File | Change |
 |------|--------|
 | [`menu_bar/actions.py`](../ConnectEd/widgets/window/menu_bar/actions.py) | `Action(..., "Net Label", "Place Net Label", shortcut TBD)` e.g. `placeNetLabel` |
-| [`menu_bar/slots.py`](../ConnectEd/widgets/window/menu_bar/slots.py) | `@withCurrentWidget(DiagramView) def placeNetLabel(...): view.ui.placeNetLabel()` |
+| [`menu_bar/slots.py`](../ConnectEd/widgets/window/menu_bar/slots.py) | `@withCurrentWidget(DiagramView) def placeNetLabel(...): view.placeNetLabel()` |
 | [`menu_bar/__init__.py`](../ConnectEd/widgets/window/menu_bar/__init__.py) | In `updatePlaceMenu`, diagram branch: add `placeNetLabel` after `placeTap` (connectivity group) |
 
 ### View UI
@@ -308,7 +308,7 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 **Place menu — window / view wiring:**
 
 - [x] `menu_bar/actions.py` — `placeNetLabel` action.
-- [x] `menu_bar/slots.py` — `placeNetLabel(view)` → `view.ui.placeNetLabel()`.
+- [x] `menu_bar/slots.py` — `placeNetLabel(view)` → `view.placeNetLabel()`.
 - [x] `menu_bar/__init__.py` — add to diagram branch of `updatePlaceMenu` (after `placeTap`).
 - [x] `views/diagram/ui/place.py` — `placeNetLabel()` → `state.go(statePlaceNetLabel)`.
 - [x] `views/diagram/state/__init__.py` — declare and construct `statePlaceNetLabel`.

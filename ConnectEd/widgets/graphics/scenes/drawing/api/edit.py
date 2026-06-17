@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QColor
@@ -28,20 +30,21 @@ from ..cmd.edit.appearance    import CmdEditAppearance
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
+    MixinSelf = Self | DrawingScene
 
 
 class DrawingSceneApiEditMixin:
     @checked
-    def editSelectArea(self : "DrawingScene") -> None:
+    def editSelectArea(self : "MixinSelf") -> None:
         raise NotImplementedError("Not implemented yet")
 
     @checked
-    def editSelectAll(self : "DrawingScene") -> None:
+    def editSelectAll(self : "MixinSelf") -> None:
         raise NotImplementedError("Not implemented yet")
 
     @checked
     def editMove(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         items    : ItemType | list[ItemType],
         offset   : QPointF,
         slide    : bool = False,
@@ -54,7 +57,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editRotateCW(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         items    : list[ItemType],
         pos      : QPointF | None = None,  # individual if None, group otherwise
         undoable : bool = False
@@ -64,7 +67,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editRotateCCW(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         items    : list[ItemType],
         pos      : QPointF | None = None,  # individual if None, group otherwise
         undoable : bool = False
@@ -74,7 +77,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editCut(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         pos      : QPointF | None = None,  # None => QPointF(0, 0)
         undoable : bool = False
     ) -> None:
@@ -92,7 +95,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editCopy(
-        self : "DrawingScene",
+        self : "MixinSelf",
         pos  : QPointF | None = None
     ) -> None:
         pos = pos or QPointF(0, 0)
@@ -107,7 +110,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editDelete(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         items    : ItemType | list[ItemType] | None = None,
         undoable : bool = False
     ) -> None:
@@ -127,7 +130,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editPortPin(
-        self      : "DrawingScene",
+        self      : "MixinSelf",
         item      : PortPinMixin,
         name      : str,
         direction : Direction,
@@ -138,7 +141,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editSymbolPinDot(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         item     : SymbolPinItem,
         enable   : bool,
         undoable : bool = False
@@ -148,7 +151,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editSymbolPinClock(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         item     : SymbolPinItem,
         enable   : bool,
         undoable : bool = False
@@ -158,7 +161,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editAssignOrigin(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         item     : "ItemMixin",
         ap_name  : str,
         undoable : bool = False
@@ -168,7 +171,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editPolylineClosed(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         polyline : PolylineItem,
         closed   : bool,
         sweep    : float | None,
@@ -179,7 +182,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editPolySeg(
-        self     : "DrawingScene",
+        self     : "MixinSelf",
         seg      : PolySegItem,
         sweep    : float | None,
         undoable : bool = False
@@ -189,7 +192,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editText(
-        self       : "DrawingScene",
+        self       : "MixinSelf",
         item       : TextItem,
         text       : str          | NoChange = NO_CHANGE,
         block      : bool         | NoChange = NO_CHANGE,
@@ -225,7 +228,7 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editAppearance(
-        self           : "DrawingScene",
+        self           : "MixinSelf",
         items          : list[ItemMixin],
         line_color     : QColor        | None | NoChange = NO_CHANGE,
         line_width     : float         | None | NoChange = NO_CHANGE,

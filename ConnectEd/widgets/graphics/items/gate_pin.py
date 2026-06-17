@@ -82,7 +82,7 @@ class GatePinItem(
         return [
             view.action(
                 "Active Low",
-                lambda: view.ui.editSymbolPinDot(self, not self._dot),
+                lambda: view.editSymbolPinDot(self, not self._dot),
                 checked=self._dot
             )
         ]

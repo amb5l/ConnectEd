@@ -177,7 +177,7 @@ class SegmentItem(
         return [
             view.action(
                 "Add Net Label",
-                lambda: view.ui.placeNetLabelOnSegment(self, spos)
+                lambda: view.placeNetLabelOnSegment(self, spos)
             )
         ]
 

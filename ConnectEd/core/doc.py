@@ -1,36 +1,31 @@
 import os
 
-from typing          import Self
+from typing          import Self, Protocol
 from dataclasses     import dataclass
 from abc             import ABC, abstractmethod
-from collections.abc import Callable
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui     import QIcon
 
 from ..app import logger, session, window
 
+from ..core.xml import saveXml
+
 from .check import checked
-from .xml   import saveBegin, saveEnd
+
+
+class DocSubjectProtocol(Protocol):
+    def name(self : Self) -> str:
+        ...
 
 
 @dataclass
 class NavItemSpec:
-    """
-    Supports specification of a document's child rows.
-
-    ``id`` is stable within the owning document; Navigator passes it to
-    ``openChild`` / rename hooks. ``kind`` selects context-menu specs together
-    with the document's ``DocType.tag``.
-    """
-
-    id          : str
-    label       : str
-    kind        : str
-    editable    : bool = True
-    open        : Callable[[str], None] | None      # None => container row
-    label       : str | Callable[[], str]           # Callable => dynamic label
-    child_specs : list["NavItemSpec"] | None = None
+    subject  : str | DocSubjectProtocol
+    icon     : QIcon | None = None
+    tip      : str | None = None
+    children : list["NavItemSpec"] | None = None
 
 
 class Doc(ABC):
@@ -66,45 +61,44 @@ class Doc(ABC):
 
     @checked
     def save(self : Self, path : str | None = None) -> bool:
-        if path is None:
-            path = self.path()
-        else:
-            self.setPath(path)
-        if path == "":
-            logger().warning(f"Document has no path to save to: {self}")
-            return False
-        xw, file = saveBegin(path)
-        self.toXml(xw)
-        saveEnd(xw, file)
-        return True
+        saveXml(self, path)
 
-    def load(self : Self, path : str) -> bool:
+    @classmethod
+    @abstractmethod
+    def load(cls : type[Self], path : str) -> bool:
         if not os.path.exists(path):
             logger().warning(f"{path} not found")
             return False
         xr = QXmlStreamReader(path)
         return self.fromXml(xr)
 
-    # --- display (Navigator tree, MDI title prefix) ---------------------------
-
-    def displayName(self : Self) -> str:
-        return self._display_name
-
     # --- Navigator tree -------------------------------------------------------
 
     @abstractmethod
-    def navChildSpecs(self : Self) -> list[NavItemSpec]:
-        """Child rows shown under this document in the Navigator."""
+    def navItemSpec(self : Self) -> NavItemSpec:
+        """Specifies navigator row (and any child rows)."""
         ...
 
+    @abstractmethod
+    def navOpen(self : Self, widget : DocSubjectProtocol) -> None:
+        """Open an editor window for the specified widget."""
+        ...
+
+    @abstractmethod
+    def navRename(self : Self, widget : DocSubjectProtocol, name : str) -> None:
+        """Rename the specified widget."""
+        ...
+
+    # TODO: remove this?
     @checked
     def navigatorItem(self : Self, child_id : str) -> NavItemSpec | None:
         """Look up one child row by id."""
-        for item in self.navChildSpecs():
+        for item in self.navItemSpec():
             if item.id == child_id:
                 return item
         return None
 
+    # TODO: remove this?
     @checked
     def renameNavigatorChild(self : Self, child_id : str, label : str) -> None:
         """Rename a child row (e.g. symbol name). Override when ``editable``."""
@@ -150,8 +144,12 @@ class Doc(ABC):
     def newWindow(self : Self, widget : QWidget) -> None:
         ...
 
+    @abstractmethod
+    def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
+        ...
+
 
 @dataclass
 class DocBinding:
-    doc    : Doc
-    widget : QWidget | None  # e.g. DiagramScene, SymbolItem
+    doc     : Doc
+    subject : DocSubjectProtocol

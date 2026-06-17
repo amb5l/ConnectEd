@@ -63,7 +63,7 @@ Delivers real Qt mouse events into widgets (e.g. [`DrawingView`](../ConnectEd/wi
 
 **Drag threshold:** ConnectEd enters drag state only after move distance ≥ `settings().get("prefs/mouse/drag")`. Use a large enough delta between `pos1` and `pos2`.
 
-**Example:** [`examples/scripts/gui.py`](../examples/scripts/gui.py) — File → New → Design, `view.ui.placeRectangle()`, `driver.mouseDrag(view, p1, p2)`.
+**Example:** [`examples/scripts/gui.py`](../examples/scripts/gui.py) — File → New → Design, `view.placeRectangle()`, `driver.mouseDrag(view, p1, p2)`.
 
 ---
 

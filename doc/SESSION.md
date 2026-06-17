@@ -1,10 +1,12 @@
 # Session migration plan
 
+**Active checklist:** [`REFACTOR.md`](REFACTOR.md) consolidates Session, symbols, Navigator, closure, and XML work. This file is retained for reference; prefer **REFACTOR** for current tasks.
+
 Migrate Navigator and view/scene APIs from the global **`model()`** to **`session()`**, introduce a UI-only **NavigatorModel**, and retire **`Model`** as a process-wide service.
 
 Steps below are ordered for incremental delivery. You may complete individual tasks or whole phases manually; use the checkboxes to track progress.
 
-**Related:** [`NEXT.md`](NEXT.md) (XML refactor, symbol work), [`SYMBOLS.md`](SYMBOLS.md), [`SCRIPTING.md`](SCRIPTING.md).
+**Related:** [`REFACTOR.md`](REFACTOR.md), [`NEXT.md`](NEXT.md), [`SCRIPTING.md`](SCRIPTING.md).
 
 ---
 
@@ -113,10 +115,10 @@ flowchart TB
 
 | Doc class | Persistent contents | Open |
 |-----------|---------------------|------|
-| **`SchematicDoc`** | `DiagramScene` + diagram symbol cache ([`SYMBOLS.md`](SYMBOLS.md)) | **`openDefault()`** → diagram MDI |
+| **`SchematicDoc`** | `DiagramScene` + diagram symbol cache ([`REFACTOR.md`](REFACTOR.md)) | **`openDefault()`** → diagram MDI |
 | **`LibraryDoc`** | **`SymbolItem`** definitions | **`openSymbol(id)`** / row **`open` callable** → transient **`SymbolScene`** + MDI |
 
-A **library is not a scene**. **`SymbolScene`** exists only while editing ([`SYMBOLS.md`](SYMBOLS.md)).
+A **library is not a scene**. **`SymbolScene`** exists only while editing ([`REFACTOR.md`](REFACTOR.md)).
 
 ### `Doc` responsibilities (ABC)
 

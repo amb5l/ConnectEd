@@ -25,7 +25,7 @@ class SymbolView(DrawingView):
 
     def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)
-        self.ui.viewZoomAll()
+        self.viewZoomAll()
 
     def drawForeground(self : Self, painter : QPainter, rect : QRectF) -> None:
         super().drawForeground(painter, rect)

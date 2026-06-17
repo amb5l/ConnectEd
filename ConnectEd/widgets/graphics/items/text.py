@@ -569,55 +569,55 @@ class BaseTextItem(
         menu.addActions([
             view.action(
                 "Top Left",
-                lambda: view.ui.editText(self, origin="Top Left"),
+                lambda: view.editText(self, origin="Top Left"),
                 checked = self.origin() == "Top Left",
                 icon = AnchorTopLeftIcon().get()
             ),
             view.action(
                 "Top Center",
-                lambda: view.ui.editText(self, origin="Top Center"),
+                lambda: view.editText(self, origin="Top Center"),
                 checked = self.origin() == "Top Center",
                 icon = AnchorTopCenterIcon().get()
             ),
             view.action(
                 "Top Right",
-                lambda: view.ui.editText(self, origin="Top Right"),
+                lambda: view.editText(self, origin="Top Right"),
                 checked = self.origin() == "Top Right",
                 icon = AnchorTopRightIcon().get()
             ),
             view.action(
                 "Middle Left",
-                lambda: view.ui.editText(self, origin="Middle Left"),
+                lambda: view.editText(self, origin="Middle Left"),
                 checked = self.origin() == "Middle Left",
                 icon = AnchorMiddleLeftIcon().get()
             ),
             view.action(
                 "Middle Center",
-                lambda: view.ui.editText(self, origin="Middle Center"),
+                lambda: view.editText(self, origin="Middle Center"),
                 checked = self.origin() == "Middle Center",
                 icon = AnchorMiddleCenterIcon().get()
             ),
             view.action(
                 "Middle Right",
-                lambda: view.ui.editText(self, origin="Middle Right"),
+                lambda: view.editText(self, origin="Middle Right"),
                 checked = self.origin() == "Middle Right",
                 icon = AnchorMiddleRightIcon().get()
             ),
             view.action(
                 "Bottom Left",
-                lambda: view.ui.editText(self, origin="Bottom Left"),
+                lambda: view.editText(self, origin="Bottom Left"),
                 checked = self.origin() == "Bottom Left",
                 icon = AnchorBottomLeftIcon().get()
             ),
             view.action(
                 "Bottom Center",
-                lambda: view.ui.editText(self, origin="Bottom Center"),
+                lambda: view.editText(self, origin="Bottom Center"),
                 checked = self.origin() == "Bottom Center",
                 icon = AnchorBottomCenterIcon().get()
             ),
             view.action(
                 "Bottom Right",
-                lambda: view.ui.editText(self, origin="Bottom Right"),
+                lambda: view.editText(self, origin="Bottom Right"),
                 checked = self.origin() == "Bottom Right",
                 icon = AnchorBottomRightIcon().get()
             )
@@ -629,40 +629,40 @@ class BaseTextItem(
         menu.addActions([
             view.action(
                 "Left",
-                lambda: view.ui.editText(self, align_h=AlignH.LEFT),
+                lambda: view.editText(self, align_h=AlignH.LEFT),
                 checked = self.alignH() == AlignH.LEFT,
                 icon = TextAlignLeftIcon().get()
             ),
             view.action(
                 "Center",
-                lambda: view.ui.editText(self, align_h=AlignH.CENTER),
+                lambda: view.editText(self, align_h=AlignH.CENTER),
                     checked = self.alignH() == AlignH.CENTER,
                 icon = TextAlignCenterIcon().get()
             ),
             view.action(
                 "Right",
-                lambda: view.ui.editText(self, align_h=AlignH.RIGHT),
+                lambda: view.editText(self, align_h=AlignH.RIGHT),
                 checked = self.alignH() == AlignH.RIGHT,
                 icon = TextAlignRightIcon().get()
             ),
             view.separator(),
             view.action(
                 "Top",
-                lambda: view.ui.editText(self, align_v=AlignV.TOP),
+                lambda: view.editText(self, align_v=AlignV.TOP),
                 checked = self.alignV() == AlignV.TOP,
                 icon = TextAlignTopIcon().get(),
                 enabled = self.height() >= 0.0
             ),
             view.action(
                 "Middle",
-                lambda: view.ui.editText(self, align_v=AlignV.MIDDLE),
+                lambda: view.editText(self, align_v=AlignV.MIDDLE),
                 checked = self.alignV() == AlignV.MIDDLE,
                 icon = TextAlignMiddleIcon().get(),
                 enabled = self.height() >= 0.0
             ),
             view.action(
                 "Bottom",
-                lambda: view.ui.editText(self, align_v=AlignV.BOTTOM),
+                lambda: view.editText(self, align_v=AlignV.BOTTOM),
                 checked = self.alignV() == AlignV.BOTTOM,
                 icon = TextAlignBottomIcon().get(),
                 enabled = self.height() >= 0.0
@@ -719,19 +719,19 @@ class BaseTextItem(
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         """Return context menu items for Text item."""
         items = [
-            view.action("Edit...", view.ui.editTextDialog),
+            view.action("Edit...", view.editTextDialog),
             view.separator(),
             self.originMenu(view),
             self.alignmentMenu(view),
             view.separator(),
             view.action(
                 "Mirror Horizontal",
-                lambda: view.ui.editText(self, mirror_h=not self.mirrorH()),
+                lambda: view.editText(self, mirror_h=not self.mirrorH()),
                 checked = self.mirrorH()
             ),
             view.action(
                 "Mirror Vertical",
-                lambda: view.ui.editText(self, mirror_v=not self.mirrorV()),
+                lambda: view.editText(self, mirror_v=not self.mirrorV()),
                 checked = self.mirrorV()
             ),
             view.separator(),
@@ -748,7 +748,7 @@ class BaseTextItem(
                 self._height < 0.0
             ),
             view.separator(),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+            view.action("Properties...", lambda: view.editItemProperties(self))
         ]
         return items
 

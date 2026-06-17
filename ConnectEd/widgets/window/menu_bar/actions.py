@@ -87,7 +87,6 @@ class Actions:
         self.windowNext         = Action( window(), "Next"          , "Next"                                , "Ctrl+F6"                    )  # noqa E501
         self.windowPrevious     = Action( window(), "Previous"      , "Previous"                            , "Ctrl+Shift+F6"              )  # noqa E501
         self.helpAbout          = Action( window(), "About"         , ""                                    , "Ctrl+Shift+T"               )  # noqa E501
-        self.test               = Action( window(), "Test"          , "Run diagram test placement"          , None                         )  # noqa E501
 
         # shortcut keys for view actions
         self.editRotateCW       = Action( window(), "Rotate CW"    , "Rotate clockwise"                     , "]"                          )  # noqa E501
@@ -142,7 +141,6 @@ class Actions:
         self.placeBlock      .setEnabled(bool(self._scene))
         self.placeRectangle  .setEnabled(bool(self._scene))
         self.placeText       .setEnabled(bool(self._scene))
-        self.test.setEnabled(isinstance(view, DiagramView) if view else False)
         if self._scene:
             # connect signals
             self._scene.selectionChanged.connect(self.onSelectionChanged)
