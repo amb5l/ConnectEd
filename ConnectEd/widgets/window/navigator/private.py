@@ -4,6 +4,8 @@ from typing import Self, TypeAlias
 
 from PyQt6.QtCore import Qt
 
+from ....app import logger
+
 from ....core.doc import NavItemSpec, Doc, DocBinding
 
 from .types import NavItem, NavModel
@@ -24,11 +26,12 @@ class NavigatorPrivateMixin:
         path   : str = ""
     ) -> None:
         def _addRows(
-            parent : NavItem,
-            specs  : NavItemSpec | list[NavItemSpec]
-        ) -> None:
+            parent : NavItem | NavModel,
+            specs  : NavItemSpec | list[NavItemSpec],
+        ) -> NavItem | None:
             if not isinstance(specs, list):
                 specs = [specs]
+            root_item : NavItem | None = None
             for spec in specs:
                 text = spec.subject if isinstance(spec.subject, str) \
                     else spec.subject.name()
@@ -44,19 +47,31 @@ class NavigatorPrivateMixin:
                 if spec.tip is not None:
                     item.setToolTip(spec.tip)
                 parent.appendRow(item)
+                if root_item is None:
+                    root_item = item
                 if spec.children is not None:
                     _addRows(item, spec.children)
-        _addRows(self._model, doc.navItemSpec())
+            return root_item
+        doc_item = _addRows(parent, doc.navItemSpec())
+        if doc_item is not None:
+            self._openRow(doc_item)
 
-    def _openRow(self : MixinSelf, item : NavItem) -> None:
+    def _openRow(self : MixinSelf, item : NavItem) -> bool:
         binding : DocBinding | None = \
             item.data(Qt.ItemDataRole.UserRole)
         if binding is not None:
             if binding.subject is not None:
-                binding.doc.openWindow(binding.subject)
+                ok = binding.doc.openWindow(binding.subject)
             else:
-                binding.doc.openDefault()
-            return
+                ok = binding.doc.openDefault()
+            if not ok:
+                name = item.text()
+                logger().warning(
+                    f"Failed to open {name!r} "
+                    f"({type(binding.doc).__name__})"
+                )
+            return ok
         index = self._model.indexFromItem(item)
         if index.isValid() and self._model.rowCount(index) > 0:
             self.setExpanded(index, not self.isExpanded(index))
+        return True

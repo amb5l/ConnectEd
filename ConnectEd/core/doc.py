@@ -141,6 +141,16 @@ class Doc(ABC):
     # --- window management ----------------------------------------------------
 
     @abstractmethod
+    def openWindow(self : Self, subject : QWidget) -> bool:
+        """
+        Open a new window or activate an existing one for the given subject.
+
+        Returns True for success, False for failure.
+        """
+        ...
+
+
+    @abstractmethod
     def newWindow(self : Self, widget : QWidget) -> None:
         ...
 

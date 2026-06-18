@@ -103,10 +103,8 @@ class SchematicDoc(Doc):
             f"{type(self).__name__}.open({widget!r}) is not implemented"
         )
 
-    def openDefault(self : Self) -> None:
-        raise NotImplementedError(
-            f"{type(self).__name__}.openDefault() is not implemented"
-        )
+    def openDefault(self : Self) -> bool:
+        return self.openWindow(self._scene)
 
     # --- window management ----------------------------------------------------
 
@@ -115,10 +113,15 @@ class SchematicDoc(Doc):
             f"{type(self).__name__}.newWindow({widget!r}) is not implemented"
         )
 
-    def openWindow(self : Self, subject : QWidget) -> DocSubWindow | None:
+    def openWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         """
-        Open a new window or focus an existing one for the given subject.
+        Open a new window or activate an existing one for the given subject.
+
+        Returns True for success, False for failure.
         """
+        if self._scene is None:
+            logger().error(f"{type(self).__name__} has no scene")
+            return False
         from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
         from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
         from ..widgets.graphics.scenes.diagram import DiagramScene
@@ -127,19 +130,19 @@ class SchematicDoc(Doc):
         symbols = self._scene.symbols()
         if subject is not self._scene and subject not in symbols:
             logger().error(f"Document does not contain widget {subject}")
-            return None
+            return False
         mdi_area = window().mdiArea()
         subwindow : DocSubWindow | None = None
         created = False
         for existing in mdi_area.subWindowList():
             if not isinstance(existing, DocSubWindow):
                 continue
-            doc_binding = existing.docBinding()
-            if doc_binding is None:
+            binding = existing.docBinding()
+            if binding is None:
                 continue
-            if doc_binding.doc != self:
+            if binding.doc != self:
                 continue
-            if doc_binding.subject is subject:
+            if binding.subject is subject:
                 subwindow = existing
                 break
         if subwindow is None:
@@ -155,16 +158,16 @@ class SchematicDoc(Doc):
                 subwindow_cls = SymbolSubWindow
             else:
                 logger().error(f"Unsupported widget type: {type(subject)}")
-                return None
+                return False
             view = view_cls(scene)
-            doc_binding = DocBinding(self, subject)
-            subwindow = subwindow_cls(mdi_area, doc_binding)
+            binding = DocBinding(self, subject)
+            subwindow = subwindow_cls(mdi_area, binding)
             subwindow.setWidget(view)
             mdi_area.addSubWindow(subwindow)
         if created:
             subwindow.showMaximized()
         mdi_area.activateSubWindow(subwindow)
-        return subwindow
+        return True
 
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
         if subject is self._scene:
