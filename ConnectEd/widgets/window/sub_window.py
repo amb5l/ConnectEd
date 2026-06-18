@@ -6,16 +6,16 @@ from ...core.doc   import DocBinding
 
 
 class DocSubWindow(QMdiSubWindow):
-    _doc_binding : DocBinding | None
+    _binding : DocBinding | None
 
     def __init__(
-        self        : Self,
-        parent      : QWidget    | None = None,
-        doc_binding : DocBinding | None = None,
+        self    : Self,
+        parent  : QWidget    | None = None,
+        binding : DocBinding | None = None,
 
     ) -> None:
         super().__init__(parent)
-        self._doc_binding = doc_binding
+        self._binding = binding
 
     def docBinding(self : Self) -> DocBinding | None:
-        return self._doc_binding
+        return self._binding

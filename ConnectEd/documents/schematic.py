@@ -116,6 +116,9 @@ class SchematicDoc(Doc):
         )
 
     def openWindow(self : Self, subject : QWidget) -> DocSubWindow | None:
+        """
+        Open a new window or focus an existing one for the given subject.
+        """
         from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
         from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
         from ..widgets.graphics.scenes.diagram import DiagramScene
@@ -135,7 +138,7 @@ class SchematicDoc(Doc):
                 continue
             if doc_binding.doc != self:
                 continue
-            if doc_binding.widget is subject:
+            if doc_binding.subject is subject:
                 break  # subwindow is already open
         else:
             if isinstance(subject, DiagramScene):

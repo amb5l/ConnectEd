@@ -7,6 +7,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPen
 from ....app import settings
 
 from ....core.check import checked
+from ....core.doc   import DocBinding
 
 from ..scenes.symbol import SymbolScene
 
@@ -48,7 +49,8 @@ class SymbolView(DrawingView):
 class SymbolSubWindow(DrawingSubWindow):
     @checked
     def __init__(
-        self   : Self,
-        parent : QMdiArea | None = None
+        self        : Self,
+        parent      : QMdiArea | None = None,
+        doc_binding : DocBinding | None = None,
     ) -> None:
-        super().__init__(parent)
+        super().__init__(parent, doc_binding)

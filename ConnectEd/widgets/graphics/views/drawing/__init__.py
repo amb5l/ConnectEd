@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QPainter, QPen, \
 from .....app import settings
 
 from .....core.check import checked
+from .....core.doc   import DocBinding
 
 from ....marquee import Marquee
 
@@ -158,11 +159,11 @@ class DrawingView(
 class DrawingSubWindow(DocSubWindow):
     @checked
     def __init__(
-        self   : Self,
-        parent : MdiArea | None = None,
-        doc    : Doc | None = None
+        self    : Self,
+        parent  : MdiArea | None = None,
+        binding : DocBinding | None = None,
     ) -> None:
-        super().__init__(parent, doc)
+        super().__init__(parent, binding)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:

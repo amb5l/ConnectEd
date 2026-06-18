@@ -6,22 +6,22 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
 from ....app import session
 
-from ....core.doc import Doc, NavItemSpec, DocBinding
+from ....core.doc import DocBinding
 
 from ..tree_view import TreeView, TreeViewDock
 
-from .api import NavigatorApiMixin
+from .types     import NavItem, NavModel
+from .private   import NavigatorPrivateMixin
+from .events    import NavigatorEventsMixin
+from .api       import NavigatorApiMixin
 
 
-class NavItem(QStandardItem):
-    pass
-
-
-class NavModel(QStandardItemModel):
-    pass
-
-
-class Navigator(NavigatorApiMixin, TreeView):
+class Navigator(
+    NavigatorPrivateMixin,
+    NavigatorEventsMixin,
+    NavigatorApiMixin,
+    TreeView
+):
     """Navigator widget. A UI for Session."""
 
     _model    : NavModel
@@ -54,37 +54,6 @@ class Navigator(NavigatorApiMixin, TreeView):
         if binding is None or binding.subject is None:
             return
         binding.doc.navRename(binding.subject, item.text())
-
-    def _addDoc(
-        self   : Self,
-        parent : NavItem | NavModel,
-        doc    : Doc,
-        path   : str = ""
-    ) -> None:
-        def _addRows(
-            parent : NavItem,
-            specs  : NavItemSpec | list[NavItemSpec]
-        ) -> None:
-            if not isinstance(specs, list):
-                specs = [specs]
-            for spec in specs:
-                text = spec.subject if isinstance(spec.subject, str) \
-                    else spec.subject.name()
-                item = NavItem(text)
-                if isinstance(spec.subject, str):
-                    # static string (typically a container)
-                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                else:
-                    item.setData(
-                        DocBinding(doc, spec.subject),
-                        Qt.ItemDataRole.UserRole,
-                    )
-                if spec.tip is not None:
-                    item.setToolTip(spec.tip)
-                parent.appendRow(item)
-                if spec.children is not None:
-                    _addRows(item, spec.children)
-        _addRows(self._model, doc.navItemSpec())
 
 
 class NavigatorDock(TreeViewDock):
