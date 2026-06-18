@@ -1,4 +1,4 @@
-from typing import Self, ClassVar
+from typing import Self
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
@@ -168,7 +168,8 @@ class DrawingSubWindow(DocSubWindow):
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
         if isinstance(self.widget(), DrawingView):
-            scene = self.widget().scene()
+            view  : DrawingView = self.widget()
+            scene : DrawingScene | None = view.scene()
             if scene and scene.undo_stack:
                 try:
                     scene.undo_stack.canUndoChanged.disconnect()

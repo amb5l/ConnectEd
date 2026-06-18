@@ -162,8 +162,8 @@ class DrawingViewMouseMixin:
         n = event.angleDelta().y() / settings().get("prefs/mouse/wheel")
         match self.mouse.current.modifiers:
             case qkm.NoModifier:      # pan up/down
-                self.ui.viewPanUp(n) if n >= 0 else self.ui.viewPanDown(-n)
+                self.viewPanUp(n) if n >= 0 else self.viewPanDown(-n)
             case qkm.ShiftModifier:   # pan left/right
-                self.ui.viewPanLeft(n) if n >= 0 else self.ui.viewPanRight(-n)
+                self.viewPanLeft(n) if n >= 0 else self.viewPanRight(-n)
             case qkm.ControlModifier: # zoom in/out
-                self.ui.viewZoomIn(n) if n >= 0 else self.ui.viewZoomOut(-n)
+                self.viewZoomIn(n) if n >= 0 else self.viewZoomOut(-n)

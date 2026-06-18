@@ -67,10 +67,10 @@ class DrawingViewMenuMixin:
                     # multiple items
                     _extendMenu([
                         self.action(
-                            "Appearance...", lambda: self.ui.editAppearance(items)
+                            "Appearance...", lambda: self.editAppearance(items)
                         ),
                         self.action(
-                            "Properties...", lambda: self.ui.editItemProperties(items)
+                            "Properties...", lambda: self.editItemProperties(items)
                         ),
                         self.separator()
                     ])
@@ -80,47 +80,47 @@ class DrawingViewMenuMixin:
                     if len(top_items) != len(items) else ""
                 if top_items:
                     # common actions: slide/move/rotate
-                    menu.addAction(f"Slide{f}", lambda: self.ui.editSlide(items, spos))
-                    menu.addAction(f"Move{f}", lambda: self.ui.editMove(items, spos))
+                    menu.addAction(f"Slide{f}", lambda: self.editSlide(items, spos))
+                    menu.addAction(f"Move{f}", lambda: self.editMove(items, spos))
                     rpos = None if len(top_items) == 1 else spos
                     menu.addAction(
-                        "Rotate CW", lambda: self.ui.editRotateCW(items, rpos)
+                        "Rotate CW", lambda: self.editRotateCW(items, rpos)
                     )
                     menu.addAction(
-                        "Rotate CCW", lambda: self.ui.editRotateCCW(items, rpos)
+                        "Rotate CCW", lambda: self.editRotateCCW(items, rpos)
                     )
                     menu.addSeparator()
                     # common actions: clipboard/delete/duplicate
-                    menu.addAction(f"Cut{f}", lambda: self.ui.editCut())
-                    menu.addAction(f"Copy{f}", lambda: self.ui.editCopy())
+                    menu.addAction(f"Cut{f}", lambda: self.editCut())
+                    menu.addAction(f"Copy{f}", lambda: self.editCopy())
                     if clipboardHasData():
-                        menu.addAction(f"Paste{f}", lambda: self.ui.editPaste())
-                    menu.addAction(f"Delete{f}", lambda: self.ui.editDelete())
-                    menu.addAction(f"Duplicate{f}", lambda: self.ui.editDuplicate())
+                        menu.addAction(f"Paste{f}", lambda: self.editPaste())
+                    menu.addAction(f"Delete{f}", lambda: self.editDelete())
+                    menu.addAction(f"Duplicate{f}", lambda: self.editDuplicate())
                     menu.addSeparator()
         # scene properties
         menu.addAction(
             f"{self.__class__.__name__.replace('View', '')} Properties...",
-            lambda: self.ui.editDrawingProperties()
+            lambda: self.editDrawingProperties()
         )
         menu.addSeparator()
         # grid
         grid_show_action = menu.addAction(
-            "Grid Display", lambda: self.ui.viewGridDisplay(not self.grid.display)
+            "Grid Display", lambda: self.viewGridDisplay(not self.grid.display)
         )
         grid_show_action.setCheckable(True)
         grid_show_action.setChecked(self.grid.display)
         menu.addAction(grid_show_action)
         grid_snap_action = menu.addAction(
-            "Grid Snap", lambda: self.ui.viewGridSnap(not self.grid.snap)
+            "Grid Snap", lambda: self.viewGridSnap(not self.grid.snap)
         )
         grid_snap_action.setCheckable(True)
         grid_snap_action.setChecked(self.grid.snap)
         menu.addAction(grid_snap_action)
         grid_pitch_menu = Menu("Grid Pitch")
-        grid_pitch_menu.addAction("(10,10)", lambda: self.ui.viewGridPitch(10,10))
-        grid_pitch_menu.addAction("(5,5)", lambda: self.ui.viewGridPitch(5,5))
-        grid_pitch_menu.addAction("(1,1)", lambda: self.ui.viewGridPitch(1,1))
+        grid_pitch_menu.addAction("(10,10)", lambda: self.viewGridPitch(10,10))
+        grid_pitch_menu.addAction("(5,5)", lambda: self.viewGridPitch(5,5))
+        grid_pitch_menu.addAction("(1,1)", lambda: self.viewGridPitch(1,1))
         menu.addMenu(grid_pitch_menu)
         # display menu
         menu.exec(event.globalPos())
