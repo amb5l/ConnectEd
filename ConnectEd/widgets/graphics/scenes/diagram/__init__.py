@@ -9,7 +9,7 @@ from .....app import settings
 from .....core.check   import checked
 from .....core.types   import DataKind
 
-from .....documents.schematic import SchematicDoc
+from .....documents.schematic import HdlSchematicDiagramDoc
 
 from ...properties import InherentProperty
 
@@ -64,7 +64,7 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     }
 
     # instance attributes
-    _doc      : SchematicDoc | None
+    _doc      : HdlSchematicDiagramDoc | None
     _symbols  : dict[str, "SymbolItem"]
     sheet     : DiagramSheet
     margin    : float                  # distance from paper edge to border line
@@ -79,7 +79,7 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     @checked
     def __init__(
         self  : Self,
-        doc   : "SchematicDoc | None" = None,
+        doc   : "HdlSchematicDiagramDoc | None" = None,
         fresh : bool = True
     ) -> None:
         sheet_name   = settings().get("defaults/sheet/name")

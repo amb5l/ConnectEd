@@ -28,7 +28,7 @@ class SymbolIcon(SvgIconSingleton):
     SIZE = QSize(16, 16)
 
 
-class SchematicDoc(Doc):
+class HdlSchematicDiagramDoc(Doc):
     _scene : "DiagramScene | None"
     _path  : str
 
@@ -178,9 +178,9 @@ class SchematicDoc(Doc):
 
 
 Session.registerDocType(
-    "Schematic Diagram",    # friendly document type name
-    "Schematic Diagrams",   # friendly document group name
-    ".sch",                 # file extension
-    "HdlSchematicDiagram",  # XML tag
-    SchematicDoc            # class
+    "HDL Schematic Diagram",   # friendly document type name
+    "HDL Schematic Diagrams",  # friendly document group name
+    ".hdl_sch",                # file extension
+    "HdlSchematicDiagram",     # XML tag
+    HdlSchematicDiagramDoc     # class
 )
