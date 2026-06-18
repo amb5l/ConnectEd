@@ -129,18 +129,21 @@ class SchematicDoc(Doc):
             logger().error(f"Document does not contain widget {subject}")
             return None
         mdi_area = window().mdiArea()
-        subwindows = mdi_area.subWindowList()
-        for subwindow in subwindows:
-            if not isinstance(subwindow, DocSubWindow):
+        subwindow : DocSubWindow | None = None
+        created = False
+        for existing in mdi_area.subWindowList():
+            if not isinstance(existing, DocSubWindow):
                 continue
-            doc_binding = subwindow.docBinding()
+            doc_binding = existing.docBinding()
             if doc_binding is None:
                 continue
             if doc_binding.doc != self:
                 continue
             if doc_binding.subject is subject:
-                break  # subwindow is already open
-        else:
+                subwindow = existing
+                break
+        if subwindow is None:
+            created = True
             if isinstance(subject, DiagramScene):
                 scene = subject
                 view_cls = DiagramView
@@ -158,8 +161,9 @@ class SchematicDoc(Doc):
             subwindow = subwindow_cls(mdi_area, doc_binding)
             subwindow.setWidget(view)
             mdi_area.addSubWindow(subwindow)
+        if created:
+            subwindow.showMaximized()
         mdi_area.activateSubWindow(subwindow)
-        mdi_area.update()
         return subwindow
 
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
