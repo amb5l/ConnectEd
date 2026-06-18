@@ -15,7 +15,7 @@ from ...xml import toXmlProperties, fromXmlProperties
 from ...items.role    import DocumentItem
 from ...items.symbol  import SymbolItem
 from ...items.segment import SegmentItem, SegmentPreviewItem
-from ...items.node    import NodeItem, FreeNodeItem
+from ...items.node    import NodeItem, FreeNodeItem, FixedNodeItem
 
 from ...items.mixin   import ItemXmlMixin
 
@@ -32,18 +32,28 @@ else:
 class DiagramSceneXmlMixin:
     _XML_TAG = "HdlSchematicDiagram"
 
+    # -- save --------------------------------------------------------------
+
     @checked
-    def toXml(self : MixinSelf, xw : QXmlStreamWriter) -> None:
-        items = self.items()
-        # scene root
-        toXmlStartElement(xw, self._XML_TAG)
-        # attributes
-        toXmlProperties(self, xw)
+    def toXml(
+        self  : MixinSelf,
+        xw    : QXmlStreamWriter,
+        items : list[QGraphicsItem]
+    ) -> None:
+        full_scene = items is None
+        if full_scene:
+            items = self.items()
+        # filter out unparented items
+        items = [item for item in items if item.parentItem() is None]
+        if not items:
+            return
+        # output
+        if full_scene:
+            # start scene element
+            toXmlStartElement(xw, self._XML_TAG)
+            toXmlProperties(self, xw)
         # symbol definitions
-        toXmlStartElement(xw, "Symbols")
-        for item in self.symbols():
-            item.toXmlDefinition(xw)
-        toXmlEndElement(xw)
+        self._toXmlSymbolDefinitions(xw, items)
         # non-connectivity items
         for item in items:
             if not isinstance(item, DocumentItem) \
@@ -52,56 +62,90 @@ class DiagramSceneXmlMixin:
             or isinstance(item, SegmentItem | NodeItem):
                 continue
             item.toXml(xw)
-        # node IDs
-        id_by_node : dict[NodeItem, int] = {}
-        for node, id in id_by_node.items():
-            id_by_node[node] = id
-            node.toXml(xw, id)
-        # subnets and segments (specifying node IDs)
-        for subnet in self.netlist.subnets():
-            xw.writeStartElement("Subnet")
-            xw.writeAttribute("ID", str(subnet.id))
-            for segment in self.netlist.subnetSegments(subnet):
-                id1 = id_by_node[segment.node1()]
-                id2 = id_by_node[segment.node2()]
-                segment.toXml(xw, (id1, id2))
-            xw.writeEndElement()
-        # nets
-        for net in self.netlist.nets().values():
-            xw.writeStartElement("Net")
-            net_name = net.name + \
-                f"[{net.suffix}]" if net.suffix is not None else ""
-            xw.writeAttribute("Name", net_name)
-            xw.writeAttribute(
-                "Subnets",
-                ",".join(str(subnet.id) for subnet in net.subnets)
-            )
-            xw.writeEndElement()
-        # scene end
-        toXmlEndElement(xw)
-
-    @checked
-    def toXmlClipboard(
-        self  : MixinSelf,
-        items : list[QGraphicsItem],
-        pos   : QPointF,
-        xw    : QXmlStreamWriter,
-    ) -> None:
-        # clipboard root
-        toXmlStartElement(xw, "Clipboard")
-        # attributes
-        xw.writeAttribute("X", str(pos.x()))
-        xw.writeAttribute("Y", str(pos.y()))
-        # symbols
-        self._toXmlSymbols(items, xw)
-        # non-connectivity items
-        self._toXmlNonConnectivityItems(items, xw)
         # segments
         for item in items:
             if isinstance(item, SegmentItem):
                 item.toXml(xw)
-        # clipboard end
+        self._toXmlNetlist(xw)
+        if full_scene:
+            # end scene element
+            toXmlEndElement(xw)
+
+    @checked
+    def _toXmlSymbolDefinitions(
+        self  : MixinSelf,
+        xw    : QXmlStreamWriter,
+        items : list[QGraphicsItem]
+    ) -> None:
+        """Serialise symbols that are used in the scene.
+        """
+        definitions = self.symbolDefinitions()
+        used = [
+            item for item in items if isinstance(item, SymbolItem)
+        ]
+        if not used:
+            return
+        definition_names = \
+            {definition.name() for definition in definitions.values()}
+        used_names = {instance.name() for instance in used}
+        undefined_names = used_names - definition_names
+        if undefined_names:
+            logger().warning(f"Undefined symbols: {undefined_names}")
+        used_defined_names = definition_names & used_names
+        if not used_defined_names:
+            return
+        toXmlStartElement(xw, "Symbols")
+        for name, symbol in definitions.items():
+            if name not in used_defined_names:
+                continue
+            symbol.toXmlDefinition(xw)
         toXmlEndElement(xw)
+
+    @checked
+    def _toXmlNetlist(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+        toXmlStartElement(xw, "Netlist")
+        id_by_node = {
+            node: node_id for node_id, node in enumerate(self.netlist.nodes())
+        }
+        for node in sorted(id_by_node, key=lambda n : id_by_node[n]):
+            if isinstance(node, FixedNodeItem):
+                node.toXml(xw, id_by_node[node])
+            elif isinstance(node, FreeNodeItem) \
+            and node.parentItem() is None:
+                node.toXml(xw, id_by_node[node])
+        for subnet in sorted(
+            self.netlist.subnets().values(),
+            key=lambda s : s.id,
+        ):
+            xw.writeStartElement("Subnet")
+            xw.writeAttribute("ID", str(subnet.id))
+            xw.writeAttribute(
+                "Nodes",
+                ",".join(
+                    str(id_by_node[node])
+                    for node in sorted(
+                        subnet.nodes,
+                        key=lambda n : id_by_node[n],
+                    )
+                ),
+            )
+            xw.writeEndElement()
+        for net in self.netlist.nets().values():
+            if net.name is None:
+                continue
+            xw.writeStartElement("Net")
+            net_name = net.name
+            if net.suffix is not None and net.suffix != "":
+                net_name += f"[{net.suffix}]"
+            xw.writeAttribute("Name", net_name)
+            xw.writeAttribute(
+                "Subnets",
+                ",".join(str(sid) for sid in sorted(net.subnets)),
+            )
+            xw.writeEndElement()
+        toXmlEndElement(xw)
+
+    # -- load --------------------------------------------------------------
 
     @classmethod
     @checked
@@ -119,6 +163,49 @@ class DiagramSceneXmlMixin:
         id_by_node : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
 
+        def fromXmlSegment(xr : QXmlStreamReader) -> None:
+            attrs = xr.attributes()
+            x1 = attrs.value("X1")
+            if x1:
+                p1 = QPointF(float(x1), float(attrs.value("Y1")))
+                p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
+                self.addSegment(p1, p2, undoable=False)
+            else:
+                logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
+
+        def fromXmlFixedNode(xr : QXmlStreamReader) -> None:
+            node_id, pos = NodeItem.fromXml(xr)
+            node : FixedNodeItem | None = None
+            for item in self.items(pos):
+                if isinstance(item, FixedNodeItem):
+                    node = item
+                    break
+            if node is None:
+                logger().warning(
+                    f"FixedNode {node_id} not found at "
+                    f"({pos.x()}, {pos.y()})"
+                )
+            else:
+                node_by_id[node_id] = node
+                id_by_node[node] = node_id
+
+        def fromXmlFreeNode(xr : QXmlStreamReader) -> None:
+            node_id, pos = NodeItem.fromXml(xr)
+            node : FreeNodeItem | None = None
+            for item in self.items(pos):
+                if isinstance(item, FreeNodeItem) \
+                and item.parentItem() is None:
+                    node = item
+                    break
+            if node is None:
+                logger().warning(
+                    f"FreeNode {node_id} not found at "
+                    f"({pos.x()}, {pos.y()})"
+                )
+            else:
+                node_by_id[node_id] = node
+                id_by_node[node] = node_id
+
         def fromXmlSubnet(xr : QXmlStreamReader) -> None:
             xml_subnet_id = int(xr.attributes().value("ID"))
             xml_subnet_node_ids = {
@@ -126,60 +213,25 @@ class DiagramSceneXmlMixin:
                 for part in xr.attributes().value("Nodes").split(",")
                 if part
             }
-            xr.readNext()
-            subnet_ids_before = set(self.netlist.subnets().keys())
-            while not (xr.isEndElement() and xr.name() == "Subnet"):
-                if xr.isStartElement():
-                    child_name = xr.name()
-                    if child_name == "Segment":
-                        nodes_str = xr.attributes().value("Nodes")
-                        node_id1, node_id2 = (
-                            int(part) for part in nodes_str.split(",")
-                        )
-                        node1 = node_by_id.get(node_id1)
-                        node2 = node_by_id.get(node_id2)
-                        if node1 is None or node2 is None:
-                            logger().warning(
-                                f"Segment nodes not found: "
-                                f"{node_id1}, {node_id2}"
-                            )
-                        else:
-                            segment = SegmentItem(node1, node2)
-                            self.addItem(segment)
-                            self.addSegment(segment)
-                            node1.onConnectionChanged()
-                            node2.onConnectionChanged()
-                    else:
-                        logger().warning(
-                            f"Unexpected Subnet child: {child_name}"
-                        )
-                xr.readNext()
-            subnet_ids_after = set(self.netlist.subnets().keys())
-            # resolve newly created subnet
-            added_subnet_ids = subnet_ids_after - subnet_ids_before
-            if len(added_subnet_ids) == 1:
-                subnet = self.netlist.subnets()[added_subnet_ids.pop()]
-                subnet_node_ids = {
-                    id_by_node[node] for node in subnet.nodes
+            matched : int | None = None
+            for subnet in self.netlist.subnets().values():
+                node_ids = {
+                    id_by_node[node]
+                    for node in subnet.nodes
+                    if node in id_by_node
                 }
-                if subnet_node_ids != xml_subnet_node_ids:
-                    logger().warning(
-                        f"Subnet {xml_subnet_id} node mismatch: "
-                        f"expected {sorted(xml_subnet_node_ids)}, "
-                        f"got {sorted(subnet_node_ids)}"
-                    )
-                # record XML ID for later update
-                subnet_xml_id_by_id[subnet.id] = xml_subnet_id
-            elif len(added_subnet_ids) == 0:
+                if len(node_ids) != len(subnet.nodes):
+                    continue
+                if node_ids == xml_subnet_node_ids:
+                    matched = subnet.id
+                    break
+            if matched is None:
                 logger().warning(
-                    "Segment load created no new subnet"
+                    f"Subnet {xml_subnet_id} not found for "
+                    f"nodes {sorted(xml_subnet_node_ids)}"
                 )
             else:
-                logger().warning(
-                    f"Subnet {xml_subnet_id}: expected one new "
-                    f"subnet, got {sorted(added_subnet_ids)}"
-                )
-            xr.readNext()
+                subnet_xml_id_by_id[matched] = xml_subnet_id
 
         def fromXmlNet(xr : QXmlStreamReader) -> None:
             xml_net_name = xr.attributes().value("Name")
@@ -208,59 +260,32 @@ class DiagramSceneXmlMixin:
                 logger().warning(f"Net {xml_net_name!r} not found")
             else:
                 expected_subnet_ids = {
-                    next(
-                        (
-                            sid for sid, xid in subnet_xml_id_by_id.items()
-                            if xid == xid_xml
-                        ),
-                        xid_xml,
-                    )
-                    for xid_xml in xml_subnet_ids
+                    sid for sid, xid in subnet_xml_id_by_id.items()
+                    if xid in xml_subnet_ids
                 }
                 if net.subnets != expected_subnet_ids:
+                    got_subnet_ids = sorted(
+                        subnet_xml_id_by_id.get(s, s) for s in net.subnets
+                    )
                     logger().warning(
                         f"Net {xml_net_name!r} subnet mismatch: "
                         f"expected {sorted(xml_subnet_ids)}, "
-                        f"got {sorted(net.subnets)}"
+                        f"got {got_subnet_ids}"
                     )
-            xr.readNext()
 
         def fromXmlNetlist(xr : QXmlStreamReader) -> None:
-            xr.readNext()
-            fromXml(xr, {
-                "Subnet" : fromXmlSubnet,
-                "Net"    : fromXmlNet,
-            }, ptag="Netlist")
-            return None
-
-        def fromXmlSymbols(xr : QXmlStreamReader) -> None:
-            xr.readNext()
-            fromXml(xr, {}, ptag="Symbols")
-            return None
-
-        def fromXmlFixedNode(xr : QXmlStreamReader) -> None:
-            node_id, pos = NodeItem.fromXml(xr)
-            node = FreeNodeItem(pos)
-            self.addItem(node)
-            node_by_id[node_id] = node
-            id_by_node[node] = node_id
-            return None
-
-        def fromXmlFreeNode(xr : QXmlStreamReader) -> None:
-            node_id, node = FreeNodeItem.fromXml(xr)
-            self.addItem(node)
-            node_by_id[node_id] = node
-            id_by_node[node] = node_id
-            return None
-
-        def fromXmlConnectivity(xr : QXmlStreamReader) -> None:
             xr.readNext()
             fromXml(xr, {
                 "FixedNode" : fromXmlFixedNode,
                 "FreeNode"  : fromXmlFreeNode,
                 "Subnet"    : fromXmlSubnet,
                 "Net"       : fromXmlNet,
-            }, ptag="Connectivity")
+            }, ptag="Netlist")
+            return None
+
+        def fromXmlSymbols(xr : QXmlStreamReader) -> None:
+            xr.readNext()
+            fromXml(xr, {}, ptag="Symbols")
             return None
 
         def fromXmlItem(
@@ -280,9 +305,9 @@ class DiagramSceneXmlMixin:
 
         from ...items import _item_classes
         xref = {
-            "Symbols"      : fromXmlSymbols,
-            "Connectivity" : fromXmlConnectivity,
-            "Netlist"      : fromXmlNetlist,
+            "Symbols" : fromXmlSymbols,
+            "Segment" : fromXmlSegment,
+            "Netlist" : fromXmlNetlist,
         }
         for item_name, item_cls in _item_classes.items():
             tag = item_name.removesuffix("Item")
@@ -297,11 +322,9 @@ class DiagramSceneXmlMixin:
         xr    : QXmlStreamReader
     ) -> tuple[QPointF, list[QGraphicsItem]]:
         items = []
-        # read start element
         top_element_name = "Clipboard"
         if xr.name() != top_element_name:
             raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        # read attributes
         xml_attrs = xr.attributes()
         for xml_attr in xml_attrs:
             if xml_attr.name() == "X":
@@ -312,7 +335,6 @@ class DiagramSceneXmlMixin:
                 logger().warning(f"Unexpected attribute: {xml_attr.name()}")
                 xr.readNext()
         pos = QPointF(x, y)
-        # read items
         from ...items import _item_classes
         while not (xr.isEndElement() and xr.name() == top_element_name):
             if xr.isStartElement():
@@ -329,18 +351,3 @@ class DiagramSceneXmlMixin:
                     logger().warning(f"Unexpected element: {element_name}")
                     xr.readNext()
         return pos, items
-
-    @checked
-    def _toXmlSymbols(
-        self  : MixinSelf,
-        items : list[QGraphicsItem],
-        xw    : QXmlStreamWriter
-    ) -> None:
-        """Write symbol definitions."""
-        if not items:
-            return
-        toXmlStartElement(xw, "Symbols")
-        for item in items:
-            if isinstance(item, SymbolItem):
-                item.toXmlDefinition(xw)
-        toXmlEndElement(xw)

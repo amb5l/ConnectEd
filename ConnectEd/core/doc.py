@@ -152,4 +152,4 @@ class Doc(ABC):
 @dataclass
 class DocBinding:
     doc     : Doc
-    subject : DocSubjectProtocol
+    subject : DocSubjectProtocol | None

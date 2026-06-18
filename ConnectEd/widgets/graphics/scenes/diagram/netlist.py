@@ -3,10 +3,11 @@ import networkx
 from typing      import Self
 from dataclasses import dataclass, field
 
-from PyQt6.QtCore import QXmlStreamReader, QXmlStreamWriter
+from PyQt6.QtCore import QPointF, QLineF, QXmlStreamReader, QXmlStreamWriter
 
 from .....app import logger
 
+from .....core.defs  import PITCH
 from .....core.types import Direction, NetKind
 from .....core.expr  import evaluate
 from .....core.check import checked
@@ -121,11 +122,10 @@ class Netlist:
     def nodeNameSuffixType(self : Self, node : NodeItem) -> tuple[str, str, str]:
         full_name = None
         if isinstance(node, FreeNodeItem):
-            for child in node.childItems():
-                if isinstance(child, NetLabelItem):
-                    if child.name() == "Name":
-                        full_name = child.value()
-                        break
+            for label in self.labelsTouchingSubnet({node}):
+                if label.name() == "Name":
+                    full_name = label.value()
+                    break
         elif isinstance(node, FixedNodeItem):
             node_parent = node.parentItem()
             if isinstance(node_parent, PortItem):
@@ -373,6 +373,69 @@ class Netlist:
     def nets(self : Self) -> dict[str | int, Net]:
         return self._nets
 
+    @checked
+    def netLabels(self : Self) -> list[NetLabelItem]:
+        return [
+            item for item in self._scene.items()
+            if isinstance(item, NetLabelItem)
+        ]
+
+    @checked
+    def labelsTouchingSegment(
+        self : Self,
+        seg  : SegmentItem,
+    ) -> list[NetLabelItem]:
+        return [
+            label for label in self.netLabels()
+            if label.name() == "Name"
+            and _segmentTouchesOrigin(seg, _originScenePos(label))
+        ]
+
+    @checked
+    def labelsTouchingSubnet(
+        self       : Self,
+        nodes      : set[NodeItem],
+    ) -> list[NetLabelItem]:
+        labels : list[NetLabelItem] = []
+        seen   : set[NetLabelItem]  = set()
+        seen_seg : set[SegmentItem] = set()
+        for node in nodes:
+            for seg in self.nodeSegments(node):
+                if seg in seen_seg:
+                    continue
+                seen_seg.add(seg)
+                for label in self.labelsTouchingSegment(seg):
+                    if label in seen:
+                        continue
+                    seen.add(label)
+                    labels.append(label)
+        return labels
+
+    @checked
+    def subnetsForLabel(
+        self  : Self,
+        label : NetLabelItem,
+    ) -> set[Subnet]:
+        origin  = _originScenePos(label)
+        subnets : set[Subnet] = set()
+        for seg in self.segments():
+            if not _segmentTouchesOrigin(seg, origin):
+                continue
+            for endpoint in (seg.node1(), seg.node2()):
+                if endpoint is None:
+                    continue
+                subnet = self.nodeSubnet(endpoint)
+                if subnet is not None:
+                    subnets.add(subnet)
+        return subnets
+
+    @checked
+    def onNetLabelChanged(self : Self, label : NetLabelItem) -> None:
+        subnets = self.subnetsForLabel(label)
+        if subnets:
+            self._resolveSubnets(subnets)
+            self._scene.netlistChanged.emit()
+
     # -- node helpers ------------------------------------------------------
 
     @checked
@@ -480,12 +543,10 @@ class Netlist:
         io_port_names : list[str] = []
         o_port_names  : list[str] = []
         pin_names     : list[tuple[str, str] | str] = []
+        for label in self.labelsTouchingSubnet(subnet.nodes):
+            if label.name() == "Name":
+                label_names.append(label.value())
         for node in subnet.nodes:
-            # labels
-            for child in node.childItems():
-                if isinstance(child, NetLabelItem):  # label
-                    if child.name() == "Name":  # this is a *Name* label
-                        label_names.append(child.value())
             # taps (minor end)
             if isinstance(node, TapMinorNodeItem):
                 tap : TapItem | None = node.parentItem()
@@ -640,6 +701,48 @@ class Netlist:
             net.suffix = next((s for s in suffixes if s != ""), "")
 
 # -- misc helpers ------------------------------------------------------
+
+_TOUCH_EPS = PITCH / 2
+
+
+@checked
+def _originScenePos(label : NetLabelItem) -> QPointF:
+    return label.getOriginHandle().scenePos()
+
+
+@checked
+def _segmentSceneLine(seg : SegmentItem) -> QLineF:
+    p1 = seg.scenePos()
+    p2 = seg.mapToScene(seg.line().p2())
+    return QLineF(p1, p2)
+
+
+@checked
+def _segmentTouchesOrigin(
+    seg    : SegmentItem,
+    origin : QPointF,
+    eps    : float = _TOUCH_EPS,
+) -> bool:
+    line = _segmentSceneLine(seg)
+    dx   = line.dx()
+    dy   = line.dy()
+    len2 = dx * dx + dy * dy
+    if len2 == 0.0:
+        dist_x = origin.x() - line.p1().x()
+        dist_y = origin.y() - line.p1().y()
+        return dist_x * dist_x + dist_y * dist_y <= eps * eps
+    t = (
+        (origin.x() - line.p1().x()) * dx
+        + (origin.y() - line.p1().y()) * dy
+    ) / len2
+    if t < 0.0 or t > 1.0:
+        return False
+    foot_x = line.p1().x() + t * dx
+    foot_y = line.p1().y() + t * dy
+    dist_x = origin.x() - foot_x
+    dist_y = origin.y() - foot_y
+    return dist_x * dist_x + dist_y * dist_y <= eps * eps
+
 
 @checked
 def _netKindFromSuffix(suffix : str | None) -> NetKind:

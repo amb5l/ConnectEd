@@ -119,6 +119,9 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     def symbols(self : Self) -> list["SymbolItem"]:
         return list(self._symbols.values())
 
+    def symbolDefinitions(self : Self) -> dict[str, "SymbolItem"]:
+        return self._symbols.copy()
+
     @checked
     def getSheetName(self : Self) -> str:
         return self.sheet.name

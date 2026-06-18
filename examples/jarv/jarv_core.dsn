@@ -178,7 +178,23 @@
       </BlockPin>
     </Block>
     <Text Text="PEEK/POKE TEXT" X="424.1796875" Y="50" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Text_Color="#0000FF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
-    <Connectivity>
+    <Segment X1="610.0" Y1="130.0" X2="460.0" Y2="130.0"/>
+    <Segment X1="610.0" Y1="140.0" X2="460.0" Y2="140.0"/>
+    <Segment X1="460.0" Y1="120.0" X2="610.0" Y2="120.0"/>
+    <Segment X1="610.0" Y1="150.0" X2="460.0" Y2="150.0"/>
+    <Segment X1="120.0" Y1="320.0" X2="600.0" Y2="320.0"/>
+    <Segment X1="600.0" Y1="320.0" X2="600.0" Y2="180.0"/>
+    <Segment X1="600.0" Y1="180.0" X2="610.0" Y2="180.0"/>
+    <Segment X1="920.0" Y1="120.0" X2="810.0" Y2="120.0"/>
+    <Segment X1="810.0" Y1="130.0" X2="920.0" Y2="130.0"/>
+    <Segment X1="900.0" Y1="510.0" X2="960.0" Y2="510.0"/>
+    <Segment X1="1060.0" Y1="510.0" X2="1100.0" Y2="510.0"/>
+    <Segment X1="160.0" Y1="80.0" X2="160.0" Y2="30.0"/>
+    <Segment X1="160.0" Y1="80.0" X2="120.0" Y2="80.0"/>
+    <Segment X1="1100.0" Y1="30.0" X2="1100.0" Y2="510.0"/>
+    <Segment X1="1100.0" Y1="30.0" X2="160.0" Y2="30.0"/>
+    <Segment X1="120.0" Y1="110.0" X2="230.0" Y2="110.0"/>
+    <Netlist>
       <FixedNode ID="0" X="610.0" Y="130.0"/>
       <FixedNode ID="1" X="460.0" Y="130.0"/>
       <FixedNode ID="2" X="610.0" Y="140.0"/>
@@ -205,52 +221,26 @@
       <FixedNode ID="23" X="120.0" Y="110.0"/>
       <FixedNode ID="24" X="230.0" Y="110.0"/>
       <FixedNode ID="25" X="120.0" Y="320.0"/>
-      <Subnet ID="0" Nodes="0,1">
-        <Segment Nodes="0,1"/>
-      </Subnet>
-      <Subnet ID="1" Nodes="2,3">
-        <Segment Nodes="2,3"/>
-      </Subnet>
-      <Subnet ID="2" Nodes="4,5">
-        <Segment Nodes="4,5"/>
-      </Subnet>
-      <Subnet ID="3" Nodes="6,7">
-        <Segment Nodes="6,7"/>
-      </Subnet>
-      <Subnet ID="4" Nodes="10,25,8,9">
-        <Segment Nodes="25,8"/>
-        <Segment Nodes="8,9"/>
-        <Segment Nodes="9,10"/>
-      </Subnet>
-      <Subnet ID="5" Nodes="11,12">
-        <Segment Nodes="11,12"/>
-      </Subnet>
-      <Subnet ID="6" Nodes="13,14">
-        <Segment Nodes="13,14"/>
-      </Subnet>
-      <Subnet ID="7" Nodes="15,16">
-        <Segment Nodes="15,16"/>
-      </Subnet>
-      <Subnet ID="8" Nodes="17,20,21,22,18,19">
-        <Segment Nodes="17,18"/>
-        <Segment Nodes="21,20"/>
-        <Segment Nodes="21,22"/>
-        <Segment Nodes="19,18"/>
-        <Segment Nodes="19,20"/>
-      </Subnet>
-      <Subnet ID="9" Nodes="23,24">
-        <Segment Nodes="23,24"/>
-      </Subnet>
-      <Net Name="U_DECODE_rs2_sel[4:0]" Subnets="0"/>
-      <Net Name="U_DECODE_rd_sel[4:0]" Subnets="1"/>
-      <Net Name="U_DECODE_rs1_sel[4:0]" Subnets="2"/>
-      <Net Name="U_DECODE_rd_we" Subnets="3"/>
-      <Net Name="U_ADD_SUB_a[31:0]" Subnets="5"/>
-      <Net Name="U_ADD_SUB_b[31:0]" Subnets="6"/>
+      <Subnet ID="0" Nodes="0,1"/>
+      <Subnet ID="1" Nodes="2,3"/>
+      <Subnet ID="2" Nodes="4,5"/>
+      <Subnet ID="3" Nodes="6,7"/>
+      <Subnet ID="4" Nodes="10,25,8,9"/>
+      <Subnet ID="5" Nodes="11,12"/>
+      <Subnet ID="6" Nodes="13,14"/>
+      <Subnet ID="7" Nodes="15,16"/>
+      <Subnet ID="8" Nodes="17,20,21,22,18,19"/>
+      <Subnet ID="9" Nodes="23,24"/>
+      <Net Name="rs2_sel[4:0]" Subnets="0"/>
+      <Net Name="rd_sel[4:0]" Subnets="1"/>
+      <Net Name="rs1_sel[4:0]" Subnets="2"/>
+      <Net Name="rd_we" Subnets="3"/>
+      <Net Name="rs1_data[31:0]" Subnets="5"/>
+      <Net Name="rs2_data[31:0]" Subnets="6"/>
       <Net Name="_d[31:0]" Subnets="7"/>
       <Net Name="if_addr" Subnets="8"/>
       <Net Name="if_data[31:0]" Subnets="9"/>
       <Net Name="clk" Subnets="4"/>
-    </Connectivity>
+    </Netlist>
   </HdlSchematicDiagram>
 </ConnectEd>

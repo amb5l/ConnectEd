@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ....app import logger, session
+from ....app import session
 
 from ....core.doc import Doc, NavItemSpec, DocBinding
 
@@ -48,13 +48,12 @@ class Navigator(NavigatorApiMixin, TreeView):
         self.header().setVisible(False)
 
     def onItemChanged(self : Self, item : NavItem) -> None:
-        """Handle changes to items in the model. Assumption: renaming only."""
+        """Handle rename on editor rows only."""
         binding : DocBinding | None = \
             item.data(Qt.ItemDataRole.UserRole)
-        if binding is None:
-            logger().error(f"NavigatorItem has no UserRole: {item.text()}")
+        if binding is None or binding.subject is None:
             return
-        binding.doc.rename(binding.widget, item.text())
+        binding.doc.navRename(binding.subject, item.text())
 
     def _addDoc(
         self   : Self,
@@ -69,9 +68,17 @@ class Navigator(NavigatorApiMixin, TreeView):
             if not isinstance(specs, list):
                 specs = [specs]
             for spec in specs:
-                item = NavItem(spec.subject.name())
-                user_role = DocBinding(doc, spec.subject)
-                item.setData(user_role, Qt.ItemDataRole.UserRole)
+                text = spec.subject if isinstance(spec.subject, str) \
+                    else spec.subject.name()
+                item = NavItem(text)
+                if isinstance(spec.subject, str):
+                    # static string (typically a container)
+                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                else:
+                    item.setData(
+                        DocBinding(doc, spec.subject),
+                        Qt.ItemDataRole.UserRole,
+                    )
                 if spec.tip is not None:
                     item.setToolTip(spec.tip)
                 parent.appendRow(item)

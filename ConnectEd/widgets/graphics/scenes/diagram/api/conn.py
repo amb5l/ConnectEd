@@ -1,4 +1,7 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TypeAlias
+
 from math   import isclose
 
 from PyQt6.QtCore import Qt, QPointF, QLineF
@@ -19,7 +22,9 @@ from ..cmd.conn import CmdAddFreeNode, CmdRemoveFreeNode, \
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramScene
-    MixinSelf = Self | DiagramScene
+    MixinSelf: TypeAlias = Self | DiagramScene
+else:
+    MixinSelf = Self
 
 
 class DiagramSceneApiConnMixin:
