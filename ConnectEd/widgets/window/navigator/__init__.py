@@ -24,8 +24,8 @@ class Navigator(
 ):
     """Navigator widget. A UI for Session."""
 
-    _model    : NavModel
-    _groups   : dict[str, NavItem]
+    _model  : NavModel
+    _groups : dict[str, NavItem]
 
     def __init__(self : Self, parent : QWidget) -> None:
         # create an empty model
@@ -41,6 +41,7 @@ class Navigator(
             group_item.setFont(font)
             self._model.appendRow(group_item)
             self._groups[group_name] = group_item
+        self._updateGroupEmpty()
         # ensure changes propagate
         self._model.itemChanged.connect(self.onItemChanged)
         # initialise this widget

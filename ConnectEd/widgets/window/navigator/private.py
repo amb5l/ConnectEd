@@ -8,7 +8,7 @@ from ....app import logger
 
 from ....core.doc import NavItemSpec, Doc, DocBinding
 
-from .types import NavItem, NavModel
+from .types import NavItem, NavDummyItem, NavModel
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -55,6 +55,7 @@ class NavigatorPrivateMixin:
         doc_item = _addRows(parent, doc.navItemSpec())
         if doc_item is not None:
             self._openRow(doc_item)
+        self._updateGroupEmpty()
 
     def _openRow(self : MixinSelf, item : NavItem) -> bool:
         binding : DocBinding | None = \
@@ -75,3 +76,16 @@ class NavigatorPrivateMixin:
         if index.isValid() and self._model.rowCount(index) > 0:
             self.setExpanded(index, not self.isExpanded(index))
         return True
+
+    def _updateGroupEmpty(self : MixinSelf) -> None:
+        for group_item in self._groups.values():
+            if group_item.rowCount() == 0:
+                group_item.appendRow(NavDummyItem("<none loaded>"))
+            elif group_item.rowCount() == 1:
+                pass
+            else:
+                for row in range(group_item.rowCount()):
+                    child_item = group_item.child(row)
+                    if isinstance(child_item, NavDummyItem):
+                        group_item.removeRow(row)
+                        break
