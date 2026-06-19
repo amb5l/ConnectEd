@@ -1,9 +1,13 @@
+Navigator WIP
+tooltips
+menus
+file modified asterisk
+
+
+
 Immediate next steps:
 - XML slurping to simplify fromXml
-- implement class Session to hold open diagrams, libraries etc
 - refactor Navigator to pull data from Session into a temp model
-- tidy new XML approach for scenes/items
-- retire core/xml.py - XML is a graphics concern only
 - convert SegmentPreviewItem using scene.addSegment on paste, prove connectivity cut/paste works OK
 
 - serialise symbol definitions before other items

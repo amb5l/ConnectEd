@@ -68,7 +68,7 @@ class NavigatorApiMixin:
 
     def fileSave(self : MixinSelf, subwindow : DocSubWindow) -> None:
         """Save a document."""
-        doc = self._docFromSubwindow(subwindow)
+        doc = self._docFromSubWindow(subwindow)
         if doc is None:
             return
         self.docSave(doc)
@@ -83,7 +83,7 @@ class NavigatorApiMixin:
         if not dialog.exec():
             return
         path = dialog.selectedFiles()[0]
-        doc = self._docFromSubwindow(subwindow)
+        doc = self._docFromSubWindow(subwindow)
         if doc is None:
             logger().error("Subwindow has no document")
             return
@@ -91,13 +91,13 @@ class NavigatorApiMixin:
 
     def fileClose(self : MixinSelf, subwindow : DocSubWindow) -> None:
         """Close a document."""
-        doc = self._docFromSubwindow(subwindow)
+        doc = self._docFromSubWindow(subwindow)
         if doc is None:
             return
         self.docClose(doc)
         subwindow.close()
 
-    def _docFromSubwindow(
+    def _docFromSubWindow(
         self      : MixinSelf,
         subwindow : DocSubWindow
     ) -> Doc | None:

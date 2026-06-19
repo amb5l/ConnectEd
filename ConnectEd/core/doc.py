@@ -1,18 +1,23 @@
 import os
 
 from typing          import Self, Protocol
+from enum            import StrEnum
 from dataclasses     import dataclass
+from collections.abc import Callable
 from abc             import ABC, abstractmethod
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QIcon
 
-from ..app import logger, session, window
+from ..app import logger, session
 
 from ..core.xml import saveXml
 
 from .check import checked
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..widgets.window.sub_window import DocSubWindow
 
 
 class DocSubjectProtocol(Protocol):
@@ -28,13 +33,30 @@ class NavItemSpec:
     children : list["NavItemSpec"] | None = None
 
 
+class NavMenuAction(StrEnum):
+    NEW        = "new"
+    OPEN       = "open"
+    SAVE       = "save"
+    SAVE_AS    = "save_as"
+    CLOSE      = "close"
+    EDIT       = "edit"
+    NEW_WINDOW = "new_window"
+    SEPARATOR  = "separator"
+
+
+@dataclass(frozen=True)
+class NavMenuItem(StrEnum):
+    label   : str
+    handler : Callable[[], None]
+
+
 class Doc(ABC):
     """
     Session-owned document.
 
-    Persistence methods are used by ``Session``; Navigator methods keep
-    ``Navigator`` / ``NavigatorModel`` document-agnostic. Concrete classes live
-    under ``ConnectEd.documents`` (e.g. ``SchematicDoc``, ``LibraryDoc``).
+    Persistence methods are used by ``Session``; ``nav*`` and ``win*`` methods
+    keep ``Navigator`` / MDI document-agnostic. Concrete classes live under
+    ``ConnectEd.documents`` (e.g. ``HdlSchematicDiagramDoc``).
     """
 
     def onChanged(self : Self) -> None:
@@ -70,96 +92,87 @@ class Doc(ABC):
             logger().warning(f"{path} not found")
             return False
         xr = QXmlStreamReader(path)
-        return self.fromXml(xr)
+        return cls.fromXml(xr)
 
-    # --- Navigator tree -------------------------------------------------------
+    # --- Navigator (tree presentation) ----------------------------------------
 
     @abstractmethod
     def navItemSpec(self : Self) -> NavItemSpec:
-        """Specifies navigator row (and any child rows)."""
+        """Child rows under L2 (containers, symbols, …)."""
         ...
 
     @abstractmethod
-    def navOpen(self : Self, widget : DocSubjectProtocol) -> None:
-        """Open an editor window for the specified widget."""
+    def navLabel(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> str:
+        """Navigator row label; ``subject=None`` → primary subject."""
         ...
 
     @abstractmethod
-    def navRename(self : Self, widget : DocSubjectProtocol, name : str) -> None:
-        """Rename the specified widget."""
+    def navSetLabel(
+        self    : Self,
+        subject : DocSubjectProtocol | None,
+        label   : str,
+    ) -> bool:
+        """Apply inline tree edit; call ``onChanged()`` on success."""
         ...
 
-    # TODO: remove this?
-    @checked
-    def navigatorItem(self : Self, child_id : str) -> NavItemSpec | None:
-        """Look up one child row by id."""
-        for item in self.navItemSpec():
-            if item.id == child_id:
-                return item
-        return None
-
-    # TODO: remove this?
-    @checked
-    def renameNavigatorChild(self : Self, child_id : str, label : str) -> None:
-        """Rename a child row (e.g. symbol name). Override when ``editable``."""
-        raise NotImplementedError(
-            f"{type(self).__name__} does not support renaming child {child_id!r}"
-        )
-
-    # --- Navigator UI ---------------------------------------------------------
+    @abstractmethod
+    def navToolTip(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> str | None:
+        """Row tooltip; dynamic state — not ``NavItemSpec.tip`` alone."""
+        ...
 
     @abstractmethod
-    def open(self : Self, widget : QWidget) -> None:
-        scene = node.scene()
-        # get existing subwindows in top down Z order
-        subwindows = window().mdiArea().sceneSubWindows(scene)
-        if subwindows:
-            # bring existing window to front
-            window().mdiArea().activateSubWindow(subwindows[0])
-        else:
-            # create a new window
-            self._newDrawingWindow(node)
-    # --- open / edit (Navigator, MDI) -----------------------------------------
+    def navContextMenu(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> list[NavMenuAction | NavMenuItem]:
+        """Context-menu entries; Navigator builds ``QMenu``."""
+        ...
+
+    # --- MDI (subwindows) -------------------------------------------------------
 
     @abstractmethod
-    def openDefault(self : Self) -> None:
+    def showWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         """
-        Open or focus the primary editor for this document
-        (e.g. schematic diagram, library container).
-        """
-
-    @checked
-    def openChild(self : Self, child_id : str) -> None:
-        """
-        Open or focus an editor for one Navigator child row
-        (e.g. symbol definition in a library).
-        """
-        raise NotImplementedError(
-            f"{type(self).__name__} does not support openChild({child_id!r})"
-        )
-
-    # --- window management ----------------------------------------------------
-
-    @abstractmethod
-    def openWindow(self : Self, subject : QWidget) -> bool:
-        """
-        Open a new window or activate an existing one for the given subject.
+        Activate existing ``(doc, subject)`` subwindow or create one.
 
         Returns True for success, False for failure.
         """
         ...
 
-
     @abstractmethod
-    def newWindow(self : Self, widget : QWidget) -> None:
+    def newWindow(self : Self, subject : DocSubjectProtocol) -> bool:
+        """Always open another subwindow for the same subject (when supported)."""
         ...
 
     @abstractmethod
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
+        """Subwindow / Window-menu title."""
         ...
+
+    # --- editor lifecycle (close / save) ----------------------------------------
+
+    @checked
+    def commitEditor(self : Self, subwindow : "DocSubWindow") -> bool:
+        """Persist in-editor clone (e.g. symbol Save). Override when supported."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support commitEditor"
+        )
+
+    @checked
+    def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
+        """Whether closing this editor should close the document."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support isPrimarySubject"
+        )
 
 
 @dataclass
 class DocBinding:
     doc     : Doc
-    subject : DocSubjectProtocol | None
+    subject : DocSubjectProtocol

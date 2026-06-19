@@ -39,11 +39,10 @@ class NavigatorPrivateMixin:
                 if isinstance(spec.subject, str):
                     # static string (typically a container)
                     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                else:
-                    item.setData(
-                        DocBinding(doc, spec.subject),
-                        Qt.ItemDataRole.UserRole,
-                    )
+                item.setData(
+                    DocBinding(doc, spec.subject),
+                    Qt.ItemDataRole.UserRole,
+                )
                 if spec.tip is not None:
                     item.setToolTip(spec.tip)
                 parent.appendRow(item)
@@ -62,7 +61,7 @@ class NavigatorPrivateMixin:
             item.data(Qt.ItemDataRole.UserRole)
         if binding is not None:
             if binding.subject is not None:
-                ok = binding.doc.openWindow(binding.subject)
+                ok = binding.doc.showWindow(binding.subject)
             else:
                 ok = binding.doc.openDefault()
             if not ok:
