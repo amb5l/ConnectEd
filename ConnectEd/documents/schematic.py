@@ -224,9 +224,9 @@ class HdlSchematicDiagramDoc(Doc):
 
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
         if subject is self._scene:
-            return self._scene.name() + " - Schematic Editor"
+            return self._scene.name() + " - HDL Schematic Editor"
         if subject in self._scene.symbols():
-            return subject.name() + " - Symbol Editor"
+            return subject.name() + " - HDL Schematic Symbol Editor"
         return "Unknown Subject"
 
     # --- editor lifecycle (close / save) ----------------------------------------
