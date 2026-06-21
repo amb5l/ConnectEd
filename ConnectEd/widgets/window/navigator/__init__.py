@@ -24,6 +24,8 @@ class Navigator(
 ):
     """Navigator widget. A UI for Session."""
 
+    _SETTINGS_UI_PATH = "navigator"
+
     _model  : NavModel
     _groups : dict[str, NavItem]
 

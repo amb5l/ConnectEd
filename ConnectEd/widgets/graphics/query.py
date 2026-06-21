@@ -36,7 +36,7 @@ class QueryWindow(QWidget):
             item = self._model.item(i)
         # create table view
         self._view = TreeView(self._model, self)
-        self._view.customizeAppearance()
+        self._view._customizeAppearance()
         self._view.setModel(self._model)
         #self._view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         #self._view.verticalHeader().setVisible(False)

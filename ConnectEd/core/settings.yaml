@@ -10,6 +10,13 @@ mru:
   '7': ''
   '8': ''
   '9': ''
+ui:
+  default:
+    font:
+      size: 10
+  navigator:
+    font:
+      size: 10
 display:
   theme: dark
   font_size: 10
