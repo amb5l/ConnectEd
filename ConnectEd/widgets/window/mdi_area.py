@@ -17,12 +17,15 @@ from .sub_window  import DocSubWindow
 
 
 class MdiArea(QMdiArea):
-    _subwindow_actions : dict[Doc, dict[DocSubjectProtocol, list[Action]]]
+    _mru     : list[DocSubWindow]
+    _actions : dict[Doc, dict[DocSubjectProtocol, list[Action]]]
 
     @checked
     def __init__(self : Self) -> None:
         super().__init__()
-        self._subwindow_actions = {}
+        self._mru = []
+        self._actions = {}
+        self.subWindowActivated.connect(self._touchMRU)
 
     def onSubWindowsChanged(self : Self) -> None:
         # build tree of subwindows by doc and subject
@@ -62,16 +65,25 @@ class MdiArea(QMdiArea):
                     subwindow.setWindowTitle(title + suffix)
                     action = QAction(window())
                     action.setText(title + suffix)
-                    def showSubWindow(checked=False, window=subwindow) -> None:
-                        window.show()
-                        window.raise_()
-                        window.setFocus()
-                    action.triggered.connect(showSubWindow)
+                    action.triggered.connect(
+                        lambda checked=False, window=subwindow:
+                            self.activateSubWindow(window)
+                    )
                     actions.setdefault(doc, {})
                     actions[doc].setdefault(subject, []).append(action)
-        self._subwindow_actions = actions
+        self._actions = actions
         # propagate changes to menu bar
         window().menuBar().updateWindowMenu()
+
+    def mruSubWindows(self) -> list[DocSubWindow]:
+        return list(self._mru)
+
+    def preferredSubWindow(self, doc, subject) -> DocSubWindow | None:
+        for w in self.mruSubWindows():
+            b = w.docBinding()
+            if b and b.doc is doc and b.subject is subject:
+                return w
+        return None
 
     @checked
     def addSubWindow(
@@ -81,8 +93,10 @@ class MdiArea(QMdiArea):
     ) -> None:
         super().addSubWindow(subwindow, flags)
         if isinstance(subwindow, DocSubWindow):
-            # Connect to destroyed signal to update menu when window is closed
-            subwindow.destroyed.connect(self.onSubWindowsChanged)
+            subwindow.destroyed.connect(
+                lambda *, w=subwindow: self._removeFromMru(w)
+            )
+            self._mru.append(subwindow)
         self.onSubWindowsChanged()
 
     def nextSubWindow(self : Self) -> None:
@@ -101,7 +115,7 @@ class MdiArea(QMdiArea):
     def subWindowActions(
         self : Self
     ) -> dict[Doc, dict[DocSubjectProtocol, list[Action]]]:
-        return self._subwindow_actions
+        return self._actions
 
     def _activateSubWindowIndexOffset(self : Self, offset : int) -> None:
         windows = self.subWindowList()
@@ -115,3 +129,19 @@ class MdiArea(QMdiArea):
         next_index = (current_index + offset) % len(windows)
         next_window = windows[next_index]
         self.activateSubWindow(next_window)
+
+    def _touchMRU(self : Self, subwindow : DocSubWindow | None = None) -> None:
+        if not isinstance(subwindow, DocSubWindow):
+            return
+        try:
+            self._mru.remove(subwindow)
+        except ValueError:
+            pass
+        self._mru.insert(0, subwindow)
+
+    def _removeFromMru(self : Self, subwindow : DocSubWindow) -> None:
+        try:
+            self._mru.remove(subwindow)
+        except ValueError:
+            pass
+        self.onSubWindowsChanged()

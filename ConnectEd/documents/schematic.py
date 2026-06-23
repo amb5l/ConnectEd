@@ -178,19 +178,8 @@ class HdlSchematicDiagramDoc(Doc):
         self    : Self,
         subject : DocSubjectProtocol,
     ) -> "DocSubWindow | None":
-        from ..widgets.window.sub_window import DocSubWindow
         mdi_area = window().mdiArea()
-        for existing in mdi_area.subWindowList():
-            if not isinstance(existing, DocSubWindow):
-                continue
-            binding = existing.docBinding()
-            if binding is None:
-                continue
-            if binding.doc != self:
-                continue
-            if binding.subject is subject:
-                return existing
-        return None
+        return mdi_area.preferredSubWindow(self, subject)
 
     def _createSubWindow(
         self    : Self,
