@@ -1,53 +1,35 @@
-import os
+from typing      import Self, Protocol
+from dataclasses import dataclass
+from abc         import ABC, abstractmethod
 
-from typing          import Self, Protocol
-from enum            import StrEnum
-from dataclasses     import dataclass
-from collections.abc import Callable
-from abc             import ABC, abstractmethod
+from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtGui  import QIcon
 
-from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QIcon
+from ..app import session
 
-from ..app import logger, session
-
-from ..core.xml import saveXml
+from ..core.types import MenuEntry, MenuAction
+from ..core.xml   import saveXml
 
 from .check import checked
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from .session import DocType
+    from ..widgets.window.navigator import Navigator
     from ..widgets.window.sub_window import DocSubWindow
-
-
-class DocSubjectProtocol(Protocol):
-    def name(self : Self) -> str:
-        ...
 
 
 @dataclass
 class NavItemSpec:
-    subject  : str | DocSubjectProtocol
+    subject  : str | "DocSubjectProtocol"
     icon     : QIcon | None = None
     tip      : str | None = None
     children : list["NavItemSpec"] | None = None
 
 
-class NavMenuAction(StrEnum):
-    NEW        = "new"
-    OPEN       = "open"
-    SAVE       = "save"
-    SAVE_AS    = "save_as"
-    CLOSE      = "close"
-    EDIT       = "edit"
-    NEW_WINDOW = "new_window"
-    SEPARATOR  = "separator"
-
-
-@dataclass(frozen=True)
-class NavMenuItem(StrEnum):
-    label   : str
-    handler : Callable[[], None]
+class DocSubjectProtocol(Protocol):
+    def name(self : Self) -> str:
+        ...
 
 
 class Doc(ABC):
@@ -59,10 +41,24 @@ class Doc(ABC):
     ``ConnectEd.documents`` (e.g. ``HdlSchematicDiagramDoc``).
     """
 
+    _XML_TAG : str
+
     def onChanged(self : Self) -> None:
         session().onDocChanged(self)
 
     # --- persistence (Session) ------------------------------------------------
+
+    @classmethod
+    def tag(cls : type[Self]) -> str:
+        return cls._XML_TAG
+
+    @abstractmethod
+    def name(self : Self) -> str:
+        ...
+
+    @abstractmethod
+    def setName(self : Self, name : str) -> None:
+        ...
 
     @abstractmethod
     def path(self : Self) -> str:
@@ -70,6 +66,7 @@ class Doc(ABC):
 
     @abstractmethod
     def setPath(self : Self, path : str) -> None:
+        """Set filesystem path; call ``onChanged()`` when the path changes."""
         ...
 
     @abstractmethod
@@ -83,16 +80,13 @@ class Doc(ABC):
 
     @checked
     def save(self : Self, path : str | None = None) -> bool:
-        saveXml(self, path)
+        return saveXml(self, path)
 
     @classmethod
     @abstractmethod
-    def load(cls : type[Self], path : str) -> bool:
-        if not os.path.exists(path):
-            logger().warning(f"{path} not found")
-            return False
-        xr = QXmlStreamReader(path)
-        return cls.fromXml(xr)
+    def load(cls : type[Self], path : str) -> Self | None:
+        """Load from file; return document or ``None``."""
+        ...
 
     # --- Navigator (tree presentation) ----------------------------------------
 
@@ -130,9 +124,21 @@ class Doc(ABC):
     def navContextMenu(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
-    ) -> list[NavMenuAction | NavMenuItem]:
+    ) -> list[MenuEntry]:
         """Context-menu entries; Navigator builds ``QMenu``."""
         ...
+
+    @classmethod
+    def navGroupContextMenu(
+        cls      : type[Self],
+        nav      : "Navigator",
+        doc_type : "DocType",
+    ) -> list[MenuEntry]:
+        """Navigator L1 group-row menu entries for this doc type."""
+        return [
+            MenuAction(f"New {doc_type.name}", lambda: nav.docNew(doc_type)),
+            MenuAction("Open...", lambda: nav.fileOpen(doc_type)),
+        ]
 
     # --- MDI (subwindows) -------------------------------------------------------
 

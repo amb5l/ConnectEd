@@ -1,7 +1,8 @@
-from typing      import Self
-from types       import NoneType
-from dataclasses import dataclass
-from enum        import Enum, StrEnum
+from typing          import Self
+from types           import NoneType
+from dataclasses     import dataclass
+from enum            import Enum, StrEnum
+from collections.abc import Callable
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QColor
@@ -286,3 +287,24 @@ class Counter:
     def next(self : Self) -> int:
         self._count += 1
         return self._count
+
+
+@dataclass(frozen=True)
+class MenuSeparator:
+    pass
+
+
+@dataclass(frozen=True)
+class MenuAction:
+    label   : str
+    handler : Callable[[], None]
+    enabled : bool = True
+
+
+@dataclass(frozen=True)
+class MenuSub:
+    label : str
+    items : list["MenuEntry"]
+
+
+MenuEntry = MenuAction | MenuSub | MenuSeparator

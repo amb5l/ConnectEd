@@ -524,7 +524,7 @@ class PolylineItem(
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
         ItemXmlMixin.fromXmlRefresh(instance)
-        instance.properties.setNotify(True)  # enable property change signalling
+        instance.setLive(True)  # enable property change signalling
         return instance
 
     @checked

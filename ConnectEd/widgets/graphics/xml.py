@@ -3,7 +3,7 @@
 from PyQt6.QtCore    import QPointF, QXmlStreamReader, QXmlStreamWriter
 
 from ...core.check import checked
-from ...core.utils import underscore2space, val2str
+from ...core.utils import space2underscore, underscore2space, val2str
 from ...core.xml   import copyXml, pasteXml, XmlProtocol
 
 from .properties import PropertiesMixin
@@ -14,7 +14,7 @@ def toXmlProperties(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None
         if not instance.properties.worthy(name):
             continue
         value = instance.properties.value(name)
-        xw.writeAttribute(underscore2space(name), val2str(value))
+        xw.writeAttribute(space2underscore(name), val2str(value))
 
 
 @checked

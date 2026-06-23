@@ -127,7 +127,6 @@ class PropertiesManager:
     # instance attributes
     _owner  : "PropertiesMixin"
     _dict   : dict[str, InherentProperty | CustomProperty]
-    _notify : bool
 
     @checked
     def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
@@ -135,7 +134,6 @@ class PropertiesManager:
         Initialize the properties system for this instance.
         """
         self._owner  = owner
-        self._notify = False
         # copy each property so per-instance state (e.g. text) is independent
         self._dict = {k: copy(v) for k, v in self._owner._PROPERTIES.items()}
         # Bind before addText: PropertyText callbacks may run during construction
@@ -147,6 +145,10 @@ class PropertiesManager:
         if hasattr(self._owner, "_PROPERTY_TEXTS"):
             for name, spec in self._owner._PROPERTY_TEXTS.items():
                 self.addText(name, *spec.astuple())
+
+    @checked
+    def owner(self : Self) -> "PropertiesMixin":
+        return self._owner
 
     @checked
     def names(self : Self) -> list[str]:
@@ -496,12 +498,8 @@ class PropertiesManager:
         return True
 
     @checked
-    def setNotify(self : Self, notify : bool) -> None:
-        self._notify = notify
-
-    @checked
     def signalChanges(self : Self, names : str | list[str]) -> None:
-        if not self._notify:
+        if not self.owner().live():
             return
         if isinstance(names, str):
             names = [names]
@@ -722,10 +720,12 @@ class PropertiesMixin:
 
     # instance attributes
     properties : PropertiesManager
+    _live      : bool               # not live = deserializing
 
     @checked
     def initProperties(self : Self, fresh : bool) -> None:
         self.properties = PropertiesManager(self, fresh)
+        self._live = fresh
 
     @checked
     def description(self : Self) -> str:
@@ -733,3 +733,9 @@ class PropertiesMixin:
         class_name = class_name.removesuffix("Item")
         class_name = class_name.removesuffix("Scene")
         return pascal2proper(class_name)
+
+    def live(self : Self) -> bool:
+        return self._live
+
+    def setLive(self : Self, live : bool) -> None:
+        self._live = live

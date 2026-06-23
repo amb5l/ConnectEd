@@ -5,6 +5,8 @@ from typing import Self, TypeAlias
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QKeyEvent, QMouseEvent
 
+from PyQt6.QtWidgets import QAbstractItemView
+
 from ..tree_view import TreeView
 
 from .types import NavItem
@@ -21,6 +23,10 @@ class NavigatorEventsMixin:
 
     def keyPressEvent(self : MixinSelf, event : QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if self.state() == QAbstractItemView.State.EditingState \
+                    or self.indexWidget(self.currentIndex()) is not None:
+                TreeView.keyPressEvent(self, event)
+                return
             indexes = self.selectedIndexes()
             if len(indexes) == 1:
                 item : NavItem | None = \

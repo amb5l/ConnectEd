@@ -11,8 +11,6 @@ from .....core.xml import clipboardHasData
 
 from ....menu import Menu
 
-from ...xml import paste
-
 from ...items.grip import GripItem
 
 from typing import TYPE_CHECKING

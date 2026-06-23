@@ -26,6 +26,17 @@ class ItemXmlMixin:
         "GatePin", "BlockPin", "SymbolPin", "PropertyText"
     })
 
+    def toXmlBegin(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+        toXmlStartElement(xw, self.__class__.__name__.removesuffix("Item"))
+        if hasattr(self, "properties"):
+            toXmlProperties(self, xw)
+
+    def toXmlAttrs(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+        """Hook for item-specific attributes beyond ``properties``."""
+
+    def toXmlEnd(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+        toXmlEndElement(xw)
+
     def toXmlChildren(self : MixinSelf, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextItem
         from ..port_pin      import PortPinMixin
@@ -40,10 +51,9 @@ class ItemXmlMixin:
 
     @checked
     def toXml(self : MixinSelf, xw : QXmlStreamWriter) -> None:
-        toXmlStartElement(xw, self.__class__.__name__.removesuffix("Item"))
-        toXmlProperties(self, xw)
+        self.toXmlBegin(xw)
         self.toXmlChildren(xw)
-        toXmlEndElement(xw)
+        self.toXmlEnd(xw)
 
     @checked
     def fromXmlChild(self : MixinSelf, xr : QXmlStreamReader) -> bool:
@@ -100,7 +110,7 @@ class ItemXmlMixin:
     @classmethod
     @checked
     def fromXml(
-        cls    : Self,
+        cls    : MixinSelf,
         xr     : QXmlStreamReader,
         parent : QGraphicsItem | None = None
     ) -> Self:
@@ -108,7 +118,7 @@ class ItemXmlMixin:
         args = {"fresh": False}
         if parent is not None:
             args["parent"] = parent
-        instance : Self = cls(**args)
+        instance : MixinSelf = cls(**args)
         fromXmlProperties(instance, xr)
         if hasattr(instance, "onGeometryChanged"):
             instance.onGeometryChanged()
@@ -116,5 +126,5 @@ class ItemXmlMixin:
             instance.fromXmlChildren(xr)
         ItemXmlMixin.fromXmlRefresh(instance)
         if hasattr(instance, "properties"):
-            instance.properties.setNotify(True)  # enable property change signalling
+            instance.setLive(True)
         return instance

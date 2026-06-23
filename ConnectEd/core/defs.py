@@ -3,9 +3,8 @@ from PyQt6.QtCore import QSizeF
 
 ORG_NAME = "ConnectEd"
 APP_NAME = "ConnectEd"
+APP_EXT = ".ce"
 MIME_TYPE = f"application/x-{APP_NAME.lower()}-xml"
-DSN_EXT = ".dsn"
-LIB_EXT = ".lib"
 
 LOG_FILENAME = f"{APP_NAME}.log"
 

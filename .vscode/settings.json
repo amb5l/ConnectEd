@@ -1,5 +1,6 @@
 {
     "python.pythonPath": ".venv/Scripts/python.exe",
+    "files.trimTrailingWhitespace": true,
     "cursorpyright.analysis.inlayHints.genericTypes": false,
     "[markdown]": {
         "editor.wordWrap": "bounded",

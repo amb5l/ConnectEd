@@ -38,7 +38,7 @@ class DiagramSceneXmlMixin:
     def toXml(
         self  : MixinSelf,
         xw    : QXmlStreamWriter,
-        items : list[QGraphicsItem]
+        items : list[QGraphicsItem] | None = None,
     ) -> None:
         full_scene = items is None
         if full_scene:
@@ -314,7 +314,7 @@ class DiagramSceneXmlMixin:
             xref[tag] = lambda xr, cls=item_cls: fromXmlItem(xr, cls)
 
         fromXml(xr, xref, ptag=top_element_name)
-        self.properties.setNotify(True)
+        self.setLive(True)
 
     @checked
     def fromXmlClipboard(

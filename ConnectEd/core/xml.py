@@ -1,4 +1,4 @@
-from typing import Self, Protocol, Any
+from typing import Self, Protocol, Any, cast
 from collections.abc import Callable
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader, \
@@ -15,19 +15,20 @@ from .utils import cleanPath
 XmlHandler = Callable[[QXmlStreamReader], Any]
 
 
-class PathProtocol(Protocol):
-    def path(self : Self) -> str:
-        ...
-
-    def setPath(self : Self, path : str) -> None:
-        ...
-
 class XmlProtocol(Protocol):
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         ...
 
     @classmethod
     def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
+        ...
+
+
+class FileXmlProtocol(XmlProtocol):
+    def path(self : Self) -> str:
+        ...
+
+    def setPath(self : Self, path : str) -> None:
         ...
 
 
@@ -49,7 +50,6 @@ def toXmlEndElement(xw : QXmlStreamWriter) -> None:
 def fromXml(
     xr   : QXmlStreamReader,
     xref : dict[str, XmlHandler | type[XmlProtocol]],  # tag : handler mapping
-    path : str | None = None,                          # path of loaded file
     ptag : str | None = None,                          # parent tag
 ) -> list[Any]:
     output = []
@@ -64,8 +64,6 @@ def fromXml(
             else:
                 obj = handler.fromXml(xr) if isinstance(handler, type) else handler(xr)
                 if obj is not None:
-                    if path and hasattr(obj, "setPath"):
-                        obj.setPath(path)
                     output.append(obj)
         xr.readNext()
     return output
@@ -83,54 +81,110 @@ def fromXmlWrapper(
     return fromXml(xr, xref), attributes
 
 
-@checked
 def saveXml(
-    instance : PathProtocol | XmlProtocol,
+    instance : FileXmlProtocol,
     path     : str | None = None
 ) -> bool:
     if path is None:
-        path = instance.path()
+        save_path = instance.path()
     else:
-        path = cleanPath(path)
-        instance.setPath(path)
-    if path == "":
+        save_path = cleanPath(path)
+    if save_path == "":
         logger().warning(f"Document has no path to save to: {instance}")
         return False
-    file = QFile(path)
-    if not file.open(
+    temp_path = f"{save_path}.tmp"
+    temp_file = QFile(temp_path)
+    if not temp_file.open(
         QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text
     ):
-        logger().warning(f"Failed to open file {path} for writing")
+        logger().warning(f"Failed to open file {temp_path} for writing")
         return False
-    xw = QXmlStreamWriter(file)
-    xw.setAutoFormatting(True)
-    xw.setAutoFormattingIndent(2)
-    xw.writeStartDocument()
-    toXmlStartElement(xw, APP_NAME)
-    instance.toXml(xw)
-    toXmlEndElement(xw)
-    xw.writeEndDocument()
-    file.close()
+    try:
+        xw = QXmlStreamWriter(temp_file)
+        xw.setAutoFormatting(True)
+        xw.setAutoFormattingIndent(2)
+        xw.writeStartDocument()
+        toXmlStartElement(xw, APP_NAME)
+        instance.toXml(xw)
+        toXmlEndElement(xw)
+        xw.writeEndDocument()
+    except Exception as e:
+        logger().error(f"Failed to save {save_path}: {e}")
+        temp_file.close()
+        temp_file.remove()
+        return False
+    temp_file.close()
+    if QFile.exists(save_path) and not QFile.remove(save_path):
+        logger().warning(f"Failed to replace {save_path}")
+        temp_file.remove()
+        return False
+    if not QFile.rename(temp_path, save_path):
+        logger().warning(f"Failed to rename {temp_path} to {save_path}")
+        temp_file.remove()
+        return False
+    if path is not None and instance.path() != save_path:
+        instance.setPath(save_path)
+    else:
+        instance.onChanged()
     return True
 
 
 def loadXml(
     path     : str,
-    elements : dict[str, type[XmlProtocol]]
-) -> list[XmlProtocol]:
+    elements : dict[str, type],
+) -> FileXmlProtocol | None:
     """
-    Loads children of the first <ConnectEd> element from the file.
+    Load the first document element under ``<ConnectEd>`` from *path*.
+
+    *elements* maps XML tag names to document classes (``fromXml`` handlers).
+    Returns the loaded instance with ``setPath`` applied, or ``None`` on failure.
+
+    Note: ``elements`` values are typed as ``type`` at runtime so typeguard accepts
+    concrete ``Doc`` subclasses; static callers should pass ``type[FileXmlProtocol]``.
     """
+    path = cleanPath(path)
     file = QFile(path)
     flag_enum = QIODevice.OpenModeFlag
+    if not file.exists():
+        logger().warning(f"{path} not found")
+        return None
     if not file.open(flag_enum.ReadOnly | flag_enum.Text):
         logger().warning(f"Failed to open file {path} for reading")
-        return False
+        return None
+    if file.size() == 0:
+        logger().error(f"File is empty: {path}")
+        return None
     xr = QXmlStreamReader(file)
-    if not xr.readNextStartElement() or xr.name() != APP_NAME:
-        logger().warning(f"No {APP_NAME} root element in {path}")
-        return False
-    fromXml(xr, elements, path)
+    try:
+        while not xr.atEnd():
+            if xr.isStartElement() and xr.name() == APP_NAME:
+                break
+            xr.readNext()
+        else:
+            logger().error(f"No {APP_NAME} root element in {path}")
+            return None
+        while not xr.atEnd():
+            xr.readNext()
+            if xr.isEndElement() and xr.name() == APP_NAME:
+                logger().error(f"No document element in {path}")
+                return None
+            if not xr.isStartElement():
+                continue
+            tag = xr.name()
+            doc_cls = elements.get(tag)
+            if doc_cls is None:
+                logger().error(f"Unknown document tag {tag!r} in {path}")
+                return None
+            try:
+                doc = cast(FileXmlProtocol, doc_cls.fromXml(xr))
+            except Exception as e:
+                logger().error(f"Failed to load {path}: {e}")
+                return None
+            doc.setPath(path)
+            return doc
+    finally:
+        file.close()
+    return None
 
 
 def copyXml(

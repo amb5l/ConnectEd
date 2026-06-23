@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QFont, QShortcut, QKeySequence, QWheelEvent
 from ...app       import settings
 from ...resources import getIconPath
 
-from ..mixin.font_size import UiFontSizeMixin
+from ..mixin.ui_font_size import UiFontSizeMixin
 
 
 class TreeView(UiFontSizeMixin, QTreeView):

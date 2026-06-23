@@ -102,7 +102,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         if isinstance(self, ItemShapeMixin):
             self.initShape()
         if isinstance(self, PropertiesMixin):
-            self.properties.setNotify(fresh)
+            self.setLive(fresh)
 
     def __hash__(self : Self | QGraphicsItem):
         return hash(self._uuid)

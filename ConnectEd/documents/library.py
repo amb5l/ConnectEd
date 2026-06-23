@@ -1,14 +1,16 @@
-from ..core.session import Session
+from ..core.session import DocType, Session
 from ..core.doc     import Doc
 
+
 class HdlSchematicLibraryDoc(Doc):
-    pass
+    _XML_TAG = "HdlSchematicLibrary"
 
 
-Session.registerDocType(
-    "HDL Schematic Library",    # friendly document type name
-    "HDL Schematic Libraries",  # friendly document group name
-    ".hdl_lib",                 # file extension
-    "HdlSchematicLibrary",      # XML tag
-    HdlSchematicLibraryDoc      # class
+DOC_TYPE = DocType(
+    name  = "HDL Schematic Library",
+    group = "HDL Schematic Libraries",
+    ext   = "hdl_lib",
+    cls   = HdlSchematicLibraryDoc,
 )
+
+Session.registerDocType(DOC_TYPE)

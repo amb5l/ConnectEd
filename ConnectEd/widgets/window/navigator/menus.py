@@ -1,2 +1,0 @@
-class NavigatorMenusMixin:
-    pass

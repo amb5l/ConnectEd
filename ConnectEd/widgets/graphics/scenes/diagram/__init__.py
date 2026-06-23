@@ -9,9 +9,11 @@ from .....app import settings
 from .....core.check   import checked
 from .....core.types   import DataKind
 
-from .....documents.schematic import HdlSchematicDiagramDoc
-
 from ...properties import InherentProperty
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .....documents.schematic import HdlSchematicDiagramDoc
 
 from ..drawing import DrawingScene
 
@@ -64,7 +66,7 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     }
 
     # instance attributes
-    _doc      : HdlSchematicDiagramDoc | None
+    _doc      : "HdlSchematicDiagramDoc | None"
     _symbols  : dict[str, "SymbolItem"]
     sheet     : DiagramSheet
     margin    : float                  # distance from paper edge to border line

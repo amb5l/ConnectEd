@@ -6,21 +6,20 @@ from ..app       import logger, window
 from ..resources import getIconPath
 
 from ..core.check   import checked
-from ..core.session import Session
+from ..core.session import DocType, Session
+from ..core.types   import MenuAction, MenuSeparator, MenuEntry
 from ..core.doc     import (
     Doc,
     DocBinding,
     DocSubjectProtocol,
-    NavItemSpec,
-    NavMenuAction,
-    NavMenuItem
+    NavItemSpec
 )
 from ..core.icon import SvgIconSingleton
 
-from ..widgets.window.sub_window import DocSubWindow
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ..widgets.window.sub_window import DocSubWindow
+    from ..widgets.window.navigator import Navigator
     from ..widgets.graphics.scenes.diagram import DiagramScene
 
 
@@ -35,38 +34,55 @@ class SymbolIcon(SvgIconSingleton):
 
 
 class HdlSchematicDiagramDoc(Doc):
+    _XML_TAG = "HdlSchematicDiagram"
+
     _scene : "DiagramScene | None"
     _path  : str
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, name : str | None = None) -> None:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
         self._path = ""
+        self._scene = DiagramScene(self)
+        self.setName(name or "Untitled")
+
+    def name(self : Self) -> str:
+        return self._scene.name()
+
+    def setName(self : Self, name : str) -> None:
+        self._scene.setName(name)
 
     def path(self : Self) -> str:
         return self._path
 
     def setPath(self : Self, path : str) -> None:
+        from ..core.utils import cleanPath
+        path = cleanPath(path)
+        if path == self._path:
+            return
         self._path = path
+        self.onChanged()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        self._scene.toXml(xw, self.__class__.__name__)
+        self._scene.toXml(xw)
 
     @classmethod
     def fromXml(
-        cls  : type[Self],
-        xr   : QXmlStreamReader,
-        path : str | None = None,
+        cls : type[Self],
+        xr  : QXmlStreamReader,
     ) -> Self:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         doc = cls()
-        doc._scene = DiagramScene.fromXml(xr)
-        doc._path = path or ""
+        scene = DiagramScene.fromXml(xr)
+        scene._doc = doc
+        doc._scene = scene
         return doc
 
     @classmethod
-    def load(cls : type[Self], path : str) -> bool:
-        raise NotImplementedError(
-            f"{cls.__name__}.load({path!r}) is not implemented"
-        )
+    @checked
+    def load(cls : type[Self], path : str) -> Self | None:
+        from ..core.utils import cleanPath
+        from ..core.xml import loadXml
+        return loadXml(cleanPath(path), {cls.tag(): cls})
 
     # --- Navigator (tree presentation) ----------------------------------------
 
@@ -100,10 +116,14 @@ class HdlSchematicDiagramDoc(Doc):
         subject : DocSubjectProtocol | None,
         label   : str,
     ) -> bool:
-        logger().warning(
-            f"{type(self).__name__}.navSetLabel({subject!r}, {label!r}) "
-            f"is not implemented"
-        )
+        if subject is None:
+            subject = self._scene
+        if subject is self._scene:
+            if label == subject.name():
+                return False
+            self._scene.setName(label, notify=False)
+            window().mdiArea().onSubWindowsChanged()
+            return True
         return False
 
     def navToolTip(
@@ -115,43 +135,56 @@ class HdlSchematicDiagramDoc(Doc):
     def navContextMenu(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
-    ) -> list[NavMenuAction | NavMenuItem]:
-        if self._scene is None:
-            return []
-        if subject is None or subject is self._scene:
+    ) -> list[MenuEntry]:
+        if self._scene is None: return []
+        if subject is None: subject = self._scene
+        if subject is self._scene:
+            nav = window().navigator()
             return [
-                NavMenuAction.SAVE,
-                NavMenuAction.SAVE_AS,
-                NavMenuAction.CLOSE,
-                NavMenuAction.SEPARATOR,
-                NavMenuAction.EDIT,
-                NavMenuAction.NEW_WINDOW,
+                MenuAction("Save", lambda: nav.docSave(self)),
+                MenuAction("Save As...", lambda: nav.docSaveAsPrompt(self)),
+                MenuAction("Close", lambda: nav.docClose(self)),
+                MenuSeparator(),
+                MenuAction("Edit", lambda s=subject: self.showWindow(s)),
+                MenuAction("New Window", lambda s=subject: self.newWindow(s)),
             ]
         elif subject == "Symbol Definitions":
             return [
-                NavMenuAction.NEW,
-                NavMenuAction.SEPARATOR,
-                NavMenuAction.EDIT,
-                NavMenuAction.NEW_WINDOW,
-                NavMenuAction.SEPARATOR,
-                NavMenuItem(label = "Purge", handler = self.purgeSymbols)
+                MenuAction("New Symbol", lambda: self.newSymbolHandler()),
+                MenuSeparator(),
+                MenuAction("Refresh All", lambda: self.refreshSymbolsHandler()),
+                MenuAction("Purge All", lambda: self.purgeSymbolsHandler()),
             ]
         elif subject in self._scene.symbols():
             return [
-                NavMenuAction.EDIT,
-                NavMenuAction.NEW_WINDOW,
-                NavMenuAction.SEPARATOR,
-                NavMenuItem(label = "Refresh", handler = self.refreshSymbol),
-                NavMenuItem(label = "Replace", handler = self.replaceSymbol)
+                MenuAction("Edit", lambda s=subject: self.showWindow(s)),
+                MenuAction("New Window", lambda s=subject: self.newWindow(s)),
+                MenuSeparator(),
+                MenuAction(
+                    "Duplicate",
+                    lambda s=subject: self.duplicateSymbolHandler(s)
+                ),
+                MenuAction(
+                    "Delete",
+                    lambda s=subject: self.deleteSymbolHandler(s),
+                    self._scene.symbolInstances(subject) > 0
+                ),
+                MenuSeparator(),
+                MenuAction(
+                    "Refresh",
+                    lambda s=subject: self.refreshSymbolHandler(s)
+                ),
+                MenuAction("Replace", lambda s=subject: self.replaceSymbolHandler(s)),
             ]
         return []
 
-    # --- MDI (subwindows) -------------------------------------------------------
+    # --- MDI (subwindows) -----------------------------------------------------
 
     def _findSubWindow(
         self    : Self,
         subject : DocSubjectProtocol,
-    ) -> DocSubWindow | None:
+    ) -> "DocSubWindow | None":
+        from ..widgets.window.sub_window import DocSubWindow
         mdi_area = window().mdiArea()
         for existing in mdi_area.subWindowList():
             if not isinstance(existing, DocSubWindow):
@@ -168,7 +201,8 @@ class HdlSchematicDiagramDoc(Doc):
     def _createSubWindow(
         self    : Self,
         subject : DocSubjectProtocol,
-    ) -> DocSubWindow | None:
+    ) -> "DocSubWindow | None":
+        from ..widgets.window.sub_window import DocSubWindow
         if self._scene is None:
             logger().error(f"{type(self).__name__} has no scene")
             return None
@@ -203,16 +237,10 @@ class HdlSchematicDiagramDoc(Doc):
 
     def showWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         subwindow = self._findSubWindow(subject)
-        created = False
-        if subwindow is None:
-            subwindow = self._createSubWindow(subject)
-            if subwindow is None:
-                return False
-            created = True
-        if created:
-            subwindow.showMaximized()
-        window().mdiArea().activateSubWindow(subwindow)
-        return True
+        if subwindow is not None:
+            window().mdiArea().activateSubWindow(subwindow)
+            return True
+        return self.newWindow(subject)
 
     def newWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         subwindow = self._createSubWindow(subject)
@@ -229,16 +257,62 @@ class HdlSchematicDiagramDoc(Doc):
             return subject.name() + " - HDL Schematic Symbol Editor"
         return "Unknown Subject"
 
-    # --- editor lifecycle (close / save) ----------------------------------------
+    # --- editor lifecycle (close / save) --------------------------------------
 
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
         return subject is self._scene
 
+    # --- menu action handlers -------------------------------------------------
 
-Session.registerDocType(
-    "HDL Schematic Diagram",   # friendly document type name
-    "HDL Schematic Diagrams",  # friendly document group name
-    ".hdl_sch",                # file extension
-    "HdlSchematicDiagram",     # XML tag
-    HdlSchematicDiagramDoc,    # class
+    def newSymbolHandler(self : Self) -> None:
+        # add new symbol definition to scene and navigator
+        self._scene.newSymbol()  # scene API (undoable)
+
+    def refreshSymbolsHandler(self : Self) -> None:
+        # refresh all symbol definitions in scene and navigator
+        self._scene.refreshSymbols()  # scene API (undoable)
+
+    def purgeSymbolsHandler(self : Self) -> None:
+        # purge all symbol definitions from scene and navigator
+        self._scene.purgeSymbols()  # scene API (undoable)
+
+    def duplicateSymbolHandler(
+        self : Self,
+        subject : DocSubjectProtocol
+    ) -> None:
+        # duplicate symbol definition in scene and navigator
+        self._scene.duplicateSymbol(subject)  # scene API (undoable)
+
+    def deleteSymbolHandler(
+        self : Self,
+        subject : DocSubjectProtocol
+    ) -> None:
+        # delete symbol definition from scene and navigator
+        self._scene.deleteSymbol(subject)  # scene API (undoable)
+
+    def refreshSymbolHandler(
+        self : Self,
+        subject : DocSubjectProtocol
+    ) -> None:
+        # refresh symbol definition in scene and navigator
+        self._scene.refreshSymbol(subject)  # scene API (undoable)
+
+    def replaceSymbolHandler(
+        self : Self,
+        subject : DocSubjectProtocol
+    ) -> None:
+        # replace symbol definition in scene and navigator
+        self._scene.replaceSymbol(subject)  # scene API (undoable)
+
+
+
+# register document type with Session
+
+DOC_TYPE = DocType(
+    name  = "HDL Schematic Diagram",
+    group = "HDL Schematic Diagrams",
+    ext   = "hdl_sch",
+    cls   = HdlSchematicDiagramDoc,
 )
+
+Session.registerDocType(DOC_TYPE)

@@ -50,7 +50,7 @@ class ItemCloneMixin:
                             )
         self._cloneAfter(source, clone_item)
         if hasattr(clone_item, "properties"):
-            clone_item.properties.setNotify(True)  # enable property change signalling
+            clone_item.setLive(True)  # enable property change signalling
         return clone_item
 
     def _cloneAfter(

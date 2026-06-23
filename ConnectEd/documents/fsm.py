@@ -1,16 +1,17 @@
 # place holder for future FSM Diagram document
-from ..core.session import Session
+from ..core.session import DocType, Session
 from ..core.doc     import Doc
 
 
 class HdlFsmDiagramDoc(Doc):
-    pass
+    _XML_TAG = "HdlFsmDiagram"
 
 
-Session.registerDocType(
-    "HDL FSM Diagram",   # friendly document type name
-    "HDL FSM Diagrams",  # friendly document group name
-    ".hdl_fsm",          # file extension
-    "HdlFsmDiagram",     # XML tag
-    HdlFsmDiagramDoc     # class
+DOC_TYPE = DocType(
+    name  = "HDL FSM Diagram",
+    group = "HDL FSM Diagrams",
+    ext   = "hdl_fsm",
+    cls   = HdlFsmDiagramDoc,
 )
+
+Session.registerDocType(DOC_TYPE)

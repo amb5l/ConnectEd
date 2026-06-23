@@ -40,7 +40,7 @@ class DrawingScene(
 
     # instance attributes
     _uuid      : str
-    _name      : str | None
+    _name      : str
     resources  : DrawingSceneResources
     undo_stack : QUndoStack | None
     _doc       : Doc | None
@@ -53,7 +53,7 @@ class DrawingScene(
     ) -> None:
         super().__init__()
         self._uuid = str(uuid.uuid4())
-        self._name = None
+        self._name = "Untitled"
         self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.resources = self._RESOURCES_CLS()
@@ -62,7 +62,7 @@ class DrawingScene(
         self.initProperties(fresh)
         self.initGrips()
         self.selectionChanged.connect(self.onSelectionChanged)
-        self.properties.setNotify(fresh)
+        self.setLive(fresh)
 
     def __hash__(self : Self):
         return hash(self._uuid)
@@ -75,14 +75,14 @@ class DrawingScene(
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()
 
-    def name(self : Self) -> str | None:
+    def name(self : Self) -> str:
         return self._name
 
-    def setName(self : Self, name : str | None) -> None:
+    def setName(self : Self, name : str, notify : bool = True) -> None:
         self._name = name
         self.properties.signalChanges("Name")
-        if self._doc is not None:
-            self._doc.onChanged("Name")
+        if notify and self._doc is not None and self.live():
+            self._doc.onChanged()
 
     def undo(self : Self) -> None:
         self.undo_stack.undo()
