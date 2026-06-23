@@ -8,18 +8,12 @@ from ..resources import getIconPath
 from ..core.check   import checked
 from ..core.session import DocType, Session
 from ..core.types   import MenuAction, MenuSeparator, MenuEntry
-from ..core.doc     import (
-    Doc,
-    DocBinding,
-    DocSubjectProtocol,
-    NavItemSpec
-)
-from ..core.icon import SvgIconSingleton
+from ..core.doc     import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
+from ..core.icon    import SvgIconSingleton
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..widgets.window.sub_window import DocSubWindow
-    from ..widgets.window.navigator import Navigator
     from ..widgets.graphics.scenes.diagram import DiagramScene
 
 
@@ -202,7 +196,6 @@ class HdlSchematicDiagramDoc(Doc):
         self    : Self,
         subject : DocSubjectProtocol,
     ) -> "DocSubWindow | None":
-        from ..widgets.window.sub_window import DocSubWindow
         if self._scene is None:
             logger().error(f"{type(self).__name__} has no scene")
             return None
