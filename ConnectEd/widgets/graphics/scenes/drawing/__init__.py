@@ -117,12 +117,3 @@ class DrawingScene(
                 h * 3
             )
             self.setSceneRect(scene_rect)
-
-    def selectedLineColor(self : Self) -> QColor:
-        return self._sel_line
-
-    def selectedFillColor(self : Self) -> QColor:
-        return self._sel_fill
-
-    def selectedTextColor(self : Self) -> QColor:
-        return self._sel_text
