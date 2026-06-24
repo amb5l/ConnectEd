@@ -31,17 +31,6 @@ class DiagramSceneResources(DrawingSceneResources):
         """Typically called after a settings change."""
         # DrawingSceneResources
         super().update()
-        # Segment
-        self._pens["Segment"] = {}
-        for kind in NetKind:
-            settings_path = f"theme/items/Segment/line/{kind.value}"
-            pen_normal, pen_selected = self._getPens(
-                "Segment",
-                settings_path,
-                cap_style=Qt.PenCapStyle.RoundCap,
-            )
-            self._pens["Segment"][(kind, False)] = pen_normal
-            self._pens["Segment"][(kind, True)]  = pen_selected
         # GateRound
         self._pens["GateRound"] = {}
         self._brushes["GateRound"] = {}
@@ -103,6 +92,17 @@ class DiagramSceneResources(DrawingSceneResources):
             self._pens["Tap"][(kind, False)] = pen_normal
             self._pens["Tap"][(kind, True)]  = pen_selected
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
+        # Segment
+        self._pens["Segment"] = {}
+        for kind in NetKind:
+            settings_path = f"theme/items/Segment/line/{kind.value}"
+            pen_normal, pen_selected = self._getPens(
+                "Segment",
+                settings_path,
+                cap_style=Qt.PenCapStyle.RoundCap,
+            )
+            self._pens["Segment"][(kind, False)] = pen_normal
+            self._pens["Segment"][(kind, True)]  = pen_selected
         # SegmentPreview1 and SegmentPreview2
         self._pens["SegmentPreview1"] = self._getPen(
             "theme/items/SegmentPreview1/line", Qt.PenCapStyle.RoundCap
