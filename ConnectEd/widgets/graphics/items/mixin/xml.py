@@ -22,27 +22,35 @@ else:
 
 
 class ItemXmlMixin:
-    _CHILD_TAGS = frozenset({
-        "GatePin", "BlockPin", "SymbolPin", "PropertyText"
-    })
+    _XML_CHILDREN : frozenset[str] = frozenset({})
+
+    @classmethod
+    def xmlTag(cls : type[MixinSelf]) -> str:
+        tag = cls.__name__.removesuffix("Item")
+        tag = tag.removesuffix("Definition")
+        tag = tag.removesuffix("Instance")
+        return tag
 
     def toXmlBegin(self : MixinSelf, xw : QXmlStreamWriter) -> None:
-        toXmlStartElement(xw, self.__class__.__name__.removesuffix("Item"))
+        tag = type(self).xmlTag()
+        toXmlStartElement(xw, tag)
         if hasattr(self, "properties"):
             toXmlProperties(self, xw)
-
-    def toXmlAttrs(self : MixinSelf, xw : QXmlStreamWriter) -> None:
-        """Hook for item-specific attributes beyond ``properties``."""
 
     def toXmlEnd(self : MixinSelf, xw : QXmlStreamWriter) -> None:
         toXmlEndElement(xw)
 
-    def toXmlChildren(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+    def toXmlChildren(
+        self : MixinSelf,
+        xw   : QXmlStreamWriter,
+        *,
+        pins : bool = True
+    ) -> None:
         from ..property_text import PropertyTextItem
         from ..port_pin      import PortPinMixin
         from ..handle        import HandleItem
         for child in self.childItems():
-            if isinstance(child, PortPinMixin):
+            if pins and isinstance(child, PortPinMixin):
                 child.toXml(xw)
             elif isinstance(child, HandleItem):
                 for handle_child in child.childItems():
@@ -58,41 +66,51 @@ class ItemXmlMixin:
     @checked
     def fromXmlChild(self : MixinSelf, xr : QXmlStreamReader) -> bool:
         """Handle one child start element. Returns True if consumed."""
-        from ...items.port_pin   import PortPinMixin
+        from ..property_text     import PropertyTextItem
         from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
-        from ..property_text     import PropertyTextItem
-        pin_classes = {
+        from ...items.line       import LineItem
+        from ...items.rectangle  import RectangleItem
+        from ...items.ellipse    import EllipseItem
+        from ...items.polyline   import PolylineItem
+        from ...items.text       import TextItem
+        _item_classes = {
             "GatePin"   : GatePinItem,
             "BlockPin"  : BlockPinItem,
             "SymbolPin" : SymbolPinItem,
+            "Line"      : LineItem,
+            "Rectangle" : RectangleItem,
+            "Ellipse"   : EllipseItem,
+            "Polyline"  : PolylineItem,
+            "Text"      : TextItem
         }
         tag = xr.name()
-        if tag in pin_classes:
-            child_cls : type[PortPinMixin] = pin_classes[tag]
-            child_cls.fromXml(xr, self)
-            return True
         if tag == "PropertyText":
-            child : PropertyTextItem = PropertyTextItem.fromXml(xr, self)
-            if child is not None:
-                prop_name = child.name()
-                self.properties.setText(prop_name, child)
+            pt : PropertyTextItem = PropertyTextItem.fromXml(xr, self)
+            if pt is not None:
+                prop_name = pt.name()
+                self.properties.setText(prop_name, pt)
+            return True
+        elif tag in _item_classes:
+            child_cls : type[ItemXmlMixin] = _item_classes[tag]
+            child = child_cls.fromXml(xr)
+            child.setParentItem(self)
             return True
         return False
 
     @checked
     def fromXmlChildren(self : MixinSelf, xr : QXmlStreamReader) -> None:
         """Consume child elements until the parent's end element."""
-        xml_item_name = self.__class__.__name__.removesuffix("Item")
+        tag = type(self).xmlTag()
         def dispatch(xr : QXmlStreamReader) -> None:
             if not self.fromXmlChild(xr):
                 logger().warning(f"Unexpected child item: {xr.name()}")
             return None
         fromXml(
             xr,
-            dict.fromkeys(self._CHILD_TAGS, dispatch),
-            ptag=xml_item_name,
+            dict.fromkeys(self._XML_CHILDREN, dispatch),
+            ptag=tag,
         )
 
     @staticmethod
@@ -114,7 +132,7 @@ class ItemXmlMixin:
         xr     : QXmlStreamReader,
         parent : QGraphicsItem | None = None
     ) -> Self:
-        xml_item_name = cls.__name__.removesuffix("Item")
+        tag = cls.xmlTag()
         args = {"fresh": False}
         if parent is not None:
             args["parent"] = parent
@@ -122,7 +140,7 @@ class ItemXmlMixin:
         fromXmlProperties(instance, xr)
         if hasattr(instance, "onGeometryChanged"):
             instance.onGeometryChanged()
-        if not (xr.isEndElement() and xr.name() == xml_item_name):
+        if not (xr.isEndElement() and xr.name() == tag):
             instance.fromXmlChildren(xr)
         ItemXmlMixin.fromXmlRefresh(instance)
         if hasattr(instance, "properties"):

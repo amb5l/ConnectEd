@@ -13,9 +13,24 @@ from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
 from ...xml import toXmlProperties, fromXmlProperties
 
 from ...items.role    import DocumentItem
-from ...items.symbol  import SymbolItem
-from ...items.segment import SegmentItem, SegmentPreviewItem
-from ...items.node    import NodeItem, FreeNodeItem, FixedNodeItem
+
+# decorative items
+from ...items.line      import LineItem
+from ...items.rectangle import RectangleItem
+from ...items.ellipse   import EllipseItem
+from ...items.polyline  import PolylineItem
+from ...items.text      import TextItem
+
+# functional items
+from ...items.port      import PortItem
+from ...items.gate      import BufGateItem, AndGateItem, OrGateItem, XorGateItem
+from ...items.block     import BlockItem
+from ...items.symbol    import SymbolDefinitionItem, SymbolInstanceItem
+
+# connectivity items
+from ...items.segment   import SegmentItem, SegmentPreviewItem
+from ...items.node      import NodeItem, FreeNodeItem, FixedNodeItem
+from ...items.net_label import NetLabelItem
 
 from ...items.mixin   import ItemXmlMixin
 
@@ -80,14 +95,14 @@ class DiagramSceneXmlMixin:
         """Serialise symbols that are used in the scene.
         """
         definitions = self.symbolDefinitions()
-        used = [
-            item for item in items if isinstance(item, SymbolItem)
+        instances = [
+            item for item in items if isinstance(item, SymbolInstanceItem)
         ]
-        if not used:
+        if not instances:
             return
         definition_names = \
             {definition.name() for definition in definitions.values()}
-        used_names = {instance.name() for instance in used}
+        used_names = {instance.name() for instance in instances}
         undefined_names = used_names - definition_names
         if undefined_names:
             logger().warning(f"Undefined symbols: {undefined_names}")
@@ -98,7 +113,7 @@ class DiagramSceneXmlMixin:
         for name, symbol in definitions.items():
             if name not in used_defined_names:
                 continue
-            symbol.toXmlDefinition(xw)
+            symbol.toXml(xw)
         toXmlEndElement(xw)
 
     @checked
@@ -283,9 +298,14 @@ class DiagramSceneXmlMixin:
             }, ptag="Netlist")
             return None
 
-        def fromXmlSymbols(xr : QXmlStreamReader) -> None:
+        def fromXmlSymbolDefinitions(xr : QXmlStreamReader) -> None:
             xr.readNext()
-            fromXml(xr, {}, ptag="Symbols")
+            symbols = fromXml(
+                xr,
+                { "Symbol" : SymbolDefinitionItem },
+                ptag="Symbols"
+            )
+            self._symbols |= {symbol.name(): symbol for symbol in symbols}
             return None
 
         def fromXmlItem(
@@ -294,7 +314,14 @@ class DiagramSceneXmlMixin:
         ) -> ItemXmlMixin:
             item = item_cls.fromXml(xr)
             self.addItem(item)
-            return None
+            if isinstance(item, SymbolInstanceItem):
+                name = item.name()
+                definition = self._symbols.get(name, None)
+                if definition:
+                    item.sync(definition)
+                else:
+                    logger().warning(f"Symbol {name} not found")
+            return item
 
         top_element_name = self._XML_TAG
         if xr.name() != top_element_name:
@@ -303,11 +330,25 @@ class DiagramSceneXmlMixin:
             )
         fromXmlProperties(self, xr)
 
-        from ...items import _item_classes
         xref = {
-            "Symbols" : fromXmlSymbols,
+            "Symbols" : fromXmlSymbolDefinitions,
             "Segment" : fromXmlSegment,
             "Netlist" : fromXmlNetlist,
+        }
+        _item_classes = {
+            "Line"         : LineItem,
+            "Rectangle"    : RectangleItem,
+            "Ellipse"      : EllipseItem,
+            "Polyline"     : PolylineItem,
+            "Text"         : TextItem,
+            "Port"         : PortItem,
+            "BufGate"      : BufGateItem,
+            "AndGate"      : AndGateItem,
+            "OrGate"       : OrGateItem,
+            "XorGate"      : XorGateItem,
+            "Block"        : BlockItem,
+            "Symbol"       : SymbolInstanceItem,
+            "NetLabel"     : NetLabelItem
         }
         for item_name, item_cls in _item_classes.items():
             tag = item_name.removesuffix("Item")

@@ -105,6 +105,7 @@ class InherentProperty:
     default  : Callable[["Owner"], Any]                  | None = None
     notifier : PropertyNotifier                          | None = None
     text     : PropertyTextItem                          | None = None
+    tip      : str                                       | None = None
 
 
 _CUSTOM_PROPERTY_KINDS = (
@@ -153,6 +154,20 @@ class PropertiesManager:
     @checked
     def names(self : Self) -> list[str]:
         return list(self._dict.keys())
+
+    @checked
+    def inherentNames(self : Self) -> list[str]:
+        return [
+            name for name, property in self._dict.items()
+            if isinstance(property, InherentProperty)
+        ]
+
+    @checked
+    def customNames(self : Self) -> list[str]:
+        return [
+            name for name, property in self._dict.items()
+            if isinstance(property, CustomProperty)
+        ]
 
     @checked
     def has(self : Self, name : str) -> bool:
@@ -510,6 +525,31 @@ class PropertiesManager:
                     property.notifier.changed.emit()
 
     @checked
+    def syncInherentFrom(
+        self  : Self,
+        other : "PropertiesManager"
+    ) -> None:
+        for name in other.inherentNames():
+            if self.has(name):
+                if self.writeable(name):
+                    self.setValue(name, other.value(name))
+            else:
+                logger().warning(f"Property '{name}' not found")
+
+    @checked
+    def syncCustomFrom(self : Self, other : "PropertiesManager") -> None:
+        for name in self.customNames():
+            if not other.has(name):
+                self.delete(name)
+            else:
+                self.setValue(name, other.value(name))
+        for name in other.customNames():
+            if self.has(name):
+                self.setValue(name, other.value(name))
+            else:
+                self.add(name, other.kind(name), other.value(name))
+
+    @checked
     def text(self : Self, name : str) -> "PropertyTextItem | None":
         """
         Get the property text item for a property.
@@ -537,6 +577,13 @@ class PropertiesManager:
         property.text = text
         text.onTextChanged()
         return True
+
+    def texts(self : Self) -> list["PropertyTextItem"]:
+        return [
+            property.text
+            for property in self._dict.values()
+            if property.text is not None
+        ]
 
     @checked
     def addText(
@@ -711,6 +758,54 @@ class PropertiesManager:
         # remove reference
         property.text = None
         return True
+
+    @checked
+    def addMissingTextsFrom(self : Self, other : "PropertiesManager") -> None:
+        for pt in other.texts():
+            if not self.has(pt.name()):
+                logger().warning(f"Property '{pt.name()}' not found")
+                continue
+            if self.text(pt.name()) is not None:
+                continue
+            self.addText(*pt.propertyTuple())
+
+    @checked
+    def removeTextsNotIn(self : Self, other : "PropertiesManager") -> None:
+        for pt in self.texts():
+            if not other.has(pt.name()):
+                logger().warning(f"Property '{pt.name()}' not found")
+                continue
+            if other.text(pt.name()) is None:
+                self.delText(pt.name())
+
+    @checked
+    def syncTextFrom(self : Self, other : "PropertiesManager") -> None:
+        for pt in self.texts():
+            if not other.has(pt.name()):
+                logger().warning(f"Property '{pt.name()}' not found")
+            other_pt = other.text(pt.name())
+            if other_pt is None:
+                continue
+            pt.setCleat(other_pt.cleat())
+            pt.setPos(other_pt.pos())
+            pt.setRotation(other_pt.rotation())
+            pt.setMirrorH(other_pt.mirrorH())
+            pt.setMirrorV(other_pt.mirrorV())
+            pt.setAutoflip(other_pt.autoflip())
+            pt.setOrigin(other_pt.origin())
+            pt.setAlignH(other_pt.alignH())
+            pt.setAlignV(other_pt.alignV())
+            pt.setWidth(other_pt.width())
+            pt.setHeight(other_pt.height())
+            pt.setPadLeft(other_pt.padLeft())
+            pt.setPadRight(other_pt.padRight())
+            pt.setPadTop(other_pt.padTop())
+            pt.setPadBottom(other_pt.padBottom())
+            pt.setTextColor(other_pt.textColor())
+            pt.setTextFont(other_pt.textFont())
+            pt.setTextSize(other_pt.textSize())
+            pt.setTextBold(other_pt.textBold())
+            pt.setTextItalic(other_pt.textItalic())
 
 
 class PropertiesMixin:

@@ -42,6 +42,7 @@ class SymbolPinItem(
                 cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
+    _XML_CHILDREN = {"PropertyText"}
 
     @classmethod
     def handleIdType(cls) -> type[SymbolPinHandleId]:

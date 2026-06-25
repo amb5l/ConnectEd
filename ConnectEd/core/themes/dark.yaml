@@ -96,6 +96,8 @@ presets:
   BlockPinArrowFill    : apricot
   BlockPinName         : apricot
   BlockPinComment      : light_grey
+  SymbolBodyLine       : mid_grey
+  SymbolBodyFill       : dull_grey
   SymbolPinWire        : mid_grey
   SymbolPinBus         : mid_grey
   SymbolPinArrowLine   : apricot
@@ -356,6 +358,14 @@ items:
       bold      : false
       italic    : false
       underline : false
+  SymbolBody:
+    line:
+      color : '@SymbolBodyLine'
+      width : 1
+      style : DotLine
+    fill:
+      color : '@SymbolBodyFill'
+      style : NoBrush
   SymbolPin:
     pin:
       wire:

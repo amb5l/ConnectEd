@@ -3,7 +3,7 @@ import networkx
 from typing      import Self
 from dataclasses import dataclass, field
 
-from PyQt6.QtCore import QPointF, QLineF, QXmlStreamReader, QXmlStreamWriter
+from PyQt6.QtCore import QPointF, QLineF
 
 from .....app import logger
 
@@ -17,15 +17,20 @@ from ...items.node       import NodeItem, FreeNodeItem, FixedNodeItem, \
 from ...items.net_label  import NetLabelItem
 from ...items.tap        import TapItem
 from ...items.port       import PortItem
+from ...items.gate_pin   import GatePinItem
 from ...items.block_pin  import BlockPinItem
 from ...items.symbol_pin import SymbolPinItem
+from ...items.gate       import GateItem
 from ...items.block      import BlockItem
-from ...items.symbol     import SymbolItem
+from ...items.symbol     import SymbolInstanceItem
 from ...items.segment  import SegmentItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...scenes.diagram import DiagramScene
+
+
+PinParent = GateItem | BlockItem | SymbolInstanceItem
 
 
 @dataclass(slots=True)
@@ -130,8 +135,8 @@ class Netlist:
             node_parent = node.parentItem()
             if isinstance(node_parent, PortItem):
                 full_name = node_parent.name()
-            elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
-                pin_parent : BlockItem | SymbolItem | None = node_parent.parentItem()
+            elif isinstance(node_parent, GatePinItem | BlockPinItem | SymbolPinItem):
+                pin_parent : PinParent | None = node_parent.parentItem()
                 label = pin_parent.label()
                 pin_name = node_parent.name()
                 full_name = f"{label}_{pin_name}"
@@ -583,7 +588,7 @@ class Netlist:
                         o_port_names.append(port_name)
                 elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
                     pin_parent = node_parent.parentItem()
-                    if isinstance(pin_parent, BlockItem | SymbolItem):
+                    if isinstance(pin_parent, PinParent):
                         pin_names.append((pin_parent.label(), node_parent.name()))
         # sort pin name tuples
         if pin_names:

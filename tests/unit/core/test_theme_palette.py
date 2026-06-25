@@ -60,6 +60,8 @@ _MINIMAL_PRESETS = """
   BlockPinArrowFill    : '#808000'
   BlockPinName         : '#808000'
   BlockPinComment      : '#808000'
+  SymbolBodyLine       : '#808080'
+  SymbolBodyFill       : '#404040'
   SymbolPinWire        : '#808080'
   SymbolPinBus         : '#808080'
   SymbolPinArrowLine   : '#808000'

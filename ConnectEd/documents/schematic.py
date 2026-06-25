@@ -1,3 +1,13 @@
+#Priority	Issue
+#P0: Store scene in registry (or drop _symbol_scenes and use **_dirty only consistently)
+#P0: isClean(L2) aggregate includes dirty symbols
+ #P0: Navigator navDisplayLabel on refresh
+#P1: destroyed cleanup for symbol editors
+ #P1: Diagram cleanChanged → onChanged()
+#P1: Multiple editors: don’t clear _dirty while another stack is dirty
+#P2: save() return value; setClean on all open symbol stacks
+#P2: navToolTip modified suffix
+
 from typing import Self
 
 from PyQt6.QtCore    import QSize, QXmlStreamWriter, QXmlStreamReader
@@ -11,10 +21,18 @@ from ..core.types   import MenuAction, MenuSeparator, MenuEntry
 from ..core.doc     import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
 from ..core.icon    import SvgIconSingleton
 
+from ..widgets.dialogs.unsaved_changes import UnsavedChangesDialog
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets.window.sub_window import DocSubWindow
+    from ..widgets.window.sub_window       import DocSubWindow
     from ..widgets.graphics.scenes.diagram import DiagramScene
+    from ..widgets.graphics.scenes.symbol  import SymbolScene
+    from ..widgets.graphics.items.symbol   import \
+        SymbolDefinitionItem, SymbolInstanceItem
+
+
+_SYMBOL_CONTAINER = "Symbols"
 
 
 class SchematicIcon(SvgIconSingleton):
@@ -30,14 +48,40 @@ class SymbolIcon(SvgIconSingleton):
 class HdlSchematicDiagramDoc(Doc):
     _XML_TAG = "HdlSchematicDiagram"
 
-    _scene : "DiagramScene | None"
-    _path  : str
+    _path             : str
+    _scene            : "DiagramScene | None"
+    _symbol_container : str
+    _symbol_scenes    : dict["SymbolDefinitionItem", "SymbolScene"]
+    _dirty            : list["SymbolDefinitionItem" | str]
 
     def __init__(self : Self, name : str | None = None) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         self._path = ""
         self._scene = DiagramScene(self)
+        self._symbol_container = _SYMBOL_CONTAINER
+        self._symbol_scenes = {}
+        self._dirty = []
         self.setName(name or "Untitled")
+        self._scene.undo_stack.setClean()
+        self._scene.undo_stack.cleanChanged.connect(
+            lambda clean: self._onCleanChanged(self._scene, clean)
+        )
+
+    # --- clean state tracking -------------------------------------------------
+
+    def isClean(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None
+    ) -> bool:
+        if subject is None:
+            subject = self._scene
+        if subject is self._scene:
+            return self._scene.undo_stack.isClean() \
+                and self._dirtySymbolCount() == 0
+        elif subject in self._symbol_scenes:
+            return self._symbol_scenes[subject].undo_stack.isClean()
+        else:
+            return subject in self._dirty
 
     def name(self : Self) -> str:
         return self._scene.name()
@@ -78,6 +122,11 @@ class HdlSchematicDiagramDoc(Doc):
         from ..core.xml import loadXml
         return loadXml(cleanPath(path), {cls.tag(): cls})
 
+    def save(self : Self, path : str | None = None) -> bool:
+        self._scene.undo_stack.setClean()
+        self._dirty = []
+        return super().save(path)
+
     # --- Navigator (tree presentation) ----------------------------------------
 
     @checked
@@ -88,10 +137,10 @@ class HdlSchematicDiagramDoc(Doc):
             tip      = self._path or "(not saved)",
             children = [
                 NavItemSpec(
-                    subject  = "Symbol Definitions",
+                    subject  = self._symbol_container,
                     children = [
-                        NavItemSpec(subject = symbol_item, icon = SymbolIcon())
-                        for symbol_item in self._scene.symbols()
+                        NavItemSpec(subject = s, icon = SymbolIcon())
+                        for s in self._scene.symbolDefinitions().values()
                     ],
                 ),
             ],
@@ -120,6 +169,14 @@ class HdlSchematicDiagramDoc(Doc):
             return True
         return False
 
+    def navDisplayLabel(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> str:
+        if subject is None:
+            subject = self._scene
+        return subject.name() + ("" if self.isClean(subject) else "*")
+
     def navToolTip(
         self    : Self,
         subject : DocSubjectProtocol
@@ -142,14 +199,14 @@ class HdlSchematicDiagramDoc(Doc):
                 MenuAction("Edit", lambda s=subject: self.showWindow(s)),
                 MenuAction("New Window", lambda s=subject: self.newWindow(s)),
             ]
-        elif subject == "Symbol Definitions":
+        elif subject == self._symbol_container:
             return [
                 MenuAction("New Symbol", lambda: self.newSymbolHandler()),
                 MenuSeparator(),
                 MenuAction("Refresh All", lambda: self.refreshSymbolsHandler()),
                 MenuAction("Purge All", lambda: self.purgeSymbolsHandler()),
             ]
-        elif subject in self._scene.symbols():
+        elif subject in self._scene.symbolDefinitions().values():
             return [
                 MenuAction("Edit", lambda s=subject: self.showWindow(s)),
                 MenuAction("New Window", lambda s=subject: self.newWindow(s)),
@@ -161,7 +218,7 @@ class HdlSchematicDiagramDoc(Doc):
                 MenuAction(
                     "Delete",
                     lambda s=subject: self.deleteSymbolHandler(s),
-                    self._scene.symbolInstances(subject) > 0
+                    len(self._scene.symbolInstances(subject)) == 0
                 ),
                 MenuSeparator(),
                 MenuAction(
@@ -174,54 +231,19 @@ class HdlSchematicDiagramDoc(Doc):
 
     # --- MDI (subwindows) -----------------------------------------------------
 
-    def _findSubWindow(
-        self    : Self,
-        subject : DocSubjectProtocol,
-    ) -> "DocSubWindow | None":
-        mdi_area = window().mdiArea()
-        return mdi_area.preferredSubWindow(self, subject)
-
-    def _createSubWindow(
-        self    : Self,
-        subject : DocSubjectProtocol,
-    ) -> "DocSubWindow | None":
-        if self._scene is None:
-            logger().error(f"{type(self).__name__} has no scene")
-            return None
-        from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
-        from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-        from ..widgets.graphics.scenes.diagram import DiagramScene
-        from ..widgets.graphics.scenes.symbol  import SymbolScene
-        from ..widgets.graphics.items.symbol   import SymbolItem
-        symbols = self._scene.symbols()
-        if subject is not self._scene and subject not in symbols:
-            logger().error(f"Document does not contain subject {subject}")
-            return None
-        if isinstance(subject, DiagramScene):
-            scene = subject
-            view_cls = DiagramView
-            subwindow_cls = DiagramSubWindow
-        elif isinstance(subject, SymbolItem):
-            scene = SymbolScene()
-            scene.addItem(subject.clone())
-            view_cls = SymbolView
-            subwindow_cls = SymbolSubWindow
-        else:
-            logger().error(f"Unsupported subject type: {type(subject)}")
-            return None
-        view = view_cls(scene)
-        binding = DocBinding(self, subject)
-        mdi_area = window().mdiArea()
-        subwindow = subwindow_cls(mdi_area, binding)
-        subwindow.setWidget(view)
-        mdi_area.addSubWindow(subwindow)
-        return subwindow
-
     def showWindow(self : Self, subject : DocSubjectProtocol) -> bool:
-        subwindow = self._findSubWindow(subject)
-        if subwindow is not None:
-            window().mdiArea().activateSubWindow(subwindow)
-            return True
+        """
+        Show existing primary editing subwindow for subject, or creates a new
+        one if none exists. Ignores auxilliary editors (spreadsheets etc).
+        """
+        from ..widgets.graphics.views.diagram import DiagramSubWindow
+        from ..widgets.graphics.views.symbol  import SymbolSubWindow
+        subwindows = window().mdiArea().docSubjectSubWindows(self, subject)
+        subwindow = None
+        for subwindow in subwindows:
+            if isinstance(subwindow, DiagramSubWindow | SymbolSubWindow):
+                window().mdiArea().activateSubWindow(subwindow)
+                return True
         return self.newWindow(subject)
 
     def newWindow(self : Self, subject : DocSubjectProtocol) -> bool:
@@ -235,11 +257,75 @@ class HdlSchematicDiagramDoc(Doc):
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
         if subject is self._scene:
             return self._scene.name() + " - HDL Schematic Editor"
-        if subject in self._scene.symbols():
+        if subject in self._scene.symbolDefinitions().values():
             return subject.name() + " - HDL Schematic Symbol Editor"
         return "Unknown Subject"
 
+    def closeSubWindow(self : Self, subwindow : "DocSubWindow") -> bool:
+        """Prompt for commit/discard, and veto if necessary."""
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
+        # get subject
+        subject = self._subjectFromSubwindow(subwindow)
+        if subject is None: return False
+        # prompt to save/commit when last window is closed
+        if isinstance(subject, DiagramScene):
+            # whole document
+            subwindows = window().mdiArea().docSubWindows(self)
+            if len(subwindows) == 1:
+                window().navigator().fileSaveAs(subwindow)
+            return True
+        elif isinstance(subject, SymbolDefinitionItem):
+            # symbol
+            if self._isSymbolClean(subject):
+                return True
+            subwindows = window().mdiArea().docSubjectSubWindows(self, subject)
+            if len(subwindows) == 1:
+                dialog = UnsavedChangesDialog(
+                    f"Symbol '{subject.name()}' has been modified.",
+                    window()
+                )
+                if dialog.exec():
+                    if dialog.commit():
+                        self.commit(subwindow)
+                    scene = self._symbol_scenes[subject]
+                    scene.undo_stack.setClean()
+                    return True
+                else:
+                    return False
+            return True
+        return False
+
+    def onSubWindowClosed(self : Self, subwindow : "DocSubWindow") -> None:
+        # get subject
+        subject = self._subjectFromSubwindow(subwindow)
+        if subject is None: return
+        # clean up _symbol_scenes, update _dirty
+        subwindows = window().mdiArea().docSubjectSubWindows(self, subject)
+        if len(subwindows) == 1:
+                if subject in self._symbol_scenes:
+                    scene = self._symbol_scenes[subject]
+                    if not scene.undo_stack.isClean():
+                        self._dirty.append(subject)
+                    del self._symbol_scenes[subject]
+        # clean up display labels
+        window().mdiArea().onSubWindowsChanged()
+
     # --- editor lifecycle (close / save) --------------------------------------
+
+    def commit(self : Self, subwindow : "DocSubWindow") -> bool:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
+        subject = self._subjectFromSubwindow(subwindow)
+        if subject is None: return False
+        if isinstance(subject, DiagramScene):
+            window().navigator().fileSaveAs(subwindow)
+            return True
+        elif isinstance(subject, SymbolDefinitionItem):
+            return self._symbol_scenes[subject].commit()
+            return True
+        logger().error(f"Unsupported subject type: {type(subject)}")
+        return False
 
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
         return subject is self._scene
@@ -286,6 +372,99 @@ class HdlSchematicDiagramDoc(Doc):
         # replace symbol definition in scene and navigator
         self._scene.replaceSymbol(subject)  # scene API (undoable)
 
+    # --- helpers --------------------------------------------------------------
+
+    def _createSubWindow(
+        self    : Self,
+        subject : DocSubjectProtocol,
+    ) -> "DocSubWindow | None":
+        if self._scene is None:
+            logger().error(f"{type(self).__name__} has no scene")
+            return None
+        from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
+        from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        from ..widgets.graphics.scenes.symbol  import SymbolScene
+        from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
+        symbols = self._scene.symbolDefinitions().values()
+        if subject is not self._scene and subject not in symbols:
+            logger().error(f"Document does not contain subject {subject}")
+            return None
+        if isinstance(subject, DiagramScene):
+            scene = subject
+            view_cls = DiagramView
+            subwindow_cls = DiagramSubWindow
+        elif isinstance(subject, SymbolDefinitionItem):
+            if subject not in self._symbol_scenes:
+                scene = SymbolScene()
+                scene.addItem(subject.clone())
+                scene.undo_stack.setClean()
+                scene.undo_stack.cleanChanged.connect(
+                    lambda clean, s=subject: self._onCleanChanged(s, clean)
+                )
+                self._symbol_scenes[subject] = scene
+                if subject in self._dirty:
+                    self._dirty.remove(subject)
+            else:
+                scene = self._symbol_scenes[subject]
+            view_cls = SymbolView
+            subwindow_cls = SymbolSubWindow
+        else:
+            logger().error(f"Unsupported subject type: {type(subject)}")
+            return None
+        view = view_cls(scene)
+        binding = DocBinding(self, subject)
+        mdi_area = window().mdiArea()
+        subwindow = subwindow_cls(mdi_area, binding)
+        subwindow.setWidget(view)
+        mdi_area.addSubWindow(subwindow)
+        return subwindow
+
+    def _isSymbolClean(self : Self, subject : DocSubjectProtocol) -> bool:
+        from ..widgets.graphics.items.symbol import SymbolDefinitionItem
+        if subject in self._symbol_scenes:
+            return self._symbol_scenes[subject].undo_stack.isClean()
+        return isinstance(subject, SymbolDefinitionItem) \
+            and subject not in self._dirty
+
+    def _dirtySymbolCount(self : Self) -> int:
+        return sum(
+            1 for s in self._scene.symbolDefinitions()
+            if not self._isSymbolClean(s)
+        )
+
+    def _onCleanChanged(
+        self    : Self,
+        subject : DocSubjectProtocol,
+        clean   : bool
+    ) -> None:
+        from ..widgets.graphics.items.symbol import SymbolDefinitionItem
+        if not clean:
+            if subject not in self._dirty:
+                self._dirty.append(subject)
+            if isinstance(subject, SymbolDefinitionItem):
+                if self._symbol_container not in self._dirty:
+                    self._dirty.append(self._symbol_container)
+        else:
+            if subject in self._dirty:
+                self._dirty.remove(subject)
+            if self._symbol_container in self._dirty:
+                if self._dirtySymbolCount() == 0:
+                    self._dirty.remove(self._symbol_container)
+        self.onChanged()
+
+    def _subjectFromSubwindow(
+        self      : Self,
+        subwindow : "DocSubWindow"
+    ) -> DocSubjectProtocol | None:
+        binding = subwindow.docBinding()
+        if binding is None:
+            logger().error("Subwindow has no binding")
+            return None
+        if binding.doc is not self:
+            logger().error(f"Subwindow has wrong document: {binding.doc} != {self}")
+            return None
+        return binding.subject
 
 
 # register document type with Session

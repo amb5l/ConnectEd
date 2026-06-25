@@ -47,6 +47,8 @@ class ThemePalette:
     BlockPinArrowFill    : QColor
     BlockPinName         : QColor
     BlockPinComment      : QColor
+    SymbolBodyLine       : QColor
+    SymbolBodyFill       : QColor
     SymbolPinWire        : QColor
     SymbolPinBus         : QColor
     SymbolPinArrowLine   : QColor
@@ -153,6 +155,8 @@ palette_dark = ThemePalette(
     BlockPinArrowFill    = mid_yellow,
     BlockPinName         = mid_yellow,
     BlockPinComment      = mid_yellow,
+    SymbolBodyLine       = mid_gray,
+    SymbolBodyFill       = dark_gray,
     SymbolPinWire        = mid_gray,
     SymbolPinBus         = mid_gray,
     SymbolPinArrowLine   = mid_yellow,
@@ -222,6 +226,8 @@ palette_light_mono = ThemePalette(
     BlockPinArrowFill    = bright_white,
     BlockPinName         = black,
     BlockPinComment      = black,
+    SymbolBodyLine       = black,
+    SymbolBodyFill       = bright_white,
     SymbolPinWire        = black,
     SymbolPinBus         = black,
     SymbolPinArrowLine   = black,

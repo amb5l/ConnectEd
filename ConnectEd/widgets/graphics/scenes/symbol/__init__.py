@@ -7,17 +7,28 @@ from .....app import settings
 
 from .....core.defs import PITCH
 
-from ..drawing import DrawingScene
+from ..diagram import DiagramScene
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...items.symbol import SymbolDefinitionItem
 
 
-class SymbolScene(DrawingScene):
-    # TODO ensure existence of boundary ("fence") item
+class SymbolScene(DiagramScene):
+    """Scene for editing a single symbol."""
 
     # instance attributes
-    _brect   : QRectF | None  # bounding rect of all items
+    _symbol : "SymbolDefinitionItem" | None  # symbol being edited
+    _brect  : QRectF | None        # bounding rect of all items
 
-    def __init__(self : Self, fresh : bool = True) -> None:
-        super().__init__(fresh=fresh)
+    def __init__(
+        self   : Self,
+        symbol : "SymbolDefinitionItem" | None = None
+    ) -> None:
+        super().__init__()
+        self._symbol = symbol
+        if symbol is not None:
+            self.addItem(symbol)
         self._brect = None
         self.onChange()
         self.changed.connect(self.onChange)

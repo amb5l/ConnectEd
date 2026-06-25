@@ -138,7 +138,4 @@ class NavigatorApiMixin:
         if doc_binding is None:
             logger().warning("Subwindow has no document binding")
             return None
-        doc = doc_binding.doc
-        if doc is None:
-            return None
-        return doc
+        return doc_binding.doc

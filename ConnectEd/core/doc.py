@@ -48,6 +48,19 @@ class Doc(ABC):
 
     # --- persistence (Session) ------------------------------------------------
 
+    @abstractmethod
+    def isClean(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> bool:
+        """
+        Clean state for save/close, navigator labels and window titles.
+
+        Return ``True`` when there are no unsaved edits.
+        ``subject=None`` → document-level; otherwise that bound row.
+        """
+        ...
+
     @classmethod
     def tag(cls : type[Self]) -> str:
         return cls._XML_TAG
@@ -113,6 +126,14 @@ class Doc(ABC):
         ...
 
     @abstractmethod
+    def navDisplayLabel(
+        self    : Self,
+        subject : DocSubjectProtocol | None = None,
+    ) -> str:
+        """Navigator row display label; ``subject=None`` → primary subject."""
+        ...
+
+    @abstractmethod
     def navToolTip(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
@@ -161,13 +182,23 @@ class Doc(ABC):
         """Subwindow / Window-menu title."""
         ...
 
+    @abstractmethod
+    def closeSubWindow(self : Self, subwindow : "DocSubWindow") -> bool:
+        """Hook for cleanup/veto before a subwindow is closed."""
+        ...
+
+    @abstractmethod
+    def onSubWindowClosed(self : Self, subwindow : "DocSubWindow") -> None:
+        """Hook for cleanup after a subwindow is closed."""
+        ...
+
     # --- editor lifecycle (close / save) ----------------------------------------
 
     @checked
-    def commitEditor(self : Self, subwindow : "DocSubWindow") -> bool:
-        """Persist in-editor clone (e.g. symbol Save). Override when supported."""
+    def commit(self : Self, subwindow : "DocSubWindow") -> bool:
+        """Persist after edits. Override when supported."""
         raise NotImplementedError(
-            f"{type(self).__name__} does not support commitEditor"
+            f"{type(self).__name__} does not support commit."
         )
 
     @checked

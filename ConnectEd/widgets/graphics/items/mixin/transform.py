@@ -20,7 +20,7 @@ class ItemTransformMixin:
     """Combines previous position, rotation and mirror mixins."""
 
     # class attributes
-    _ORIGIN : HandleId | None
+    _ORIGIN : HandleId | None  # undefined = no origin on this item
     _PROPERTIES_POS = {
         "X" : InherentProperty(
             kind   = DataKind.FLOAT,

@@ -64,6 +64,7 @@ class GateItem(
 ):
     # class attributes
     _PIN_CLS : GatePinItem
+    _XML_CHILDREN = {"PropertyText"}
 
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:

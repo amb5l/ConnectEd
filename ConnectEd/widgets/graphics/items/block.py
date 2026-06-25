@@ -32,6 +32,7 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
             )
         } | \
         BaseRectangleItem._PROPERTIES
+    _XML_CHILDREN = {"BlockPin", "PropertyText"}
 
     # instance attributes
     _line_color = None  # enable per-item appearance control
@@ -47,6 +48,14 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
     ) -> None:
         self.initPart()
         super().__init__(p1, p2, fresh)
+
+    def path(self : Self) -> str:
+        return self._path
+
+    @checked
+    def setPath(self : Self, path : str) -> None:
+        self._path = path
+        self.properties.signalChanges("Path")
 
     def onGeometryChanged(self : Self) -> None:
         super().onGeometryChanged()

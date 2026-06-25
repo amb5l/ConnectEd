@@ -3,7 +3,9 @@ from typing import Self
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import PropertyTextSpec, InherentProperty
+from ..properties import PropertiesMixin, PropertyTextSpec, InherentProperty
+
+MixinSelf = Self | PropertiesMixin
 
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
@@ -31,33 +33,23 @@ class PartItemMixin:
     # instance attributes
     _label : str
     _name  : str
-    _path  : str
 
     @checked
-    def initPart(self : Self) -> None:
+    def initPart(self : MixinSelf) -> None:
         self._label = ""
         self._name = ""
-        self._path = ""
 
-    def label(self : Self) -> str:
+    def label(self : MixinSelf) -> str:
         return self._label
 
-    def setLabel(self : Self, label : str) -> None:
+    def setLabel(self : MixinSelf, label : str) -> None:
         self._label = label
         self.properties.signalChanges("Label")
 
-    def name(self : Self) -> str:
+    def name(self : MixinSelf) -> str:
         return self._name
 
     @checked
-    def setName(self : Self, name : str) -> None:
+    def setName(self : MixinSelf, name : str) -> None:
         self._name = name
         self.properties.signalChanges("Name")
-
-    def path(self : Self) -> str:
-        return self._path
-
-    @checked
-    def setPath(self : Self, path : str) -> None:
-        self._path = path
-        self.properties.signalChanges("Path")

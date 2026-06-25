@@ -470,7 +470,6 @@ class PolylineItem(
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
-        self.toXmlAttrs(xw)
         # serialise segments
         for i, vtx in enumerate(self._vertices[1:]):
             seg = self._segments[i-1]

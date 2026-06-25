@@ -56,6 +56,8 @@ presets:
   BlockPinArrowFill    : white
   BlockPinName         : black
   BlockPinComment      : black
+  SymbolBodyLine       : black
+  SymbolBodyFill       : white
   SymbolPinWire        : black
   SymbolPinBus         : black
   SymbolPinArrowLine   : black
@@ -316,6 +318,14 @@ items:
       bold      : false
       italic    : false
       underline : false
+  SymbolBody:
+    line:
+      color : '@SymbolBodyLine'
+      width : 1
+      style : DotLine
+    fill:
+      color : '@SymbolBodyFill'
+      style : NoBrush
   SymbolPin:
     pin:
       wire:

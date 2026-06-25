@@ -20,7 +20,7 @@ from ....items.port      import PortItem
 from ....items.gate      import GateItem
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
-from ....items.symbol    import SymbolItem
+from ....items.symbol    import SymbolInstanceItem
 from ....items.rubber    import RubberItem, RubberJogItem
 
 from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
@@ -192,7 +192,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             #  look for and rubberize connected segments not in item set
             # TODO: include net labels
             elif isinstance(
-                item, TapItem | PortItem | GateItem | BlockItem | SymbolItem
+                item,
+                TapItem | PortItem | GateItem | BlockItem | SymbolInstanceItem
             ):
                 def _processFixedNode(node : FixedNodeItem) -> None:
                     for seg in list(node.segments()):
@@ -298,7 +299,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     fixed_nodes.append(item.minorNode())
                 elif isinstance(item, PortItem):
                     fixed_nodes.append(item.node())
-                elif isinstance(item, GateItem | BlockItem | SymbolItem):
+                elif isinstance(item, GateItem | BlockItem | SymbolInstanceItem):
                     for child in item.childItems():
                         if isinstance(child, PortPinMixin):
                             fixed_nodes.append(child.node())

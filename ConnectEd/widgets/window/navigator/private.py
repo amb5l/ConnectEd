@@ -49,9 +49,9 @@ class NavigatorPrivateMixin:
                 return
             if isinstance(binding.subject, str):
                 return
-            label = doc.navLabel(binding.subject)
-            if item.text() != label:
-                item.setText(label)
+            display_label = doc.navDisplayLabel(binding.subject)
+            if item.text() != display_label:
+                item.setText(display_label)
             tip = doc.navToolTip(binding.subject)
             if tip is not None and item.toolTip() != tip:
                 item.setToolTip(tip)
@@ -149,7 +149,7 @@ class NavigatorPrivateMixin:
             root_item : NavItem | None = None
             for spec in specs:
                 label = spec.subject if isinstance(spec.subject, str) \
-                    else doc.navLabel(spec.subject)
+                    else doc.navDisplayLabel(spec.subject)
                 item = NavItem(label)
                 if isinstance(spec.subject, str):
                     # static string (typically a container)

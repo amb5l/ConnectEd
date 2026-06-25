@@ -25,7 +25,7 @@ class MdiArea(QMdiArea):
         super().__init__()
         self._mru = []
         self._actions = {}
-        self.subWindowActivated.connect(self._touchMRU)
+        self.subWindowActivated.connect(self._onSubWindowActivated)
 
     def onSubWindowsChanged(self : Self) -> None:
         # build tree of subwindows by doc and subject
@@ -75,15 +75,25 @@ class MdiArea(QMdiArea):
         # propagate changes to menu bar
         window().menuBar().updateWindowMenu()
 
-    def mruSubWindows(self) -> list[DocSubWindow]:
+    def mruSubWindows(self : Self) -> list[DocSubWindow]:
         return list(self._mru)
 
-    def preferredSubWindow(self, doc, subject) -> DocSubWindow | None:
-        for w in self.mruSubWindows():
-            b = w.docBinding()
-            if b and b.doc is doc and b.subject is subject:
-                return w
-        return None
+    def docSubWindows(self : Self, doc : Doc) -> list[DocSubWindow]:
+        return [
+            subwindow for subwindow in self.mruSubWindows()
+            if subwindow.docBinding().doc is doc
+        ]
+
+    def docSubjectSubWindows(
+        self    : Self,
+        doc     : Doc,
+        subject : DocSubjectProtocol
+    ) -> list[DocSubWindow]:
+        return [
+            subwindow for subwindow in self.mruSubWindows()
+            if subwindow.docBinding().doc is doc
+            and subwindow.docBinding().subject is subject
+        ]
 
     @checked
     def addSubWindow(
@@ -93,9 +103,7 @@ class MdiArea(QMdiArea):
     ) -> None:
         super().addSubWindow(subwindow, flags)
         if isinstance(subwindow, DocSubWindow):
-            subwindow.destroyed.connect(
-                lambda *, w=subwindow: self._removeFromMru(w)
-            )
+            subwindow.destroyed.connect(self._onSubWindowDestroyed)
             self._mru.append(subwindow)
         self.onSubWindowsChanged()
 
@@ -130,7 +138,10 @@ class MdiArea(QMdiArea):
         next_window = windows[next_index]
         self.activateSubWindow(next_window)
 
-    def _touchMRU(self : Self, subwindow : DocSubWindow | None = None) -> None:
+    def _onSubWindowActivated(
+        self      : Self,
+        subwindow : DocSubWindow | None = None
+    ) -> None:
         if not isinstance(subwindow, DocSubWindow):
             return
         try:
@@ -139,7 +150,10 @@ class MdiArea(QMdiArea):
             pass
         self._mru.insert(0, subwindow)
 
-    def _removeFromMru(self : Self, subwindow : DocSubWindow) -> None:
+    def _onSubWindowDestroyed(
+        self      : Self,
+        subwindow : DocSubWindow
+    ) -> None:
         try:
             self._mru.remove(subwindow)
         except ValueError:

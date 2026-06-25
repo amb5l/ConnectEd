@@ -167,6 +167,7 @@ class DrawingSubWindow(DocSubWindow):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
+        super().closeEvent(event)
         if isinstance(self.widget(), DrawingView):
             view  : DrawingView = self.widget()
             scene : DrawingScene | None = view.scene()
@@ -177,4 +178,3 @@ class DrawingSubWindow(DocSubWindow):
                     scene.selectionChanged.disconnect()
                 except TypeError: # workaround for Qt cleanup
                     pass
-        super().closeEvent(event)

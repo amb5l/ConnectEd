@@ -18,20 +18,3 @@ def clone(items : list["ItemMixin"]) -> list["ItemMixin"]:
         except Exception as e:
             logger().warning(f"Failed to clone item {item}: {e}")
     return r
-
-
-_item_classes : dict[str, type[ItemType]] = {}
-registerClass( _item_classes , "PortItem"                  )
-registerClass( _item_classes , "BufGateItem"      , "gate" )
-registerClass( _item_classes , "AndGateItem"      , "gate" )
-registerClass( _item_classes , "OrGateItem"       , "gate" )
-registerClass( _item_classes , "XorGateItem"      , "gate" )
-registerClass( _item_classes , "BlockItem"                 )
-registerClass( _item_classes , "PropertyTextItem"          )
-registerClass( _item_classes , "SymbolPinItem"             )
-registerClass( _item_classes , "LineItem"                  )
-registerClass( _item_classes , "RectangleItem"             )
-registerClass( _item_classes , "EllipseItem"               )
-registerClass( _item_classes , "PolylineItem"              )
-registerClass( _item_classes , "TextItem"                  )
-registerClass( _item_classes , "NetLabelItem"              )

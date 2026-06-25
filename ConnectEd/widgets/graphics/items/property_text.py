@@ -161,12 +161,16 @@ class PropertyTextItem(TextItem):
 
     def onTextChanged(self : Self) -> None:
         owner = self.owner()
-        if owner is not None and self.name():
+        if owner is None:
+            text = f"<{self._name} - unbound>"
+        elif not owner.properties.has(self.name()):
+            text = f"<{self._name} - not found>"
+        elif self.name():
             kind = owner.properties.kind(self.name())
             if kind in (DataKind.STR, DataKind.TEXT):
                 super().setBlock(kind == DataKind.TEXT)
-        text = val2str(self.value())
-        if text == "":
+            text = val2str(self.value())
+        else:
             text = f"<{self._name}>"
         super().setText(text)
 
@@ -288,6 +292,34 @@ class PropertyTextItem(TextItem):
                 owner.properties.setValue(name, value)
         if cleat is not NO_CHANGE:
             self.setCleat(cleat)
+
+    def propertyTuple(self : Self) -> tuple:
+        return (
+            self.name(),
+            self.isVisible(),
+            self.cleat(),
+            self.pos().x(),
+            self.pos().y(),
+            self.rotation(),
+            self.mirrorH(),
+            self.mirrorV(),
+            self.autoflip(),
+            self.origin(),
+            self.alignH(),
+            self.alignV(),
+            self.width(),
+            self.height(),
+            self.padLeft(),
+            self.padRight(),
+            self.padTop(),
+            self.padBottom(),
+            self.color(),
+            self.textFont(),
+            self.textSize(),
+            self.textBold(),
+            self.textItalic(),
+            self.textUnderline()
+        )
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:

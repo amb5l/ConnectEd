@@ -25,7 +25,7 @@ from .netlist import Netlist
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.symbol import SymbolItem
+    from ...items.symbol import SymbolDefinitionItem, SymbolInstanceItem
 
 
 @dataclass
@@ -66,14 +66,14 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     }
 
     # instance attributes
-    _doc      : "HdlSchematicDiagramDoc | None"
-    _symbols  : dict[str, "SymbolItem"]
-    sheet     : DiagramSheet
-    margin    : float                  # distance from paper edge to border line
-    border    : float                  # line width
-    title     : SymbolItem | None
-    resources : DiagramSceneResources
-    netlist   : Netlist
+    _doc        : "HdlSchematicDiagramDoc | None"
+    _symbols    : dict[str, "SymbolDefinitionItem"]
+    sheet       : DiagramSheet
+    margin      : float                  # distance from paper edge to border line
+    border      : float                  # line width
+    title_block : SymbolInstanceItem | None
+    resources   : DiagramSceneResources
+    netlist     : Netlist
 
     # signals
     netlistChanged = pyqtSignal()  # noqa N815
@@ -118,11 +118,8 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
             self.margin, self.margin, -self.margin, -self.margin
         ))
 
-    def symbols(self : Self) -> list["SymbolItem"]:
-        return list(self._symbols.values())
-
-    def symbolDefinitions(self : Self) -> dict[str, "SymbolItem"]:
-        return self._symbols.copy()
+    def symbolDefinitions(self : Self) -> dict[str, "SymbolDefinitionItem"]:
+        return self._symbols
 
     @checked
     def getSheetName(self : Self) -> str:
