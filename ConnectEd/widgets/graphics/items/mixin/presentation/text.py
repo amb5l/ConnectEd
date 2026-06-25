@@ -44,7 +44,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.color()
 
@@ -71,7 +71,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> str | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.font()
 
@@ -98,7 +98,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> float | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.size()
 
@@ -125,7 +125,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.bold()
 
@@ -152,7 +152,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.italic()
 
@@ -179,7 +179,7 @@ class ItemPresentationTextMixin:
         widget : "QGraphicsView | None" = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
-        key = self._quillKeyDefault()
+        key = self._resourceKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.underline()
 
@@ -197,26 +197,18 @@ class ItemPresentationTextMixin:
 
     # helpers
 
-    def _quillKey(self : "Self | ItemType") -> bool:
-        """Override in subclass for more complex keying."""
-        return self.isSelected()
-
-    def _quillKeyDefault(self : "Self | ItemType") -> bool:
-        """Override in subclass for more complex keying."""
-        return False
-
     @withScene
     def _updateQuill(self : "Self | ItemType") -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
     def _updateQuillFast(self : "Self | ItemType", scene : "DrawingScene") -> None:
-        quill = scene.resources.quill(self.resourcesName(), self._quillKey())
+        quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
         self.setQuill(quill)
 
     @withScene
     def _updateQuillSlow(self : "Self | ItemType", scene : "DrawingScene") -> None:
-        quill = scene.resources.quill(self.resourcesName(), self._quillKey())
+        quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
         override_color = \
             hasattr(self, "_text_color") and not self.isSelected() \
                 and self._text_color is not None

@@ -222,8 +222,11 @@ class SegmentItem(
             self._subscribeNode(node)
         self.onGeometryChanged()
 
-    def _penKey(self : Self) -> tuple[NetKind, bool]:
+    def _resourceKey(self : Self) -> tuple[NetKind, bool]:
         return (self._net_kind, self.isSelected())
+
+    def _resourceKeyDefault(self : Self) -> tuple[NetKind, bool]:
+        return (NetKind.UNRESOLVED, False)
 
 
 # TODO link to settings/resources

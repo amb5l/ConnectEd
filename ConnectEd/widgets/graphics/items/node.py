@@ -114,11 +114,11 @@ class NodeItem(
                     )
         return id, pos
 
-    def _penKey(self : Self) -> tuple[NodeState, bool]:
+    def _resourceKey(self : Self) -> tuple[NodeState, bool]:
         return (self._state, self.isSelected())
 
-    def _brushKey(self : Self) -> tuple[NodeState, bool]:
-        return (self._state, self.isSelected())
+    def _resourceKeyDefault(self : Self) -> tuple[NodeState, bool]:
+        return (NodeState.UNCONNECTED, False)
 
     def _updateGraphics(self : Self, scene : "DiagramScene") -> None:
         self.setPath(scene.resources.path(self.resourcesName(), self._state))

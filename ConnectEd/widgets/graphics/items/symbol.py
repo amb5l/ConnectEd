@@ -211,9 +211,12 @@ class SymbolDefinitionItem(
             s = self._vhdl_library + "." + s
         return s
 
-    def _penKey(self : Self) -> tuple[bool, bool]:
+    def _resourceKey(self : Self) -> tuple[bool, bool]:
         from ..scenes.symbol import SymbolScene
         return (isinstance(self.scene(), SymbolScene), self.isSelected())
+
+    def _resourceKeyDefault(self : Self) -> tuple[bool, bool]:
+        return (False, False)
 
 
 class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):

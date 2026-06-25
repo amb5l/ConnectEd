@@ -175,6 +175,14 @@ class ItemPresentationMixin(
             or hasattr(self, "_text_underline"):
                 self._updateQuill = self._updateQuillSlow
 
+    def _resourceKey(self : "Self | ItemType") -> bool | tuple:
+        """Theme lookup key for pen, brush and quill. Override in subclass."""
+        return self.isSelected()
+
+    def _resourceKeyDefault(self : "Self | ItemType") -> bool | tuple:
+        """Default theme lookup key (non-selected, normal state)."""
+        return False
+
     def onSettingsChanged(self : "Self | ItemType") -> None:
         self.onSceneChanged(self.scene())
 

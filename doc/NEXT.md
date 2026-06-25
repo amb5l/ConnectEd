@@ -1,3 +1,34 @@
+_resourceKey and _resourceKeyDefault
+
+test status
+
+use of quotes around multiple types with | = >
+    from __future__ import annotations
+
+_XML_CHILDREN frozenset
+
+theme palette defined in both python and yaml
+
+MixinSelf is still shite
+
+FSM => State
+
+move PropertiesMixin from DrawingScene to DiagramScene
+
+Navigator reverse lookups
+
+Doc.isModified
+
+scoping onDocChanged to avoid total rebuild
+
+FunctionalItem
+
+unused functions and methods sweep
+
+================================================================================
+
+
+
 Navigator WIP
 tooltips
 menus

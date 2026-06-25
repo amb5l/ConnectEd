@@ -36,7 +36,7 @@ class ItemPresentationFillMixin:
         widget : "QGraphicsView | None" = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
-        key = self._brushKeyDefault()
+        key = self._resourceKeyDefault()
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.color()
 
@@ -63,7 +63,7 @@ class ItemPresentationFillMixin:
         widget : "QGraphicsView | None" = None
     ) -> Qt.BrushStyle | None:
         scene = self._defaultScene(widget)
-        key = self._brushKeyDefault()
+        key = self._resourceKeyDefault()
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.style()
 
@@ -81,14 +81,6 @@ class ItemPresentationFillMixin:
 
     # helpers
 
-    def _brushKey(self : Self | QGraphicsItem) -> bool:
-        """Override in subclass for more complex keying."""
-        return self.isSelected()
-
-    def _brushKeyDefault(self : Self) -> bool:
-        """Override in subclass for more complex keying."""
-        return False
-
     def _updateBrush(self : Self, _scene : "DrawingScene") -> None:
         raise NotImplementedError("Not wired!")
 
@@ -97,7 +89,7 @@ class ItemPresentationFillMixin:
         self : "Self | ItemType",
         scene : "DrawingScene"
     ) -> None:
-        brush = scene.resources.brush(self.resourcesName(), self._brushKey())
+        brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
         self.setBrush(brush)
 
     @withScene
@@ -105,7 +97,7 @@ class ItemPresentationFillMixin:
         self  : "Self | ItemType",
         scene : "DrawingScene"
     ) -> None:
-        brush = scene.resources.brush(self.resourcesName(), self._brushKey())
+        brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
         override_color = \
             hasattr(self, "_fill_color") and not self.isSelected() \
                 and self._fill_color is not None

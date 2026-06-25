@@ -33,7 +33,7 @@ class ItemPresentationLineMixin:
         widget : "QGraphicsView | None" = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
-        key = self._penKeyDefault()
+        key = self._resourceKeyDefault()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.color()
 
@@ -63,7 +63,7 @@ class ItemPresentationLineMixin:
         widget : "QGraphicsView | None" = None
     ) -> float | None:
         scene = self._defaultScene(widget)
-        key = self._penKeyDefault()
+        key = self._resourceKeyDefault()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.widthF()
 
@@ -90,7 +90,7 @@ class ItemPresentationLineMixin:
         widget : "QGraphicsView | None" = None
     ) -> Qt.PenStyle | None:
         scene = self._defaultScene(widget)
-        key = self._penKeyDefault()
+        key = self._resourceKeyDefault()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.style()
 
@@ -107,25 +107,18 @@ class ItemPresentationLineMixin:
             self.properties.signalChanges("Line Style")
 
     # helpers
-    def _penKey(self : "Self | ItemType") -> bool:
-        """Override in subclass for more complex keying."""
-        return self.isSelected()
-
-    def _penKeyDefault(self : "Self | ItemType") -> bool:
-        """Override in subclass for more complex keying."""
-        return False
 
     def _updatePen(self : "Self | ItemType", _scene : "DrawingScene") -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
     def _updatePenFast(self : "Self | ItemType", scene : "DrawingScene") -> None:
-        pen = scene.resources.pen(self.resourcesName(), self._penKey())
+        pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
         self.setPen(pen)
 
     @withScene
     def _updatePenSlow(self : "Self | ItemType", scene : "DrawingScene") -> None:
-        pen = scene.resources.pen(self.resourcesName(), self._penKey())
+        pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
         override_color = \
             hasattr(self, "_line_color") and not self.isSelected() \
                 and self._line_color is not None
