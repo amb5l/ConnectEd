@@ -55,7 +55,11 @@ class BlockPinItem(
         return "BlockPin"
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action("Edit...", view.editBlockPin),
             view.separator(),

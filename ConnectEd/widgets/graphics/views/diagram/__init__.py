@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore import QEvent
@@ -18,7 +20,7 @@ class DiagramView(
     DrawingView
 ):
     def viewZoomSheet(self : Self) -> None:
-        scene : "DiagramScene | None" = self.scene()
+        scene : DiagramScene | None = self.scene()
         if scene is None:
             return
         rect = scene.sheet.rect

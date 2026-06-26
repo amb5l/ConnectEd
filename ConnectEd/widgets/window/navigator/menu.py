@@ -60,7 +60,7 @@ class NavigatorMenuMixin:
             )
         return entries
 
-    def showContextMenu(self : "Navigator", pos : QPoint) -> None:
+    def showContextMenu(self : Navigator, pos : QPoint) -> None:
         global_pos = self.viewport().mapToGlobal(pos)
         index = self.indexAt(pos)
         if not index.isValid():

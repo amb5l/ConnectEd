@@ -1,5 +1,7 @@
 # getters
 
+from __future__ import annotations
+
 from typing import Any
 
 from ...core.check import checked
@@ -29,7 +31,7 @@ if TYPE_CHECKING:
 )
 @checked
 def get_active_view(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any]
 ) -> str:
@@ -64,7 +66,7 @@ def get_active_view(
 )
 @checked
 def get_sheet(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:
@@ -119,7 +121,7 @@ _GET_ITEMS_PARAM = {
 )
 @checked
 def get_items(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:
@@ -187,7 +189,7 @@ def _parseStringListArg(
 
 
 def _itemPropertyValues(
-    item               : "PropertiesMixin",
+    item               : PropertiesMixin,
     properties_filter  : list[str],
 ) -> dict[str, Any]:
     values : dict[str, Any] = {}

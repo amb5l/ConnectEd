@@ -1,15 +1,17 @@
-_resourceKey and _resourceKeyDefault
-
-test status
+TypeAlias = "
 
 use of quotes around multiple types with | = >
     from __future__ import annotations
 
+====
+
+checked
+
+MixinSelf is still shite
+
 _XML_CHILDREN frozenset
 
 theme palette defined in both python and yaml
-
-MixinSelf is still shite
 
 FSM => State
 

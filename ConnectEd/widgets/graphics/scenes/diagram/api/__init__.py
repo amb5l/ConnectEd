@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ...drawing.api import DrawingSceneApiMixin
 
 from .add  import DiagramSceneApiAddMixin
@@ -16,9 +18,9 @@ class DiagramSceneApiMixin(
     DrawingSceneApiMixin
 ):
     def symbolInstances(
-        self       : "DiagramScene",
-        definition : "SymbolDefinitionItem"
-    ) -> list["SymbolInstanceItem"]:
+        self       : DiagramScene,
+        definition : SymbolDefinitionItem
+    ) -> list[SymbolInstanceItem]:
         return [
             item for item in self.items()
             if isinstance(item, SymbolInstanceItem)

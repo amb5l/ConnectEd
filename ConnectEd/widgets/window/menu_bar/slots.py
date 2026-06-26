@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 
 from typing          import Self, TypeVar, cast
@@ -28,7 +30,7 @@ def withFocusWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], No
     """
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
-        def wrapper(self : "Slots") -> None:
+        def wrapper(self : Slots) -> None:
             current_widget = window().focusWidget()
             if current_widget is None:
                 return
@@ -41,14 +43,14 @@ def withFocusWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], No
 
 
 def withMdiSubWindow(
-    func : Callable[["Slots", DocSubWindow], None],
-) -> Callable[["Slots"], None]:
+    func : Callable[[Slots, DocSubWindow], None],
+) -> Callable[[Slots], None]:
     """
     Decorator that gets the active subwindow from the MDI area and checks
     that it is a ``SubWindow`` before calling the decorated method.
     """
     @functools.wraps(func)
-    def wrapper(self : "Slots") -> None:
+    def wrapper(self : Slots) -> None:
         mdi_area = window().mdiArea()
         if mdi_area is None:
             return
@@ -72,7 +74,7 @@ def withMdiWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None
     """
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
-        def wrapper(self : "Slots") -> None:
+        def wrapper(self : Slots) -> None:
             current_subwindow = window().mdiArea().currentSubWindow()
             if current_subwindow is None:
                 return
@@ -104,7 +106,7 @@ def withMdiWidgetCheckable(
     """
     def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
-        def wrapper(self : "Slots") -> None:
+        def wrapper(self : Slots) -> None:
             current_subwindow = window().mdiArea().currentSubWindow()
             if current_subwindow is None:
                 return

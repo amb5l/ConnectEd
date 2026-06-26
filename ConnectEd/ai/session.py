@@ -1,5 +1,7 @@
 """AI chat session — orchestrates provider tool loop and GUI driver."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore import QObject, Q_ARG, QMetaObject, Qt, QThread, pyqtSignal, pyqtSlot
@@ -25,7 +27,7 @@ class AiChatSession(QObject):
     error          = pyqtSignal(str)
     finished       = pyqtSignal()
 
-    _window                 : "Window"
+    _window                 : Window
     _driver                 : AiDriver
     _profile_id             : str
     _model                  : str
@@ -41,8 +43,8 @@ class AiChatSession(QObject):
     @checked
     def __init__(
         self   : Self,
-        window : "Window",
-        dock   : "AiChatDock",
+        window : Window,
+        dock   : AiChatDock,
     ) -> None:
         super().__init__()
         self._window = window
@@ -84,7 +86,7 @@ class AiChatSession(QObject):
         )
 
     @checked
-    def bindFromDock(self : Self, dock : "AiChatDock") -> None:
+    def bindFromDock(self : Self, dock : AiChatDock) -> None:
         if self._busy:
             return
         self.releaseEditLock()

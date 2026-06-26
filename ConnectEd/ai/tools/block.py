@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from PyQt6.QtCore import QPointF
@@ -58,7 +60,7 @@ _BLOCK_PARAM_PROPS = {
 )
 @checked
 def add_block(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:

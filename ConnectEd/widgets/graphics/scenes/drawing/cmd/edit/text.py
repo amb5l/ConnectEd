@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtGui import QColor
@@ -16,15 +18,15 @@ if TYPE_CHECKING:
 
 
 class CmdEditText(CmdSceneItem):
-    _item   : "TextItem"
+    _item   : TextItem
     _before : TextState
     _after  : TextChange
 
     @checked
     def __init__(
         self       : Self,
-        scene      : "DrawingScene",
-        item       : "TextItem",
+        scene      : DrawingScene,
+        item       : TextItem,
         text       : str           | NoChange = NO_CHANGE,
         block      : bool          | NoChange = NO_CHANGE,
         rotation   : float         | NoChange = NO_CHANGE,

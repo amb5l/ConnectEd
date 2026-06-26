@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing          import Self
 from types           import NoneType
 from dataclasses     import dataclass
@@ -17,10 +19,10 @@ class NoChange:
     def __hash__(self : Self) -> int:
         return hash(NoChange)
 
-    def __copy__(self : Self) -> "NoChange":
+    def __copy__(self : Self) -> NoChange:
         return NO_CHANGE
 
-    def __deepcopy__(self : Self, _memo : object) -> "NoChange":
+    def __deepcopy__(self : Self, _memo : object) -> NoChange:
         return NO_CHANGE
 
     def __str__(self : Self) -> str:
@@ -163,8 +165,8 @@ class Display(Enum):
     HIDE = "Hide"
 
 
-_DATA_KIND_TYPES: dict["DataKind", tuple[type, ...]] = {}
-_DATA_KIND_EDITORS: dict["DataKind", type] = {}
+_DATA_KIND_TYPES: dict[DataKind, tuple[type, ...]] = {}
+_DATA_KIND_EDITORS: dict[DataKind, type] = {}
 
 
 def _populate_data_kind_maps() -> None:
@@ -304,7 +306,7 @@ class MenuAction:
 @dataclass(frozen=True)
 class MenuSub:
     label : str
-    items : list["MenuEntry"]
+    items : list[MenuEntry]
 
 
 MenuEntry = MenuAction | MenuSub | MenuSeparator

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from enum import Enum
 
@@ -88,7 +90,7 @@ class GateItem(
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : DrawingView, _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
@@ -152,7 +154,7 @@ class BufGateItem(FunctionalItem, GateItem):
         Build concurrent assignment VHDL code:
         label: o <= not i1
         """
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         s = ""
         # label (optional)
         label = self.label()
@@ -176,7 +178,7 @@ class BufGateItem(FunctionalItem, GateItem):
             o = ~i
         end
         """
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         s = ""
         # label (optional)
         label = self.label()
@@ -273,7 +275,7 @@ class LogicGateItem(GateItem):
         Build concurrent assignment VHDL code:
         label: o <= i1 and not i2 and i3 ...
         """
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         s = ""
         # label (optional)
         label = self.label()
@@ -304,7 +306,7 @@ class LogicGateItem(GateItem):
             o = i1 & ~i2 & i3 ...
         end
         """
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         s = ""
         # label (optional)
         label = self.label()

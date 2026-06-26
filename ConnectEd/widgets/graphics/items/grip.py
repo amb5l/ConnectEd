@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from enum   import StrEnum
 
@@ -45,7 +47,7 @@ class GripItem(
     @checked
     def __init__(
         self   : Self,
-        parent : "HandleItem",
+        parent : HandleItem,
         pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
@@ -66,7 +68,7 @@ class GripItem(
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen("Grip"))
@@ -75,15 +77,15 @@ class GripItem(
 
     @withScene
     @checked
-    def updatePath(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def updatePath(self : Self, scene : DrawingScene | None = None) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def handle(self : Self) -> "HandleItem":
+    def handle(self : Self) -> HandleItem:
         return self.parentItem()
 
     @checked
-    def item(self : Self) -> "ItemHandlesMixin | ItemGripMixin":
+    def item(self : Self) -> ItemHandlesMixin | ItemGripMixin:
         return self.handle().parentItem()
 
     @checked
@@ -94,7 +96,7 @@ class GripItem(
     ) -> None:
         delta = dx_d if isinstance(dx_d, QPointF) \
             else QPointF(dx_d, dy if dy is not None else 0.0)
-        item : "ItemHandlesMixin" = self.item()
+        item : ItemHandlesMixin = self.item()
         item.moveHandleBy(self.handle().id(), delta)
 
 
@@ -103,7 +105,7 @@ class GripShapeMixin:
 
     @withScene
     @checked
-    def updatePath(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def updatePath(self : Self, scene : DrawingScene | None = None) -> None:
         self.setPath(scene.resources.path("Grip", self._SHAPE))
 
 
@@ -116,7 +118,7 @@ class OriginGripShapeMixin:
     @checked
     def updatePath(
         self  : Self | GripItem,
-        scene : "DrawingScene | None" = None
+        scene : DrawingScene | None = None
     ) -> None:
         item          = self.item()
         normal_shape  = getattr(item, "_NORMAL_GRIP_SHAPE", self._NORMAL_SHAPE)
@@ -133,12 +135,12 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
     _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : DrawingView, _spos : QPointF) -> list[QAction | QMenu]:
         entries = [
             view.action("Slide", lambda: view.editSlide([self.item()], self.scenePos())),
             view.action("Move", lambda: view.editMove([self.item()], self.scenePos()))
         ]
-        item : "ItemTransformMixin" = self.item()
+        item : ItemTransformMixin = self.item()
         if item.origin() is not None:
             h : HandleItem = self.parentItem()
             entries.extend([
@@ -159,7 +161,11 @@ class ResizeGripItem(OriginGripShapeMixin, GripItem):
     _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         entries = [
             view.action("Resize", lambda: view.editResize(self, self.scenePos())),
         ]

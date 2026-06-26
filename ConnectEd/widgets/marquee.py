@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer
@@ -17,7 +19,7 @@ class MarqueeRubberBand(QRubberBand):
     timer  : QTimer
 
     def __init__(
-        self   : "MarqueeRubberBand",
+        self   : Self,
         shape  : QRubberBand.Shape,
         parent : QGraphicsView
     ) -> None:

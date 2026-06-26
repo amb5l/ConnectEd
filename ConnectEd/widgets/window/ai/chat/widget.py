@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore    import QEvent, QObject, Qt, QTimer, QUrl
@@ -132,12 +134,12 @@ class AiChatHistoryBrowser(QTextBrowser):
 
 class AiChatMessageEdit(QPlainTextEdit):
     _zoom_host    : _AiChatFontZoomHost
-    _chat_widget  : "AiChatWidget | None"
+    _chat_widget  : AiChatWidget | None
 
     def __init__(
         self         : Self,
         host         : _AiChatFontZoomHost,
-        chat_widget  : "AiChatWidget",
+        chat_widget  : AiChatWidget,
         parent       : QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -173,8 +175,8 @@ class AiChatMessageEdit(QPlainTextEdit):
 
 
 class AiChatWidget(QWidget, _AiChatFontZoomHost):
-    _window                 : "Window"
-    _dock                   : "AiChatDock"
+    _window                 : Window
+    _dock                   : AiChatDock
     _session                : AiChatSession
     _history                : QTextBrowser
     _input                  : QPlainTextEdit
@@ -185,7 +187,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
     _pin_welcome_top        : bool
     _font_size              : int
 
-    def __init__(self : Self, window : "Window", dock : "AiChatDock") -> None:
+    def __init__(self : Self, window : Window, dock : AiChatDock) -> None:
         super().__init__(window)
         self._window = window
         self._dock = dock

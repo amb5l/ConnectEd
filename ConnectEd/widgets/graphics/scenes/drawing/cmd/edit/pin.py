@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing      import Self
 from dataclasses import dataclass
 
@@ -19,17 +21,17 @@ class CmdEditPortPin(CmdSceneItem):
         name      : str
         direction : Direction
 
-    _item   : "PortPinMixin"
+    _item   : PortPinMixin
     _before : PortPinState
     _after  : PortPinState
 
     @checked
     def __init__(
         self      : Self,
-        scene     : "DrawingScene",
-        item      : "PortPinMixin",
+        scene     : DrawingScene,
+        item      : PortPinMixin,
         name      : str,
-        direction : "Direction"
+        direction : Direction
     ) -> None:
         super().__init__(scene, item)
         self._before = self.PortPinState(item.name(), item.direction())
@@ -49,15 +51,15 @@ class CmdEditPortPin(CmdSceneItem):
 
 
 class CmdEditSymbolPinDot(CmdSceneItem):
-    _item   : "SymbolPinItem"
+    _item   : SymbolPinItem
     _before : bool
     _after  : bool
 
     @checked
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
-        item   : "SymbolPinItem",
+        scene  : DrawingScene,
+        item   : SymbolPinItem,
         enable : bool
     ) -> None:
         super().__init__(scene, item)
@@ -76,15 +78,15 @@ class CmdEditSymbolPinDot(CmdSceneItem):
 
 
 class CmdEditSymbolPinClock(CmdSceneItem):
-    _item   : "SymbolPinItem"
+    _item   : SymbolPinItem
     _before : bool
     _after  : bool
 
     @checked
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
-        item   : "SymbolPinItem",
+        scene  : DrawingScene,
+        item   : SymbolPinItem,
         enable : bool
     ) -> None:
         super().__init__(scene, item)

@@ -84,7 +84,7 @@ class ItemLocMixin:
                 logger().error(f"Invalid edge: {loc.edge}")
                 angle = 0
         self.setRotation(angle)
-        parent : "BlockItem" = self.parentItem()
+        parent : BlockItem = self.parentItem()
         if loc.edge is None or loc.offset is None:
             return
         QGraphicsItem.setPos(self, parent.loc2pos(loc) if parent else QPointF())

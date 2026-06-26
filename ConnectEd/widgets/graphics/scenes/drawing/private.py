@@ -19,7 +19,7 @@ class DrawingSceneApiPrivateMixin:
         types = {item.__class__ for item in items}  # use a set to avoid duplicates
         return list(types)
 
-    def _selectedTopItems(self : MixinSelf) -> list["ItemMixin"]:
+    def _selectedTopItems(self : MixinSelf) -> list[ItemMixin]:
         """Returns selected items that are Items, and are not children."""
         from ...items import ItemMixin
         return [
@@ -27,7 +27,7 @@ class DrawingSceneApiPrivateMixin:
             if isinstance(item, ItemMixin) and not item.parentItem()
         ]
 
-    def _selectedItems(self : MixinSelf) -> list["ItemMixin"]:
+    def _selectedItems(self : MixinSelf) -> list[ItemMixin]:
         """Returns selected items that are Items (includes children)."""
         from ...items import ItemMixin
         return [

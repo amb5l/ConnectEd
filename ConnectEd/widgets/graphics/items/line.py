@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QLineF
@@ -171,7 +173,11 @@ class LineItem(
         self.updateHandles()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", lambda: view.editAppearance(self)),
             view.action("Properties...", lambda: view.editItemProperties(self))

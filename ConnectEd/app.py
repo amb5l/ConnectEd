@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing  import Self
 from logging import Logger
 
@@ -19,10 +21,10 @@ class ConnectEdApp(QApplication):
         splash = pyqtSignal()
 
     # instance attributes
-    _logger   : "Logger | None"
-    _settings : "Settings | None"
-    _session  : "Session | None"
-    _window   : "Window | None"
+    _logger   : Logger   | None
+    _settings : Settings | None
+    _session  : Session  | None
+    _window   : Window   | None
     _cli      : bool
     ready     : Ready
 
@@ -38,35 +40,35 @@ class ConnectEdApp(QApplication):
         self.ready     = self.Ready()
 
     @checked
-    def logger(self : Self) -> "Logger":
+    def logger(self : Self) -> Logger | None:
         return self._logger
 
     @checked
-    def setLogger(self : Self, logger : "Logger") -> None:
+    def setLogger(self : Self, logger : Logger) -> None:
         self._logger = logger
 
     @checked
-    def settings(self : Self) -> "Settings":
+    def settings(self : Self) -> Settings:
         return self._settings
 
     @checked
-    def setSettings(self : Self, settings : "Settings") -> None:
+    def setSettings(self : Self, settings : Settings) -> None:
         self._settings = settings
 
     @checked
-    def session(self : Self) -> "Session":
+    def session(self : Self) -> Session:
         return self._session
 
     @checked
-    def setSession(self : Self, session : "Session") -> None:
+    def setSession(self : Self, session : Session) -> None:
         self._session = session
 
     @checked
-    def window(self : Self) -> "Window | None":
+    def window(self : Self) -> Window | None:
         return None if self._cli else self._window
 
     @checked
-    def setWindow(self : Self, window : "Window") -> None:
+    def setWindow(self : Self, window : Window) -> None:
         if self._cli:
             return  # Ignore window setting in CLI mode
         self._window = window
@@ -81,7 +83,7 @@ class ConnectEdApp(QApplication):
 
 
 @checked
-def app() -> "ConnectEdApp":
+def app() -> ConnectEdApp:
     return ConnectEdApp.instance()
 
 
@@ -91,15 +93,15 @@ def logger() -> Logger | None:
 
 
 @checked
-def settings() -> "Settings | None":
+def settings() -> Settings | None:
     return app().settings()
 
 
 @checked
-def session() -> "Session | None":
+def session() -> Session | None:
     return app().session()
 
 
 @checked
-def window() -> "Window | None":
+def window() -> Window | None:
     return app().window()

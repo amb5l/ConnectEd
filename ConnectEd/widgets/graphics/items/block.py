@@ -65,7 +65,11 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
         #        item.onPositionChanged()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action("Add Pin...", view.placeBlockPin),
             view.separator(),
@@ -195,6 +199,6 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
     def ctxMenuAddPin(
         self    : Self,
         checked : bool,
-        view    : "DrawingView"
+        view    : DrawingView
     ) -> None:
         pass

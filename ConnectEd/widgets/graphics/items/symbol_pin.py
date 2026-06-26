@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -63,7 +65,11 @@ class SymbolPinItem(
         )
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         if isinstance(view, SymbolView):
             return [
                 view.action(

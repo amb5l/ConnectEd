@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtGui import QUndoCommand
@@ -15,12 +17,12 @@ if TYPE_CHECKING:
 
 
 class CmdMovePreviewRubberBase(QUndoCommand):
-    _scene   : "DiagramScene"
+    _scene   : DiagramScene
     _rubber  : RubberItem
 
     def __init__(
         self   : Self,
-        scene  : "DiagramScene",
+        scene  : DiagramScene,
         rubber : RubberItem
     ) -> None:
         super().__init__()

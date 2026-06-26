@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF
@@ -36,7 +38,7 @@ class DrawingPlaceBaseInteraction(DrawingItemInteraction):  # _view, _scene, _it
     @checked
     def __init__(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         pos  : QPointF,
         item : ItemType | None = None
     ) -> None:
@@ -94,7 +96,7 @@ class DrawingPlaceBase2PosInteraction(DrawingPlaceBase1PosInteraction):
     @checked
     def __init__(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         pos  : QPointF,
         item : ItemType | None = None
     ) -> None:
@@ -133,7 +135,7 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
     @checked
     def __init__(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         pos  : QPointF,
         item : PolylineItem | None = None
     ) -> None:

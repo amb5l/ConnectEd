@@ -1,4 +1,6 @@
-﻿from typing import Self
+﻿from __future__ import annotations
+
+from typing import Self
 from enum   import StrEnum
 from math   import atan2, degrees
 
@@ -61,7 +63,7 @@ class NodeItem(
         self.callSubscribers(SCENE_POS_CHANGE)
 
     @withScene
-    def onConnectionChanged(self : Self, scene : "DiagramScene | None" = None) -> None:
+    def onConnectionChanged(self : Self, scene : DiagramScene | None = None) -> None:
         n = self.degree()
         self._state = \
             NodeState.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
@@ -70,20 +72,20 @@ class NodeItem(
         self.onSceneChanged()  # update pen, brush and graphics
 
     def degree(self : Self) -> int:
-        scene : "DiagramScene | None" = self.scene()
+        scene : DiagramScene | None = self.scene()
         if scene is None or not scene.netlist.hasNode(self):
             return 0
         return scene.netlist.nodeDegree(self)
 
-    def segments(self : Self) -> list["SegmentItem"]:
-        scene : "DiagramScene | None" = self.scene()
+    def segments(self : Self) -> list[SegmentItem]:
+        scene : DiagramScene | None = self.scene()
         if scene is None or not scene.netlist.hasNode(self):
             return []
         return scene.netlist.nodeSegments(self)
 
     @checked
     def toXml(
-        self : "Self | NodeItem",
+        self : Self | NodeItem,
         xw   : QXmlStreamWriter,
         id   : int | None = None
     ) -> None:
@@ -120,7 +122,7 @@ class NodeItem(
     def _resourceKeyDefault(self : Self) -> tuple[NodeState, bool]:
         return (NodeState.UNCONNECTED, False)
 
-    def _updateGraphics(self : Self, scene : "DiagramScene") -> None:
+    def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         self.setPath(scene.resources.path(self.resourcesName(), self._state))
 
 

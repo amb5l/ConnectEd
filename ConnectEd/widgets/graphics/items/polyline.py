@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, overload
 
 from PyQt6.QtCore    import QPointF, QRectF, \
@@ -39,7 +41,7 @@ class PolyVtxItem(VertexGripItem):
     @checked
     def __init__(
         self   : Self,
-        parent : "PolylineItem",
+        parent : PolylineItem,
         index  : int,
         pos    : QPointF | None = None
     ) -> None:
@@ -58,7 +60,7 @@ class PolyVtxItem(VertexGripItem):
     ) -> None:
         delta = dx_d if isinstance(dx_d, QPointF) \
             else QPointF(dx_d, dy if dy is not None else 0.0)
-        parent : "PolylineItem" = self.parentItem()
+        parent : PolylineItem = self.parentItem()
         if self.index() == 0 and parent.selectMode() == 0:
             parent.setPos(parent.pos() + delta)
         else:
@@ -66,7 +68,11 @@ class PolyVtxItem(VertexGripItem):
             parent.updatePath()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         items = []
         return items
 
@@ -87,7 +93,7 @@ class PolySegItem(SegmentGripItem):
     @checked
     def __init__(
         self   : Self,
-        parent : "PolylineItem",
+        parent : PolylineItem,
         v1     : PolyVtxItem,
         v2     : PolyVtxItem,
         sweep  : float | None = None
@@ -122,7 +128,11 @@ class PolySegItem(SegmentGripItem):
         self._sweep = angle
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         items = []
         a = self.sweep()
         items.append(view.action("Line", self._toLine, a is None))
@@ -136,14 +146,14 @@ class PolySegItem(SegmentGripItem):
     def _toLine(self : Self) -> None:
         if self.sweep() is None:
             return
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         scene.editPolySeg(self, None, undoable=True)
 
     @checked
-    def _toArc(self : Self, view : "DrawingView") -> None:
+    def _toArc(self : Self, view : DrawingView) -> None:
         dialog = ArcDialog(self.sweep(), view)
         if dialog.exec():
-            scene : "DrawingScene" = self.scene()
+            scene : DrawingScene = self.scene()
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
 
 
@@ -152,7 +162,7 @@ class PolylineResizeGripItem(ResizeGripItem):
 
     @checked
     def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:
-        item : "PolylineItem" = self.item()
+        item : PolylineItem = self.item()
         return self.scenePos(), [v.pos() for v in item.vertices()]
 
     @checked
@@ -160,7 +170,7 @@ class PolylineResizeGripItem(ResizeGripItem):
         self  : Self,
         state : tuple[QPointF, list[QPointF]]
     ) -> None:
-        item : "PolylineItem" = self.item()
+        item : PolylineItem = self.item()
         pos, vertices = state
         self.moveBy(pos - self.scenePos())
         for i, v in enumerate(item.vertices()):
@@ -223,7 +233,7 @@ class PolylineItem(
         self._select_mode = 1 if fresh else 0
 
     @checked
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         """Initialize vertices, segments, and APs on scene change."""
         super().onSceneChanged(scene)
         for vtx in self._vertices:
@@ -235,7 +245,7 @@ class PolylineItem(
                 h._grip.onSceneChanged(scene)
 
     def onSelectionModeChanged(self : Self) -> None:
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is not None:
             scene.updateGrips()
 
@@ -416,7 +426,11 @@ class PolylineItem(
                 raise ValueError(f"Invalid handle: {id}")
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         items = []
         return items
 
@@ -492,7 +506,7 @@ class PolylineItem(
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         xml_item_name = cls.__name__.removesuffix("Item")
-        instance : "PolylineItem" = cls(fresh=False)
+        instance : PolylineItem = cls(fresh=False)
         fromXmlProperties(instance, xr)
         # deserialise segments
         while not (xr.isEndElement() and xr.name() == xml_item_name):
@@ -542,8 +556,8 @@ class PolylineItem(
     @checked
     def _cloneAfter(
         self   : Self,
-        source : "PolylineItem",
-        clone  : "PolylineItem",
+        source : PolylineItem,
+        clone  : PolylineItem,
     ) -> None:
         """Copy vertex graph and segment sweeps after ItemCloneMixin clone."""
         for i in range(1, source.vertexCount()):

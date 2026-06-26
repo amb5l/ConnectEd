@@ -167,7 +167,7 @@ class DrawingSceneApiEditMixin:
     @checked
     def editAssignOrigin(
         self     : MixinSelf,
-        item     : "ItemMixin",
+        item     : ItemMixin,
         ap_name  : str,
         undoable : bool = False
     ) -> None:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt
@@ -22,26 +24,26 @@ class ItemPresentationLineMixin:
 
     # API
 
-    def hasLine(self : "Self | ItemType") -> bool:
+    def hasLine(self : Self | ItemType) -> bool:
         return self.hasLineColor() or self.hasLineWidth() or self.hasLineStyle()
 
-    def hasLineColor(self : "Self | ItemType") -> bool:
+    def hasLineColor(self : Self | ItemType) -> bool:
         return hasattr(self, "_line_color")
 
     def defaultLineColor(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.color()
 
-    def lineColor(self : "Self | ItemType") -> QColor | None:
+    def lineColor(self : Self | ItemType) -> QColor | None:
         return self._line_color if hasattr(self, "_line_color") else None
 
     @checked
-    def setLineColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
+    def setLineColor(self : Self | ItemType, color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
         if not hasattr(self, "_line_color"):
@@ -52,15 +54,15 @@ class ItemPresentationLineMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Line Color")
 
-    def hasLineWidth(self : "Self | ItemType") -> bool:
+    def hasLineWidth(self : Self | ItemType) -> bool:
         return hasattr(self, "_line_width")
 
-    def lineWidth(self : "Self | ItemType") -> float | None:
+    def lineWidth(self : Self | ItemType) -> float | None:
         return self._line_width if hasattr(self, "_line_width") else None
 
     def defaultLineWidth(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> float | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -68,7 +70,7 @@ class ItemPresentationLineMixin:
         return pen.widthF()
 
     @checked
-    def setLineWidth(self : "Self | ItemType", width: float | None | NoChange) -> None:
+    def setLineWidth(self : Self | ItemType, width: float | None | NoChange) -> None:
         if width is NO_CHANGE:
             return
         if not hasattr(self, "_line_width"):
@@ -79,15 +81,15 @@ class ItemPresentationLineMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Line Width")
 
-    def hasLineStyle(self : "Self | ItemType") -> bool:
+    def hasLineStyle(self : Self | ItemType) -> bool:
         return hasattr(self, "_line_style")
 
-    def lineStyle(self : "Self | ItemType") -> Qt.PenStyle | None:
+    def lineStyle(self : Self | ItemType) -> Qt.PenStyle | None:
         return self._line_style if hasattr(self, "_line_style") else None
 
     def defaultLineStyle(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> Qt.PenStyle | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -95,7 +97,10 @@ class ItemPresentationLineMixin:
         return pen.style()
 
     @checked
-    def setLineStyle(self : "Self | ItemType", style: Qt.PenStyle | None | NoChange) -> None:
+    def setLineStyle(
+        self  : Self | ItemType,
+        style : Qt.PenStyle | None | NoChange
+    ) -> None:
         if style is NO_CHANGE:
             return
         if not hasattr(self, "_line_style"):
@@ -108,16 +113,16 @@ class ItemPresentationLineMixin:
 
     # helpers
 
-    def _updatePen(self : "Self | ItemType", _scene : "DrawingScene") -> None:
+    def _updatePen(self : Self | ItemType, _scene : DrawingScene) -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
-    def _updatePenFast(self : "Self | ItemType", scene : "DrawingScene") -> None:
+    def _updatePenFast(self : Self | ItemType, scene : DrawingScene) -> None:
         pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
         self.setPen(pen)
 
     @withScene
-    def _updatePenSlow(self : "Self | ItemType", scene : "DrawingScene") -> None:
+    def _updatePenSlow(self : Self | ItemType, scene : DrawingScene) -> None:
         pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
         override_color = \
             hasattr(self, "_line_color") and not self.isSelected() \

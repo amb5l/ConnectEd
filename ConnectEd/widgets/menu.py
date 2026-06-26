@@ -1,4 +1,6 @@
-from typing          import Self, overload
+from __future__ import annotations
+
+from typing import Self, overload
 
 from PyQt6.QtWidgets import QMenu, QWidget
 from PyQt6.QtGui     import QAction
@@ -61,7 +63,7 @@ class Menu(QMenu):
             elif isinstance(entry, MenuSeparator):
                 self.addSeparator()
 
-    def getSubMenus(self : Self) -> dict[str, "Menu"]:
+    def getSubMenus(self : Self) -> dict[str, Menu]:
         return {a.menu().title().replace("&", "") : a.menu() \
             for a in self.actions() if a.menu() is not None}
 
@@ -75,4 +77,4 @@ class Menu(QMenu):
 
 
 class PlaceMenu(Menu):
-    subwindow_class : type["DocSubWindow"] | None = None
+    subwindow_class : type[DocSubWindow] | None = None

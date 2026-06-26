@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF
@@ -30,12 +32,12 @@ class DrawingInteraction:
     """
 
     # instance attributes
-    _view  : "DrawingView"
-    _scene : "DrawingScene"
+    _view  : DrawingView
+    _scene : DrawingScene
     _done  : bool
 
     @checked
-    def __init__(self : Self, view : "DrawingView") -> None:
+    def __init__(self : Self, view : DrawingView) -> None:
         self._view = view
         self._scene = view.scene()
         self._done = False
@@ -96,7 +98,7 @@ class DrawingItemInteraction(DrawingInteraction):
     @checked
     def __init__(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         item : ItemType
     ) -> None:
         super().__init__(view)
@@ -115,7 +117,7 @@ class DrawingItemsInteraction(DrawingInteraction):
     @checked
     def __init__(
         self  : Self,
-        view  : "DrawingView",
+        view  : DrawingView,
         items : ItemType | list[ItemType]
     ) -> None:
         super().__init__(view)
@@ -215,7 +217,7 @@ class AddRemoveItemsMixin:
     """Mixin for interactions that add or remove items from the scene."""
 
     # instance attributes
-    _scene : "DrawingScene"
+    _scene : DrawingScene
     _items : list[ItemType]
 
     def _addToScene(self : Self | DrawingInteraction, select : bool = True) -> None:

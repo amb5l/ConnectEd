@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, Any
 
 from PyQt6.QtWidgets import QGridLayout, QLabel, QWidget, QHBoxLayout
@@ -34,7 +36,7 @@ class PropertyLayout(QGridLayout):
     _value_label        : QLabel
     _value_value        : QLabel | QWidget
 
-    def __init__(self : Self, object : "PropertyTextItem", name : str) -> None:
+    def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
         super().__init__()
         description = self._NOT_FOUND
         inherent    = None

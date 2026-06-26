@@ -14,7 +14,7 @@ class DrawingSceneGripsMixin:
     """Grip visibility."""
 
     # external instance attributes
-    _grip_items : list["ItemHandlesMixin"]
+    _grip_items : list[ItemHandlesMixin]
 
     def initGrips(self : MixinSelf) -> None:
         self._grip_items = []

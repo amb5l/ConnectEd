@@ -1,5 +1,7 @@
 """AI tools for diagram connectivity."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from PyQt6.QtCore import QPointF
@@ -79,7 +81,7 @@ _START_PROPS = {
 )
 @checked
 def add_connection(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:
@@ -179,7 +181,7 @@ def _startFromItemRef(
 
 @checked
 def _routeConnection(
-    scene : "DiagramScene",
+    scene : DiagramScene,
     start : QPointF,
     legs  : list[tuple[str, float]],
 ) -> QPointF:

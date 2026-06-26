@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtWidgets import QMenuBar
@@ -30,7 +32,7 @@ class MenuBar(QMenuBar):
 
     def __init__(
         self   : Self,
-        parent : "Window"
+        parent : Window
     ) -> None:
         super().__init__(parent)
         self._slots   = Slots()
@@ -154,7 +156,7 @@ class MenuBar(QMenuBar):
         if mdi_area is None:
             return
         subwindow = mdi_area.activeSubWindow()
-        view : "DrawingView" = None if subwindow is None else subwindow.widget()
+        view : DrawingView | None = None if subwindow is None else subwindow.widget()
         ok = subwindow is not None and view is not None
         a = self._actions
         a.viewZoomAll.setEnabled(ok)
@@ -174,7 +176,7 @@ class MenuBar(QMenuBar):
         from ...graphics.views.diagram import DiagramSubWindow
         from ...graphics.views.symbol  import SymbolSubWindow
         from ..spreadsheet import SpreadsheetSubWindow
-        window : "Window" = self.parent()
+        window : Window = self.parent()
         a = self._actions
         mdi_area = window.mdiArea()
         if mdi_area is None:
@@ -220,7 +222,7 @@ class MenuBar(QMenuBar):
         self.place_menu.subwindow_class = subwindow.__class__
 
     def updateAiMenu(self : Self) -> None:
-        window : "Window" = self.parent()
+        window : Window = self.parent()
         a = self._actions
         self.ai_menu.clear()
         self.ai_new_chat_menu.clear()
@@ -286,7 +288,7 @@ class MenuBar(QMenuBar):
         self.ai_menu.addAction(a.aiSettings)
 
     def updateWindowMenu(self : Self) -> None:
-        window : "Window" = self.parent()
+        window : Window = self.parent()
         a = self._actions
         self.window_menu.clear()
         self.window_menu.addAction(a.windowNext)

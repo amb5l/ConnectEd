@@ -19,7 +19,7 @@ else:
 
 class DrawingViewApiViewMixin:
     @withScene
-    def viewZoomAll(self : MixinSelf, scene : "DrawingScene") -> None:
+    def viewZoomAll(self : MixinSelf, scene : DrawingScene) -> None:
         scene.updateSceneRect()
         if scene.items():
             rect = self._allItemsRect()
@@ -30,7 +30,7 @@ class DrawingViewApiViewMixin:
         self._zoomRect(rect)
 
     @withScene
-    def viewZoomSheet(self : MixinSelf, scene : "DrawingScene") -> None:
+    def viewZoomSheet(self : MixinSelf, scene : DrawingScene) -> None:
         rect = scene.sheet.rect
         self._zoomRect(rect)
 

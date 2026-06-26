@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from .....core.check import checked
@@ -17,8 +19,8 @@ class ItemCloneMixin:
         from ..handle        import HandleItem
         from ..property_text import PropertyTextItem
         from ..port_pin      import PortPinLineItem, PortPinPathItem
-        source : "ItemType" = original if original is not None else self
-        clone_item : "ItemType" = self.__class__(fresh=False)
+        source : ItemType = original if original is not None else self
+        clone_item : ItemType = self.__class__(fresh=False)
         # clone properties
         if hasattr(source, "properties"):
             for name in source.properties.names():
@@ -55,8 +57,8 @@ class ItemCloneMixin:
 
     def _cloneAfter(
         self        : Self,
-        source      : "ItemType",
-        clone_item  : "ItemType",
+        source      : ItemType,
+        clone_item  : ItemType,
     ) -> None:
         """Hook for subclasses to copy geometry not covered by properties."""
         pass

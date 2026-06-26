@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -59,7 +61,11 @@ class PortItem(
         self.setPos(self.pos() + d)
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"

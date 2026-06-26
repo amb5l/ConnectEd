@@ -40,7 +40,7 @@ class DiagramViewApiPlaceMixin:
 
     def placeNetLabelOnSegment(
         self     : MixinSelf,
-        segment  : "SegmentItem",
+        segment  : SegmentItem,
         spos     : QPointF | None = None
     ) -> None:
         if spos is None:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -195,7 +197,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self.properties.signalChanges("Value")
 
     @checked
-    def applyDialog(self : Self, dialog : "NetLabelItemDialog") -> None:
+    def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:
         self._applyDialogCommon(dialog)
         name  = dialog.getName()
         value = dialog.getValue()
@@ -203,7 +205,11 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         if value is not NO_CHANGE: self.setValue(value)
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Auto Width",

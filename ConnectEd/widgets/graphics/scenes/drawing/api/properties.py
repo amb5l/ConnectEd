@@ -34,7 +34,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def addProperty(
         self     : MixinSelf,
-        object   : "PropertiesMixin",
+        object   : PropertiesMixin,
         name     : str,
         kind     : DataKind,
         value    : Any,
@@ -46,7 +46,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def editProperty(
         self     : MixinSelf,
-        object   : "PropertiesMixin",
+        object   : PropertiesMixin,
         name     : str | tuple[str, str] | NoChange = NO_CHANGE,
         kind     : DataKind              | NoChange = NO_CHANGE,
         value    : Any                   | NoChange = NO_CHANGE,
@@ -58,7 +58,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def delProperty(
         self     : MixinSelf,
-        object   : "PropertiesMixin",
+        object   : PropertiesMixin,
         name     : str,
         undoable : bool = False
     ) -> None:
@@ -68,7 +68,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def addPropertyText(
         self       : MixinSelf,
-        object     : "PropertiesMixin",
+        object     : PropertiesMixin,
         name       : str,
         visible    : bool,
         cleat      : HandleId,
@@ -107,7 +107,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def editPropertyText(
         self       : MixinSelf,
-        object     : "PropertiesMixin",
+        object     : PropertiesMixin,
         name       : str,
         visible    : bool         | NoChange = NO_CHANGE,
         cleat      : HandleId     | NoChange = NO_CHANGE,
@@ -166,7 +166,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def delPropertyText(
         self     : MixinSelf,
-        object   : "PropertiesMixin",
+        object   : PropertiesMixin,
         name     : str,
         undoable : bool = False
     ) -> None:
@@ -176,7 +176,7 @@ class DrawingSceneApiPropertiesMixin:
     @checked
     def editProperties(
         self     : MixinSelf,
-        object   : "PropertiesMixin",
+        object   : PropertiesMixin,
         changes  : list[PropertyChangeBase],
         undoable : bool = False
     ) -> None:

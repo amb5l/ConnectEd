@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -73,7 +75,7 @@ class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
     @checked
     def __init__(
         self   : Self,
-        view   : "DiagramView",
+        view   : DiagramView,
         parent : BlockItem,
         pin    : BlockPinItem,
         pos    : QPointF,
@@ -109,7 +111,7 @@ class DiagramPlaceConnInteraction(DiagramInteraction):
     @checked
     def __init__(
         self : Self,
-        view : "DiagramView",
+        view : DiagramView,
         pos  : QPointF
     ) -> None:
         super().__init__(view)

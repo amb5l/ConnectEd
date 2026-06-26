@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, TypeVar, Generic, Protocol, overload
 
 from PyQt6.QtCore    import QPointF, QRectF
@@ -13,18 +15,18 @@ from .transform import ItemTransformMixin
 from .grip      import ItemGripMixin
 
 
-T = TypeVar("T", bound="HandleId")
+T = TypeVar("T", bound=HandleId)
 
 class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
     # instance attributes
-    _handles : dict[T, "HandleItem"]
+    _handles : dict[T, HandleItem]
 
-    def handles(self : Self) -> dict[T, "HandleItem"]:
+    def handles(self : Self) -> dict[T, HandleItem]:
         return self._handles
 
     @checked
-    def getHandle(self : Self, id : T | str) -> "HandleItem":
+    def getHandle(self : Self, id : T | str) -> HandleItem:
         if isinstance(id, str):
             id = self.handleIdType()(id)
         return self._handles[id]
@@ -57,7 +59,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
         return DataKind.RECT_HANDLE
 
     # instance attributes
-    _handles : dict[RectHandleId, "HandleItem"]
+    _handles : dict[RectHandleId, HandleItem]
 
     @checked
     def initHandles(self : Self) -> None:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
@@ -27,18 +29,18 @@ class DrawingViewStateBase:
     STATUS : str
 
     # instance attributes
-    view   : "DrawingView"
-    scene  : "DrawingScene"
+    view   : DrawingView
+    scene  : DrawingScene
 
     @checked
-    def __init__(self : Self, view : "DrawingView") -> None:
+    def __init__(self : Self, view : DrawingView) -> None:
         self.view = view
         self.scene = view.scene()
 
     @checked
     def go(
         self        : Self,
-        state       : "DrawingViewStateBase",
+        state       : DrawingViewStateBase,
         items       : list[ItemMixin] | None = None,
         interaction : DrawingInteraction | None = None,
         spos        : QPointF | None = None
@@ -67,7 +69,7 @@ class DrawingViewStateBase:
     def interact(
         self        : Self,
         interaction : DrawingInteraction,
-        state       : "DrawingViewStateBase | None" = None
+        state       : DrawingViewStateBase | None = None
     ) -> None:
         if not interaction.valid():
             self.view.state.go(self.view.stateIdle)

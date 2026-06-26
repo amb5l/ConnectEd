@@ -1,4 +1,6 @@
-﻿from typing      import Self, overload
+﻿from __future__ import annotations
+
+from typing      import Self, overload
 from dataclasses import replace
 
 from PyQt6.QtCore    import QPointF
@@ -214,7 +216,7 @@ class ItemTransformMixin:
     def parentSceneMirrorV(self : Self | QGraphicsItem) -> bool:
         """Returns effective vertical mirroring of the parent."""
         mirror_v = False
-        item : "Self | QGraphicsItem | None" = self.parentItem()
+        item : Self | QGraphicsItem | None = self.parentItem()
         while item is not None:
             if isinstance(item, ItemTransformMixin):
                 mirror_v ^= item.mirrorV()
@@ -232,7 +234,7 @@ class ItemTransformMixin:
 
     @checked
     def setOrigin(
-        self : "Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin",
+        self : Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin,
         id   : HandleId
     ) -> None:
         """Set origin handle without shifting the item in scene."""
@@ -267,11 +269,11 @@ class ItemTransformMixin:
         return
 
     @checked
-    def getOriginHandle(self : "Self | ItemHandlesMixin") -> "HandleItem":
+    def getOriginHandle(self : Self | ItemHandlesMixin) -> HandleItem:
         return self.getHandle(self._origin)
 
     @checked
-    def updateTransform(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
+    def updateTransform(self : Self | QGraphicsItem | ItemHandlesMixin) -> None:
         """
         Rebuild the item's local transform so that rotation and mirroring
         pivot around the same point:

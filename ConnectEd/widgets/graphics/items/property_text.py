@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF
@@ -34,9 +36,9 @@ class PropertyTextTetherItem(TextTetherItem):
     Tether line from the origin of a PropertyTextItem to its parent cleat.
     """
 
-    _text_item : "PropertyTextItem"
+    _text_item : PropertyTextItem
 
-    def anchor(self : Self) -> "HandleItem | None":
+    def anchor(self : Self) -> HandleItem | None:
         return self._text_item.parentItem()
 
 
@@ -186,7 +188,7 @@ class PropertyTextItem(TextItem):
     def setCleat(
         self   : Self,
         id     : HandleId | None,
-        parent : "ItemHandlesMixin | None" = None
+        parent : ItemHandlesMixin | None = None
     ) -> bool:
         self._cleat = id
         ok = False
@@ -271,7 +273,7 @@ class PropertyTextItem(TextItem):
         self.owner().properties.setValue(self.name(), value)
 
     @checked
-    def applyDialog(self : Self, dialog : "PropertyTextItemDialog") -> None:
+    def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:
         self._applyDialogCommon(dialog)
         name     = dialog.getName()
         kind     = dialog.getKind()
@@ -322,7 +324,11 @@ class PropertyTextItem(TextItem):
         )
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         items = [
             view.action("Edit...", lambda: view.editPropertyTextDialog(self)),
             view.separator(),

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 
@@ -112,7 +114,7 @@ def aitool(
 
         @wraps(fn)
         def wrapper(
-            window    : "Window",
+            window    : Window,
             registry  : RefRegistry,
             arguments : dict[str, Any],
         ) -> str:
@@ -146,7 +148,7 @@ def toolOk(**fields : Any) -> str:
 @checked
 def callTool(
     name       : str,
-    window     : "Window",
+    window     : Window,
     registry   : RefRegistry,
     arguments  : dict[str, Any],
 ) -> str:

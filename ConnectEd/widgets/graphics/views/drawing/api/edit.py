@@ -30,11 +30,11 @@ else:
 
 class DrawingViewApiEditMixin:
     @withScene
-    def editUndo(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editUndo(self : MixinSelf, scene : DrawingScene) -> None:
         scene.undo()
 
     @withScene
-    def editRedo(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editRedo(self : MixinSelf, scene : DrawingScene) -> None:
         scene.redo()
 
     @withScene
@@ -42,25 +42,25 @@ class DrawingViewApiEditMixin:
         raise NotImplementedError("editRepeat not implemented")
 
     @withScene
-    def editCancel(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editCancel(self : MixinSelf, scene : DrawingScene) -> None:
         scene.clearSelection()
         self.state.go(self.stateIdle)
 
     @withScene
-    def editCut(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editCut(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editCut(
             self._snap(self.mouse.current.logical), undoable=True
         )
 
     @withScene
-    def editCopy(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editCopy(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editCopy(self._snap(self.mouse.current.logical))
 
     def editPaste(self : MixinSelf) -> None:
         self.state.go(self.stateEditPaste)
 
     @withScene
-    def editDelete(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editDelete(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editDelete(undoable=True)
 
     def editDuplicate(self : MixinSelf) -> None:
@@ -70,26 +70,26 @@ class DrawingViewApiEditMixin:
         self.state.go(self.stateEditSelectArea1)
 
     @withScene
-    def editSelectAll(self : MixinSelf, scene : "DrawingScene") -> None:
+    def editSelectAll(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editSelectAll()
 
     def editSlide(
         self  : MixinSelf,
-        items : list["ItemMixin"] | None = None,
+        items : list[ItemMixin] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         self._editMove(items, pos, True)
 
     def editMove(
         self  : MixinSelf,
-        items : list["ItemMixin"] | None = None,
+        items : list[ItemMixin] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         self._editMove(items, pos, False)
 
     def editResize(
         self : MixinSelf,
-        grip : "ResizeGripItem",
+        grip : ResizeGripItem,
         pos  : QPoint | QPointF | None = None
     ) -> None:
         pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
@@ -101,8 +101,8 @@ class DrawingViewApiEditMixin:
     @withScene
     def editRotateCW(
         self  : MixinSelf,
-        scene : "DrawingScene",
-        items : list["ItemMixin"] | None = None,
+        scene : DrawingScene,
+        items : list[ItemMixin] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         if self.interaction:  # interaction in progress
@@ -117,8 +117,8 @@ class DrawingViewApiEditMixin:
     @withScene
     def editRotateCCW(
         self  : MixinSelf,
-        scene : "DrawingScene",
-        items : list["ItemMixin"] | None = None,
+        scene : DrawingScene,
+        items : list[ItemMixin] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
         if self.interaction:  # interaction in progress
@@ -133,15 +133,15 @@ class DrawingViewApiEditMixin:
     @withScene
     def editAssignOrigin(
         self    : MixinSelf,
-        scene   : "DrawingScene",
-        item    : "ItemMixin",
+        scene   : DrawingScene,
+        item    : ItemMixin,
         ap_name : str
     ) -> None:
         scene.editAssignOrigin(item, ap_name, undoable=True)
 
     def editAppearance(
         self  : MixinSelf,
-        items : "ItemMixin | list[ItemMixin] | None" = None
+        items : ItemMixin | list[ItemMixin] | None = None
     ) -> None:
         from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
@@ -149,7 +149,7 @@ class DrawingViewApiEditMixin:
 
     def editItemProperties(
         self  : MixinSelf,
-        items : "ItemMixin | list[ItemMixin] | None" = None
+        items : ItemMixin | list[ItemMixin] | None = None
     ) -> None:
         from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
@@ -161,7 +161,7 @@ class DrawingViewApiEditMixin:
     @withScene
     def editQuery(
         self  : MixinSelf,
-        scene : "DrawingScene",
+        scene : DrawingScene,
         vpos  : QPoint | None = None
     ) -> None:
         if vpos is None:
@@ -205,21 +205,21 @@ class DrawingViewApiEditMixin:
 
     def editPort(
         self : MixinSelf,
-        item : "ItemMixin | None" = None
+        item : ItemMixin | None = None
     ) -> None:
         self.state.go(self.stateEditPort, [item] if item else None)
 
     def editBlockPin(
         self : MixinSelf,
-        item : "ItemMixin | None" = None
+        item : ItemMixin | None = None
     ) -> None:
         self.state.go(self.stateEditBlockPin, [item] if item else None)
 
     @withScene
     def editSymbolPinDot(
         self   : MixinSelf,
-        scene  : "DrawingScene",
-        item   : "SymbolPinItem",
+        scene  : DrawingScene,
+        item   : SymbolPinItem,
         enable : bool
     ):
         if enable == item.dot():
@@ -229,8 +229,8 @@ class DrawingViewApiEditMixin:
     @withScene
     def editSymbolPinClock(
         self   : MixinSelf,
-        scene  : "DrawingScene",
-        item   : "SymbolPinItem",
+        scene  : DrawingScene,
+        item   : SymbolPinItem,
         enable : bool
     ):
         if enable == item.clock():
@@ -243,8 +243,8 @@ class DrawingViewApiEditMixin:
     @withScene
     def editText(
         self      : MixinSelf,
-        scene     : "DrawingScene",
-        item      : "TextItem",
+        scene     : DrawingScene,
+        item      : TextItem,
         mirror_h  : bool   | NoChange = NO_CHANGE,
         mirror_v  : bool   | NoChange = NO_CHANGE,
         origin    : str    | NoChange = NO_CHANGE,
@@ -267,7 +267,7 @@ class DrawingViewApiEditMixin:
 
     def editPropertyTextDialog(
         self : MixinSelf,
-        item : "ItemMixin | None" = None
+        item : ItemMixin | None = None
     ) -> None:
         self.state.go(
             self.stateEditPropertyText, [item] if item else None
@@ -276,8 +276,8 @@ class DrawingViewApiEditMixin:
     @withScene
     def _editMove(
         self  : MixinSelf,
-        scene : "DrawingScene",
-        items : list["ItemMixin"] | None = None,
+        scene : DrawingScene,
+        items : list[ItemMixin] | None = None,
         pos   : QPoint | QPointF | None = None,
         slide : bool = False
     ) -> None:

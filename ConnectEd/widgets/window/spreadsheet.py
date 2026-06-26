@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from types  import SimpleNamespace
 
@@ -135,13 +137,13 @@ class SpreadsheetAPDelegate(SpreadsheetComboDelegate):
 class SpreadsheetHeader(QHeaderView):
     """Custom header view that provides a context menu for sorting."""
 
-    _table      : "SpreadsheetTable"
+    _table      : SpreadsheetTable
     _len        : int
     _transposed : bool
 
     def __init__(
             self : Self,
-            table       : "SpreadsheetTable",
+            table       : SpreadsheetTable,
             orientation : Qt.Orientation,
             len         : int,
             transposed  : bool
@@ -207,7 +209,7 @@ class SpreadsheetTable(QTableView):
     type.
     """
 
-    _parent     : "SpreadsheetWidget"
+    _parent     : SpreadsheetWidget
     _undo_stack : QUndoStack
     _model      : QStandardItemModel | QTransposeProxyModel
     _transposed : bool
@@ -217,7 +219,7 @@ class SpreadsheetTable(QTableView):
         self       : Self,
         undo_stack : QUndoStack,
         model      : QStandardItemModel | QTransposeProxyModel,
-        parent     : "SpreadsheetWidget"
+        parent     : SpreadsheetWidget
     ) -> None:
         super().__init__(parent)
         self._parent = parent
@@ -293,7 +295,7 @@ class SpreadsheetWidget(QWidget):
     a toolbar.
     """
 
-    _parent           : "SpreadsheetTabWidget"
+    _parent           : SpreadsheetTabWidget
     _model            : QStandardItemModel
     _proxy            : QTransposeProxyModel
     _transposed       : bool
@@ -534,7 +536,7 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
-    _tab_items      : dict[str, list["ItemMixin"]]
+    _tab_items      : dict[str, list[ItemMixin]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
     _tab_models     : dict[str, QStandardItemModel]
@@ -547,7 +549,7 @@ class SpreadsheetTabWidget(QTabWidget):
 
     def __init__(
         self   : Self,
-        items  : list["ItemMixin"],
+        items  : list[ItemMixin],
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -708,17 +710,17 @@ class SpreadsheetTabWidget(QTabWidget):
 
 
 class SpreadsheetSubWindow(DocSubWindow):
-    _scene      : "DrawingScene"
+    _scene      : DrawingScene
     _tab_widget : QTabWidget | None
 
     def __init__(
             self  : Self,
-            scene : "DrawingScene",
-            items : list["ItemMixin"]
+            scene : DrawingScene,
+            items : list[ItemMixin]
         ) -> None:
         super().__init__()
         self._scene = scene
-        item_scenes = set(item.scene() for item in items)
+        item_scenes = {item.scene() for item in items}
         if len(item_scenes) != 1:
             logger().error("Items must belong to the same scene")
             items = []
@@ -740,6 +742,6 @@ class SpreadsheetSubWindow(DocSubWindow):
         window().menuBar().updateWindowMenu()
         super().closeEvent(event)
 
-    def scene(self : Self) -> "DrawingScene":
+    def scene(self : Self) -> DrawingScene:
         """To play nicely with the MDI area."""
         return self._scene

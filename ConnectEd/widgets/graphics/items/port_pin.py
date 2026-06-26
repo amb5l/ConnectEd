@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -119,7 +121,7 @@ class PortPinMixin(
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         if scene is None:
             return
         self._updateGraphics(scene)
@@ -132,7 +134,7 @@ class PortPinMixin(
 
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
-        scene : "DrawingScene" = self.scene()
+        scene : DrawingScene = self.scene()
         if scene is None:
             return
         self._updatePen(scene)
@@ -193,24 +195,24 @@ class PortPinMixin(
     def bus(self : Self) -> bool:
         return self._bus
 
-    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
     def _updatePen(
         self  : Self | QGraphicsItem | QGraphicsPathItem,
-        scene : "DrawingScene"
+        scene : DrawingScene
     ) -> None:
         key = (self.bus(), self.isSelected())
         self.setPen(scene.resources.pen(self.resourcesName(), key))
 
-    def _updateArrowPath(self : Self, scene : "DrawingScene") -> None:
+    def _updateArrowPath(self : Self, scene : DrawingScene) -> None:
         self._arrow.setPath(scene.resources.path(
             self._arrow.resourcesName(), self._direction
         ))
 
     def _updateArrowPenBrush(
         self  : Self | QGraphicsItem | QGraphicsPathItem,
-        scene : "DrawingScene"
+        scene : DrawingScene
     ) -> None:
         key = self.isSelected()
         self._arrow.setPen(scene.resources.pen(self._arrow.resourcesName(), key))
@@ -225,7 +227,7 @@ class PortPinLineItem(PortPinMixin, QGraphicsLineItem):
     Base class for ports and block pins.
     """
 
-    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
         self.setLine(scene.resources.line(self.resourcesName()))
 
     def _updateNameHandle(self : Self) -> None:
@@ -281,7 +283,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self.properties.signalChanges("Clock")
 
     @withScene
-    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
         key = (self._clock, self._dot)
         self.setPath(scene.resources.path(self.resourcesName(), key))
 

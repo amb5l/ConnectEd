@@ -18,12 +18,12 @@ class SymbolScene(DiagramScene):
     """Scene for editing a single symbol."""
 
     # instance attributes
-    _symbol : "SymbolDefinitionItem" | None  # symbol being edited
-    _brect  : QRectF | None        # bounding rect of all items
+    _symbol : SymbolDefinitionItem | None  # symbol being edited
+    _brect  : QRectF | None                # bounding rect of all items
 
     def __init__(
         self   : Self,
-        symbol : "SymbolDefinitionItem" | None = None
+        symbol : SymbolDefinitionItem | None = None
     ) -> None:
         super().__init__()
         self._symbol = symbol

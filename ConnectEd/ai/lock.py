@@ -1,5 +1,7 @@
 """Exclusive editing lease — one AI chat agent loop at a time."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 class AiEditLock(QObject):
     lockChanged = pyqtSignal()
 
-    _holder : "AiChatSession | None"
+    _holder : AiChatSession | None
 
     @checked
     def __init__(self : Self, parent : QObject | None = None) -> None:
@@ -21,7 +23,7 @@ class AiEditLock(QObject):
         self._holder = None
 
     @checked
-    def holder(self : Self) -> "AiChatSession | None":
+    def holder(self : Self) -> AiChatSession | None:
         return self._holder
 
     @checked
@@ -29,7 +31,7 @@ class AiEditLock(QObject):
         return self._holder is not None
 
     @checked
-    def acquire(self : Self, session : "AiChatSession") -> bool:
+    def acquire(self : Self, session : AiChatSession) -> bool:
         if self._holder is session:
             return True
         if self._holder is not None:
@@ -39,7 +41,7 @@ class AiEditLock(QObject):
         return True
 
     @checked
-    def release(self : Self, session : "AiChatSession") -> None:
+    def release(self : Self, session : AiChatSession) -> None:
         if self._holder is not session:
             return
         self._holder = None

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing      import Self, Protocol
 from dataclasses import dataclass
 from abc         import ABC, abstractmethod
@@ -21,10 +23,10 @@ if TYPE_CHECKING:
 
 @dataclass
 class NavItemSpec:
-    subject  : str | "DocSubjectProtocol"
+    subject  : str | DocSubjectProtocol
     icon     : QIcon | None = None
     tip      : str | None = None
-    children : list["NavItemSpec"] | None = None
+    children : list[NavItemSpec] | None = None
 
 
 class DocSubjectProtocol(Protocol):
@@ -152,8 +154,8 @@ class Doc(ABC):
     @classmethod
     def navGroupContextMenu(
         cls      : type[Self],
-        nav      : "Navigator",
-        doc_type : "DocType",
+        nav      : Navigator,
+        doc_type : DocType,
     ) -> list[MenuEntry]:
         """Navigator L1 group-row menu entries for this doc type."""
         return [
@@ -183,19 +185,19 @@ class Doc(ABC):
         ...
 
     @abstractmethod
-    def closeSubWindow(self : Self, subwindow : "DocSubWindow") -> bool:
+    def closeSubWindow(self : Self, subwindow : DocSubWindow) -> bool:
         """Hook for cleanup/veto before a subwindow is closed."""
         ...
 
     @abstractmethod
-    def onSubWindowClosed(self : Self, subwindow : "DocSubWindow") -> None:
+    def onSubWindowClosed(self : Self, subwindow : DocSubWindow) -> None:
         """Hook for cleanup after a subwindow is closed."""
         ...
 
     # --- editor lifecycle (close / save) ----------------------------------------
 
     @checked
-    def commit(self : Self, subwindow : "DocSubWindow") -> bool:
+    def commit(self : Self, subwindow : DocSubWindow) -> bool:
         """Persist after edits. Override when supported."""
         raise NotImplementedError(
             f"{type(self).__name__} does not support commit."

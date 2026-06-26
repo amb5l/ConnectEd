@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QXmlStreamWriter
+from PyQt6.QtCore    import QPointF
 
 from ....core.check import checked
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
@@ -27,10 +29,10 @@ class TextTetherItem(
     Tether line from the origin of a text item to its parent (handle/node).
     """
 
-    _text_item  : "TextItem"  # text item instance
+    _text_item  : TextItem  # text item instance
 
     @checked
-    def __init__(self : Self, text_item : "TextItem") -> None:
+    def __init__(self : Self, text_item : TextItem) -> None:
         self._text_item = text_item
         self.initSettings()
         self.initChange()
@@ -53,7 +55,7 @@ class TextTetherItem(
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen("Tether"))

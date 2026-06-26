@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore    import pyqtSignal
@@ -54,7 +56,7 @@ class AiChatDock(QDockWidget):
 
     def __init__(
         self       : Self,
-        parent     : "Window",
+        parent     : Window,
         chat_id    : int = 1,
         profile_id : str = "",
         provider   : str = "",

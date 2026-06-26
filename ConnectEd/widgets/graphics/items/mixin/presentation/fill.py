@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsView
+from PyQt6.QtWidgets import QGraphicsView
 from PyQt6.QtGui     import QColor, QBrush
 
 from ......app import logger
@@ -22,18 +24,18 @@ class ItemPresentationFillMixin:
 
     # API
 
-    def hasFill(self : "Self | ItemType") -> bool:
+    def hasFill(self : Self | ItemType) -> bool:
         return self.hasFillColor() or self.hasFillStyle()
 
-    def hasFillColor(self : "Self | ItemType") -> bool:
+    def hasFillColor(self : Self | ItemType) -> bool:
         return hasattr(self, "_fill_color")
 
-    def fillColor(self : "Self | ItemType") -> QColor | None:
+    def fillColor(self : Self | ItemType) -> QColor | None:
         return self._fill_color if hasattr(self, "_fill_color") else None
 
     def defaultFillColor(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -41,7 +43,7 @@ class ItemPresentationFillMixin:
         return brush.color()
 
     @checked
-    def setFillColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
+    def setFillColor(self : Self | ItemType, color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
         if not hasattr(self, "_fill_color"):
@@ -52,15 +54,15 @@ class ItemPresentationFillMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Fill Color")
 
-    def hasFillStyle(self : "Self | ItemType") -> bool:
+    def hasFillStyle(self : Self | ItemType) -> bool:
         return hasattr(self, "_fill_style")
 
-    def fillStyle(self : "Self | ItemType") -> Qt.BrushStyle | None:
+    def fillStyle(self : Self | ItemType) -> Qt.BrushStyle | None:
         return self._fill_style if hasattr(self, "_fill_style") else None
 
     def defaultFillStyle(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> Qt.BrushStyle | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -68,7 +70,10 @@ class ItemPresentationFillMixin:
         return brush.style()
 
     @checked
-    def setFillStyle(self : "Self | ItemType", style: Qt.BrushStyle | None | NoChange) -> None:
+    def setFillStyle(
+        self  : Self | ItemType,
+        style : Qt.BrushStyle | None | NoChange
+        ) -> None:
         if style is NO_CHANGE:
             return
         if not hasattr(self, "_fill_style"):
@@ -81,21 +86,21 @@ class ItemPresentationFillMixin:
 
     # helpers
 
-    def _updateBrush(self : Self, _scene : "DrawingScene") -> None:
+    def _updateBrush(self : Self | ItemType, _scene : DrawingScene) -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
     def _updateBrushFast(
-        self : "Self | ItemType",
-        scene : "DrawingScene"
+        self : Self | ItemType,
+        scene : DrawingScene
     ) -> None:
         brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
         self.setBrush(brush)
 
     @withScene
     def _updateBrushSlow(
-        self  : "Self | ItemType",
-        scene : "DrawingScene"
+        self  : Self | ItemType,
+        scene : DrawingScene
     ) -> None:
         brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
         override_color = \

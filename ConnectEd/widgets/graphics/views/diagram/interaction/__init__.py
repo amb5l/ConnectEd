@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore import QPointF
@@ -18,8 +20,8 @@ if TYPE_CHECKING:
 
 
 class DiagramInteraction(DrawingInteraction):
-    _view  : "DiagramView"
-    _scene : "DiagramScene"
+    _view  : DiagramView
+    _scene : DiagramScene
 
 
 class DiagramItemInteraction(DrawingItemInteraction, DiagramInteraction):
@@ -40,7 +42,7 @@ class DiagramBlockPinInteraction(DiagramInteraction):
     @checked
     def __init__(
         self   : Self,
-        view   : "DiagramView",
+        view   : DiagramView,
         parent : BlockItem | None,
         pin    : BlockPinItem | None,
         pos    : QPointF,

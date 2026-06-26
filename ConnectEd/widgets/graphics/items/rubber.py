@@ -2,6 +2,8 @@
 For movement rubber banding preview only.
 """
 
+from __future__ import annotations
+
 from typing import Self, Any, overload
 
 from PyQt6.QtCore    import QLineF, QPointF
@@ -46,7 +48,7 @@ class RubberItem(QGraphicsPathItem):
                 self.onSceneChanged(value)
         return super().itemChange(change, value)
 
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen(self.resourcesName()))

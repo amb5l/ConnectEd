@@ -1,4 +1,6 @@
-﻿from typing import Self
+﻿from __future__ import annotations
+
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -28,7 +30,7 @@ class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
         id       : HandleId,
         pos      : QPointF | None = None,
         grip_cls : type[GripItem] = MoveGripItem,
-        parent   : "ItemHandlesMixin" = None
+        parent   : ItemHandlesMixin = None
     ) -> None:
         super().__init__(parent)
         self._id = id

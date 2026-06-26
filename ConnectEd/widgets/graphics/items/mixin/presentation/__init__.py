@@ -1,4 +1,6 @@
-from typing import Self, Protocol, TypeAlias, TYPE_CHECKING
+from __future__ import annotations
+
+from typing import Self, Protocol, TYPE_CHECKING
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
@@ -149,7 +151,7 @@ class ItemPresentationMixin(
     _text_underline : bool          | None
 
     @checked
-    def initPresentation(self : "Self | ItemType") -> None:
+    def initPresentation(self : Self | ItemType) -> None:
         from ..select import ItemSelectMixin
         if not isinstance(self, ItemSelectMixin):
             raise TypeError("This item does not support the ItemSelectionMixin")
@@ -175,19 +177,19 @@ class ItemPresentationMixin(
             or hasattr(self, "_text_underline"):
                 self._updateQuill = self._updateQuillSlow
 
-    def _resourceKey(self : "Self | ItemType") -> bool | tuple:
+    def _resourceKey(self : Self | ItemType) -> bool | tuple:
         """Theme lookup key for pen, brush and quill. Override in subclass."""
         return self.isSelected()
 
-    def _resourceKeyDefault(self : "Self | ItemType") -> bool | tuple:
+    def _resourceKeyDefault(self : Self | ItemType) -> bool | tuple:
         """Default theme lookup key (non-selected, normal state)."""
         return False
 
-    def onSettingsChanged(self : "Self | ItemType") -> None:
+    def onSettingsChanged(self : Self | ItemType) -> None:
         self.onSceneChanged(self.scene())
 
     @withScene
-    def onSceneChanged(self : "Self | ItemType", scene : "DrawingScene") -> None:
+    def onSceneChanged(self : Self | ItemType, scene : DrawingScene) -> None:
         if hasattr(self, "setPen"):
             self._updatePen(scene)
         if hasattr(self, "setBrush"):
@@ -198,10 +200,10 @@ class ItemPresentationMixin(
             self._updateGraphics(scene)
 
     def _defaultScene(
-        self   : "Self | ItemType",
-        widget : "DrawingView | None" = None
-    ) -> "DrawingScene | None":
-        scene : "DrawingScene | None" = self.scene()
+        self   : Self | ItemType,
+        widget : DrawingView | None = None
+    ) -> DrawingScene | None:
+        scene : DrawingScene | None = self.scene()
         if scene is None:
-            scene : "DrawingScene | None" = widget.scene()
+            scene : DrawingScene | None = widget.scene()
         return scene

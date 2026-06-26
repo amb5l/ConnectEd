@@ -1,5 +1,7 @@
 """GuiDriver protocol (full scripting surface)."""
 
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Protocol, Self, runtime_checkable
 
@@ -17,7 +19,7 @@ class GuiDriver(Protocol):
     """ConnectEd-aware GUI scripting surface."""
 
     # core
-    def window(self : Self) -> "Window":
+    def window(self : Self) -> Window:
         ...
 
     def processEvents(self : Self) -> None:
@@ -46,7 +48,7 @@ class GuiDriver(Protocol):
     def expectWindowTitle(self : Self, widget : QWidget, title : str) -> None:
         ...
 
-    def menuBar(self : Self) -> "MenuBar | None":
+    def menuBar(self : Self) -> MenuBar | None:
         ...
 
     # menus (optional Qt helpers)

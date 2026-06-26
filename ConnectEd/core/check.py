@@ -4,7 +4,9 @@ from functools       import partial
 
 from typeguard import typechecked
 
+
 T = TypeVar("T", bound=Callable[..., Any])
+
 
 def checked(
     fn: T | None = None, /, *, always: bool = False

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
@@ -41,7 +43,7 @@ class BaseTextItemDialog(QDialog):
     def __init__(
         self   : Self,
         item   : TextItem,
-        parent : "DrawingView | None"
+        parent : DrawingView | None
     ):
         super().__init__(parent)
         self.setWindowTitle(self._TITLE)

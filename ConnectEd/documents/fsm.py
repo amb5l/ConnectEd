@@ -1,4 +1,5 @@
-# place holder for future FSM Diagram document
+from __future__ import annotations
+
 from ..core.session import DocType, Session
 from ..core.doc     import Doc
 

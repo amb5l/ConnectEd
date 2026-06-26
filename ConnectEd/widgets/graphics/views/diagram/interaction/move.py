@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF, QRectF
@@ -106,7 +108,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     @checked
     def __init__(
         self  : Self,
-        view  : "DiagramView",
+        view  : DiagramView,
         items : ItemType | list[ItemType],
         pos   : QPointF,                    # movement origin
         slide : bool = False
@@ -541,7 +543,7 @@ class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     @checked
     def __init__(
         self  : Self,
-        view  : "DiagramView",
+        view  : DiagramView,
         block : BlockItem,
         pins  : list[BlockPinItem]
     ) -> None:

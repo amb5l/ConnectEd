@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QTimer
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class TextValueLayout(QVBoxLayout):
-    _dialog             : "TextItemDialog"
+    _dialog             : TextItemDialog
     _text_format_layout : QHBoxLayout
     _text_format_label  : QLabel
     _text_format_combo  : TextFormatComboBox

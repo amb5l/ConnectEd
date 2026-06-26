@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class AiManager(QObject):
-    _window         : "Window"
+    _window         : Window
     _edit_lock      : AiEditLock
     _chat_manager   : AiChatManager
     _refresh_worker : ProfileModelsRefreshWorker | None
@@ -26,8 +26,8 @@ class AiManager(QObject):
     @checked
     def __init__(
         self          : Self,
-        window        : "Window",
-        messages_dock : "MessagesViewDock",
+        window        : Window,
+        messages_dock : MessagesViewDock,
     ) -> None:
         super().__init__(window)
         self._window = window

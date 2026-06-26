@@ -32,7 +32,7 @@ qkm = Qt.KeyboardModifier
 
 class DrawingViewPrivateMixin:
     def _allItemsRect(self : MixinSelf) -> QRectF | None:
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is None:
             return None
         items_rect = None
@@ -43,7 +43,7 @@ class DrawingViewPrivateMixin:
         return items_rect
 
     def _selectedItemsRect(self : MixinSelf) -> QRectF | None:
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is None:
             return None
         items_rect = None
@@ -125,9 +125,9 @@ class DrawingViewPrivateMixin:
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self : MixinSelf, layer : "DrawingView.Layer") -> None:
+    def _setLayer(self : MixinSelf, layer : DrawingView.Layer) -> None:
         self.layer = layer
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is None:
             return
         for item in scene.items():
@@ -172,7 +172,7 @@ class DrawingViewPrivateMixin:
         rect      : QRectF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is None:
             return
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
@@ -302,7 +302,7 @@ class DrawingViewPrivateMixin:
         self  : MixinSelf,
         etype : type
     ) -> list[QGraphicsItem]:
-        scene : "DrawingScene | None" = self.scene()
+        scene : DrawingScene | None = self.scene()
         if scene is None:
             return []
         return [i for i in scene.selectedItems() if isinstance(i, etype)]

@@ -1,4 +1,6 @@
-﻿from typing import Self
+﻿from __future__ import annotations
+
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtGui     import QAction
@@ -103,7 +105,7 @@ class TapItem(
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen(
@@ -162,7 +164,11 @@ class TapItem(
 
 
     @checked
-    def ctxMenuItems(self : Self, view : "DiagramView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DiagramView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action("Rotate CW",  lambda: self.rotateCW(),  shortcut="]"),
             view.action("Rotate CCW", lambda: self.rotateCCW(), shortcut="["),

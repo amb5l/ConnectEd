@@ -1,5 +1,7 @@
+from __future__ import annotations
 
 from typing import Self
+
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QComboBox
 
@@ -26,7 +28,7 @@ class PortPinItemDialog(QDialog):
     def __init__(
         self   : Self,
         title  : str,
-        item   : "PortPinMixin | None" = None,
+        item   : PortPinMixin | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

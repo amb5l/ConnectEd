@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from ...core.check import checked
@@ -61,7 +63,7 @@ _BLOCK_PIN_VIEW_ITEM = {
 )
 @checked
 def add_block_pin(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:
@@ -95,7 +97,7 @@ def add_block_pin(
 )
 @checked
 def edit_block_pin(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any]
 ):
@@ -139,7 +141,7 @@ def edit_block_pin(
 )
 @checked
 def add_block_pins(
-    window    : "Window",
+    window    : Window,
     registry  : RefRegistry,
     arguments : dict[str, Any],
 ) -> str:
@@ -209,7 +211,7 @@ def _parsePinSpec(spec : Any) -> tuple[dict[str, Any] | None, str | None]:
 def _resolveBlock(
     registry : RefRegistry,
     item_ref : str,
-) -> tuple["BlockItem | None", str | None]:
+) -> tuple[BlockItem | None, str | None]:
     item = registry.resolve(item_ref, kind="item")
     if item is None:
         return None, toolError("Invalid item reference")
@@ -221,8 +223,8 @@ def _resolveBlock(
 
 @checked
 def _placeBlockPin(
-    scene : "DiagramScene",
-    block : "BlockItem",
+    scene : DiagramScene,
+    block : BlockItem,
     spec  : dict[str, Any],
 ) -> tuple[Any | None, str | None]:
     from ...widgets.graphics.items.block_pin import BlockPinItem

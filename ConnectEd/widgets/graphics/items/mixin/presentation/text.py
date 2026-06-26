@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsView
@@ -23,7 +25,7 @@ class ItemPresentationTextMixin:
 
     # API
 
-    def hasText(self : "Self | ItemType") -> bool:
+    def hasText(self : Self | ItemType) -> bool:
         return (
                self.hasTextColor()
             or self.hasTextFont()
@@ -33,15 +35,15 @@ class ItemPresentationTextMixin:
             or self.hasTextUnderline()
         )
 
-    def hasTextColor(self : "Self | ItemType") -> bool:
+    def hasTextColor(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_color")
 
-    def textColor(self : "Self | ItemType") -> QColor | None:
+    def textColor(self : Self | ItemType) -> QColor | None:
         return self._text_color if hasattr(self, "_text_color") else None
 
     def defaultTextColor(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> QColor | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -49,7 +51,7 @@ class ItemPresentationTextMixin:
         return quill.color()
 
     @checked
-    def setTextColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
+    def setTextColor(self : Self | ItemType, color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
         if not hasattr(self, "_text_color"):
@@ -60,15 +62,15 @@ class ItemPresentationTextMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Text Color")
 
-    def hasTextFont(self : "Self | ItemType") -> bool:
+    def hasTextFont(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_font")
 
-    def textFont(self : "Self | ItemType") -> str | None:
+    def textFont(self : Self | ItemType) -> str | None:
         return self._text_font if hasattr(self, "_text_font") else None
 
     def defaultTextFont(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> str | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -76,7 +78,7 @@ class ItemPresentationTextMixin:
         return quill.font()
 
     @checked
-    def setTextFont(self : "Self | ItemType", font: str | None | NoChange) -> None:
+    def setTextFont(self : Self | ItemType, font: str | None | NoChange) -> None:
         if font is NO_CHANGE:
             return
         if not hasattr(self, "_text_font"):
@@ -87,15 +89,15 @@ class ItemPresentationTextMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Text Font")
 
-    def hasTextSize(self : "Self | ItemType") -> bool:
+    def hasTextSize(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_size")
 
-    def textSize(self : "Self | ItemType") -> float | None:
+    def textSize(self : Self | ItemType) -> float | None:
         return self._text_size if hasattr(self, "_text_size") else None
 
     def defaultTextSize(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> float | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -103,7 +105,7 @@ class ItemPresentationTextMixin:
         return quill.size()
 
     @checked
-    def setTextSize(self : "Self | ItemType", size: float | None | NoChange) -> None:
+    def setTextSize(self : Self | ItemType, size: float | None | NoChange) -> None:
         if size is NO_CHANGE:
             return
         if not hasattr(self, "_text_size"):
@@ -114,15 +116,15 @@ class ItemPresentationTextMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Text Size")
 
-    def hasTextBold(self : "Self | ItemType") -> bool:
+    def hasTextBold(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_bold")
 
-    def textBold(self : "Self | ItemType") -> bool | None:
+    def textBold(self : Self | ItemType) -> bool | None:
         return self._text_bold if hasattr(self, "_text_bold") else None
 
     def defaultTextBold(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -130,7 +132,7 @@ class ItemPresentationTextMixin:
         return quill.bold()
 
     @checked
-    def setTextBold(self : "Self | ItemType", bold: bool | None | NoChange) -> None:
+    def setTextBold(self : Self | ItemType, bold: bool | None | NoChange) -> None:
         if bold is NO_CHANGE:
             return
         if not hasattr(self, "_text_bold"):
@@ -141,15 +143,15 @@ class ItemPresentationTextMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Text Bold")
 
-    def hasTextItalic(self : "Self | ItemType") -> bool:
+    def hasTextItalic(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_italic")
 
-    def textItalic(self : "Self | ItemType") -> bool | None:
+    def textItalic(self : Self | ItemType) -> bool | None:
         return self._text_italic if hasattr(self, "_text_italic") else None
 
     def defaultTextItalic(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -157,7 +159,7 @@ class ItemPresentationTextMixin:
         return quill.italic()
 
     @checked
-    def setTextItalic(self : "Self | ItemType", italic: bool | None | NoChange) -> None:
+    def setTextItalic(self : Self | ItemType, italic: bool | None | NoChange) -> None:
         if italic is NO_CHANGE:
             return
         if not hasattr(self, "_text_italic"):
@@ -168,15 +170,15 @@ class ItemPresentationTextMixin:
         if hasattr(self, "properties"):
             self.properties.signalChanges("Text Italic")
 
-    def hasTextUnderline(self : "Self | ItemType") -> bool:
+    def hasTextUnderline(self : Self | ItemType) -> bool:
         return hasattr(self, "_text_underline")
 
-    def textUnderline(self : "Self | ItemType") -> bool | None:
+    def textUnderline(self : Self | ItemType) -> bool | None:
         return self._text_underline if hasattr(self, "_text_underline") else None
 
     def defaultTextUnderline(
-        self   : "Self | ItemType",
-        widget : "QGraphicsView | None" = None
+        self   : Self | ItemType,
+        widget : QGraphicsView | None = None
     ) -> bool | None:
         scene = self._defaultScene(widget)
         key = self._resourceKeyDefault()
@@ -184,7 +186,7 @@ class ItemPresentationTextMixin:
         return quill.underline()
 
     @checked
-    def setTextUnderline(self : "Self | ItemType", underline: bool | None | NoChange) -> None:
+    def setTextUnderline(self : Self | ItemType, underline: bool | None | NoChange) -> None:
         if underline is NO_CHANGE:
             return
         if not hasattr(self, "_text_underline"):
@@ -198,16 +200,16 @@ class ItemPresentationTextMixin:
     # helpers
 
     @withScene
-    def _updateQuill(self : "Self | ItemType") -> None:
+    def _updateQuill(self : Self | ItemType) -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
-    def _updateQuillFast(self : "Self | ItemType", scene : "DrawingScene") -> None:
+    def _updateQuillFast(self : Self | ItemType, scene : DrawingScene) -> None:
         quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
         self.setQuill(quill)
 
     @withScene
-    def _updateQuillSlow(self : "Self | ItemType", scene : "DrawingScene") -> None:
+    def _updateQuillSlow(self : Self | ItemType, scene : DrawingScene) -> None:
         quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
         override_color = \
             hasattr(self, "_text_color") and not self.isSelected() \

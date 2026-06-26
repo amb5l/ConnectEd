@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing  import Self, TypeAlias
 from inspect import signature
 
@@ -58,7 +60,7 @@ if TYPE_CHECKING:
 
 
 class PropertiesDelegate(QStyledItemDelegate):
-    _dialog : "PropertiesDialog"
+    _dialog : PropertiesDialog
 
     @checked
     def __init__(self : Self, dialog : QWidget) -> None:
@@ -107,7 +109,7 @@ class PropertiesDelegate(QStyledItemDelegate):
     @checked
     def setModelData(
         self   : Self,
-        editor : "EditorType",
+        editor : EditorType,
         model  : QStandardItemModel,
         index  : QModelIndex
     ) -> None:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import networkx
 
 from typing      import Self
@@ -27,7 +29,7 @@ from ...items.segment  import SegmentItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...scenes.diagram import DiagramScene
+    from . import DiagramScene
 
 
 PinParent = GateItem | BlockItem | SymbolInstanceItem
@@ -40,7 +42,7 @@ class Subnet:
     name   : str | None    = None  # None = unresolved
     suffix : str | None    = None  # None = unresolved
     nodes  : set[NodeItem] = field(default_factory=set)
-    net    : "Net | None"  = None  # back-reference to parent net
+    net    : Net | None    = None  # back-reference to parent net
 
 
 @dataclass(slots=True)
@@ -59,7 +61,7 @@ class Netlist:
     #   - resolved net  -> str key (the base name, e.g. _nets["data"])
     #   - unresolved    -> int key (the sole subnet's id, e.g. _nets[42])
 
-    _scene       : "DiagramScene"
+    _scene       : DiagramScene
     _graph       : networkx.Graph
     _subnets     : dict[int, Subnet]
     _node2subnet : dict[NodeItem, int]
@@ -68,7 +70,7 @@ class Netlist:
     _subnet2net  : dict[int, str | int]
 
     @checked
-    def __init__(self : Self, scene : "DiagramScene") -> None:
+    def __init__(self : Self, scene : DiagramScene) -> None:
         self._scene       = scene
         self._graph       = networkx.Graph()
         self._subnets     = {}
@@ -93,7 +95,7 @@ class Netlist:
         return self._graph.degree(node)
 
     @checked
-    def nodeSegments(self : Self, node : NodeItem) -> list["SegmentItem"]:
+    def nodeSegments(self : Self, node : NodeItem) -> list[SegmentItem]:
         """Edges connected to the node."""
         iterator = self._graph.edges(node, data=True)
         return [data["segment"] for _, _, data in iterator]
@@ -245,7 +247,7 @@ class Netlist:
         return self._graph.has_edge(node1, node2)
 
     @checked
-    def addSegment(self : Self, seg : "SegmentItem") -> None:
+    def addSegment(self : Self, seg : SegmentItem) -> None:
         node1 = seg.node1()
         node2 = seg.node2()
         assert node1 is not None and node2 is not None

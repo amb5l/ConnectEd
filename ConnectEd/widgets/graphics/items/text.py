@@ -1,4 +1,6 @@
-﻿from typing      import Self, Any
+﻿from __future__ import annotations
+
+from typing      import Self, Any
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
@@ -73,7 +75,7 @@ class TextState:
     underline  : bool   | None
 
     @classmethod
-    def fromItem(cls, item : "TextItem") -> Self:
+    def fromItem(cls, item : TextItem) -> Self:
         return cls(
             text       = item.text(),
             block      = item.block(),
@@ -129,7 +131,7 @@ class TextResizeGripItem(ResizeGripItem):
 
     @checked
     def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
-        item : "TextItem" = self.item()
+        item : TextItem = self.item()
         return self.scenePos(), item.width(), item.height()
 
     @checked
@@ -138,7 +140,7 @@ class TextResizeGripItem(ResizeGripItem):
         state : tuple[QPointF, float | None, float | None]
     ) -> None:
         pos, width, height = state
-        item : "TextItem" = self.item()
+        item : TextItem = self.item()
         self.moveBy(pos - self.scenePos())
         item.setWidth(width)
         item.setHeight(height)
@@ -243,17 +245,17 @@ class BaseTextItem(
         PrimaryItemMixin._PROPERTIES_TEXT
 
     # instance attributes
-    _child      : "TextLineRenderer | TextBlockRenderer"  # text renderer
-    _autoflip   : bool                                    # orientation compensation
-    _align_h    : AlignH                                  # horizontal alignment
-    _align_v    : AlignV                                  # vertical alignment
-    _width      : float                                   # width constraint
-    _height     : float                                   # height constraint
-    _pad_left   : float                                   # left padding
-    _pad_right  : float                                   # right padding
-    _pad_top    : float                                   # top padding
-    _pad_bottom : float                                   # bottom padding
-    _brect      : QRectF                                  # bounding rect
+    _child      : TextLineRenderer | TextBlockRenderer  # text renderer
+    _autoflip   : bool                                  # orientation compensation
+    _align_h    : AlignH                                # horizontal alignment
+    _align_v    : AlignV                                # vertical alignment
+    _width      : float                                 # width constraint
+    _height     : float                                 # height constraint
+    _pad_left   : float                                 # left padding
+    _pad_right  : float                                 # right padding
+    _pad_top    : float                                 # top padding
+    _pad_bottom : float                                 # bottom padding
+    _brect      : QRectF                                # bounding rect
 
     _text_color     = None  # enable per-item appearance control
     _text_font      = None  # enable per-item appearance control
@@ -564,7 +566,7 @@ class BaseTextItem(
     def boundingRect(self : Self) -> QRectF:
         return self._brect
 
-    def originMenu(self : Self, view : "DrawingView") -> QMenu:
+    def originMenu(self : Self, view : DrawingView) -> QMenu:
         menu = QMenu("Origin", view)
         menu.addActions([
             view.action(
@@ -624,7 +626,7 @@ class BaseTextItem(
         ])
         return menu
 
-    def alignmentMenu(self : Self, view : "DrawingView") -> QMenu:
+    def alignmentMenu(self : Self, view : DrawingView) -> QMenu:
         menu = QMenu("Alignment", view)
         menu.addActions([
             view.action(
@@ -671,7 +673,7 @@ class BaseTextItem(
         return menu
 
     @checked
-    def _applyDialogCommon(self : Self, dialog : "BaseTextItemDialog") -> None:
+    def _applyDialogCommon(self : Self, dialog : BaseTextItemDialog) -> None:
         rotation   = dialog.getRotation()
         autoflip   = dialog.getAutoflip()
         mirror_h   = dialog.getMirrorH()
@@ -708,7 +710,7 @@ class BaseTextItem(
         if underline  is not NO_CHANGE: self.setTextUnderline(underline)
 
     @checked
-    def applyDialog(self : Self, dialog : "TextItemDialog") -> None:
+    def applyDialog(self : Self, dialog : TextItemDialog) -> None:
         self._applyDialogCommon(dialog)
         text  = dialog.getText()
         block = dialog.getBlock()
@@ -716,7 +718,11 @@ class BaseTextItem(
         if block is not NO_CHANGE: self.setBlock(block)
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self  : Self,
+        view  : DrawingView,
+        _spos : QPointF
+    ) -> list[QAction | QMenu]:
         """Return context menu items for Text item."""
         items = [
             view.action("Edit...", view.editTextDialog),
@@ -770,14 +776,14 @@ class BaseTextItem(
         self._hshape.addRect(self._brect)
 
 class TextRendererMixin(ItemShapeMixin):
-    def initRenderer(self : "Self | TextLineRenderer | TextBlockRenderer") -> None:
+    def initRenderer(self : Self | TextLineRenderer | TextBlockRenderer) -> None:
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, False)
         self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.initShape()  # empty hit detect shape
 
 
     def onSceneOrientationChanged(
-        self : "Self | TextLineRenderer | TextBlockRenderer"
+        self : Self | TextLineRenderer | TextBlockRenderer
     ) -> None:
         """
         Counter-rotate and/or counter-mirror so text stays readable for the
@@ -808,14 +814,14 @@ class TextRendererMixin(ItemShapeMixin):
         self.update()
 
     def onSelectionChanged(
-        self : "Self | TextLineRenderer | TextBlockRenderer",
+        self : Self | TextLineRenderer | TextBlockRenderer,
         _selected : bool
     ) -> None:
         self._paint_override()
 
     @checked
     def setFont(
-        self : "Self | TextLineRenderer | TextBlockRenderer",
+        self : Self | TextLineRenderer | TextBlockRenderer,
         font : QFont
     ) -> None:
         font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
@@ -823,14 +829,14 @@ class TextRendererMixin(ItemShapeMixin):
 
     def contextMenuEvent(self : Self,  event : QGraphicsSceneContextMenuEvent) -> None:
         """Bounce context menu event to parent."""
-        parent: "TextItem" = self.parentItem()
+        parent: TextItem = self.parentItem()
         parent.contextMenuEvent(event)
 
     def settingsName(self : Self) -> str:
         return "Text"
 
     def _setText(
-        self : "Self | TextLineRenderer | TextBlockRenderer",
+        self : Self | TextLineRenderer | TextBlockRenderer,
         text : str,
     ) -> None:
         raise NotImplementedError("Subclass must implement this method")

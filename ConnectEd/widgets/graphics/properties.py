@@ -30,6 +30,8 @@ exists only for use via substitution in custom properties. For example,
 "ConnectEdVersion". Virtual properties will normally be provided by the scene.
 """
 
+from __future__ import annotations
+
 from typing          import Self, Any, Literal, TypeAlias
 from collections.abc import Callable
 from dataclasses     import dataclass
@@ -98,14 +100,14 @@ class PropertyNotifier(QObject):
 
 @dataclass
 class InherentProperty:
-    kind     : DataKind | Callable[["Owner"], DataKind]
-    worthy   : Literal[True] | Callable[["Owner"], bool] | None = True
-    getter   : Callable[["Owner"], Any]                  | None = None
-    setter   : Callable[["Owner", Any], None]            | None = None
-    default  : Callable[["Owner"], Any]                  | None = None
-    notifier : PropertyNotifier                          | None = None
-    text     : PropertyTextItem                          | None = None
-    tip      : str                                       | None = None
+    kind     : DataKind | Callable[[Owner], DataKind]
+    worthy   : Literal[True] | Callable[[Owner], bool] | None = True
+    getter   : Callable[[Owner], Any]                  | None = None
+    setter   : Callable[[Owner, Any], None]            | None = None
+    default  : Callable[[Owner], Any]                  | None = None
+    notifier : PropertyNotifier                        | None = None
+    text     : PropertyTextItem                        | None = None
+    tip      : str                                     | None = None
 
 
 _CUSTOM_PROPERTY_KINDS = (
@@ -126,11 +128,11 @@ class CustomProperty:
 
 class PropertiesManager:
     # instance attributes
-    _owner  : "PropertiesMixin"
+    _owner  : PropertiesMixin
     _dict   : dict[str, InherentProperty | CustomProperty]
 
     @checked
-    def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
+    def __init__(self : Self, owner : PropertiesMixin, fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
         """
@@ -148,7 +150,7 @@ class PropertiesManager:
                 self.addText(name, *spec.astuple())
 
     @checked
-    def owner(self : Self) -> "PropertiesMixin":
+    def owner(self : Self) -> PropertiesMixin:
         return self._owner
 
     @checked
@@ -344,7 +346,7 @@ class PropertiesManager:
                 if self.has(var_name):
                     return str(self.value(var_name, slot, trail))
                 elif hasattr(self._owner, "scene"):
-                    scene : "DrawingScene | None" = self._owner.scene()
+                    scene : DrawingScene | None = self._owner.scene()
                     if scene and scene.properties.has(var_name):
                         return str(scene.properties.value(var_name, slot, trail))
                 return f"{var_name}>"  # unresolved substitution
@@ -527,7 +529,7 @@ class PropertiesManager:
     @checked
     def syncInherentFrom(
         self  : Self,
-        other : "PropertiesManager"
+        other : PropertiesManager
     ) -> None:
         for name in other.inherentNames():
             if self.has(name):
@@ -537,7 +539,7 @@ class PropertiesManager:
                 logger().warning(f"Property '{name}' not found")
 
     @checked
-    def syncCustomFrom(self : Self, other : "PropertiesManager") -> None:
+    def syncCustomFrom(self : Self, other : PropertiesManager) -> None:
         for name in self.customNames():
             if not other.has(name):
                 self.delete(name)
@@ -550,7 +552,7 @@ class PropertiesManager:
                 self.add(name, other.kind(name), other.value(name))
 
     @checked
-    def text(self : Self, name : str) -> "PropertyTextItem | None":
+    def text(self : Self, name : str) -> PropertyTextItem | None:
         """
         Get the property text item for a property.
         Returns the property text item if it exists, None otherwise.
@@ -563,7 +565,7 @@ class PropertiesManager:
         return self._dict[name].text
 
     @checked
-    def setText(self : Self, name : str, text : "PropertyTextItem") -> bool:
+    def setText(self : Self, name : str, text : PropertyTextItem) -> bool:
         """
         Assign an existing property text item to a property.
         """
@@ -578,7 +580,7 @@ class PropertiesManager:
         text.onTextChanged()
         return True
 
-    def texts(self : Self) -> list["PropertyTextItem"]:
+    def texts(self : Self) -> list[PropertyTextItem]:
         return [
             property.text
             for property in self._dict.values()
@@ -760,7 +762,7 @@ class PropertiesManager:
         return True
 
     @checked
-    def addMissingTextsFrom(self : Self, other : "PropertiesManager") -> None:
+    def addMissingTextsFrom(self : Self, other : PropertiesManager) -> None:
         for pt in other.texts():
             if not self.has(pt.name()):
                 logger().warning(f"Property '{pt.name()}' not found")
@@ -770,7 +772,7 @@ class PropertiesManager:
             self.addText(*pt.propertyTuple())
 
     @checked
-    def removeTextsNotIn(self : Self, other : "PropertiesManager") -> None:
+    def removeTextsNotIn(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
             if not other.has(pt.name()):
                 logger().warning(f"Property '{pt.name()}' not found")
@@ -779,7 +781,7 @@ class PropertiesManager:
                 self.delText(pt.name())
 
     @checked
-    def syncTextFrom(self : Self, other : "PropertiesManager") -> None:
+    def syncTextFrom(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
             if not other.has(pt.name()):
                 logger().warning(f"Property '{pt.name()}' not found")

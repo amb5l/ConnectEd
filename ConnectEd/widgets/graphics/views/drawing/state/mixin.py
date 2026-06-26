@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, TYPE_CHECKING
 
 from PyQt6.QtCore    import QPoint, QPointF
@@ -17,9 +19,9 @@ class StartMixin:
     interaction and advance to the next state.
     """
 
-    _INTERACTION_CLS : type["DrawingInteraction"]
+    _INTERACTION_CLS : type[DrawingInteraction]
 
-    def _nextState(self : Self) -> "DrawingViewStateBase":
+    def _nextState(self : Self) -> DrawingViewStateBase:
         raise NotImplementedError
 
     def _start(self : Self, spos : QPointF) -> None:

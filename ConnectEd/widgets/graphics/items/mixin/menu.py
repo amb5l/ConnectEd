@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 class ItemMenuMixin:
     def ctxMenuItems(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         spos : QPointF
     ) -> list[QAction | QMenu]:
         raise NotImplementedError("Subclass must implement this method")

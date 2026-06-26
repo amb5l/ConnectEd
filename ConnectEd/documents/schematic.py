@@ -8,6 +8,8 @@
 #P2: save() return value; setClean on all open symbol stacks
 #P2: navToolTip modified suffix
 
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore    import QSize, QXmlStreamWriter, QXmlStreamReader
@@ -28,8 +30,7 @@ if TYPE_CHECKING:
     from ..widgets.window.sub_window       import DocSubWindow
     from ..widgets.graphics.scenes.diagram import DiagramScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
-    from ..widgets.graphics.items.symbol   import \
-        SymbolDefinitionItem, SymbolInstanceItem
+    from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
 
 
 _SYMBOL_CONTAINER = "Symbols"
@@ -49,10 +50,10 @@ class HdlSchematicDiagramDoc(Doc):
     _XML_TAG = "HdlSchematicDiagram"
 
     _path             : str
-    _scene            : "DiagramScene | None"
+    _scene            : DiagramScene | None
     _symbol_container : str
-    _symbol_scenes    : dict["SymbolDefinitionItem", "SymbolScene"]
-    _dirty            : list["SymbolDefinitionItem" | str]
+    _symbol_scenes    : dict[SymbolDefinitionItem, SymbolScene]
+    _dirty            : list[SymbolDefinitionItem | str]
 
     def __init__(self : Self, name : str | None = None) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
@@ -261,7 +262,7 @@ class HdlSchematicDiagramDoc(Doc):
             return subject.name() + " - HDL Schematic Symbol Editor"
         return "Unknown Subject"
 
-    def closeSubWindow(self : Self, subwindow : "DocSubWindow") -> bool:
+    def closeSubWindow(self : Self, subwindow : DocSubWindow) -> bool:
         """Prompt for commit/discard, and veto if necessary."""
         from ..widgets.graphics.scenes.diagram import DiagramScene
         from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
@@ -296,7 +297,7 @@ class HdlSchematicDiagramDoc(Doc):
             return True
         return False
 
-    def onSubWindowClosed(self : Self, subwindow : "DocSubWindow") -> None:
+    def onSubWindowClosed(self : Self, subwindow : DocSubWindow) -> None:
         # get subject
         subject = self._subjectFromSubwindow(subwindow)
         if subject is None: return
@@ -313,7 +314,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     # --- editor lifecycle (close / save) --------------------------------------
 
-    def commit(self : Self, subwindow : "DocSubWindow") -> bool:
+    def commit(self : Self, subwindow : DocSubWindow) -> bool:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
         subject = self._subjectFromSubwindow(subwindow)
@@ -377,7 +378,7 @@ class HdlSchematicDiagramDoc(Doc):
     def _createSubWindow(
         self    : Self,
         subject : DocSubjectProtocol,
-    ) -> "DocSubWindow | None":
+    ) -> DocSubWindow | None:
         if self._scene is None:
             logger().error(f"{type(self).__name__} has no scene")
             return None
@@ -455,7 +456,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     def _subjectFromSubwindow(
         self      : Self,
-        subwindow : "DocSubWindow"
+        subwindow : DocSubWindow
     ) -> DocSubjectProtocol | None:
         binding = subwindow.docBinding()
         if binding is None:

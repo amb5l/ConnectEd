@@ -1,5 +1,6 @@
-from typing import Self, Any, TypeAlias
+from __future__ import annotations
 
+from typing import Self, Any, TypeAlias
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
@@ -17,6 +18,8 @@ from ....core.types import (
 
 from ....core.utils import pascal2snake
 
+from ...graphics.properties import PropertiesMixin
+
 from ...graphics.items.mixin.handle import ItemHandlesMixin
 
 from ..components.table_view import TableView
@@ -33,7 +36,6 @@ from .types import (
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...graphics.properties          import PropertiesMixin
     from ...graphics.views.drawing       import DrawingView
 
 
@@ -75,8 +77,7 @@ Cell = PropertiesItem | None
 
 
 class PropertiesDialog(QDialog):
-    ItemType : TypeAlias = \
-        "QGraphicsItem | ItemHandlesMixin | PropertiesMixin"
+    ItemType : TypeAlias = QGraphicsItem | ItemHandlesMixin | PropertiesMixin
 
     _item           : ItemType
     _dialog_layout  : QVBoxLayout
@@ -94,7 +95,7 @@ class PropertiesDialog(QDialog):
     def __init__(
         self : Self,
         item : ItemType,
-        view : "DrawingView | None" = None
+        view : DrawingView | None = None
     ) -> None:
         # initialise
         self._item = item

@@ -1,5 +1,7 @@
 """ConnectEd GUI tools invoked by the AI agent loop."""
 
+from __future__ import annotations
+
 import json
 from typing import TYPE_CHECKING, Any, Self
 
@@ -17,11 +19,11 @@ _PING_MESSAGE = "ConnectEd AI chat client"
 
 
 class AiDriver:
-    _window   : "Window"
+    _window   : Window
     _registry : RefRegistry
 
     @checked
-    def __init__(self : Self, window : "Window") -> None:
+    def __init__(self : Self, window : Window) -> None:
         self._window   = window
         self._registry = RefRegistry()
 
@@ -51,7 +53,7 @@ class AiDriver:
         self       : Self,
         name       : str,
         arguments  : dict[str, Any],
-        session    : "AiChatSession | None" = None,
+        session    : AiChatSession | None = None,
     ) -> str:
         if name in self.writeToolNames():
             edit_lock = self._editLock()

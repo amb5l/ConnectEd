@@ -1,7 +1,9 @@
 """Manage multiple AI chat dock widgets on the main window."""
 
+from __future__ import annotations
+
+from typing import Self
 from collections import Counter
-from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QDockWidget
@@ -11,6 +13,7 @@ from .....core.check import checked
 
 from .dock import AiChatDock
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ... import Window
     from ...messages_view import MessagesViewDock
@@ -39,8 +42,8 @@ def chatTitles(provider_labels : list[str]) -> list[str]:
 class AiChatManager(QObject):
     chatsChanged = pyqtSignal()
 
-    _window        : "Window"
-    _messages_dock : "MessagesViewDock"
+    _window        : Window
+    _messages_dock : MessagesViewDock
     _edit_lock     : AiEditLock
     _chats         : list[AiChatDock]
     _next_chat_id  : int
@@ -48,8 +51,8 @@ class AiChatManager(QObject):
     @checked
     def __init__(
         self          : Self,
-        window        : "Window",
-        messages_dock : "MessagesViewDock",
+        window        : Window,
+        messages_dock : MessagesViewDock,
         edit_lock     : AiEditLock,
     ) -> None:
         super().__init__(window)

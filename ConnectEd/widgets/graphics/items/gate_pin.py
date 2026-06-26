@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QXmlStreamWriter
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
@@ -78,7 +80,7 @@ class GatePinItem(
         self._updateGraphics()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DiagramView", _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : DiagramView, _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Active Low",

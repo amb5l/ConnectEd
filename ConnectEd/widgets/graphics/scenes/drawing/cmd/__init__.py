@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from collections.abc import Callable
@@ -41,7 +43,7 @@ class CmdBase(QUndoCommand):
 
 
 def cmdExec(
-    scene    : "DrawingScene",
+    scene    : DrawingScene,
     cmd      : CmdBase,
     undoable : bool
 ) -> None:
@@ -55,10 +57,10 @@ class CmdSceneBase(CmdBase):
     """Base class for all commands that work with a scene."""
 
     # instance attributes
-    _scene : "DrawingScene"
+    _scene : DrawingScene
 
     @checked
-    def __init__(self : Self, scene : "DrawingScene") -> None:
+    def __init__(self : Self, scene : DrawingScene) -> None:
         text = camel2proper(self.__class__.__name__.replace("Cmd", ""))
         super().__init__(text)
         self._scene = scene
@@ -68,13 +70,13 @@ class CmdSceneItem(CmdSceneBase):
     """Base class for all commands that work with an item."""
 
     # instance attributes
-    _item : "ItemType"
+    _item : ItemType
 
     @checked
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
-        item  : "ItemType"
+        scene : DrawingScene,
+        item  : ItemType
     ) -> None:
         super().__init__(scene)
         self._item = item
@@ -84,13 +86,13 @@ class CmdSceneItems(CmdSceneBase):
     """Base class for all commands that work with multiple items."""
 
     # instance attributes
-    _items : list["ItemType"]
+    _items : list[ItemType]
 
     @checked
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
-        items : list["ItemType"]
+        scene : DrawingScene,
+        items : list[ItemType]
     ) -> None:
         super().__init__(scene)
         self._items = items
@@ -100,8 +102,8 @@ class CmdAddRemoveMixin:
     """Mixin for commands that add/remove scene items."""
 
     # instance attributes
-    _scene : "DrawingScene"
-    _items : list["ItemType"]
+    _scene : DrawingScene
+    _items : list[ItemType]
 
     def _addToScene(self : Self, select : bool = True) -> None:
         self._scene.blockSignals(True)
@@ -131,9 +133,9 @@ class CmdAdd(
 
     @checked
     def __init__(
-        self      : Self,
-        scene     : "DrawingScene",
-        items     : list["ItemType"]
+        self  : Self,
+        scene : DrawingScene,
+        items : list[ItemType]
     ) -> None:
         super().__init__(scene, items)      # record scene, items
 
@@ -154,9 +156,9 @@ class CmdDelete(
 
     @checked
     def __init__(
-        self      : Self,
-        scene     : "DrawingScene",
-        items     : list["ItemType"]
+        self  : Self,
+        scene : DrawingScene,
+        items : list[ItemType]
     ) -> None:
         super().__init__(scene, items)      # record scene, items
 
@@ -175,13 +177,13 @@ class CmdMove(CmdSceneItems):
 
     # instance attributes
     _offset : QPointF
-    _state  : dict["ItemMixin", QPointF]  # pre-move state (scene positions)
+    _state  : dict[ItemMixin, QPointF]  # pre-move state (scene positions)
 
     @checked
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
-        items  : list["ItemType"],
+        scene  : DrawingScene,
+        items  : list[ItemType],
         offset : QPointF
     ) -> None:
         super().__init__(scene, items)
@@ -205,20 +207,20 @@ class CmdMove(CmdSceneItems):
 
 class CmdRotateBase(CmdSceneItems):
     # class attributes
-    _ROTATE   : Callable[["ItemType"], None]
-    _UNROTATE : Callable[["ItemType"], None]
+    _ROTATE   : Callable[[ItemType], None]
+    _UNROTATE : Callable[[ItemType], None]
     _SIGN_X   : float
     _SIGN_Y   : float
 
     # instance attributes
     _pos    : QPointF | None          # individual if None, group otherwise
-    _before : dict["ItemType", QPointF] # positions before
+    _before : dict[ItemType, QPointF] # positions before
 
     @checked
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
-        items : list["ItemType"],
+        scene : DrawingScene,
+        items : list[ItemType],
         pos   : QPointF | None = None
     ) -> None:
         super().__init__(scene, items)
@@ -252,10 +254,10 @@ class CmdRotateBase(CmdSceneItems):
 
 class CmdRotateCW(CmdRotateBase):
     @staticmethod
-    def _ROTATE(item : "ItemType") -> None:
+    def _ROTATE(item : ItemType) -> None:
         item.rotateCW()
     @staticmethod
-    def _UNROTATE(item : "ItemType") -> None:
+    def _UNROTATE(item : ItemType) -> None:
         item.rotateCCW()
     _SIGN_X   = -1
     _SIGN_Y   = +1
@@ -263,10 +265,10 @@ class CmdRotateCW(CmdRotateBase):
 
 class CmdRotateCCW(CmdRotateBase):
     @staticmethod
-    def _ROTATE(item : "ItemType") -> None:
+    def _ROTATE(item : ItemType) -> None:
         item.rotateCCW()
     @staticmethod
-    def _UNROTATE(item : "ItemType") -> None:
+    def _UNROTATE(item : ItemType) -> None:
         item.rotateCW()
     _SIGN_X   = +1
     _SIGN_Y   = -1

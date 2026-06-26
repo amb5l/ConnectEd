@@ -1,5 +1,7 @@
 # XML support functions for graphics scenes and items
 
+from __future__ import annotations
+
 from PyQt6.QtCore    import QPointF, QXmlStreamReader, QXmlStreamWriter
 
 from ...core.check import checked
@@ -9,7 +11,7 @@ from ...core.xml   import copyXml, pasteXml, XmlProtocol
 from .properties import PropertiesMixin
 
 
-def toXmlProperties(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
+def toXmlProperties(instance : PropertiesMixin, xw : QXmlStreamWriter) -> None:
     for name in instance.properties.names():
         if not instance.properties.worthy(name):
             continue
@@ -19,7 +21,7 @@ def toXmlProperties(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None
 
 @checked
 def fromXmlProperties(
-    instance : "PropertiesMixin",
+    instance : PropertiesMixin,
     xr       : QXmlStreamReader
 ) -> None:
     for xml_attr in xr.attributes():
@@ -30,7 +32,7 @@ def fromXmlProperties(
 
 @checked
 def copy(
-    items : "PropertiesMixin | list[PropertiesMixin]",
+    items : PropertiesMixin | list[PropertiesMixin],
     pos   : QPointF | None = None
 ) -> None:
     if not isinstance(items, list):

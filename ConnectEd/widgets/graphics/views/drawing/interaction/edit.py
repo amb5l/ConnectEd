@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from math   import asin, degrees, copysign
 
@@ -33,7 +35,7 @@ class EditPasteInteraction(
     @checked
     def __init__(
         self : Self,
-        view : "DrawingView",
+        view : DrawingView,
         pos  : QPointF
     ) -> None:
         items, copy_pos = paste()
@@ -64,7 +66,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
     @checked
     def __init__(
         self  : Self,
-        view  : "DrawingView",
+        view  : DrawingView,
         items : list[ItemType],  # items to duplicate
         pos   : QPointF          # duplication origin
     ) -> None:
@@ -88,7 +90,7 @@ class EditMoveInteraction(
     @checked
     def __init__(
         self  : Self,
-        view  : "DrawingView",
+        view  : DrawingView,
         items : ItemType | list[ItemType],
         pos   : QPointF,
         slide : bool = False
@@ -136,7 +138,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, DrawingInteraction):
     @checked
     def __init__(
         self     : Self,
-        view     : "DrawingView",
+        view     : DrawingView,
         polyline : PolylineItem,
         seg      : PolySegItem,
         pos      : QPointF

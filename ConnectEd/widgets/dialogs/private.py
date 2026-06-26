@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from ...core.check import checked
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
 
 @checked
 def _combinedValue(
-    items       : list["ItemPresentationMixin"],
+    items       : list[ItemPresentationMixin],
     method_name : str
 ) -> Any:
     result = None

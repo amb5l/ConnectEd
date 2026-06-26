@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from PyQt6.QtCore import QPointF
@@ -18,10 +20,10 @@ if TYPE_CHECKING:
 
 class CmdDiagramSceneBase(CmdSceneBase):
     # instance attributes
-    _scene : "DiagramScene"
+    _scene : DiagramScene
 
     @checked
-    def __init__(self : Self, scene : "DiagramScene") -> None:
+    def __init__(self : Self, scene : DiagramScene) -> None:
         super().__init__(scene)
 
 
@@ -37,7 +39,7 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         pos   : QPointF
     ) -> None:
         super().__init__(scene)
@@ -64,7 +66,7 @@ class CmdRemoveFreeNode(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         node  : FreeNodeItem
     ) -> None:
         super().__init__(scene)
@@ -92,7 +94,7 @@ class CmdReplaceSegmentNode(CmdDiagramSceneBase):
     @checked
     def __init__(
         self    : Self,
-        scene     : "DiagramScene",
+        scene     : DiagramScene,
         segment   : SegmentItem,
         node_old  : NodeItem,
         node_new  : NodeItem
@@ -132,7 +134,7 @@ class CmdDetachSegmentNode(CmdDiagramSceneBase):
     @checked
     def __init__(
         self    : Self,
-        scene   : "DiagramScene",
+        scene   : DiagramScene,
         segment : SegmentItem,
         node    : NodeItem,
     ) -> None:
@@ -178,7 +180,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         node1 : NodeItem,
         node2 : NodeItem
     ) -> None:
@@ -224,7 +226,7 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         seg   : SegmentItem
     ) -> None:
         super().__init__(scene)
@@ -280,7 +282,7 @@ class CmdSplitSegment(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         seg   : SegmentItem,
         node  : NodeItem
     ) -> None:
@@ -341,7 +343,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         node  : FreeNodeItem
     ) -> None:
         super().__init__(scene)
@@ -402,7 +404,7 @@ class CmdSplitNet(CmdDiagramSceneBase):
     @checked
     def __init__(
         self  : Self,
-        scene : "DiagramScene",
+        scene : DiagramScene,
         node1 : NodeItem,
         node2 : NodeItem
     ) -> None:

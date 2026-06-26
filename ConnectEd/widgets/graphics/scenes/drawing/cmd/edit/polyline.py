@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 
 from .......core.check import checked
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class CmdEditPolylineClosed(CmdSceneItem):
-    _item   : "PolylineItem"
+    _item   : PolylineItem
     _before : bool
     _after  : bool
     _sweep  : float | None
@@ -19,8 +21,8 @@ class CmdEditPolylineClosed(CmdSceneItem):
     @checked
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
-        item   : "PolylineItem",
+        scene  : DrawingScene,
+        item   : PolylineItem,
         closed : bool,
         sweep  : float | None
     ) -> None:
@@ -46,15 +48,15 @@ class CmdEditPolylineClosed(CmdSceneItem):
 
 
 class CmdEditPolySeg(CmdSceneItem):
-    _item   : "PolySegItem"
+    _item   : PolySegItem
     _before : float | None
     _after  : float | None
 
     @checked
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
-        seg   : "PolySegItem",
+        scene : DrawingScene,
+        seg   : PolySegItem,
         sweep : float | None
     ) -> None:
         super().__init__(scene, seg)
@@ -64,11 +66,11 @@ class CmdEditPolySeg(CmdSceneItem):
     @checked
     def redo(self : Self) -> None:
         self._item.setSweep(self._after)
-        parent : "PolylineItem" = self._item.parentItem()
+        parent : PolylineItem = self._item.parentItem()
         parent.updatePath()
 
     @checked
     def undo(self : Self) -> None:
         self._item.setSweep(self._before)
-        parent : "PolylineItem" = self._item.parentItem()
+        parent : PolylineItem = self._item.parentItem()
         parent.updatePath()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from dataclasses import dataclass
 
@@ -66,8 +68,8 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     }
 
     # instance attributes
-    _doc        : "HdlSchematicDiagramDoc | None"
-    _symbols    : dict[str, "SymbolDefinitionItem"]
+    _doc        : HdlSchematicDiagramDoc | None
+    _symbols    : dict[str, SymbolDefinitionItem]
     sheet       : DiagramSheet
     margin      : float                  # distance from paper edge to border line
     border      : float                  # line width
@@ -81,7 +83,7 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     @checked
     def __init__(
         self  : Self,
-        doc   : "HdlSchematicDiagramDoc | None" = None,
+        doc   : HdlSchematicDiagramDoc | None = None,
         fresh : bool = True
     ) -> None:
         sheet_name   = settings().get("defaults/sheet/name")
@@ -118,7 +120,7 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
             self.margin, self.margin, -self.margin, -self.margin
         ))
 
-    def symbolDefinitions(self : Self) -> dict[str, "SymbolDefinitionItem"]:
+    def symbolDefinitions(self : Self) -> dict[str, SymbolDefinitionItem]:
         return self._symbols
 
     @checked

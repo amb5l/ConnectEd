@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
@@ -119,7 +121,7 @@ class SegmentItem(
     @withScene
     def onConnectivityChanged(
         self  : Self,
-        scene : "DrawingScene | None" = None,
+        scene : DrawingScene | None = None,
     ) -> None:
         if not hasattr(scene, "netlist"):
             return
@@ -130,7 +132,7 @@ class SegmentItem(
         self._updatePen(scene)
 
     @withScene
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
         if scene is not None and hasattr(scene, "netlist"):
             self._net_kind = scene.netlist.netKindForSegment(self)
         ItemPresentationMixin.onSceneChanged(self, scene)
@@ -171,7 +173,7 @@ class SegmentItem(
     @checked
     def ctxMenuItems(
         self  : Self,
-        view  : "DiagramView",
+        view  : DiagramView,
         spos  : QPointF
     ) -> list[QAction | QMenu]:
         return [
@@ -277,11 +279,11 @@ class SegmentPreviewItem(QGraphicsLineItem):
     @checked
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "SegmentPreviewItem" = cls(fresh=False)
+        instance : SegmentPreviewItem = cls(fresh=False)
         fromXmlProperties(instance, xr)
 
     @withScene
-    def _updatePen(self : Self, scene : "DrawingScene") -> None:
+    def _updatePen(self : Self, scene : DrawingScene) -> None:
         self.setPen(scene.resources.pen(self._RESOURCE_NAME))
 
 

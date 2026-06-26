@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ..refs import RefRegistry
 
 from typing import TYPE_CHECKING
@@ -9,7 +11,7 @@ if TYPE_CHECKING:
 def _sceneFromViewRef(
     registry : RefRegistry,
     view     : str,
-) -> tuple["DrawingScene | None", str | None]:
+) -> tuple[DrawingScene | None, str | None]:
     drawing_view = registry.resolve(view, kind="view")
     if drawing_view is None:
         return None, f"Unknown or stale view: {view!r}"
@@ -28,7 +30,7 @@ def _sceneFromViewRef(
 def _drawingSceneFromViewRef(
     registry : RefRegistry,
     view     : str,
-) -> tuple["DiagramScene | None", str | None]:
+) -> tuple[DiagramScene | None, str | None]:
     scene, err = _sceneFromViewRef(registry, view)
     if scene is None:
         return None, err
