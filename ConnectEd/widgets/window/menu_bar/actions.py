@@ -15,12 +15,14 @@ from ...action  import Action
 
 from ..sub_window import DocSubWindow
 
+from .slots import Slots
+
 
 class Actions:
     _scene  : DrawingScene | None
 
     @checked
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, slots : Slots) -> None:
         self._scene  = None
         SK = QKeySequence.StandardKey
 
@@ -93,6 +95,74 @@ class Actions:
         self.editRotateCW       = Action( window(), "Rotate CW"    , "Rotate clockwise"                     , "]"                          )  # noqa E501
         self.editRotateCCW      = Action( window(), "Rotate CCW"   , "Rotate counterclockwise"              , "["                          )  # noqa E501
 
+        # slot connections
+        self.fileNew            .triggered.connect(slots.fileNew)
+        self.fileOpen           .triggered.connect(slots.fileOpen)
+        self.fileSave           .triggered.connect(slots.fileSave)
+        self.fileSaveAs         .triggered.connect(slots.fileSaveAs)
+        self.fileClose          .triggered.connect(slots.fileClose)
+        self.fileOpenMRU1       .triggered.connect(slots.fileOpenMRU1)
+        self.fileOpenMRU2       .triggered.connect(slots.fileOpenMRU2)
+        self.fileOpenMRU3       .triggered.connect(slots.fileOpenMRU3)
+        self.fileOpenMRU4       .triggered.connect(slots.fileOpenMRU4)
+        self.fileOpenMRU5       .triggered.connect(slots.fileOpenMRU5)
+        self.fileOpenMRU6       .triggered.connect(slots.fileOpenMRU6)
+        self.fileOpenMRU7       .triggered.connect(slots.fileOpenMRU7)
+        self.fileOpenMRU8       .triggered.connect(slots.fileOpenMRU8)
+        self.fileOpenMRU9       .triggered.connect(slots.fileOpenMRU9)
+        self.fileExit           .triggered.connect(slots.fileExit)
+        self.editCancel         .triggered.connect(slots.editCancel)
+        self.editUndo           .triggered.connect(slots.editUndo)
+        self.editRedo           .triggered.connect(slots.editRedo)
+        self.editCut            .triggered.connect(slots.editCut)
+        self.editCopy           .triggered.connect(slots.editCopy)
+        self.editPaste          .triggered.connect(slots.editPaste)
+        self.editDelete         .triggered.connect(slots.editDelete)
+        self.editDuplicate      .triggered.connect(slots.editDuplicate)
+        self.editSelectArea     .triggered.connect(slots.editSelectArea)
+        self.editSelectAll      .triggered.connect(slots.editSelectAll)
+        self.editProperties     .triggered.connect(slots.editProperties)
+        self.editAppearance     .triggered.connect(slots.editAppearance)
+        self.editQuery          .triggered.connect(slots.editQuery)
+        self.editRotateCW       .triggered.connect(slots.editRotateCW)
+        self.editRotateCCW      .triggered.connect(slots.editRotateCCW)
+        self.viewZoomAll        .triggered.connect(slots.viewZoomAll)
+        self.viewZoomSheet      .triggered.connect(slots.viewZoomSheet)
+        self.viewZoomArea       .triggered.connect(slots.viewZoomArea)
+        self.viewZoomIn         .triggered.connect(slots.viewZoomIn)
+        self.viewZoomOut        .triggered.connect(slots.viewZoomOut)
+        self.viewPan            .triggered.connect(slots.viewPan)
+        self.viewPanUp          .triggered.connect(slots.viewPanUp)
+        self.viewPanDown        .triggered.connect(slots.viewPanDown)
+        self.viewPanLeft        .triggered.connect(slots.viewPanLeft)
+        self.viewPanRight       .triggered.connect(slots.viewPanRight)
+        self.viewGridDisplay    .triggered.connect(slots.viewGridDisplay)
+        self.viewGridSnap       .triggered.connect(slots.viewGridSnap)
+        self.viewThemeDark      .triggered.connect(slots.viewThemeDark)
+        self.viewThemeLightMono .triggered.connect(slots.viewThemeLightMono)
+        self.placePort          .triggered.connect(slots.placePort)
+        self.placeGate          .triggered.connect(slots.placeGate)
+        self.placeBlock         .triggered.connect(slots.placeBlock)
+        self.placeBlockPin      .triggered.connect(slots.placeBlockPin)
+        self.placeSymbolPin     .triggered.connect(slots.placeSymbolPin)
+        self.placeConnection    .triggered.connect(slots.placeConnection)
+        self.placeTap           .triggered.connect(slots.placeTap)
+        self.placeNetLabel      .triggered.connect(slots.placeNetLabel)
+        self.placeLine          .triggered.connect(slots.placeLine)
+        self.placeRectangle     .triggered.connect(slots.placeRectangle)
+        self.placeEllipse       .triggered.connect(slots.placeEllipse)
+        self.placePolyline      .triggered.connect(slots.placePolyline)
+        self.placeText          .triggered.connect(slots.placeText)
+        self.windowNavigator    .triggered.connect(slots.windowNavigator)
+        self.windowMessages     .triggered.connect(slots.windowMessages)
+        self.windowTranscript   .triggered.connect(slots.windowTranscript)
+        self.windowLog          .triggered.connect(slots.windowLog)
+        self.aiSettings         .triggered.connect(slots.aiSettings)
+        self.windowNext         .triggered.connect(slots.windowNext)
+        self.windowPrevious     .triggered.connect(slots.windowPrevious)
+        self.helpAbout          .triggered.connect(slots.helpAbout)
+
+        # finish up
         self.onSubWindowActivated(None)
         window().mdiArea().subWindowActivated.connect(self.onSubWindowActivated)
         clipboard = QApplication.clipboard()

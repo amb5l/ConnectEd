@@ -21,13 +21,6 @@ def sign(x):
 
 
 @checked
-def check(b : bool, s : str) -> bool:
-    if not b:
-        print(s)
-    return b
-
-
-@checked
 def trace(
     depth  : int | None = None,
     full   : bool = False,

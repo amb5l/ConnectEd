@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import QMenuBar
 from ....app import settings, window
 
 from ....core.check import checked
-from ....core.utils import check
 
 from ...menu import Menu, PlaceMenu
 
@@ -38,8 +37,7 @@ class MenuBar(QMenuBar):
     ) -> None:
         super().__init__(parent)
         self._slots   = Slots()
-        self._actions = Actions()
-        self._connectActionsToSlots(self._actions, self._slots)
+        self._actions = Actions(self._slots)
 
         self._menus = {}
         a = self._actions
@@ -308,29 +306,3 @@ class MenuBar(QMenuBar):
             for actions in subjects.values():
                 for action in actions:
                     self.window_menu.addAction(action)
-
-    def _connectActionsToSlots(
-        self    : Self,
-        actions : Actions,
-        slots   : Slots
-    ) -> None:
-        action_names = [a for a in dir(actions) \
-            if not a.startswith("_") and not callable(getattr(actions, a))]
-        slot_names   = [s for s in dir(slots) if not s.startswith("_")]
-        error = False
-        error &= check(len(action_names) > 0, "No actions found")
-        error &= check(len(slot_names)   > 0, "No slots found")
-        error &= check(len(action_names) == len(slot_names), \
-            f"Number of actions ({len(action_names)}) and slots ({len(slot_names)}) do not match")
-        for action_name in action_names:
-            error &= check(action_name in slot_names, \
-                f"No matching slot found for action '{action_name}'")
-        for slot_name in slot_names:
-            error &= check(slot_name in action_names, \
-                f"No matching action found for slot '{slot_name}'")
-        if error:
-            raise Exception("Action-slot mismatch")
-        for action_name in action_names:
-            action = getattr(actions, action_name)
-            slot = getattr(slots, action_name)
-            action.triggered.connect(slot)
