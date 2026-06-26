@@ -218,6 +218,7 @@ class PropertyTextItem(TextItem):
     def text(self : Self) -> str:
         raise NotImplementedError("text() is not implemented")
 
+    @checked
     def setText(self : Self, text : str) -> None:
         raise NotImplementedError("setText() is not implemented")
 

@@ -11,6 +11,7 @@ from ..layout.text_align import TextAlignLayout
 class TextAlignGroupBox(QGroupBox):
     _layout : TextAlignLayout
 
+    @checked
     def __init__(
         self    : Self,
         align_h : AlignH,

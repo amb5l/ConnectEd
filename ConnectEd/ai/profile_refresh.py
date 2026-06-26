@@ -5,6 +5,8 @@ from __future__ import annotations
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
+from ..core.check import checked
+
 from .profile_models import refreshAllProfileModels
 from .profiles import AiProfile
 
@@ -14,6 +16,7 @@ class ProfileModelsRefreshWorker(QThread):
 
     _profiles : list[AiProfile]
 
+    @checked
     def __init__(
         self,
         profiles : list[AiProfile],

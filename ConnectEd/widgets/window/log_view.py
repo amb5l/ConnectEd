@@ -2,7 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
-from ...core.log import addLogViewerHandler, LOG_FILENAME
+from ...core.check import checked
+from ...core.log   import addLogViewerHandler, LOG_FILENAME
 
 from .text_view  import TextViewDockWidget
 
@@ -10,6 +11,7 @@ from .text_view  import TextViewDockWidget
 class LogViewDock(TextViewDockWidget):
     WINDOW_TITLE = "Log"
 
+    @checked
     def __init__(
         self     : Self,
         parent   : QWidget | None = None,

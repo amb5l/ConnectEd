@@ -55,6 +55,7 @@ class HdlSchematicDiagramDoc(Doc):
     _symbol_scenes    : dict[SymbolDefinitionItem, SymbolScene]
     _dirty            : list[SymbolDefinitionItem | str]
 
+    @checked
     def __init__(self : Self, name : str | None = None) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         self._path = ""
@@ -70,6 +71,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     # --- clean state tracking -------------------------------------------------
 
+    @checked
     def isClean(
         self    : Self,
         subject : DocSubjectProtocol | None = None
@@ -84,15 +86,19 @@ class HdlSchematicDiagramDoc(Doc):
         else:
             return subject in self._dirty
 
+    @checked
     def name(self : Self) -> str:
         return self._scene.name()
 
+    @checked
     def setName(self : Self, name : str) -> None:
         self._scene.setName(name)
 
+    @checked
     def path(self : Self) -> str:
         return self._path
 
+    @checked
     def setPath(self : Self, path : str) -> None:
         from ..core.utils import cleanPath
         path = cleanPath(path)
@@ -101,10 +107,12 @@ class HdlSchematicDiagramDoc(Doc):
         self._path = path
         self.onChanged()
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
 
     @classmethod
+    @checked
     def fromXml(
         cls : type[Self],
         xr  : QXmlStreamReader,
@@ -123,6 +131,7 @@ class HdlSchematicDiagramDoc(Doc):
         from ..core.xml import loadXml
         return loadXml(cleanPath(path), {cls.tag(): cls})
 
+    @checked
     def save(self : Self, path : str | None = None) -> bool:
         self._scene.undo_stack.setClean()
         self._dirty = []
@@ -147,6 +156,7 @@ class HdlSchematicDiagramDoc(Doc):
             ],
         )
 
+    @checked
     def navLabel(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
@@ -155,6 +165,7 @@ class HdlSchematicDiagramDoc(Doc):
             subject = self._scene
         return subject.name()
 
+    @checked
     def navSetLabel(
         self    : Self,
         subject : DocSubjectProtocol | None,
@@ -170,6 +181,7 @@ class HdlSchematicDiagramDoc(Doc):
             return True
         return False
 
+    @checked
     def navDisplayLabel(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
@@ -178,12 +190,14 @@ class HdlSchematicDiagramDoc(Doc):
             subject = self._scene
         return subject.name() + ("" if self.isClean(subject) else "*")
 
+    @checked
     def navToolTip(
         self    : Self,
         subject : DocSubjectProtocol
     ) -> str | None:
         return self._path or "(not saved)" if subject is self._scene else None
 
+    @checked
     def navContextMenu(
         self    : Self,
         subject : DocSubjectProtocol | None = None,
@@ -232,6 +246,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     # --- MDI (subwindows) -----------------------------------------------------
 
+    @checked
     def showWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         """
         Show existing primary editing subwindow for subject, or creates a new
@@ -247,6 +262,7 @@ class HdlSchematicDiagramDoc(Doc):
                 return True
         return self.newWindow(subject)
 
+    @checked
     def newWindow(self : Self, subject : DocSubjectProtocol) -> bool:
         subwindow = self._createSubWindow(subject)
         if subwindow is None:
@@ -255,6 +271,7 @@ class HdlSchematicDiagramDoc(Doc):
         window().mdiArea().activateSubWindow(subwindow)
         return True
 
+    @checked
     def windowTitle(self : Self, subject : DocSubjectProtocol) -> str:
         if subject is self._scene:
             return self._scene.name() + " - HDL Schematic Editor"
@@ -262,6 +279,7 @@ class HdlSchematicDiagramDoc(Doc):
             return subject.name() + " - HDL Schematic Symbol Editor"
         return "Unknown Subject"
 
+    @checked
     def closeSubWindow(self : Self, subwindow : DocSubWindow) -> bool:
         """Prompt for commit/discard, and veto if necessary."""
         from ..widgets.graphics.scenes.diagram import DiagramScene
@@ -297,6 +315,7 @@ class HdlSchematicDiagramDoc(Doc):
             return True
         return False
 
+    @checked
     def onSubWindowClosed(self : Self, subwindow : DocSubWindow) -> None:
         # get subject
         subject = self._subjectFromSubwindow(subwindow)
@@ -314,6 +333,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     # --- editor lifecycle (close / save) --------------------------------------
 
+    @checked
     def commit(self : Self, subwindow : DocSubWindow) -> bool:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
@@ -328,6 +348,7 @@ class HdlSchematicDiagramDoc(Doc):
         logger().error(f"Unsupported subject type: {type(subject)}")
         return False
 
+    @checked
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
         return subject is self._scene
 

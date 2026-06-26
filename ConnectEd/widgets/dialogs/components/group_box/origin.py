@@ -11,6 +11,7 @@ from ..layout.origin import OriginLayout
 class OriginGroupBox(QGroupBox):
     _layout : OriginLayout
 
+    @checked
     def __init__(
         self   : Self,
         origin : RectHandleId,

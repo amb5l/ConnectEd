@@ -30,6 +30,7 @@ class AiChatProviderWorker(QObject):
     _cancel_lock : Lock
     _cancelled   : bool
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         self._cancel_lock = Lock()

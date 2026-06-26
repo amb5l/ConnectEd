@@ -36,6 +36,7 @@ class PropertyLayout(QGridLayout):
     _value_label        : QLabel
     _value_value        : QLabel | QWidget
 
+    @checked
     def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
         super().__init__()
         description = self._NOT_FOUND

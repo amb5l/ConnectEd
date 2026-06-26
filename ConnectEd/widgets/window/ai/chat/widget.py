@@ -25,6 +25,8 @@ from PyQt6.QtWidgets import (
 
 from .....app import settings
 
+from .....core.check import checked
+
 from .....ai.chat_mru import recordChatConnection
 from .....ai.html     import escape, historyStyleSheet, linkify, userMessageHtml
 from .....ai.session  import AiChatSession
@@ -95,6 +97,7 @@ class _AiChatFontZoomHost:
 class AiChatHistoryBrowser(QTextBrowser):
     _zoom_host : _AiChatFontZoomHost
 
+    @checked
     def __init__(
         self   : Self,
         host   : _AiChatFontZoomHost,
@@ -136,6 +139,7 @@ class AiChatMessageEdit(QPlainTextEdit):
     _zoom_host    : _AiChatFontZoomHost
     _chat_widget  : AiChatWidget | None
 
+    @checked
     def __init__(
         self         : Self,
         host         : _AiChatFontZoomHost,
@@ -187,6 +191,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
     _pin_welcome_top        : bool
     _font_size              : int
 
+    @checked
     def __init__(self : Self, window : Window, dock : AiChatDock) -> None:
         super().__init__(window)
         self._window = window

@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QMenuBar
 
 from ....app import settings, window
 
+from ....core.check import checked
 from ....core.utils import check
 
 from ...menu import Menu, PlaceMenu
@@ -30,6 +31,7 @@ class MenuBar(QMenuBar):
     _slots   : Slots
     _menus   : dict[str, Menu]
 
+    @checked
     def __init__(
         self   : Self,
         parent : Window

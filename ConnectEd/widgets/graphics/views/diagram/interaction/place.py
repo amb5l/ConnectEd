@@ -91,6 +91,7 @@ class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
         self._loc = loc
         self._pin.setLoc(loc)
 
+    @checked
     def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         self._scene.addBlockPin(self._parent, self._pin, undoable=True)
@@ -133,6 +134,7 @@ class DiagramPlaceConnInteraction(DiagramInteraction):
         self._pos = pos
         self._updateVertices(pos)
 
+    @checked
     def _commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
         # probe for terminals at both preview segment endpoints before changes

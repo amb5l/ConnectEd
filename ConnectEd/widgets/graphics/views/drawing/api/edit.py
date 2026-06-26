@@ -6,6 +6,7 @@ from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
+from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from ....query import QueryWindow
@@ -30,49 +31,61 @@ else:
 
 class DrawingViewApiEditMixin:
     @withScene
+    @checked
     def editUndo(self : MixinSelf, scene : DrawingScene) -> None:
         scene.undo()
 
     @withScene
+    @checked
     def editRedo(self : MixinSelf, scene : DrawingScene) -> None:
         scene.redo()
 
     @withScene
+    @checked
     def editRepeat(self : MixinSelf) -> None:
         raise NotImplementedError("editRepeat not implemented")
 
     @withScene
+    @checked
     def editCancel(self : MixinSelf, scene : DrawingScene) -> None:
         scene.clearSelection()
         self.state.go(self.stateIdle)
 
     @withScene
+    @checked
     def editCut(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editCut(
             self._snap(self.mouse.current.logical), undoable=True
         )
 
     @withScene
+    @checked
     def editCopy(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editCopy(self._snap(self.mouse.current.logical))
 
+    @checked
     def editPaste(self : MixinSelf) -> None:
         self.state.go(self.stateEditPaste)
 
     @withScene
+    @checked
     def editDelete(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editDelete(undoable=True)
 
+    @checked
     def editDuplicate(self : MixinSelf) -> None:
         self.state.go(self.stateEditDuplicate)
 
+    @checked
     def editSelectArea(self : MixinSelf) -> None:
         self.state.go(self.stateEditSelectArea1)
 
     @withScene
+    @checked
     def editSelectAll(self : MixinSelf, scene : DrawingScene) -> None:
         scene.editSelectAll()
 
+    @checked
     def editSlide(
         self  : MixinSelf,
         items : list[ItemMixin] | None = None,
@@ -80,6 +93,7 @@ class DrawingViewApiEditMixin:
     ) -> None:
         self._editMove(items, pos, True)
 
+    @checked
     def editMove(
         self  : MixinSelf,
         items : list[ItemMixin] | None = None,
@@ -87,6 +101,7 @@ class DrawingViewApiEditMixin:
     ) -> None:
         self._editMove(items, pos, False)
 
+    @checked
     def editResize(
         self : MixinSelf,
         grip : ResizeGripItem,
@@ -99,6 +114,7 @@ class DrawingViewApiEditMixin:
         )
 
     @withScene
+    @checked
     def editRotateCW(
         self  : MixinSelf,
         scene : DrawingScene,
@@ -115,6 +131,7 @@ class DrawingViewApiEditMixin:
             scene.editRotateCW(items, pos, undoable=True)
 
     @withScene
+    @checked
     def editRotateCCW(
         self  : MixinSelf,
         scene : DrawingScene,
@@ -131,6 +148,7 @@ class DrawingViewApiEditMixin:
             scene.editRotateCCW(items, pos, undoable=True)
 
     @withScene
+    @checked
     def editAssignOrigin(
         self    : MixinSelf,
         scene   : DrawingScene,
@@ -139,6 +157,7 @@ class DrawingViewApiEditMixin:
     ) -> None:
         scene.editAssignOrigin(item, ap_name, undoable=True)
 
+    @checked
     def editAppearance(
         self  : MixinSelf,
         items : ItemMixin | list[ItemMixin] | None = None
@@ -147,6 +166,7 @@ class DrawingViewApiEditMixin:
         items = [items] if isinstance(items, ItemMixin) else items
         self.state.go(self.stateEditAppearance, items)
 
+    @checked
     def editItemProperties(
         self  : MixinSelf,
         items : ItemMixin | list[ItemMixin] | None = None
@@ -155,10 +175,12 @@ class DrawingViewApiEditMixin:
         items = [items] if isinstance(items, ItemMixin) else items
         self.state.go(self.stateEditItemProperties, items)
 
+    @checked
     def editDrawingProperties(self : MixinSelf) -> None:
         self.state.go(self.stateEditDrawingProperties)
 
     @withScene
+    @checked
     def editQuery(
         self  : MixinSelf,
         scene : DrawingScene,
@@ -203,12 +225,14 @@ class DrawingViewApiEditMixin:
                 self._query_windows.remove(query_window)
         query_window.destroyed.connect(cleanup)
 
+    @checked
     def editPort(
         self : MixinSelf,
         item : ItemMixin | None = None
     ) -> None:
         self.state.go(self.stateEditPort, [item] if item else None)
 
+    @checked
     def editBlockPin(
         self : MixinSelf,
         item : ItemMixin | None = None
@@ -216,31 +240,35 @@ class DrawingViewApiEditMixin:
         self.state.go(self.stateEditBlockPin, [item] if item else None)
 
     @withScene
+    @checked
     def editSymbolPinDot(
         self   : MixinSelf,
         scene  : DrawingScene,
         item   : SymbolPinItem,
         enable : bool
-    ):
+    ) -> None:
         if enable == item.dot():
             return
         scene.editSymbolPinDot(item, enable, undoable=True)
 
     @withScene
+    @checked
     def editSymbolPinClock(
         self   : MixinSelf,
         scene  : DrawingScene,
         item   : SymbolPinItem,
         enable : bool
-    ):
+    ) -> None:
         if enable == item.clock():
             return
         scene.editSymbolPinClock(item, enable, undoable=True)
 
+    @checked
     def editTextDialog(self : MixinSelf) -> None:
         self.state.go(self.stateEditText)
 
     @withScene
+    @checked
     def editText(
         self      : MixinSelf,
         scene     : DrawingScene,
@@ -265,6 +293,7 @@ class DrawingViewApiEditMixin:
             undoable = True
         )
 
+    @checked
     def editPropertyTextDialog(
         self : MixinSelf,
         item : ItemMixin | None = None
@@ -274,6 +303,7 @@ class DrawingViewApiEditMixin:
         )
 
     @withScene
+    @checked
     def _editMove(
         self  : MixinSelf,
         scene : DrawingScene,

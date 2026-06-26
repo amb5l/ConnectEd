@@ -61,6 +61,7 @@ class DrawingInteraction:
         self._complete(*args, **kwargs)
         self._done = True
 
+    @checked
     def cancel(self : Self) -> None:
         if self._done:
             return

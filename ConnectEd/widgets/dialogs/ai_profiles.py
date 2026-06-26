@@ -74,6 +74,7 @@ def _elidedTableCellText(
 class _EnvKeyValueLineEdit(QLineEdit):
     _env_display_text : str
 
+    @checked
     def __init__(self, parent : QWidget | None = None) -> None:
         super().__init__(parent)
         self._env_display_text = ""

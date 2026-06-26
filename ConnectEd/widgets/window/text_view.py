@@ -9,6 +9,8 @@ from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 
 from ...app import logger, settings
 
+from ...core.check import checked
+
 from .find_bar import FindBar
 
 
@@ -17,6 +19,7 @@ class TextView(QPlainTextEdit):
     find_bar : FindBar | None = None
     handler  : logging.Handler | None = None
 
+    @checked
     def __init__(
         self     : Self,
         parent   : QWidget,
@@ -90,6 +93,7 @@ class TextViewDockWidget(QDockWidget):
     text_view    : TextView
     find_bar     : FindBar
 
+    @checked
     def __init__(
         self     : Self,
         parent   : QWidget | None = None,

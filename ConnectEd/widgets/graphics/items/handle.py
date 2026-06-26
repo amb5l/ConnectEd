@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self
 
@@ -25,6 +25,7 @@ class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
     _id   : HandleId
     _grip : GripItem
 
+    @checked
     def __init__(
         self     : Self,
         id       : HandleId,

@@ -8,6 +8,7 @@ from PyQt6.QtGui     import QUndoStack, QColor
 
 from .....app import settings
 
+from .....core.check import checked
 from .....core.types import DataKind
 from .....core.doc   import Doc
 
@@ -45,6 +46,7 @@ class DrawingScene(
     undo_stack : QUndoStack | None
     _doc       : Doc | None
 
+    @checked
     def __init__(
         self    : Self,
         doc     : Doc | None = None,
@@ -78,6 +80,7 @@ class DrawingScene(
     def name(self : Self) -> str:
         return self._name
 
+    @checked
     def setName(self : Self, name : str, notify : bool = True) -> None:
         self._name = name
         self.properties.signalChanges("Name")

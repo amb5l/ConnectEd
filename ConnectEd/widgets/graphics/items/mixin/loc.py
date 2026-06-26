@@ -113,5 +113,6 @@ class ItemLocMixin:
     def pos(self : Self) -> QPointF:
         raise NotImplementedError("pos is not implemented for ItemLocMixin")
 
+    @checked
     def setPos(self : Self, _ : QPointF) -> None:
         raise NotImplementedError("setPos is not implemented for ItemLocMixin")

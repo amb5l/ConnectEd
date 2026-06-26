@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import QWidget, QAbstractItemView
 
 from ....app import session
 
-from ....core.doc import Doc
+from ....core.check import checked
+from ....core.doc   import Doc
 
 from ..tree_view import TreeView, TreeViewDock
 
@@ -31,6 +32,7 @@ class Navigator(
     _model       : NavModel
     _group_items : dict[str, NavItem]
 
+    @checked
     def __init__(self : Self, parent : QWidget) -> None:
         # create an empty model
         self._model = NavModel()
@@ -73,6 +75,7 @@ class NavigatorDock(TreeViewDock):
 
     _navigator : Navigator
 
+    @checked
     def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(None, parent)
         self._navigator = Navigator(self)

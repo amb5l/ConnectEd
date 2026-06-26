@@ -45,6 +45,7 @@ class Doc(ABC):
 
     _XML_TAG : str
 
+    @checked
     def onChanged(self : Self) -> None:
         session().onDocChanged(self)
 

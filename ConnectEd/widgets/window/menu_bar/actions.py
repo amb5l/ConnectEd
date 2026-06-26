@@ -5,10 +5,10 @@ from PyQt6.QtGui     import QKeySequence
 
 from ....app import window
 
-from ....core.defs import MIME_TYPE
+from ....core.check import checked
+from ....core.defs  import MIME_TYPE
 
 from ....widgets.graphics.views.drawing  import DrawingView
-from ....widgets.graphics.views.diagram  import DiagramView
 from ....widgets.graphics.scenes.drawing import DrawingScene
 
 from ...action  import Action
@@ -19,6 +19,7 @@ from ..sub_window import DocSubWindow
 class Actions:
     _scene  : DrawingScene | None
 
+    @checked
     def __init__(self : Self) -> None:
         self._scene  = None
         SK = QKeySequence.StandardKey

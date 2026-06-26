@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...core.check import checked
 from PyQt6.QtGui import QColor, QFont
 
 
@@ -7,6 +8,7 @@ class Quill:
     _color : QColor
     _qfont : QFont
 
+    @checked
     def __init__(
         self,
         color     : QColor | "Quill",

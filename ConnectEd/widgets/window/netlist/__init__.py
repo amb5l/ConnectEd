@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QStandardItem, QStandardItemModel
 
+from ....core.check import checked
+
 from ...graphics.scenes.diagram import DiagramScene
 
 from ..tree_view import TreeView, TreeViewDock
@@ -16,6 +18,7 @@ class NetlistBrowser(TreeView):
     _diagram : DiagramScene | None
     _model   : QStandardItemModel
 
+    @checked
     def __init__(self : Self, parent : QWidget) -> None:
         self._diagram = None
         self._model = QStandardItemModel()
@@ -92,6 +95,7 @@ class NetlistBrowserDock(TreeViewDock):
 
     _browser : NetlistBrowser
 
+    @checked
     def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(None, parent)
         self._browser = NetlistBrowser(self)

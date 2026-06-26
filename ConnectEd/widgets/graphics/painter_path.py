@@ -1,3 +1,4 @@
+from ...core.check import checked
 from typing import Self, overload
 from math import copysign, sqrt, degrees, radians, sin, cos, asin, atan2
 
@@ -14,6 +15,7 @@ class PainterPath(QPainterPath):
     _mid_pos : QPointF | None  # latest line/arc midpoint
     _angle   : float | None    # angle of latest line/arc chord
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         self._mid_pos = None

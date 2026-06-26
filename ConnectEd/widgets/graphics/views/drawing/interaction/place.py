@@ -66,6 +66,7 @@ class DrawingPlaceBase1PosInteraction(DrawingPlaceBaseInteraction):
         self._pos = pos
         self._item.setPos(pos)
 
+    @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         self._item.setAcceptedMouseButtons(Qt.MouseButton.AllButtons)
@@ -158,6 +159,7 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
             self._item.delLastVertex()  # remove WIP vertex
         self._releaseItem()
 
+    @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         # Ensure last vertex is at the click position
         self.update(pos)

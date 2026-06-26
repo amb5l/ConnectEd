@@ -16,7 +16,8 @@ from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
 
 from ...app import logger, settings, window
 
-from ...core.icon import getCharIcon
+from ...core.check import checked
+from ...core.icon  import getCharIcon
 
 from ..menu import Menu
 
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
 
 class SpreadsheetCell(QStandardItem):
     """Custom item for spreadsheet cells, storing string values."""
+    @checked
     def __init__(self : Self, value : any) -> None:
         text_value = "" if value is None else str(value)
         super().__init__(text_value)
@@ -49,6 +51,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
     TOOLTIP = None
     ENTRIES = None
 
+    @checked
     def __init__(self : Self):
         super().__init__()
 
@@ -141,6 +144,7 @@ class SpreadsheetHeader(QHeaderView):
     _len        : int
     _transposed : bool
 
+    @checked
     def __init__(
             self : Self,
             table       : SpreadsheetTable,
@@ -215,6 +219,7 @@ class SpreadsheetTable(QTableView):
     _transposed : bool
     _styled     : bool
 
+    @checked
     def __init__(
         self       : Self,
         undo_stack : QUndoStack,
@@ -310,6 +315,7 @@ class SpreadsheetWidget(QWidget):
     _toolbar          : QHBoxLayout
     _layout           : QVBoxLayout
 
+    @checked
     def __init__(
         self     : Self,
         model    : QStandardItemModel,
@@ -547,6 +553,7 @@ class SpreadsheetTabWidget(QTabWidget):
     _highlight      : QBrush
     _font_size      : int
 
+    @checked
     def __init__(
         self   : Self,
         items  : list[ItemMixin],
@@ -713,6 +720,7 @@ class SpreadsheetSubWindow(DocSubWindow):
     _scene      : DrawingScene
     _tab_widget : QTabWidget | None
 
+    @checked
     def __init__(
             self  : Self,
             scene : DrawingScene,

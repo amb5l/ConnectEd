@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import \
     QHBoxLayout, QLabel, QComboBox, QToolButton, QCheckBox
 from PyQt6.QtGui import QIcon, QTextDocument
 
+from ...core.check import checked
+
 
 class FindBar(QWidget):
     text_edit   : QPlainTextEdit
@@ -17,6 +19,7 @@ class FindBar(QWidget):
     whole_words : QCheckBox
     highlight   : QCheckBox
 
+    @checked
     def __init__(self : Self, parent : QWidget, text_edit : QPlainTextEdit) -> None:
         super().__init__(parent)
         self.text_edit = text_edit

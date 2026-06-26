@@ -583,6 +583,7 @@ class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
         self._loc_snap = loc_new_snap
         self._corner = corner
 
+    @checked
     def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         after  = {p: p.loc() for p in self._pins}

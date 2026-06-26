@@ -3,12 +3,14 @@ from typing import Self
 from PyQt6.QtWidgets import QMdiSubWindow, QWidget
 from PyQt6.QtGui     import QCloseEvent
 
+from ...core.check import checked
 from ...core.doc   import DocBinding
 
 
 class DocSubWindow(QMdiSubWindow):
     _binding : DocBinding | None
 
+    @checked
     def __init__(
         self    : Self,
         parent  : QWidget    | None = None,

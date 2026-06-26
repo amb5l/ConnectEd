@@ -834,5 +834,6 @@ class PropertiesMixin:
     def live(self : Self) -> bool:
         return self._live
 
+    @checked
     def setLive(self : Self, live : bool) -> None:
         self._live = live

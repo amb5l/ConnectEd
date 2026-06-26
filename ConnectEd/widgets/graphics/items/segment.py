@@ -183,6 +183,7 @@ class SegmentItem(
             )
         ]
 
+    @checked
     def toXml(
         self : Self,
         xw   : QXmlStreamWriter,

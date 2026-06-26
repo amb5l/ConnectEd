@@ -482,6 +482,7 @@ class PolylineItem(
         if hasattr(self, '_handles'):
             self.updateHandlePositions()
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         # serialise segments

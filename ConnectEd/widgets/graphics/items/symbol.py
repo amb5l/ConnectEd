@@ -1,7 +1,10 @@
-﻿from typing import Self
+﻿from __future__ import annotations
+
+from typing import Self
 
 from PyQt6.QtCore import QXmlStreamWriter
 
+from ....core.check import checked
 from ....core.types import DataKind
 
 from PyQt6.QtWidgets import QGraphicsRectItem
@@ -124,6 +127,7 @@ class SymbolDefinitionItem(
     def resourcesName(self : Self) -> str:
         return "Symbol"
 
+    @checked
     def __init__(self : Self, fresh : bool = True) -> None:
         super().__init__()
         self.initItem(fresh)
@@ -139,6 +143,7 @@ class SymbolDefinitionItem(
     def width(self : Self) -> float:
         return self.rect().width()
 
+    @checked
     def setWidth(self : Self, width : float) -> None:
         rect = self.rect()
         rect.setWidth(width)
@@ -147,6 +152,7 @@ class SymbolDefinitionItem(
     def height(self : Self) -> float:
         return self.rect().height()
 
+    @checked
     def setHeight(self : Self, height : float) -> None:
         rect = self.rect()
         rect.setHeight(height)
@@ -157,6 +163,7 @@ class SymbolDefinitionItem(
     def verilogLibrary(self : Self) -> str:
         return self._verilog_library
 
+    @checked
     def setVerilogLibrary(self : Self, verilog_library : str) -> None:
         self._verilog_library = verilog_library
         self.properties.signalChanges("Verilog Library")
@@ -164,6 +171,7 @@ class SymbolDefinitionItem(
     def verilogName(self : Self) -> str:
         return self._verilog_name
 
+    @checked
     def setVerilogName(self : Self, verilog_name : str) -> None:
         self._verilog_name = verilog_name
         self.properties.signalChanges("Verilog Name")
@@ -171,6 +179,7 @@ class SymbolDefinitionItem(
     def vhdlInstantiationStyle(self : Self) -> str:
         return self._vhdl_instantiation_style
 
+    @checked
     def setVhdlInstantiationStyle(self : Self, vhdl_instantiation_style : str) -> None:
         self._vhdl_instantiation_style = vhdl_instantiation_style
         self.properties.signalChanges("VHDL Instantiation Style")
@@ -178,6 +187,7 @@ class SymbolDefinitionItem(
     def vhdlLibrary(self : Self) -> str:
         return self._vhdl_library
 
+    @checked
     def setVhdlLibrary(self : Self, vhdl_library : str) -> None:
         self._vhdl_library = vhdl_library
         self.properties.signalChanges("VHDL Library")
@@ -185,6 +195,7 @@ class SymbolDefinitionItem(
     def vhdlPackage(self : Self) -> str:
         return self._vhdl_package
 
+    @checked
     def setVhdlPackage(self : Self, vhdl_package : str) -> None:
         self._vhdl_package = vhdl_package
         self.properties.signalChanges("VHDL Package")
@@ -192,6 +203,7 @@ class SymbolDefinitionItem(
     def vhdlName(self : Self) -> str:
         return self._vhdl_name
 
+    @checked
     def setVhdlName(self : Self, vhdl_name : str) -> None:
         self._vhdl_name = vhdl_name
         self.properties.signalChanges("VHDL Name")
@@ -199,6 +211,7 @@ class SymbolDefinitionItem(
     def vhdlArchitecture(self : Self) -> str:
         return self._vhdl_architecture
 
+    @checked
     def setVhdlArchitecture(self : Self, vhdl_architecture : str) -> None:
         self._vhdl_architecture = vhdl_architecture
         self.properties.signalChanges("VHDL Architecture")
@@ -232,6 +245,7 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
     def definition(self : Self) -> SymbolDefinitionItem | None:
         return self._definition
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         """
         Serialize the instance to XML: properties, position, property texts.
@@ -240,8 +254,9 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
         self.toXmlChildren(xw, pins=False)
         self.toXmlEnd(xw)
 
+    @checked
     def sync(
-        self,
+        self        : Self,
         definition  : SymbolDefinitionItem,
         *,
         inherent    : bool = False,

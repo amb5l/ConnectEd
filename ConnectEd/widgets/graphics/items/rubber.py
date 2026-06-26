@@ -35,6 +35,7 @@ class RubberItem(QGraphicsPathItem):
     def resourcesName(self : Self) -> str:
         return self.settingsName()
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
 

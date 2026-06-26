@@ -6,6 +6,8 @@ from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QColor, QPaintEvent
 
+from ..core.check import checked
+
 
 class MarqueeRubberBand(QRubberBand):
     """
@@ -18,6 +20,7 @@ class MarqueeRubberBand(QRubberBand):
     offset : int
     timer  : QTimer
 
+    @checked
     def __init__(
         self   : Self,
         shape  : QRubberBand.Shape,
@@ -61,6 +64,7 @@ class Marquee:
     rubber_band : MarqueeRubberBand
     point1      : QPoint
 
+    @checked
     def __init__(self : Self, parent : QGraphicsView) -> None:
         self.parent = parent
         self.rubber_band = MarqueeRubberBand(

@@ -42,6 +42,7 @@ class PartItemMixin:
     def label(self : MixinSelf) -> str:
         return self._label
 
+    @checked
     def setLabel(self : MixinSelf, label : str) -> None:
         self._label = label
         self.properties.signalChanges("Label")

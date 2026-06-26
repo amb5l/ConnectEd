@@ -368,6 +368,7 @@ class Netlist:
     def subnets(self : Self) -> dict[int, Subnet]:
         return self._subnets
 
+    @checked
     def subnetSegments(self : Self, subnet : Subnet) -> list[SegmentItem]:
         return [
             data["segment"] for _, _, data in \

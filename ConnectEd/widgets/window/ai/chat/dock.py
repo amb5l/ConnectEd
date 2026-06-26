@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Self
 from PyQt6.QtCore    import pyqtSignal
 from PyQt6.QtWidgets import QDockWidget
 
+from .....core.check import checked
+
 from .....ai.profiles import getProfile, profileMenuLabel, providerPresetLabel
 
 if TYPE_CHECKING:
@@ -54,6 +56,7 @@ class AiChatDock(QDockWidget):
         self._provider   = provider
         self._model      = model
 
+    @checked
     def __init__(
         self       : Self,
         parent     : Window,

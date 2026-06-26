@@ -4,7 +4,8 @@ from typing import Self
 
 from PyQt6.QtGui import QUndoCommand
 
-from ......core.types   import Axis
+from ......core.check import checked
+from ......core.types import Axis
 
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
@@ -20,6 +21,7 @@ class CmdMovePreviewRubberBase(QUndoCommand):
     _scene   : DiagramScene
     _rubber  : RubberItem
 
+    @checked(always=True)
     def __init__(
         self   : Self,
         scene  : DiagramScene,
@@ -37,14 +39,17 @@ class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase):
     _segment : SegmentItem
     _rubber  : RubberTeeItem
 
+    @checked(always=True)
     def __init__(self : Self, segment : SegmentItem, node : NodeItem) -> None:
         super().__init__(segment.scene(), RubberTeeItem(segment, node))
         self._segment = segment
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._rubber)
         self._scene.removeItem(self._segment)
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.addItem(self._segment)
         self._scene.removeItem(self._rubber)
@@ -56,6 +61,7 @@ class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
     _corner   : FreeNodeItem
     _rubber   : RubberCornerItem
 
+    @checked(always=True)
     def __init__(
         self     : Self,
         segment1 : SegmentItem,
@@ -78,12 +84,14 @@ class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
         self._segment2 = segment2
         self._corner   = segment1.otherNode(node)
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._rubber)
         self._scene.removeItem(self._segment1)
         self._scene.removeItem(self._segment2)
         self._scene.removeItem(self._corner)
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.addItem(self._corner)
         self._scene.addItem(self._segment1)
@@ -95,6 +103,7 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase):
     _segment_or_static : SegmentItem | NodeItem
     _rubber            : RubberJogItem
 
+    @checked(always=True)
     def __init__(
         self              : Self,
         segment_or_static : SegmentItem | NodeItem,
@@ -116,11 +125,13 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase):
         )
         self._segment_or_static = segment_or_static
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._rubber)
         if self._segment_or_static is not None:
             self._scene.removeItem(self._segment_or_static)
 
+    @checked
     def undo(self : Self) -> None:
         if self._segment_or_static is not None:
             self._scene.addItem(self._segment_or_static)

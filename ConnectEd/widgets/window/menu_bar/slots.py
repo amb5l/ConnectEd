@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox
 
 from ....app import logger, settings, window
 
-from ....core.defs import APP_NAME
+from ....core.check import checked
+from ....core.defs  import APP_NAME
 
 from ....widgets.window.navigator import Navigator
 
@@ -121,6 +122,7 @@ def withMdiWidgetCheckable(
     return decorator
 
 class Slots:
+    @checked
     def __init__(self : Self) -> None:
         pass
 

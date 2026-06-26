@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from ...drawing.api import DrawingSceneApiMixin
 
+from ......core.check import checked
+
 from .add  import DiagramSceneApiAddMixin
 from .conn import DiagramSceneApiConnMixin
 from .edit import DiagramSceneApiEditMixin
@@ -17,6 +19,7 @@ class DiagramSceneApiMixin(
     DiagramSceneApiEditMixin,
     DrawingSceneApiMixin
 ):
+    @checked
     def symbolInstances(
         self       : DiagramScene,
         definition : SymbolDefinitionItem

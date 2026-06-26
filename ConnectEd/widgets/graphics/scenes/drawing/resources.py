@@ -6,6 +6,8 @@ from PyQt6.QtGui  import QPen, QBrush, QTransform, \
 
 from .....app import settings
 
+from .....core.check import checked
+
 from ...quill import Quill
 
 from ...items.grip import GripShape
@@ -24,6 +26,7 @@ class DrawingSceneResources:
     _lines   : dict[str, QLineF] = {}
     _paths   : dict[str, dict[Any, QPainterPath]] = {}
 
+    @checked
     def __init__(self : Self) -> None:
         self.update()
         settings().changed.connect(self.update)

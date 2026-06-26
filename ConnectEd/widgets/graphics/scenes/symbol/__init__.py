@@ -5,7 +5,8 @@ from PyQt6.QtGui  import QPainter, QPen
 
 from .....app import settings
 
-from .....core.defs import PITCH
+from .....core.check import checked
+from .....core.defs  import PITCH
 
 from ..diagram import DiagramScene
 
@@ -21,6 +22,7 @@ class SymbolScene(DiagramScene):
     _symbol : SymbolDefinitionItem | None  # symbol being edited
     _brect  : QRectF | None                # bounding rect of all items
 
+    @checked
     def __init__(
         self   : Self,
         symbol : SymbolDefinitionItem | None = None

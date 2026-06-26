@@ -49,6 +49,7 @@ class EditPasteInteraction(
         else:
             self._items = None
 
+    @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         self._previewRestore()  # restore initial positions
         self.update(pos)     # apply final offset
@@ -116,6 +117,7 @@ class EditMoveInteraction(
         self._slide = slide
         self._previewSave()  # record initial positions
 
+    @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         self._previewRestore()  # restore initial positions
         # apply final offset
@@ -193,6 +195,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, DrawingInteraction):
         self._seg.setSweep(sweep)
         self._polyline.updatePath()
 
+    @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         new_sweep = self._seg.sweep()
