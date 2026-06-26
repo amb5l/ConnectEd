@@ -15,8 +15,8 @@ from .. import CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .....items           import ItemType
-    from .....scenes.drawing  import DrawingScene
+    from .....items import ItemType
+    from .....scenes.drawing import DrawingScene
 
 class CmdEditAppearance(CmdSceneItems):
     @dataclass
