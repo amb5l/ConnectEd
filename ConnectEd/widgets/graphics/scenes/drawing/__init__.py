@@ -32,7 +32,7 @@ class DrawingScene(
     # class attributes
     _RESOURCES_CLS = DrawingSceneResources
     _PROPERTIES = {
-        "Name" : InherentProperty(
+        "Name" : InherentProperty["DrawingScene"](
             kind   = DataKind.STR,
             getter = lambda self: self.name(),
             setter = lambda self, value: self.setName(value)

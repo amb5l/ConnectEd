@@ -50,7 +50,7 @@ class TapItem(
     _LINE = QLineF(0, 0, PITCH, PITCH)
     _PROPERTIES = \
         {
-            "Suffix" : InherentProperty(
+            "Suffix" : InherentProperty["TapItem"](
                 kind   = DataKind.STR,
                 worthy = lambda self: self.suffix() != "",
                 getter = lambda self: self.suffix(),

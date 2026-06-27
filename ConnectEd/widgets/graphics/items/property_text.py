@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing import Self, Any, cast
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
@@ -46,19 +46,19 @@ class PropertyTextItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {
-            "Name" : InherentProperty(
+            "Name" : InherentProperty["PropertyTextItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
-            "Visible" : InherentProperty(
+            "Visible" : InherentProperty["PropertyTextItem"](
                 kind   = DataKind.BOOL,
                 worthy = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             ),
-            "Cleat" : InherentProperty(
-                kind   = lambda self: self.item().handleIdKind(),
+            "Cleat" : InherentProperty["PropertyTextItem"](
+                kind   = lambda self: self.cleatKind(),
                 getter = lambda self: self.cleat(),
                 setter = lambda self, value: self.setCleat(value)
             )
@@ -176,6 +176,10 @@ class PropertyTextItem(TextItem):
             text = f"<{self._name}>"
         super().setText(text)
 
+    def cleatKind(self : Self) -> DataKind:
+        item = cast(ItemHandlesMixin, self.item())
+        return item.handleIdKind()
+
     def cleat(self : Self) -> HandleId | None:
         return self._cleat
 
@@ -189,7 +193,7 @@ class PropertyTextItem(TextItem):
         self   : Self,
         id     : HandleId | None,
         parent : ItemHandlesMixin | None = None
-    ) -> bool:
+    ) -> None:
         self._cleat = id
         ok = False
         if id is not None:
@@ -205,7 +209,6 @@ class PropertyTextItem(TextItem):
         self.properties.signalChanges("Cleat")
         if ok:
             self.onGeometryChanged()
-        return ok
 
     @checked
     def setOrigin(self : Self, id : RectHandleId) -> None:

@@ -36,14 +36,14 @@ class BaseRectangleMixin(
         ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemTransformMixin._PROPERTIES_MIRROR | \
         {
-            "Width" : InherentProperty(
+            "Width" : InherentProperty["BaseRectangleMixin"](
                 kind   = DataKind.FLOAT,
-                getter = lambda self: self.rect().width(),
+                getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
-            "Height" : InherentProperty(
+            "Height" : InherentProperty["BaseRectangleMixin"](
                 kind   = DataKind.FLOAT,
-                getter = lambda self: self.rect().height(),
+                getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)
             )
         } | \
@@ -123,11 +123,17 @@ class BaseRectangleMixin(
             if names:
                 self.properties.signalChanges(names)
 
+    def width(self : Self | QGraphicsRectItem) -> float:
+        return self.rect().width()
+
     @checked
     def setWidth(self : Self | QGraphicsRectItem, width : float | int) -> None:
         rect = self.rect()
         rect.setWidth(width)
         self.setRect(rect)
+
+    def height(self : Self | QGraphicsRectItem) -> float:
+        return self.rect().height()
 
     @checked
     def setHeight(self : Self | QGraphicsRectItem, height : float | int) -> None:

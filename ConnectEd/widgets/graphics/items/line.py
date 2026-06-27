@@ -35,22 +35,22 @@ class LineItem(
     # class attributes
     _PROPERTIES = \
         {
-            "X1" : InherentProperty(
+            "X1" : InherentProperty["LineItem"](
                 kind   = DataKind.FLOAT,
                 getter = lambda self: self.x1(),
                 setter = lambda self, value: self.setX1(value)
             ),
-            "Y1" : InherentProperty(
+            "Y1" : InherentProperty["LineItem"](
                 kind   = DataKind.FLOAT,
                 getter = lambda self: self.y1(),
                 setter = lambda self, value: self.setY1(value)
             ),
-            "X2" : InherentProperty(
+            "X2" : InherentProperty["LineItem"](
                 kind   = DataKind.FLOAT,
                 getter = lambda self: self.x2(),
                 setter = lambda self, value: self.setX2(value)
             ),
-            "Y2" : InherentProperty(
+            "Y2" : InherentProperty["LineItem"](
                 kind   = DataKind.FLOAT,
                 getter = lambda self: self.y2(),
                 setter = lambda self, value: self.setY2(value)

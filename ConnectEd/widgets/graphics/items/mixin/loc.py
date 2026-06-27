@@ -22,12 +22,12 @@ class ItemLocMixin:
 
     # class attributes
     _PROPERTIES = {
-        "Edge" : InherentProperty(
+        "Edge" : InherentProperty["ItemLocMixin"](
             kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
             setter = lambda self, value: self.setLocEdge(value)
         ),
-        "Offset" : InherentProperty(
+        "Offset" : InherentProperty["ItemLocMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.loc().offset,
             setter = lambda self, value: self.setLocOffset(value)

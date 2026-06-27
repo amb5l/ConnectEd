@@ -69,17 +69,17 @@ class PortPinMixin(
     _ARROW_POS  : int
     _PROPERTIES = \
         {
-            "Name" : InherentProperty(
+            "Name" : InherentProperty["PortPinMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value),
             ),
-            "Dir" : InherentProperty(
+            "Dir" : InherentProperty["PortPinMixin"](
                 kind   = DataKind.DIRECTION,
                 getter = lambda self: self.direction(),
                 setter = lambda self, value: self.setDirection(value)
             ),
-            "Comment" : InherentProperty(
+            "Comment" : InherentProperty["PortPinMixin"](
                 kind   = DataKind.STR,
                 worthy = lambda self: self.comment() != "",
                 getter = lambda self: self.comment(),
@@ -246,12 +246,12 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     _PROPERTIES = \
         PortPinMixin._PROPERTIES | \
         {
-            "Dot" : InherentProperty(
+            "Dot" : InherentProperty["PortPinPathItem"](
                 kind   = DataKind.BOOL,
                 getter = lambda self: self.dot(),
                 setter = lambda self, value: self.setDot(value)
             ),
-            "Clock" : InherentProperty(
+            "Clock" : InherentProperty["PortPinPathItem"](
                 kind   = DataKind.BOOL,
                 getter = lambda self: self.clock(),
                 setter = lambda self, value: self.setClock(value)

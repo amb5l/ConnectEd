@@ -25,7 +25,7 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \
         {
-            "Path" : InherentProperty(
+            "Path" : InherentProperty["BlockItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.path(),
                 setter = lambda self, value: self.setPath(value)

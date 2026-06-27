@@ -162,12 +162,12 @@ class BaseTextItem(
     _RESIZE_GRIP_CLS = TextResizeGripItem
     _PROPERTIES_ALIGN = \
         {
-            "AlignH" : InherentProperty(
+            "AlignH" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.ALIGN_H,
                 getter = lambda self: self.alignH(),
                 setter = lambda self, value: self.setAlignH(value)
             ),
-            "AlignV" : InherentProperty(
+            "AlignV" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.ALIGN_V,
                 getter = lambda self: self.alignV(),
                 setter = lambda self, value: self.setAlignV(value)
@@ -175,13 +175,13 @@ class BaseTextItem(
         }
     _PROPERTIES_SIZE = \
         {
-            "Width" : InherentProperty(
+            "Width" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.SIZE,
                 worthy = lambda self: self.width() >= 0.0,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
-            "Height" : InherentProperty(
+            "Height" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.SIZE,
                 worthy = lambda self: self.height() >= 0.0,
                 getter = lambda self: self.height(),
@@ -190,45 +190,45 @@ class BaseTextItem(
         }
     _PROPERTIES_PADDING = \
         {
-            "Pad Left" : InherentProperty(
+            "Pad Left" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.FLOAT,
                 worthy = lambda self: self.padLeft() != 0.0,
                 getter = lambda self: self.padLeft(),
                 setter = lambda self, value: self.setPadLeft(value)
             ),
-            "Pad Right" : InherentProperty(
+            "Pad Right" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.FLOAT,
                 worthy = lambda self: self.padRight() != 0.0,
                 getter = lambda self: self.padRight(),
                 setter = lambda self, value: self.setPadRight(value)
             ),
-            "Pad Top" : InherentProperty(
+            "Pad Top" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.FLOAT,
                 worthy = lambda self: self.padTop() != 0.0,
                 getter = lambda self: self.padTop(),
                 setter = lambda self, value: self.setPadTop(value)
             ),
-            "Pad Bottom" : InherentProperty(
+            "Pad Bottom" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.FLOAT,
                 worthy = lambda self: self.padBottom() != 0.0,
                 getter = lambda self: self.padBottom(),
                 setter = lambda self, value: self.setPadBottom(value)
             )
         }
-    _PROPERTIES = \
+    _PROPERTIES : dict[str, InherentProperty] = \
         {
-            "Text" : InherentProperty(
+            "Text" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.text(),
                 setter = lambda self, value: self.setText(value)
             ),
-            "Block" : InherentProperty(
+            "Block" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.BOOL,
                 worthy = lambda self: self.block(),
                 getter = lambda self: self.block(),
                 setter = lambda self, value: self.setBlock(value)
             ),
-            "AutoFlip" : InherentProperty(
+            "AutoFlip" : InherentProperty["BaseTextItem"](
                 kind   = DataKind.BOOL,
                 worthy = lambda self: not self.autoflip(),
                 getter = lambda self: self.autoflip(),

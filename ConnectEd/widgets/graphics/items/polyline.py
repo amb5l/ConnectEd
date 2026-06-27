@@ -189,7 +189,7 @@ class PolylineItem(
     _RESIZE_GRIP_CLS = PolylineResizeGripItem
     _PROPERTIES = \
         {
-            "Closed" : InherentProperty(
+            "Closed" : InherentProperty["PolylineItem"](
                 kind   = DataKind.BOOL,
                 getter = lambda self: self.closed(),
                 setter = lambda self, value: self.setClosed(value)

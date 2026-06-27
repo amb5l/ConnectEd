@@ -10,12 +10,12 @@ MixinSelf = Self | PropertiesMixin
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
     _PROPERTIES_PART = {
-            "Label" : InherentProperty(
+            "Label" : InherentProperty["PartItemMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.label(),
                 setter = lambda self, value: self.setLabel(value)
             ),
-            "Name" : InherentProperty(
+            "Name" : InherentProperty["PartItemMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)

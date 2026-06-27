@@ -46,25 +46,25 @@ class SymbolDefinitionItem(
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \
         {
-            "Verilog Library" : InherentProperty(
+            "Verilog Library" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.verilogLibrary(),
                 setter = lambda self, value: self.setVerilogLibrary(value),
                 tip    = "Library where the module is defined (normally for simulation). Used for explanatory comments only."
             ),
-            "Verilog Name" : InherentProperty(
+            "Verilog Name" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.verilogName(),
                 setter = lambda self, value: self.setVerilogName(value),
                 tip    = "Name of the module (optional, overrides 'Name' if specified)."
             ),
-            "VHDL Instantiation Style" : InherentProperty(
+            "VHDL Instantiation Style" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlInstantiationStyle(),
                 setter = lambda self, value: self.setVhdlInstantiationStyle(value),
                 tip    = "'component' (default if not specified) or 'entity'."
             ),
-            "VHDL Library" : InherentProperty(
+            "VHDL Library" : InherentProperty["SymbolDefinitionItem"](
                 kind = DataKind.STR,
                 getter = lambda self: self.vhdlLibrary(),
                 setter = lambda self, value: self.setVhdlLibrary(value),
@@ -73,7 +73,7 @@ class SymbolDefinitionItem(
                     "(default is 'work')."
                 )
             ),
-            "VHDL Package" : InherentProperty(
+            "VHDL Package" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlPackage(),
                 setter = lambda self, value: self.setVhdlPackage(value),
@@ -83,7 +83,7 @@ class SymbolDefinitionItem(
                     "name in the ''use'' clause. "
                 )
             ),
-            "VHDL Name" : InherentProperty(
+            "VHDL Name" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlName(),
                 setter = lambda self, value: self.setVhdlName(value),
@@ -92,7 +92,7 @@ class SymbolDefinitionItem(
                     "'Name' if specified)."
                 )
             ),
-            "VHDL Architecture" : InherentProperty(
+            "VHDL Architecture" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlArchitecture(),
                 setter = lambda self, value: self.setVhdlArchitecture(value),
@@ -101,7 +101,7 @@ class SymbolDefinitionItem(
                     "instantiation."
                 )
             ),
-            "VHDL Selected Name" : InherentProperty(
+            "VHDL Selected Name" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlSelectedName(),
                 tip = (

@@ -32,13 +32,13 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
     _PROPERTIES_ALIGN = \
         {
-            "AlignH" : InherentProperty(
+            "AlignH" : InherentProperty["NetLabelItem"](
                 kind   = DataKind.ALIGN_H,
                 worthy = lambda self: self.alignH() != AlignH.LEFT,
                 getter = lambda self: self.alignH(),
                 setter = lambda self, value: self.setAlignH(value)
             ),
-            "AlignV" : InherentProperty(
+            "AlignV" : InherentProperty["NetLabelItem"](
                 kind    = DataKind.ALIGN_V,
                 worthy  = lambda self: self.alignV() != AlignV.MIDDLE,
                 default = lambda self: AlignV.MIDDLE,
@@ -48,13 +48,13 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         }
     _PROPERTIES_SIZE = \
         {
-            "Width" : InherentProperty(
+            "Width" : InherentProperty["NetLabelItem"](
                 kind   = DataKind.SIZE,
                 worthy = lambda self: self.width() >= 0.0,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
-            "Height" : InherentProperty(
+            "Height" : InherentProperty["NetLabelItem"](
                 kind    = DataKind.SIZE,
                 worthy  = lambda self: self.height() != PITCH,
                 default = lambda self: float(PITCH),
@@ -64,12 +64,12 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         }
     _PROPERTIES = \
         {
-            "Name" : InherentProperty(
+            "Name" : InherentProperty["NetLabelItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
-            "Value" : InherentProperty(
+            "Value" : InherentProperty["NetLabelItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.value(),
                 setter = lambda self, value: self.setValue(value)

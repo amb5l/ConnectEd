@@ -40,27 +40,27 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     # class attributes
     _RESOURCES_CLS = DiagramSceneResources
     _PROPERTIES = DrawingScene._PROPERTIES | {
-        "Sheet Name" : InherentProperty(
+        "Sheet Name" : InherentProperty["DiagramScene"](
             kind   = DataKind.STR,
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)
         ),
-        "Sheet Width" : InherentProperty(
+        "Sheet Width" : InherentProperty["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetWidth(),
             setter = lambda self, value: self.setSheetWidth(value)
         ),
-        "Sheet Height" : InherentProperty(
+        "Sheet Height" : InherentProperty["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetHeight(),
             setter = lambda self, value: self.setSheetHeight(value)
         ),
-        "Margin" : InherentProperty(
+        "Margin" : InherentProperty["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.margin,
             setter = lambda self, value: self.setMargin(value)
         ),
-        "Border" : InherentProperty(
+        "Border" : InherentProperty["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.border,
             setter = lambda self, value: self.setBorder(value)

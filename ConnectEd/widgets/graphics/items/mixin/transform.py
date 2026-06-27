@@ -24,13 +24,13 @@ class ItemTransformMixin:
     # class attributes
     _ORIGIN : HandleId | None  # undefined = no origin on this item
     _PROPERTIES_POS = {
-        "X" : InherentProperty(
+        "X" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.pos() != QPointF(0, 0),
             getter = lambda self: self.pos().x(),
             setter = lambda self, value: self.setX(value)
         ),
-        "Y" : InherentProperty(
+        "Y" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.pos() != QPointF(0, 0),
             getter = lambda self: self.pos().y(),
@@ -38,7 +38,7 @@ class ItemTransformMixin:
         )
     }
     _PROPERTIES_ROTATE = {
-        "Rotation" : InherentProperty(
+        "Rotation" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.rotation() != 0,
             getter = lambda self: self.rotation(),
@@ -46,13 +46,13 @@ class ItemTransformMixin:
         )
     }
     _PROPERTIES_MIRROR = {
-        "MirrorH" : InherentProperty(
+        "MirrorH" : InherentProperty["ItemTransformMixin"](
             kind   = DataKind.BOOL,
             worthy = lambda self: self.mirrorH(),
             getter = lambda self: self.mirrorH(),
             setter = lambda self, value: self.setMirrorH(value)
         ),
-        "MirrorV" : InherentProperty(
+        "MirrorV" : InherentProperty["ItemTransformMixin"](
             kind   = DataKind.BOOL,
             worthy = lambda self: self.mirrorV(),
             getter = lambda self: self.mirrorV(),
@@ -61,23 +61,23 @@ class ItemTransformMixin:
     }
     _PROPERTIES_NO_ORIGIN = \
         _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
-    _PROPERTIES_ORIGIN = InherentProperty(
+    _PROPERTY_ORIGIN = InherentProperty["ItemTransformMixin"](
         kind   = None,
         worthy = lambda self: self.origin() is not None,
         getter = lambda self: self.origin(),
         setter = lambda self, value: self.setOrigin(value)
     )
     _PROPERTIES_RECT_ORIGIN = {
-        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.RECT_HANDLE)
+        "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.RECT_HANDLE)
     }
     _PROPERTIES_LINE_ORIGIN = {
-        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.LINE_HANDLE)
+        "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.LINE_HANDLE)
     }
     _PROPERTIES_BLOCK_PIN_ORIGIN = {
-        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.BLOCK_PIN_HANDLE)
+        "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.BLOCK_PIN_HANDLE)
     }
     _PROPERTIES_SYMBOL_PIN_ORIGIN = {
-        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.SYMBOL_PIN_HANDLE)
+        "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.SYMBOL_PIN_HANDLE)
     }
 
     # instance attributes

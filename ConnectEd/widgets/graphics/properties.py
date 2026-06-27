@@ -32,7 +32,7 @@ exists only for use via substitution in custom properties. For example,
 
 from __future__ import annotations
 
-from typing          import Self, Any, Literal, TypeAlias
+from typing          import Self, Any, Literal, TypeAlias, Generic, TypeVar
 from collections.abc import Callable
 from dataclasses     import dataclass
 from copy            import copy
@@ -53,9 +53,7 @@ from ...core.utils import str2val, pascal2proper
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
-    from .items import ItemType
-    from .items.property_text import PropertyTextSpec, PropertyTextItem
-    Owner = ItemType | DrawingScene
+    from .items.property_text import PropertyTextItem
 
 
 @dataclass
@@ -98,16 +96,19 @@ class PropertyNotifier(QObject):
     changed = pyqtSignal()
 
 
+T = TypeVar("T")
+
+
 @dataclass
-class InherentProperty:
-    kind     : DataKind | Callable[[Owner], DataKind]
-    worthy   : Literal[True] | Callable[[Owner], bool] | None = True
-    getter   : Callable[[Owner], Any]                  | None = None
-    setter   : Callable[[Owner, Any], None]            | None = None
-    default  : Callable[[Owner], Any]                  | None = None
-    notifier : PropertyNotifier                        | None = None
-    text     : PropertyTextItem                        | None = None
-    tip      : str                                     | None = None
+class InherentProperty(Generic[T]):
+    kind     : DataKind | Callable[[T], DataKind]  | None = None
+    worthy   : Literal[True] | Callable[[T], bool] | None = True
+    getter   : Callable[[T], Any]                  | None = None
+    setter   : Callable[[T, Any], None]            | None = None
+    default  : Callable[[T], Any]                  | None = None
+    notifier : PropertyNotifier                    | None = None
+    text     : PropertyTextItem                    | None = None
+    tip      : str                                 | None = None
 
 
 _CUSTOM_PROPERTY_KINDS = (
@@ -129,7 +130,7 @@ class CustomProperty:
 class PropertiesManager:
     # instance attributes
     _owner  : PropertiesMixin
-    _dict   : dict[str, InherentProperty | CustomProperty]
+    _dict   : dict[str, InherentProperty[Any] | CustomProperty]
 
     @checked
     def __init__(self : Self, owner : PropertiesMixin, fresh : bool) -> None:
@@ -812,7 +813,7 @@ class PropertiesManager:
 
 class PropertiesMixin:
     # class attributes
-    _PROPERTIES     : dict[str, InherentProperty]
+    _PROPERTIES     : dict[str, InherentProperty[Any]]
     _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
 
     # instance attributes

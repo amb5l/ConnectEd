@@ -37,7 +37,7 @@ class GateFunc(Enum):
 class GateLabelMixin:
     # class attributes
     _PROPERTIES_LABEL = {
-        "Label" : InherentProperty(
+        "Label" : InherentProperty["GateLabelMixin"](
             kind   = DataKind.STR,
             worthy = lambda self: self.label() != "",
             getter = lambda self: self.label(),
@@ -109,12 +109,12 @@ class BufGateItem(FunctionalItem, GateItem):
     # class attributes
     _PIN_CLS = BufGatePinItem
     _PROPERTIES_IO = {
-        "Output" : InherentProperty(
+        "Output" : InherentProperty["BufGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Input" : InherentProperty(
+        "Input" : InherentProperty["BufGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.input(),
             setter = lambda self, value: self.setInput(value)
@@ -235,12 +235,12 @@ class LogicGateItem(GateItem):
     _PIN_CLS     = GatePinItem
     _MID_PIN_CLS = GatePinItem  # for extended middle input pin
     _PROPERTIES_IO = {
-        "Output" : InherentProperty(
+        "Output" : InherentProperty["LogicGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Inputs" : InherentProperty(
+        "Inputs" : InherentProperty["LogicGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.inputs(),
             setter = lambda self, value: self.setInputs(value)
