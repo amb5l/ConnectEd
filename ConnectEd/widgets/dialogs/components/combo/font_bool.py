@@ -45,7 +45,7 @@ class FontBoolComboBox(QComboBox):
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
-    def value(self : Self) -> bool | None | NoChange:
+    def value(self : Self) -> bool | NoChange:
         r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
         return r if r != self._initial else NO_CHANGE
 

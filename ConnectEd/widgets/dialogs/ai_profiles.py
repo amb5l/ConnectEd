@@ -1,7 +1,9 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QBrush, QFont, QFontMetrics, QPalette, QShowEvent
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import (
+    QBrush, QFont, QFontMetrics, QPalette, QShowEvent, QResizeEvent
+)
 from PyQt6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -88,16 +90,16 @@ class _EnvKeyValueLineEdit(QLineEdit):
         self._env_display_text = ""
         super().setText("")
 
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
+    def resizeEvent(self, a0 : QResizeEvent | None = None) -> None:
+        super().resizeEvent(a0)
         if self._env_display_text:
             self._refreshElidedText()
 
-    def setText(self, text : str) -> None:
+    def setText(self, a0 : str | None = None) -> None:
         if self.isReadOnly() and self._env_display_text:
             return
         self._env_display_text = ""
-        super().setText(text)
+        super().setText(a0)
 
     def _refreshElidedText(self) -> None:
         text = _elidedLineEditText(self, self._env_display_text)
@@ -312,13 +314,13 @@ class AiAddProfileDialog(QDialog):
 
         self._applyPreset(self._preset.currentIndex())
 
-    def resizeEvent(self : Self, event) -> None:
-        super().resizeEvent(event)
+    def resizeEvent(self : Self, a0 : QResizeEvent | None = None) -> None:
+        super().resizeEvent(a0)
         if isEnvKeyName(self._api_key_name.text()):
             self._updateKeyValueField(self._api_key_name.text())
 
-    def showEvent(self : Self, event : QShowEvent) -> None:
-        super().showEvent(event)
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
+        super().showEvent(a0)
         QTimer.singleShot(0, self._fitSizeOnce)
 
     def _fitSizeOnce(self : Self) -> None:
@@ -395,22 +397,22 @@ class AiProfilesDialog(QDialog):
         self._table.setSelectionMode(
             QTableWidget.SelectionMode.SingleSelection
         )
-        self._table.horizontalHeader().setStretchLastSection(True)
-        self._table.horizontalHeader().setSectionResizeMode(
-            _COL_PROVIDER,
-            QHeaderView.ResizeMode.ResizeToContents,
-        )
-        self._table.horizontalHeader().setSectionResizeMode(
-            _COL_URL,
-            QHeaderView.ResizeMode.ResizeToContents,
-        )
-        self._table.horizontalHeader().setSectionResizeMode(
-            _COL_KEY_NAME,
-            QHeaderView.ResizeMode.ResizeToContents,
-        )
-        self._table.horizontalHeader().sectionResized.connect(
-            self._onTableColumnResized
-        )
+        horizontal_header = self._table.horizontalHeader()
+        if horizontal_header is not None:
+            horizontal_header.setStretchLastSection(True)
+            horizontal_header.setSectionResizeMode(
+                _COL_PROVIDER,
+                QHeaderView.ResizeMode.ResizeToContents,
+            )
+            horizontal_header.setSectionResizeMode(
+                _COL_URL,
+                QHeaderView.ResizeMode.ResizeToContents,
+            )
+            horizontal_header.setSectionResizeMode(
+                _COL_KEY_NAME,
+                QHeaderView.ResizeMode.ResizeToContents,
+            )
+            horizontal_header.sectionResized.connect(self._onTableColumnResized)
         self._table.cellChanged.connect(self._onCellChanged)
 
         add_button = QPushButton("Add…", self)
@@ -432,12 +434,12 @@ class AiProfilesDialog(QDialog):
 
         self._rebuildTable()
 
-    def resizeEvent(self : Self, event) -> None:
-        super().resizeEvent(event)
+    def resizeEvent(self : Self, a0 : QResizeEvent | None = None) -> None:
+        super().resizeEvent(a0)
         _refreshEnvKeyValueTableCells(self._table, self._profiles)
 
-    def showEvent(self : Self, event : QShowEvent) -> None:
-        super().showEvent(event)
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
+        super().showEvent(a0)
         QTimer.singleShot(0, self._refreshEnvKeyValueCellsOnce)
 
     def _refreshEnvKeyValueCellsOnce(self : Self) -> None:
@@ -508,7 +510,10 @@ class AiProfilesDialog(QDialog):
         return item.text().strip() if item is not None else ""
 
     def _selectedRow(self : Self) -> int:
-        rows = self._table.selectionModel().selectedRows()
+        selection_model = self._table.selectionModel()
+        if selection_model is None:
+            return -1
+        rows = selection_model.selectedRows()
         return rows[0].row() if rows else -1
 
     def _addProfile(self : Self) -> None:

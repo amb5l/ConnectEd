@@ -63,7 +63,7 @@ class MdiArea(QMdiArea):
                 for i, subwindow in enumerate(subwindows):
                     suffix = f" ({i + 1})" if len(subwindows) > 1 else ""
                     subwindow.setWindowTitle(title + suffix)
-                    action = QAction(window())
+                    action = Action(window())
                     action.setText(title + suffix)
                     action.triggered.connect(
                         lambda checked=False, window=subwindow:
@@ -73,38 +73,48 @@ class MdiArea(QMdiArea):
                     actions[doc].setdefault(subject, []).append(action)
         self._actions = actions
         # propagate changes to menu bar
-        window().menuBar().updateWindowMenu()
+        menu_bar = window().menuBar()
+        if menu_bar is None:
+            raise RuntimeError("No menu bar")
+        menu_bar.updateWindowMenu()
 
     def mruSubWindows(self : Self) -> list[DocSubWindow]:
         return list(self._mru)
 
     def docSubWindows(self : Self, doc : Doc) -> list[DocSubWindow]:
-        return [
-            subwindow for subwindow in self.mruSubWindows()
-            if subwindow.docBinding().doc is doc
-        ]
+        subwindows = []
+        for subwindow in self.mruSubWindows():
+            doc_binding = subwindow.docBinding()
+            if doc_binding is None:
+                continue
+            if doc_binding.doc is doc:
+                subwindows.append(subwindow)
+        return subwindows
 
     def docSubjectSubWindows(
         self    : Self,
         doc     : Doc,
         subject : DocSubjectProtocol
     ) -> list[DocSubWindow]:
-        return [
-            subwindow for subwindow in self.mruSubWindows()
-            if subwindow.docBinding().doc is doc
-            and subwindow.docBinding().subject is subject
-        ]
+        subwindows = []
+        for subwindow in self.mruSubWindows():
+            doc_binding = subwindow.docBinding()
+            if doc_binding is None:
+                continue
+            if doc_binding.doc is doc and doc_binding.subject is subject:
+                subwindows.append(subwindow)
+        return subwindows
 
     @checked
     def addSubWindow(
-        self      : Self,
-        subwindow : QWidget,
-        flags     : Qt.WindowType = Qt.WindowType.SubWindow
+        self   : Self,
+        widget : QWidget | None,
+        flags  : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
-        super().addSubWindow(subwindow, flags)
-        if isinstance(subwindow, DocSubWindow):
-            subwindow.destroyed.connect(self._onSubWindowDestroyed)
-            self._mru.append(subwindow)
+        super().addSubWindow(widget, flags)
+        if isinstance(widget, DocSubWindow):
+            widget.destroyed.connect(self._onSubWindowDestroyed)
+            self._mru.append(widget)
         self.onSubWindowsChanged()
 
     def nextSubWindow(self : Self) -> None:
@@ -136,7 +146,8 @@ class MdiArea(QMdiArea):
         current_index = windows.index(current_window)
         next_index = (current_index + offset) % len(windows)
         next_window = windows[next_index]
-        self.activateSubWindow(next_window)
+        if isinstance(next_window, DocSubWindow):
+            self.activateSubWindow(next_window)
 
     def _onSubWindowActivated(
         self      : Self,

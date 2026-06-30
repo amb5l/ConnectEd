@@ -49,25 +49,25 @@ class TextAppearancePreviewGroupBox(QGroupBox):
         self.setLayout(self._layout)
 
     @checked
-    def getColor(self : Self) -> QColor | None | NoChange:
+    def getColor(self : Self) -> QColor | NoChange:
         return self._layout.getColor()
 
     @checked
-    def getFont(self : Self) -> str | None | NoChange:
+    def getFont(self : Self) -> str | NoChange:
         return self._layout.getFont()
 
     @checked
-    def getSize(self : Self) -> float | None | NoChange:
+    def getSize(self : Self) -> float | NoChange:
         return self._layout.getSize()
 
     @checked
-    def getBold(self : Self) -> bool | None | NoChange:
+    def getBold(self : Self) -> bool | NoChange:
         return self._layout.getBold()
 
     @checked
-    def getItalic(self : Self) -> bool | None | NoChange:
+    def getItalic(self : Self) -> bool | NoChange:
         return self._layout.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> bool | None | NoChange:
+    def getUnderline(self : Self) -> bool | NoChange:
         return self._layout.getUnderline()

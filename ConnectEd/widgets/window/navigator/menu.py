@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PyQt6.QtCore import Qt, QPoint
 
-from typing import Self, TypeAlias
+from typing import Self
 
 from ....app import session
 
@@ -11,20 +11,15 @@ from ....core.types import MenuAction, MenuSeparator, MenuEntry
 
 from ...menu import Menu
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import Navigator
-    MixinSelf: TypeAlias = Self | Navigator
-else:
-    MixinSelf = Self
-
 
 class NavigatorMenuMixin:
 
     _menu        : Menu
     _group_menus : dict[str, Menu]
 
-    def initMenus(self : MixinSelf) -> None:
+    def initMenus(self : Self) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         # build viewport menu
         self._menu = Menu(self)
         self._menu.addEntries([
@@ -48,9 +43,11 @@ class NavigatorMenuMixin:
             self._group_menus[group_name] = group_menu
 
     def _groupMenuEntries(
-        self       : MixinSelf,
+        self       : Self,
         group_name : str,
     ) -> list[MenuEntry]:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         entries : list[MenuEntry] = []
         for doc_type in session().docTypes():
             if doc_type.group != group_name:
@@ -60,8 +57,12 @@ class NavigatorMenuMixin:
             )
         return entries
 
-    def showContextMenu(self : Navigator, pos : QPoint) -> None:
-        global_pos = self.viewport().mapToGlobal(pos)
+    def showContextMenu(self : Self, pos : QPoint) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
+        if (viewport := self.viewport()) is None:
+            raise RuntimeError("No viewport")
+        global_pos = viewport.mapToGlobal(pos)
         index = self.indexAt(pos)
         if not index.isValid():
             self._menu.exec(global_pos)

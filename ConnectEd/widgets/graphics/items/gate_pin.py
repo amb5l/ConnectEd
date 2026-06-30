@@ -26,11 +26,7 @@ class GatePinArrowItem(PortPinArrowItem):
     pass
 
 
-class GatePinItem(
-    ItemTransformMixin,
-    ItemHandlesMixin[GatePinHandleId],
-    PortPinPathItem
-):
+class GatePinItem(ItemTransformMixin, PortPinPathItem):
     # class attributes
     _NODE_POS  = -PITCH
     _ARROW_CLS = GatePinArrowItem
@@ -80,7 +76,11 @@ class GatePinItem(
         self._updateGraphics()
 
     @checked
-    def ctxMenuItems(self : Self, view : DiagramView, _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Active Low",

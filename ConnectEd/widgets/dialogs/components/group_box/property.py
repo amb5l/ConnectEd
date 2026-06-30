@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGroupBox
 from .....core.check import checked
 from .....core.types import NoChange, DataKind
 
-from ....graphics.properties import PropertiesMixin
+from ....graphics.items.property_text import PropertyTextItem
 
 from ..layout.property import PropertyLayout
 
@@ -14,7 +14,7 @@ class PropertyGroupBox(QGroupBox):
     _layout : PropertyLayout
 
     @checked
-    def __init__(self : Self, object : PropertiesMixin, name : str) -> None:
+    def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
         super().__init__()
         self.setTitle("Property")
         self._layout = PropertyLayout(object, name)

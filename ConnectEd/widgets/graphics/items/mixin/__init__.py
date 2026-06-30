@@ -1,6 +1,6 @@
 import uuid
 
-from typing import Self, overload
+from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -8,53 +8,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.check import checked
 from .....core.defs  import Z_DRAWING
 
-from ...properties import PropertiesMixin
-
-from .presentation import ItemPresentationMixin
-from .select       import ItemSelectMixin
-from .change       import ItemChangeMixin
-from .clone        import ItemCloneMixin
-from .xml          import ItemXmlMixin
-from .menu         import ItemMenuMixin
-
-
-class ItemNamesMixin:
-    def settingsName(self : Self | QGraphicsItem) -> str:
-        return self.__class__.__name__.removesuffix("Item")
-
-    def resourcesName(self : Self | QGraphicsItem) -> str:
-        return self.settingsName()
-
-
-class ItemMoveMixin:
-    """Methods to support moving items."""
-
-    def moveSave(self : Self | QGraphicsItem) -> QPointF:
-        return self.scenePos()
-
-    @checked
-    def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
-        """Restore a saved scene position (from moveSave)."""
-        self.moveBy(pos - self.scenePos())
-
-    @overload
-    def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:
-        ...
-
-    @overload
-    def moveBy(self : Self | QGraphicsItem, d : QPointF) -> None:
-        ...
-
-    @checked
-    def moveBy(
-        self   : Self | QGraphicsItem,
-        dx_d   : float | QPointF,
-        dy     : float | None = None
-    ) -> None:
-        """Move by scene offset (no parent-scene rotation adjustment)."""
-        dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
-        dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
-        QGraphicsItem.moveBy(self, dx, dy)
+from .names        import ItemNamesMixin
+from .move         import ItemMoveMixin
 
 
 class ItemMixin(ItemNamesMixin, ItemMoveMixin):
@@ -63,17 +18,19 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
     _uuid : str
 
     @checked
-    def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
+    def initItem(self : Self, fresh : bool = True) -> None:
         from ...properties  import PropertiesMixin
         from .settings      import ItemSettingsMixin
         from .presentation  import ItemPresentationMixin
         from .select        import ItemSelectMixin
         from .handle        import ItemHandlesMixin
-        from .loc           import ItemLocMixin
+        from .edge_loc      import ItemEdgeLocMixin
         from .transform     import ItemTransformMixin
         from .change        import ItemChangeMixin
         from .subscribe     import ItemSubscribeMixin
         from .shape         import ItemShapeMixin
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -91,8 +48,8 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             self.initHandles()
         if isinstance(self, PropertiesMixin):
             self.initProperties(fresh)
-        if isinstance(self, ItemLocMixin):
-            self.initLoc()
+        if isinstance(self, ItemEdgeLocMixin):
+            self.initEdgeLoc()
         if isinstance(self, ItemTransformMixin):
             self.initTransform()
         if isinstance(self, ItemChangeMixin):
@@ -104,41 +61,28 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         if isinstance(self, PropertiesMixin):
             self.setLive(fresh)
 
-    def __hash__(self : Self | QGraphicsItem):
+    def __hash__(self : Self):
         return hash(self._uuid)
 
-    def __eq__(self : Self | QGraphicsItem, other : Self | QGraphicsItem):
-        if not isinstance(other, ItemMixin):
-            return NotImplemented
-        return self._uuid == other._uuid
+    def __eq__(self : Self, other : object) -> bool:
+        return isinstance(other, ItemMixin) and self._uuid == other._uuid
 
-    def savePos(self : Self | QGraphicsItem) -> QPointF:
+    def savePos(self : Self) -> QPointF:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         return self.scenePos()
 
     @checked
-    def restorePos(self : Self | QGraphicsItem, pos : QPointF) -> None:
+    def restorePos(self : Self, pos : QPointF) -> None:
         self.moveRestore(pos)
 
-    def topParentItem(self : Self | QGraphicsItem) -> QGraphicsItem | None:
+    def topParentItem(self : Self) -> QGraphicsItem | None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         item = self.parentItem()
-        if item is None:
-            return None
-        while item.parentItem() is not None:
+        while isinstance(item, QGraphicsItem) and item.parentItem() is not None:
             item = item.parentItem()
         return item
 
-    def _resetUuid(self : Self | QGraphicsItem) -> None:
+    def _resetUuid(self : Self) -> None:
         self._uuid = str(uuid.uuid4())
-
-
-class PrimaryItemMixin(
-    ItemMixin,
-    ItemPresentationMixin,
-    ItemSelectMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin
-):
-    pass

@@ -26,7 +26,11 @@ class ArcDialog(QDialog):
     _ok_cancel_layout : OkCancelLayout
 
     @checked
-    def __init__(self : Self, angle : float, parent : QWidget | None = None) -> None:
+    def __init__(
+        self   : Self,
+        angle  : float | None,
+        parent : QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Arc")
         self.setModal(True)

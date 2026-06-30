@@ -11,8 +11,8 @@ from ....core.check import checked
 
 
 class TableView(QTableView):
-    actions   : SimpleNamespace
-    font_size : int
+    _actions   : SimpleNamespace
+    _font_size : int
 
     @checked
     def __init__(
@@ -24,25 +24,27 @@ class TableView(QTableView):
         self.setModel(model)
         self.resizeColumnsToContents()
         self.setFontSize(settings().get("display/font_size"))
-        self.actions = SimpleNamespace()
-        a = self.actions
+        self._actions = SimpleNamespace()
+        a = self._actions
         a.increaseTextSize = QAction("Increase Text Size", self)
         a.increaseTextSize.triggered.connect(self.increaseFontSize)
         a.decreaseTextSize = QAction("Decrease Text Size", self)
         a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
 
-    def wheelEvent(self : Self, event : QWheelEvent) -> None:
+    def wheelEvent(self : Self, a0 : QWheelEvent | None) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
-        modifiers = event.modifiers()
+        if a0 is None:
+            return
+        modifiers = a0.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
+            delta = a0.angleDelta().y()
             if delta > 0:
                 self.increaseFontSize()
             elif delta < 0:
                 self.decreaseFontSize()
-            event.accept()
+            a0.accept()
             return
-        super().wheelEvent(event)
+        super().wheelEvent(a0)
 
     @checked
     def setFontSize(self : Self, size : int) -> None:
@@ -50,12 +52,12 @@ class TableView(QTableView):
         font = QFont()
         font.setPointSizeF(size)
         self.setFont(font)
-        self.font_size = size
+        self._font_size = size
 
     def increaseFontSize(self : Self) -> None:
         """Increase the font size."""
-        self.setFontSize(min(self.font_size + 1, 20)) # TODO: max from settings
+        self.setFontSize(min(self._font_size + 1, 20)) # TODO: max from settings
 
     def decreaseFontSize(self : Self) -> None:
         """Decrease the font size."""
-        self.setFontSize(max(self.font_size - 1, 6)) # TODO: min from settings
+        self.setFontSize(max(self._font_size - 1, 6)) # TODO: min from settings

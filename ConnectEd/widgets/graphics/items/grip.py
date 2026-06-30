@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Self
 from enum   import StrEnum
 
-from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
+from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtWidgets import QMenu, QGraphicsPathItem, QGraphicsItem
 from PyQt6.QtGui     import QAction, QPen
 
 from ....app import settings
@@ -15,18 +15,20 @@ from ..scenes import withScene
 
 from .role import ChromeItem
 
-from .mixin           import ItemMoveMixin
+from .protocols import MoveHandleByProtocol
+
+from .mixin.move      import ItemMoveMixin
+from .mixin.scene     import ItemSceneMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.change    import ItemChangeMixin
 from .mixin.menu      import ItemMenuMixin
 
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
-    from ..scenes.drawing import DrawingScene
+    from ..views.diagram  import DiagramView
+    from ..scenes.diagram import DiagramScene
     from .handle          import HandleItem
-    from .mixin.handle    import ItemHandlesMixin
-    from .mixin.grip      import ItemGripMixin
 
 
 class GripShape(StrEnum):
@@ -38,6 +40,7 @@ class GripShape(StrEnum):
 
 
 class GripItem(
+    ItemSceneMixin,
     ChromeItem,
     ItemMoveMixin,
     ItemChangeMixin,
@@ -47,7 +50,7 @@ class GripItem(
     @checked
     def __init__(
         self   : Self,
-        parent : HandleItem,
+        parent : QGraphicsItem,
         pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
@@ -64,11 +67,10 @@ class GripItem(
 
     @checked
     def onSettingsChanged(self : Self) -> None:
-        if (scene := self.scene()) is not None:
-            self.onSceneChanged(scene)
+        self.onSceneChanged(self.scene())
 
     @checked
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen("Grip"))
@@ -77,27 +79,54 @@ class GripItem(
 
     @withScene
     @checked
-    def updatePath(self : Self, scene : DrawingScene | None = None) -> None:
+    def updatePath(self : Self, scene : DiagramScene | None = None) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def handle(self : Self) -> HandleItem:
-        return self.parentItem()
-
-    @checked
-    def item(self : Self) -> ItemHandlesMixin | ItemGripMixin:
-        return self.handle().parentItem()
-
-    @checked
     def moveBy(
+        self : Self, dx : float, dy : float) -> None:
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+class HandleGripItem(GripItem):
+    @checked
+    def __init__(
         self   : Self,
-        dx_d   : float | QPointF,
-        dy     : float | None = None
+        handle : HandleItem,
+        pos    : QPointF | None = None,
+        move   : bool = False,
+        resize : bool = False
     ) -> None:
-        delta = dx_d if isinstance(dx_d, QPointF) \
-            else QPointF(dx_d, dy if dy is not None else 0.0)
-        item : ItemHandlesMixin = self.item()
-        item.moveHandleBy(self.handle().id(), delta)
+        super().__init__(handle)
+
+    @checked
+    def handle(self : Self) -> HandleItem | None:
+        from .handle import HandleItem
+        parent = self.parentItem()
+        if isinstance(parent, HandleItem | None):
+            return parent
+        else:
+            raise TypeError("Bad parent")
+
+    @checked
+    def item(self : Self) -> QGraphicsItem | None:
+        handle = self.handle()
+        if handle is None:
+            raise TypeError("No handle")
+        return handle.parentItem()
+
+    @checked
+    def moveBy(self : Self, dx : float, dy : float) -> None:
+        item = self.item()
+        if item is None:
+            raise TypeError("No item")
+        if isinstance(item, MoveHandleByProtocol):
+            handle = self.handle()
+            if handle is None:
+                raise TypeError("No handle")
+            item.moveHandleBy(handle.id(), dx, dy)
+        else:
+            raise TypeError("Bad item")
 
 
 class GripShapeMixin:
@@ -105,7 +134,11 @@ class GripShapeMixin:
 
     @withScene
     @checked
-    def updatePath(self : Self, scene : DrawingScene | None = None) -> None:
+    def updatePath(self : Self, scene : DiagramScene | None = None) -> None:
+        if not isinstance(self, GripItem):
+            raise TypeError("Bad host")
+        if scene is None:
+            raise TypeError("No scene")
         self.setPath(scene.resources.path("Grip", self._SHAPE))
 
 
@@ -117,17 +150,24 @@ class OriginGripShapeMixin:
     @withScene
     @checked
     def updatePath(
-        self  : Self | GripItem,
-        scene : DrawingScene | None = None
+        self  : Self,
+        scene : DiagramScene | None = None
     ) -> None:
-        item          = self.item()
-        normal_shape  = getattr(item, "_NORMAL_GRIP_SHAPE", self._NORMAL_SHAPE)
-        origin_shape  = getattr(item, "_ORIGIN_GRIP_SHAPE", self._ORIGIN_SHAPE)
-        shape = origin_shape if self.handle().isOrigin() else normal_shape
+        if not isinstance(self, HandleGripItem):
+            raise TypeError("Bad host")
+        item = self.item()
+        normal_shape = getattr(item, "_NORMAL_GRIP_SHAPE", self._NORMAL_SHAPE)
+        origin_shape = getattr(item, "_ORIGIN_GRIP_SHAPE", self._ORIGIN_SHAPE)
+        handle = self.handle()
+        if handle is None:
+            raise TypeError("No handle")
+        shape = origin_shape if handle.isOrigin() else normal_shape
+        if scene is None:
+            raise TypeError("No scene")
         self.setPath(scene.resources.path("Grip", shape))
 
 
-class MoveGripItem(OriginGripShapeMixin, GripItem):
+class MoveGripItem(OriginGripShapeMixin, HandleGripItem):
     """Grip for moving the item."""
 
     # class attributes
@@ -135,53 +175,47 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
     _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
-    def ctxMenuItems(self : Self, view : DrawingView, _spos : QPointF) -> list[QAction | QMenu]:
-        entries = [
-            view.action("Slide", lambda: view.editSlide([self.item()], self.scenePos())),
-            view.action("Move", lambda: view.editMove([self.item()], self.scenePos()))
+    def ctxMenuItems(
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
+    ) -> list[QAction | QMenu]:
+        item = self.item()
+        if item is None:
+            raise TypeError("No item")
+        entries : list[QAction | QMenu] = [
+            view.action(
+                "Slide", lambda i = item: view.editSlide([i], self.scenePos())
+            ),
+            view.action(
+                "Move", lambda i = item: view.editMove([i], self.scenePos())
+            )
         ]
-        item : ItemTransformMixin = self.item()
-        if item.origin() is not None:
-            h : HandleItem = self.parentItem()
-            entries.extend([
-                view.separator(),
-                view.action(
-                    "Assign Origin",
-                    lambda: view.editAssignOrigin(self.item(), h.id())
-                )
-            ])
+        item = self.item()
+        if isinstance(item, ItemTransformMixin) and item.hasOrigin():
+            h = self.handle()
+            if h is not None:
+                entries.extend([
+                    view.separator(),
+                    view.action(
+                        "Assign Origin",
+                        lambda: view.editAssignOrigin(item, h.id())
+                    )
+                ])
         return entries
 
 
-class ResizeGripItem(OriginGripShapeMixin, GripItem):
+class ResizeGripItem(MoveGripItem):
     """Grip for resizing the item."""
-
-    # class attributes
-    _NORMAL_SHAPE = GripShape.CIRCLE
-    _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
-        entries = [
+        entries : list[QAction | QMenu] = [
             view.action("Resize", lambda: view.editResize(self, self.scenePos())),
         ]
-        entries.extend(MoveGripItem.ctxMenuItems(self, view, _spos))
+        entries.extend(super().ctxMenuItems(view, spos))
         return entries
-
-
-class VertexGripItem(GripShapeMixin, GripItem):
-    """Grip for item vertices."""
-
-    # class attributes
-    _SHAPE = GripShape.DIAMOND
-
-
-class SegmentGripItem(GripShapeMixin, GripItem):
-    """Grip for item segments."""
-
-    # class attributes
-    _SHAPE = GripShape.ARROW

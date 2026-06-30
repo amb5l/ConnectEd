@@ -1,22 +1,20 @@
 from __future__ import annotations
 
-from typing import Self, Any, TypeAlias
+from typing import Self, Any
 
-from PyQt6.QtCore    import Qt, QModelIndex
+from PyQt6.QtCore    import Qt, QModelIndex, QItemSelectionModel
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
                             QVBoxLayout, QHBoxLayout, QPushButton, \
-                            QAbstractItemView, QGraphicsItem
+                            QAbstractItemView
 from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
 from ....app import logger
 
 from ....core.check import checked
 from ....core.types import (
-    AlignH, AlignV, Display, DataKind,
+    NoChange, NO_CHANGE, AlignH, AlignV, HandleId, Display, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
 )
-
-from ....core.utils import pascal2snake
 
 from ...graphics.properties import PropertiesMixin
 
@@ -36,10 +34,10 @@ from .types import (
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...graphics.views.drawing       import DrawingView
+    from ...graphics.views.diagram import DiagramView
 
 
-_PT_COLS : dict[str, DataKind] = {
+_PT_COLS = {
 #                   kind                   default value              method name
     "Cleat"     : ( None                 , None                     , "cleat"         ), # noqa E501
     "X"         : ( DataKind.FLOAT       , 0.0                      , "x"             ), # noqa E501
@@ -73,13 +71,8 @@ _HANDLE_KIND : dict[type, DataKind] = {
 }
 
 
-Cell = PropertiesItem | None
-
-
 class PropertiesDialog(QDialog):
-    ItemType : TypeAlias = QGraphicsItem | ItemHandlesMixin | PropertiesMixin
-
-    _item           : ItemType
+    _item           : PropertiesMixin
     _dialog_layout  : QVBoxLayout
     _table_model    : QStandardItemModel
     _table_view     : TableView
@@ -94,8 +87,8 @@ class PropertiesDialog(QDialog):
     @checked
     def __init__(
         self : Self,
-        item : ItemType,
-        view : DrawingView | None = None
+        item : PropertiesMixin,
+        view : DiagramView | None = None
     ) -> None:
         # initialise
         self._item = item
@@ -110,10 +103,11 @@ class PropertiesDialog(QDialog):
         self._table_model.setHorizontalHeaderLabels(_COLS)
         # add rows
         for name in item.properties.names():
+            kind = item.properties.kind(name)
+            if kind is None:
+                continue
             self._table_model.appendRow(self._buildRow(
-                name,
-                item.properties.kind(name),
-                item.properties.value(name)
+                name, kind, item.properties.value(name)
             ))
         # create table view
         self._table_view = TableView(self._table_model)
@@ -156,9 +150,12 @@ class PropertiesDialog(QDialog):
         self._dialog_layout.addLayout(self._button_layout)
         self.setLayout(self._dialog_layout)
         self.adjustSize()
-        min_width = self._table_view.horizontalHeader().length() + 50
-        min_height = self._table_view.verticalHeader().length() + 50
-        self.setMinimumSize(min_width, min_height)
+        horizontal_header = self._table_view.horizontalHeader()
+        vertical_header = self._table_view.verticalHeader()
+        if horizontal_header is not None and vertical_header is not None:
+            min_width = horizontal_header.length() + 50
+            min_height = vertical_header.length() + 50
+            self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
 
     def accept(self : Self) -> None:
@@ -168,25 +165,38 @@ class PropertiesDialog(QDialog):
         names : list[str] = []
         for row in range(self._table_model.rowCount()):
             # check for invalid or duplicate names
-            name_item : PropertiesItem = self._table_model.item(row, name_col)
-            if not name_item.deleted():
-                name = name_item.value()
-                if not name or name in names:
-                    QMessageBox.warning(
-                        self, "Invalid Property",
-                        "Property names must be non-empty and unique."
-                    )
-                    index = self._table_model.index(row, name_col)
-                    self._table_view.setCurrentIndex(index)
-                    self._table_view.edit(index)
-                    return
-                names.append(name)
+            if (name_item := self._getItem(row, name_col)) is None:
+                logger().error(f"Bad name item for row {row}")
+                continue
+            if name_item.deleted():
+                continue
+            name = name_item.value()
+            if not isinstance(name, str):
+                logger().error(f"Name is not a string: {name}")
+                return
+            if name == "" or name in names:
+                QMessageBox.warning(
+                    self, "Invalid Property",
+                    "Property names must be non-empty and unique."
+                )
+                index = self._table_model.index(row, name_col)
+                self._table_view.setCurrentIndex(index)
+                self._table_view.edit(index)
+                return
+            names.append(name)
             # check for type/value mismatches on new properties
-            kind_item : PropertiesItem = self._table_model.item(row, kind_col)
+            if (kind_item := self._getItem(row, kind_col)) is None:
+                logger().error(f"Bad kind item for row {row}")
+                continue
             if not kind_item.isEditable():
                 continue
             kind = kind_item.value()
-            value_item : PropertiesItem = self._table_model.item(row, value_col)
+            if not isinstance(kind, DataKind):
+                logger().error(f"Kind is not a DataKind: {kind}")
+                return
+            if (value_item := self._getItem(row, value_col)) is None:
+                logger().error(f"Bad value item for row {row}")
+                continue
             if kind != value_item.kind():
                 logger().warning(f"Type/value mismatch for property '{name}'")
                 value_item.setKind(kind)
@@ -211,29 +221,49 @@ class PropertiesDialog(QDialog):
         changes : list[PropertyChangeType] = []
         # deletions
         for row_idx in range(model.rowCount()):
-            name_item : PropertiesItem = model.item(row_idx, 0)
+            if (name_item := self._getItem(row_idx, 0)) is None:
+                logger().error(f"Bad name item for row {row_idx}")
+                continue
             if name_item.deleted():
                 name = name_item.value()
+                if not isinstance(name, str):
+                    logger().error(f"Name is not a string: {name}")
+                    continue
                 changes.append(PropertyChangeDelete(name))
         # additions and modifications
         for row_idx in range(model.rowCount()):
-            name_item    : Cell = model.item(row_idx, _COLS.index("Name"))
-            kind_item    : Cell = model.item(row_idx, _COLS.index("Type"))
-            value_item   : Cell = model.item(row_idx, _COLS.index("Value"))
-            display_item : Cell = model.item(row_idx, _COLS.index("Display"))
-            name    = name_item.value()
-            kind    = kind_item.value()
-            value   = value_item.value()
+            if (name_item := self._getItem(row_idx, _COLS.index("Name"))) is None:
+                logger().error(f"Bad name item for row {row_idx}")
+                continue
+            if not isinstance(name := name_item.value(), str):
+                logger().error(f"Name is not a string: {name}")
+                continue
+            if (kind_item := self._getItem(row_idx, _COLS.index("Type"))) is None:
+                logger().error(f"Bad kind item for row {row_idx}")
+                continue
+            if not isinstance(kind := kind_item.value(), DataKind):
+                logger().error(f"Kind is not a DataKind: {kind}")
+                continue
+            if (value_item := self._getItem(row_idx, _COLS.index("Value"))) is None:
+                logger().error(f"Bad value item for row {row_idx}")
+                continue
+            value = value_item.value()
+            if (display_item := self._getItem(row_idx, _COLS.index("Display"))) is None:
+                logger().error(f"Bad display item for row {row_idx}")
+                continue
             display = display_item.value()
             if name_item.new():
                 # addition
                 changes.append(PropertyChangeAdd(name, kind, value))
                 # property text
                 if display != Display.NONE:
-                    pt_args = self._getPropertyTextArgs(row_idx, delta=False)
-                    pt_args["name"] = name
-                    pt_args["visible"] = display == Display.SHOW
-                    changes.append(PropertyChangeTextAdd(**pt_args))
+                    pt_args = self._getRowPropertyTextItemValues(row_idx)
+                    if pt_args is not None:
+                        changes.append(PropertyChangeTextAdd(
+                            name,
+                            display == Display.SHOW,
+                            *pt_args
+                        ))
             else:
                 # modification
                 if name_item.changed() \
@@ -243,24 +273,28 @@ class PropertiesDialog(QDialog):
                 # property text modification
                 if display_item.changed():
                     if display == Display.NONE:
-                        pt_args = {"name": name}
-                        property_change_cls = PropertyChangeTextDelete
+                        changes.append(PropertyChangeTextDelete(name))
                     elif display_item.initial() == Display.NONE:
-                        pt_args = {
-                            "name": name,
-                            "visible": display == Display.SHOW,
-                            **self._getPropertyTextArgs(row_idx, delta=False)
-                        }
-                        property_change_cls = PropertyChangeTextAdd
+                        pt_args = self._getRowPropertyTextItemValues(row_idx)
+                        if pt_args is not None:
+                            changes.append(PropertyChangeTextAdd(
+                                name, display == Display.SHOW, *pt_args
+                            ))
                     else:
-                        pt_args = {
-                            "name": name,
-                            "visible": display == Display.SHOW,
-                            **self._getPropertyTextArgs(row_idx, delta=True)
-                        }
-                        property_change_cls = PropertyChangeTextModify
-                    changes.append(property_change_cls(**pt_args))
+                        pt_args = self._getRowPropertyTextItemValueDeltas(row_idx)
+                        if pt_args is not None:
+                            changes.append(PropertyChangeTextModify(
+                                name, display == Display.SHOW, *pt_args
+                            ))
         return changes
+
+    def _getItem(
+        self    : Self,
+        row_idx : int,
+        col_idx : int
+    ) -> PropertiesItem | None:
+        item = self._table_model.item(row_idx, col_idx)
+        return None if not isinstance(item, PropertiesItem) else item
 
     def _onKindChanged(
         self    : Self,
@@ -268,7 +302,10 @@ class PropertiesDialog(QDialog):
         row_idx : int
     ) -> None:
         value_col = _COLS.index("Value")
-        value_item : Cell = self._table_model.item(row_idx, value_col)
+        value_item = self._getItem(row_idx, value_col)
+        if value_item is None:
+            logger().error(f"Bad value item for row {row_idx}")
+            return
         value_item.setKind(kind)
 
     def _onDisplayChanged(
@@ -280,10 +317,15 @@ class PropertiesDialog(QDialog):
         pt_new = False
         for col_name, (kind, value, _) in _PT_COLS.items():
             col_idx = _COLS.index(col_name)
-            pt_item : Cell = self._table_model.item(row_idx, col_idx)
+            pt_item = self._getItem(row_idx, col_idx)
+            if pt_item is None:
+                logger().error(f"Bad PT item for row {row_idx}")
+                continue
             if pt_item is not None and col_name == "Cleat":
                 pt_new = pt_item.new()
             if display != Display.NONE and pt_item is None:
+                if not isinstance(item, ItemHandlesMixin):
+                    raise TypeError("Bad item")
                 if col_name == "Cleat":
                     kind = _HANDLE_KIND[item.handleIdType()]
                     value = list(item.handles().keys())[0]
@@ -300,8 +342,15 @@ class PropertiesDialog(QDialog):
     def _refreshDisplay(self : Self, row_idx : int) -> None:
         """Refresh PT columns from the model's Display value."""
         display_col = _COLS.index("Display")
-        display_item : Cell = self._table_model.item(row_idx, display_col)
-        self._onDisplayChanged(display_item.value(), row_idx)
+        display_item = self._table_model.item(row_idx, display_col)
+        if not isinstance(display_item, PropertiesItem):
+            logger().error(f"Bad display item for row {row_idx}")
+            return
+        display_value = display_item.value()
+        if not isinstance(display_value, Display):
+            logger().error(f"Bad display value for row {row_idx}")
+            return
+        self._onDisplayChanged(display_value, row_idx)
 
     def _onDataChanged(
         self         : Self,
@@ -326,16 +375,23 @@ class PropertiesDialog(QDialog):
         name  : str,
         kind  : DataKind,
         value : Any
-    ) -> list[PropertiesItem]:
+    ) -> list[PropertiesItem | None]:
         item = self._item
         new = not item.properties.has(name)
         custom = new or not item.properties.inherent(name)
+        value_kind = kind if new else item.properties.kind(name)
+        if not isinstance(value_kind, DataKind):
+            logger().error(f"Bad value kind ({value_kind})")
+            value_kind = DataKind.STR
+        value_value = value if new else item.properties.value(name)
+        value_default = None if new else item.properties.default(name)
+        value_editable = item.properties.writeable(name) is True
         pt = None if new else item.properties.text(name)
         display = \
             Display.NONE if pt is None else \
             Display.SHOW if pt.isVisible() else \
             Display.HIDE
-        row = [
+        row : list[PropertiesItem | None] = [
             # Name
             PropertiesItem(
                 owner    = item,
@@ -355,11 +411,11 @@ class PropertiesDialog(QDialog):
             # Value
             PropertiesItem(
                 owner    = item,
-                kind     = kind if new else item.properties.kind(name),
-                value    = value if new else item.properties.value(name),
-                default  = None if new else item.properties.default(name),
+                kind     = value_kind,
+                value    = value_value,
+                default  = value_default,
                 new      = new,
-                editable = custom or item.properties.writeable(name)
+                editable = value_editable
             ),
             # Display
             PropertiesItem(
@@ -394,12 +450,18 @@ class PropertiesDialog(QDialog):
         # delete rows
         failures = []
         for row in rows:
-            name_item : Cell = self._table_model.item(row, 0)
+            name_item = self._getItem(row, 0)
+            if name_item is None:
+                logger().error(f"Bad name item for row {row}")
+                continue
             name = name_item.value()
+            if not isinstance(name, str):
+                logger().error(f"Name is not a string: {name}")
+                continue
             if not self._item.properties.has(name) \
             or not self._item.properties.inherent(name):
                 for col_idx in range(self._table_model.columnCount()):
-                    item : Cell = self._table_model.item(row, col_idx)
+                    item = self._getItem(row, col_idx)
                     if item is not None:
                         item.setDeleted(True)
             else:
@@ -438,7 +500,11 @@ class PropertiesDialog(QDialog):
 
     def _selectedRows(self : Self) -> list[int]:
         # get all selected row indices
-        indices = self._table_view.selectionModel().selectedRows()
+        selection_model = self._table_view.selectionModel()
+        if not isinstance(selection_model, QItemSelectionModel):
+            logger().error("Bad selection model")
+            return []
+        indices = selection_model.selectedRows()
         # extract row numbers
         rows = [index.row() for index in indices]
         # sort in reverse order to avoid index shifting issues when deleting
@@ -446,29 +512,309 @@ class PropertiesDialog(QDialog):
         # done
         return rows
 
-    def _getPropertyTextArgs(
+    def _getRowPropertyTextItems(
+        self    : Self,
+        row_idx : int
+    ) -> None | tuple[
+        PropertiesItem,  # Cleat
+        PropertiesItem,  # X
+        PropertiesItem,  # Y
+        PropertiesItem,  # Rotation
+        PropertiesItem,  # Mirror H
+        PropertiesItem,  # Mirror V
+        PropertiesItem,  # Auto Flip
+        PropertiesItem,  # Origin
+        PropertiesItem,  # Align H
+        PropertiesItem,  # Align V
+        PropertiesItem,  # Width
+        PropertiesItem,  # Height
+        PropertiesItem,  # Color
+        PropertiesItem,  # Font
+        PropertiesItem,  # Size
+        PropertiesItem,  # Bold
+        PropertiesItem,  # Italic
+        PropertiesItem   # Underline
+    ]:
+        # get items
+        cleat_item     = self._getItem(row_idx, _COLS.index("Cleat")),
+        x_item         = self._getItem(row_idx, _COLS.index("X")),
+        y_item         = self._getItem(row_idx, _COLS.index("Y")),
+        rotation_item  = self._getItem(row_idx, _COLS.index("Rotation")),
+        mirror_h_item  = self._getItem(row_idx, _COLS.index("Mirror H")),
+        mirror_v_item  = self._getItem(row_idx, _COLS.index("Mirror V")),
+        autoflip_item  = self._getItem(row_idx, _COLS.index("Auto Flip")),
+        origin_item    = self._getItem(row_idx, _COLS.index("Origin")),
+        align_h_item   = self._getItem(row_idx, _COLS.index("Align H")),
+        align_v_item   = self._getItem(row_idx, _COLS.index("Align V")),
+        width_item     = self._getItem(row_idx, _COLS.index("Width")),
+        height_item    = self._getItem(row_idx, _COLS.index("Height")),
+        color_item     = self._getItem(row_idx, _COLS.index("Color")),
+        font_item      = self._getItem(row_idx, _COLS.index("Font")),
+        size_item      = self._getItem(row_idx, _COLS.index("Size")),
+        bold_item      = self._getItem(row_idx, _COLS.index("Bold")),
+        italic_item    = self._getItem(row_idx, _COLS.index("Italic")),
+        underline_item = self._getItem(row_idx, _COLS.index("Underline"))
+        if not isinstance(cleat_item, PropertiesItem) \
+        or not isinstance(x_item, PropertiesItem) \
+        or not isinstance(y_item, PropertiesItem) \
+        or not isinstance(rotation_item, PropertiesItem) \
+        or not isinstance(mirror_h_item, PropertiesItem) \
+        or not isinstance(mirror_v_item, PropertiesItem) \
+        or not isinstance(autoflip_item, PropertiesItem) \
+        or not isinstance(origin_item, PropertiesItem) \
+        or not isinstance(align_h_item, PropertiesItem) \
+        or not isinstance(align_v_item, PropertiesItem) \
+        or not isinstance(width_item, PropertiesItem) \
+        or not isinstance(height_item, PropertiesItem) \
+        or not isinstance(color_item, PropertiesItem) \
+        or not isinstance(font_item, PropertiesItem) \
+        or not isinstance(size_item, PropertiesItem) \
+        or not isinstance(bold_item, PropertiesItem) \
+        or not isinstance(italic_item, PropertiesItem) \
+        or not isinstance(underline_item, PropertiesItem):
+            return None
+        return (
+            cleat_item,
+            x_item,
+            y_item,
+            rotation_item,
+            mirror_h_item,
+            mirror_v_item,
+            autoflip_item,
+            origin_item,
+            align_h_item,
+            align_v_item,
+            width_item,
+            height_item,
+            color_item,
+            font_item,
+            size_item,
+            bold_item,
+            italic_item,
+            underline_item
+        )
+
+    def _getRowPropertyTextItemValues(
         self    : Self,
         row_idx : int,
-        delta   : bool = True
-    ) -> dict[str, Any]:
-        args = {}
-        for col_name in _PT_COLS.keys():
-            col_idx = _COLS.index(col_name)
-            item : Cell = self._table_model.item(row_idx, col_idx)
-            if item is None:
-                continue
-            value = item.value()
-            if col_name == "Width" or col_name == "Height":
-                value = -1.0 if value is None else value
-            if item.changed() or not delta:
-                args[pascal2snake(col_name)] = value
-        return args
+        items   : tuple | None = None
+    ) -> None | tuple[
+        HandleId,      # Cleat
+        float,         # X
+        float,         # Y
+        float,         # Rotation
+        bool,          # Mirror H
+        bool,          # Mirror V
+        bool,          # Auto Flip
+        RectHandleId,  # Origin
+        AlignH,        # Align H
+        AlignV,        # Align V
+        float,         # Width
+        float,         # Height
+        QColor,        # Color
+        str,           # Font
+        float,         # Size
+        bool,          # Bold
+        bool,          # Italic
+        bool,          # Underline
+    ]:
+        # get items
+        if items is None:
+            items = self._getRowPropertyTextItems(row_idx)
+        if items is None:
+            return None
+        cleat_item     , \
+        x_item         , \
+        y_item         , \
+        rotation_item  , \
+        mirror_h_item  , \
+        mirror_v_item  , \
+        autoflip_item  , \
+        origin_item    , \
+        align_h_item   , \
+        align_v_item   , \
+        width_item     , \
+        height_item    , \
+        color_item     , \
+        font_item      , \
+        size_item      , \
+        bold_item      , \
+        italic_item    , \
+        underline_item = items
+        # values
+        cleat     = cleat_item     .value()
+        x         = x_item         .value()
+        y         = y_item         .value()
+        rotation  = rotation_item  .value()
+        mirror_h  = mirror_h_item  .value()
+        mirror_v  = mirror_v_item  .value()
+        autoflip  = autoflip_item  .value()
+        origin    = origin_item    .value()
+        align_h   = align_h_item   .value()
+        align_v   = align_v_item   .value()
+        width     = width_item     .value()
+        height    = height_item    .value()
+        color     = color_item     .value()
+        font      = font_item      .value()
+        size      = size_item      .value()
+        bold      = bold_item      .value()
+        italic    = italic_item    .value()
+        underline = underline_item .value()
+        # check values
+        if not isinstance(cleat,     HandleId     ) \
+        or not isinstance(x,         float        ) \
+        or not isinstance(y,         float        ) \
+        or not isinstance(rotation,  float        ) \
+        or not isinstance(mirror_h,  bool         ) \
+        or not isinstance(mirror_v,  bool         ) \
+        or not isinstance(autoflip,  bool         ) \
+        or not isinstance(origin,    RectHandleId ) \
+        or not isinstance(align_h,   AlignH       ) \
+        or not isinstance(align_v,   AlignV       ) \
+        or not isinstance(width,     float        ) \
+        or not isinstance(height,    float        ) \
+        or not isinstance(color,     QColor       ) \
+        or not isinstance(font,      str          ) \
+        or not isinstance(size,      float        ) \
+        or not isinstance(bold,      bool         ) \
+        or not isinstance(italic,    bool         ) \
+        or not isinstance(underline, bool         ):
+            return None
+        # done
+        return (
+            cleat,
+            x,
+            y,
+            rotation,
+            mirror_h,
+            mirror_v,
+            autoflip,
+            origin,
+            align_h,
+            align_v,
+            width,
+            height,
+            color,
+            font,
+            size,
+            bold,
+            italic,
+            underline
+        )
+
+    def _getRowPropertyTextItemValueDeltas(
+        self    : Self,
+        row_idx : int
+    ) -> None | tuple[
+        NoChange | HandleId,      # Cleat
+        NoChange | float,         # X
+        NoChange | float,         # Y
+        NoChange | float,         # Rotation
+        NoChange | bool,          # Mirror H
+        NoChange | bool,          # Mirror V
+        NoChange | bool,          # Auto Flip
+        NoChange | RectHandleId,  # Origin
+        NoChange | AlignH,        # Align H
+        NoChange | AlignV,        # Align V
+        NoChange | float,         # Width
+        NoChange | float,         # Height
+        NoChange | QColor,        # Color
+        NoChange | str,           # Font
+        NoChange | float,         # Size
+        NoChange | bool,          # Bold
+        NoChange | bool,          # Italic
+        NoChange | bool,          # Underline
+    ]:
+        # get items
+        items = self._getRowPropertyTextItems(row_idx)
+        if items is None:
+            return None
+        cleat_item     , \
+        x_item         , \
+        y_item         , \
+        rotation_item  , \
+        mirror_h_item  , \
+        mirror_v_item  , \
+        autoflip_item  , \
+        origin_item    , \
+        align_h_item   , \
+        align_v_item   , \
+        width_item     , \
+        height_item    , \
+        color_item     , \
+        font_item      , \
+        size_item      , \
+        bold_item      , \
+        italic_item    , \
+        underline_item = items
+        # get values
+        values = self._getRowPropertyTextItemValues(row_idx, items)
+        if values is None:
+            return None
+        cleat     , \
+        x         , \
+        y         , \
+        rotation  , \
+        mirror_h  , \
+        mirror_v  , \
+        autoflip  , \
+        origin    , \
+        align_h   , \
+        align_v   , \
+        width     , \
+        height    , \
+        color     , \
+        font      , \
+        size      , \
+        bold      , \
+        italic    , \
+        underline = values
+        # allow for no change
+        if not cleat_item     .changed() : cleat     = NO_CHANGE
+        if not x_item         .changed() : x         = NO_CHANGE
+        if not y_item         .changed() : y         = NO_CHANGE
+        if not rotation_item  .changed() : rotation  = NO_CHANGE
+        if not mirror_h_item  .changed() : mirror_h  = NO_CHANGE
+        if not mirror_v_item  .changed() : mirror_v  = NO_CHANGE
+        if not autoflip_item  .changed() : autoflip  = NO_CHANGE
+        if not origin_item    .changed() : origin    = NO_CHANGE
+        if not align_h_item   .changed() : align_h   = NO_CHANGE
+        if not align_v_item   .changed() : align_v   = NO_CHANGE
+        if not width_item     .changed() : width     = NO_CHANGE
+        if not height_item    .changed() : height    = NO_CHANGE
+        if not color_item     .changed() : color     = NO_CHANGE
+        if not font_item      .changed() : font      = NO_CHANGE
+        if not size_item      .changed() : size      = NO_CHANGE
+        if not bold_item      .changed() : bold      = NO_CHANGE
+        if not italic_item    .changed() : italic    = NO_CHANGE
+        if not underline_item .changed() : underline = NO_CHANGE
+        # done
+        return (
+            cleat,
+            x,
+            y,
+            rotation,
+            mirror_h,
+            mirror_v,
+            autoflip,
+            origin,
+            align_h,
+            align_v,
+            width,
+            height,
+            color,
+            font,
+            size,
+            bold,
+            italic,
+            underline
+        )
 
     def _refreshTable(self : Self) -> None:
         # refresh entire table
         if self._table_model.rowCount() > 0:
-            top_left : Cell = self._table_model.index(0, 0)
-            bottom_right : Cell = self._table_model.index(
+            top_left = self._table_model.index(0, 0)
+            bottom_right = self._table_model.index(
                 self._table_model.rowCount() - 1,
                 self._table_model.columnCount() - 1
             )

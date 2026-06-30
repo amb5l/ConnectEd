@@ -132,6 +132,8 @@ class SafeExpressionEvaluator:
                 return left ** right
 
             if self.allow_bitwise:
+                if isinstance(left, float) or isinstance(right, float):
+                    raise ValueError("Bitwise operations only supported for integers")
                 if isinstance(op, ast.LShift):   return left << right
                 if isinstance(op, ast.RShift):   return left >> right
                 if isinstance(op, ast.BitAnd):   return left & right
@@ -149,6 +151,8 @@ class SafeExpressionEvaluator:
             if isinstance(op, ast.Invert):
                 if not self.allow_bitwise:
                     raise ValueError("~ (bitwise not) is disabled")
+                if isinstance(operand, float):
+                    raise ValueError("~ (bitwise not) only supported for integers")
                 return ~operand
             raise ValueError(f"Unsupported unary operator: {type(op).__name__}")
 
@@ -168,7 +172,8 @@ def evaluate(expr: str, variables: dict[str, int | float] | None = None) -> int:
 # Self-test
 # ---------------------------------------------------------------------- #
 if __name__ == "__main__":
-    params = {"WIDTH": 32, "DATA_WIDTH": 16, "LOG2_DEPTH": 10, "BUS_WIDTH": 64}
+    params : dict[str, int | float] = \
+        {"WIDTH": 32, "DATA_WIDTH": 16, "LOG2_DEPTH": 10, "BUS_WIDTH": 64}
 
     ev = SafeExpressionEvaluator(params)
 

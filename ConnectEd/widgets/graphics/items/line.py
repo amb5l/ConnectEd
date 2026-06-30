@@ -7,28 +7,26 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
-from ....core.types import DataKind, LineHandleId
+from ....core.types import HandleId, LineHandleId, DataKind
 
 from ..properties import InherentProperty
 
 from .role import DecorativeItem
 
 from .handle import HandleItem
-from .grip   import ResizeGripItem
+from .grip   import GripItem, ResizeGripItem
 
-from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
+    from ..views.diagram import DiagramView
 
 
 class LineItem(
     DecorativeItem,
     ItemTransformMixin,
-    ItemHandlesMixin[LineHandleId],
     PrimaryItemMixin,
     QGraphicsLineItem
 ):
@@ -65,6 +63,10 @@ class LineItem(
     @classmethod
     def handleIdKind(cls) -> DataKind:
         return DataKind.LINE_HANDLE
+
+    @classmethod
+    def handleGripType(cls, id : HandleId) -> type[GripItem]:
+        return ResizeGripItem
 
     # instance attributes
     _line : QLineF
@@ -174,9 +176,9 @@ class LineItem(
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", lambda: view.editAppearance(self)),

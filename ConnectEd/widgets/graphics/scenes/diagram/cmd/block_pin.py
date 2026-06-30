@@ -6,7 +6,7 @@ from ......core.types import EdgeLoc
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ...drawing.cmd import CmdBase
+from ..cmd import CmdBase
 
 
 class CmdBlockPinBase(CmdBase):

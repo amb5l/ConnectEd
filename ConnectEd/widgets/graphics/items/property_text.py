@@ -3,31 +3,30 @@ from __future__ import annotations
 from typing import Self, Any, cast
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
 from ....core.check import checked
-from ....core.types import NO_CHANGE, AlignH, AlignV, \
+from ....core.types import NoChange, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from . import ItemType
-
 from .text   import TextItem
 from .handle import HandleItem
 from .tether import TextTetherItem
 
+from .mixin import ItemNamesMixin
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
+    from ..views.diagram  import DiagramView
     from ...dialogs.items.property_text import PropertyTextItemDialog
 
 
@@ -36,10 +35,10 @@ class PropertyTextTetherItem(TextTetherItem):
     Tether line from the origin of a PropertyTextItem to its parent cleat.
     """
 
-    _text_item : PropertyTextItem
-
-    def anchor(self : Self) -> HandleItem | None:
-        return self._text_item.parentItem()
+    def anchor(self : Self) -> QGraphicsItem | None:
+        if isinstance(self._text_item, QGraphicsItem):
+            return self._text_item.parentItem()
+        return None
 
 
 class PropertyTextItem(TextItem):
@@ -78,7 +77,7 @@ class PropertyTextItem(TextItem):
 
     def settingsName(self : Self) -> str:
         item = self.item()
-        if item is not None and hasattr(self, "_name"):
+        if isinstance(item, ItemNamesMixin):
             settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
             if hasattr(settings_items, settings_name):
@@ -151,29 +150,39 @@ class PropertyTextItem(TextItem):
         pos  : QPointF | None = None
     ) -> None:
         ItemTransformMixin.onPositionChanged(self, pos)
-        if hasattr(self, "_tether"):
+        if hasattr(self, "_tether") and self._tether is not None:
             self._tether.onPositionChanged(pos)
 
     def onSelectionChanged(self : Self, selected : bool) -> None:
-        if self._cleat is None or self._cleat == "":
+        tether = self._tether
+        if tether is None:
             return
-        cleat_valid = self._cleat is not None and self._cleat != ""
-        self._tether.setVisible(selected and cleat_valid)
-        self._tether.anchor().grip().setVisible(selected and cleat_valid)
+        cleat = self._cleat
+        if cleat is None or cleat == "":
+            return
+        cleat_valid = cleat is not None and cleat != ""
+        tether.setVisible(selected and cleat_valid)
+        anchor = tether.anchor()
+        if isinstance(anchor, HandleItem):
+            grip = anchor.grip()
+            grip.setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
         owner = self.owner()
-        if owner is None:
+        if not isinstance(owner, PropertiesMixin):
             text = f"<{self._name} - unbound>"
-        elif not owner.properties.has(self.name()):
-            text = f"<{self._name} - not found>"
-        elif self.name():
-            kind = owner.properties.kind(self.name())
-            if kind in (DataKind.STR, DataKind.TEXT):
-                super().setBlock(kind == DataKind.TEXT)
-            text = val2str(self.value())
         else:
-            text = f"<{self._name}>"
+            name = self.name()
+            if isinstance(name, str):
+                if owner.properties.has(name):
+                    kind = owner.properties.kind(name)
+                    if kind in (DataKind.STR, DataKind.TEXT):
+                        super().setBlock(kind == DataKind.TEXT)
+                    text = val2str(self.value())
+                else:
+                    text = f"<{self._name} - not found>"
+            else:
+                text = f"<{self._name}>"
         super().setText(text)
 
     def cleatKind(self : Self) -> DataKind:
@@ -192,7 +201,7 @@ class PropertyTextItem(TextItem):
     def setCleat(
         self   : Self,
         id     : HandleId | None,
-        parent : ItemHandlesMixin | None = None
+        parent : QGraphicsItem | None = None
     ) -> None:
         self._cleat = id
         ok = False
@@ -211,10 +220,10 @@ class PropertyTextItem(TextItem):
             self.onGeometryChanged()
 
     @checked
-    def setOrigin(self : Self, id : RectHandleId) -> None:
+    def setOrigin(self : Self, id : HandleId) -> None:
         """Override to update tether line."""
         super().setOrigin(id)
-        if hasattr(self, "_tether"):  # guard against partial initialisation
+        if hasattr(self, "_tether") and self._tether is not None:
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChanged(self.pos())
 
@@ -229,21 +238,19 @@ class PropertyTextItem(TextItem):
         raise NotImplementedError("block() is not implemented")
 
     @checked
-    def setBlock(self : Self, _block : bool) -> None:
+    def setBlock(self : Self, block : bool) -> None:
         raise NotImplementedError("setBlock() is not implemented")
 
-    def item(self : Self) -> ItemType | None:
+    def item(self : Self) -> QGraphicsItem | None:
         parent = self.parentItem()
         if isinstance(parent, HandleItem):
             return parent.parentItem()
-        elif isinstance(parent, ItemType):
+        elif parent is None:
+            return None
+        else:
             return parent
-        elif parent is not None:
-            # Only warn for unexpected parent types, not during initialization
-            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
-        return None
 
-    def owner(self : Self) -> PropertiesMixin | None:
+    def owner(self : Self) -> QGraphicsScene | QGraphicsItem | None:
         return self.scene() if self.parentItem() is None else self.item()
 
     @checked
@@ -264,39 +271,52 @@ class PropertyTextItem(TextItem):
     def value(self : Self) -> Any:
         if not self.name():  # name is None or ""
             return None
-        if self.owner() is None:
+        owner = self.owner()
+        if owner is None:
             return f"<{self.name()}>"
-        return self.owner().properties.value(self.name(), self.onTextChanged)
+        if isinstance(owner, PropertiesMixin):
+            name = self.name()
+            if isinstance(name, str):
+                return owner.properties.value(name, self.onTextChanged)
+        return None
 
     @checked
     def setValue(self : Self, value : Any) -> None:
         if not self.name():  # name is None or ""
             return
-        if value is NO_CHANGE:
+        if isinstance(value, NoChange):
             return
-        self.owner().properties.setValue(self.name(), value)
+        owner = self.owner()
+        if owner is None:
+            return
+        if isinstance(owner, PropertiesMixin):
+            name = self.name()
+            if isinstance(name, str):
+                owner.properties.setValue(name, value)
 
     @checked
-    def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:
+    def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         self._applyDialogCommon(dialog)
-        name     = dialog.getName()
-        kind     = dialog.getKind()
-        value    = dialog.getValue()
-        cleat    = dialog.getCleat()
-        owner    = self.owner()
+        name  = dialog.getName()
+        kind  = dialog.getKind()
+        value = dialog.getValue()
+        cleat = dialog.getCleat()
+        owner = self.owner()
+        if not isinstance(owner, PropertiesMixin):
+            return
         old_name = self.name()
-        if name is not NO_CHANGE and name != old_name:
-            if owner is not None and old_name:
+        if not isinstance(name, NoChange) and name != old_name:
+            if isinstance(owner, PropertiesMixin) and old_name is not None:
                 owner.properties.rename(old_name, name)
             else:
                 self.setName(name)
         name = self.name()
         if owner is not None and name:
-            if kind is not NO_CHANGE:
+            if not isinstance(kind, NoChange):
                 owner.properties.setKind(name, kind)
-            if value is not NO_CHANGE:
+            if not isinstance(value, NoChange):
                 owner.properties.setValue(name, value)
-        if cleat is not NO_CHANGE:
+        if not isinstance(cleat, NoChange):
             self.setCleat(cleat)
 
     def propertyTuple(self : Self) -> tuple:
@@ -329,11 +349,11 @@ class PropertyTextItem(TextItem):
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
-        items = [
+        items : list[QAction | QMenu] = [
             view.action("Edit...", lambda: view.editPropertyTextDialog(self)),
             view.separator(),
             view.action(

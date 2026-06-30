@@ -3,13 +3,13 @@ from typing import Self
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QKeySequence
 
-from ....app import window
+from ....app import logger, window
 
 from ....core.check import checked
 from ....core.defs  import MIME_TYPE
 
-from ....widgets.graphics.views.drawing  import DrawingView
-from ....widgets.graphics.scenes.drawing import DrawingScene
+from ....widgets.graphics.views.diagram  import DiagramView
+from ....widgets.graphics.scenes.diagram import DiagramScene
 
 from ...action  import Action
 
@@ -19,11 +19,11 @@ from .slots import Slots
 
 
 class Actions:
-    _scene  : DrawingScene | None
+    _scene  : DiagramScene | None
 
     @checked
     def __init__(self : Self, slots : Slots) -> None:
-        self._scene  = None
+        self._scene = None
         SK = QKeySequence.StandardKey
 
         # actions for main menus
@@ -166,6 +166,8 @@ class Actions:
         self.onSubWindowActivated(None)
         window().mdiArea().subWindowActivated.connect(self.onSubWindowActivated)
         clipboard = QApplication.clipboard()
+        if clipboard is None:
+            raise RuntimeError("No clipboard")
         clipboard.dataChanged.connect(self.onClipboardDataChanged)
 
 
@@ -178,40 +180,50 @@ class Actions:
     ) -> None:
         # disconnect previous signals
         s = self._scene
-        if s:
+        if s is not None:
             try:
                 s.selectionChanged.disconnect(self.onSelectionChanged)
                 s.undo_stack.canUndoChanged.disconnect(self.onCanUndoChanged)
                 s.undo_stack.canRedoChanged.disconnect(self.onCanRedoChanged)
-            except: # workaround for Qt cleanup
+            except RuntimeError: # workaround for Qt cleanup
                 pass
-        self._scene = None
-        view : DrawingView | None = subwindow.widget() if subwindow else None
-        self._scene : DrawingScene | None = view.scene() \
-            if subwindow and view else None
-        self.onCanUndoChanged(bool(self._scene and self._scene.undo_stack.canUndo()))
-        self.onCanRedoChanged(bool(self._scene and self._scene.undo_stack.canRedo()))
-        self.onSelectionChanged()
-        self.onClipboardDataChanged()
-        self.fileSave        .setEnabled(bool(self._scene))
-        self.fileSaveAs      .setEnabled(bool(self._scene))
-        self.editDuplicate   .setEnabled(bool(self._scene))
-        self.editAppearance  .setEnabled(bool(self._scene))
-        self.viewZoomAll     .setEnabled(bool(self._scene))
-        self.viewZoomSheet   .setEnabled(bool(self._scene))
-        self.viewZoomArea    .setEnabled(bool(self._scene))
-        self.viewZoomIn      .setEnabled(bool(self._scene))
-        self.viewZoomOut     .setEnabled(bool(self._scene))
-        self.viewPan         .setEnabled(bool(self._scene))
-        self.viewPanUp       .setEnabled(bool(self._scene))
-        self.viewPanDown     .setEnabled(bool(self._scene))
-        self.viewPanLeft     .setEnabled(bool(self._scene))
-        self.viewPanRight    .setEnabled(bool(self._scene))
-        self.viewGridDisplay .setEnabled(bool(self._scene))
-        self.viewGridSnap    .setEnabled(bool(self._scene))
-        self.placeBlock      .setEnabled(bool(self._scene))
-        self.placeRectangle  .setEnabled(bool(self._scene))
-        self.placeText       .setEnabled(bool(self._scene))
+        scene = None
+        if isinstance(subwindow, DocSubWindow):
+            widget = subwindow.widget()
+            if isinstance(widget, DiagramView):
+                scene = widget.scene()
+                if isinstance(scene, DiagramScene):
+                    self._scene = scene
+                    self.onCanUndoChanged(scene.undo_stack.canUndo())
+                    self.onCanRedoChanged(scene.undo_stack.canRedo())
+                    self.onSelectionChanged()
+                    self.onClipboardDataChanged()
+                else:
+                    logger().warning("Bad scene")
+                    self._scene = None
+            else:
+                logger().warning("Bad widget")
+                self._scene = None
+        en = scene is not None
+        self.fileSave        .setEnabled(en)
+        self.fileSaveAs      .setEnabled(en)
+        self.editDuplicate   .setEnabled(en)
+        self.editAppearance  .setEnabled(en)
+        self.viewZoomAll     .setEnabled(en)
+        self.viewZoomSheet   .setEnabled(en)
+        self.viewZoomArea    .setEnabled(en)
+        self.viewZoomIn      .setEnabled(en)
+        self.viewZoomOut     .setEnabled(en)
+        self.viewPan         .setEnabled(en)
+        self.viewPanUp       .setEnabled(en)
+        self.viewPanDown     .setEnabled(en)
+        self.viewPanLeft     .setEnabled(en)
+        self.viewPanRight    .setEnabled(en)
+        self.viewGridDisplay .setEnabled(en)
+        self.viewGridSnap    .setEnabled(en)
+        self.placeBlock      .setEnabled(en)
+        self.placeRectangle  .setEnabled(en)
+        self.placeText       .setEnabled(en)
         if self._scene:
             # connect signals
             self._scene.selectionChanged.connect(self.onSelectionChanged)
@@ -219,11 +231,12 @@ class Actions:
             self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
             self.onClipboardDataChanged()
             self.onSelectionChanged()
+        self
 
     def onSelectionChanged(self : Self) -> None:
         try:
-            selected_items = self._scene.selectedItems()
-            n = len(selected_items)
+            scene = self._scene
+            n = len(scene.selectedItems()) if scene is not None else 0
             self.editCut        .setEnabled( n > 0 )
             self.editCopy       .setEnabled( n > 0 )
             self.editDelete     .setEnabled( n > 0 )
@@ -233,11 +246,12 @@ class Actions:
             pass
 
     def onClipboardDataChanged(self : Self) -> None:
-        mime_data = QApplication.clipboard().mimeData()
+        clipboard = QApplication.clipboard()
+        if clipboard is None:
+            raise RuntimeError("No clipboard")
+        mime_data = clipboard.mimeData()
         self.editPaste.setEnabled(
-            self._scene is not None and \
-            mime_data is not None and \
-            mime_data.hasFormat(MIME_TYPE)
+            mime_data is not None and mime_data.hasFormat(MIME_TYPE)
         )
 
     def onCanUndoChanged(self : Self, canUndo : bool) -> None:

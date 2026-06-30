@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....core.defs  import PITCH, WIDTH
 from ....core.check import checked
-from ....core.types import AlignH, AlignV, RectHandleId, DataKind, NO_CHANGE
+from ....core.types import AlignH, AlignV, HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty
@@ -23,7 +23,7 @@ from .mixin.transform import ItemTransformMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...dialogs.items.net_label import NetLabelItemDialog
-    from ..views.drawing import DrawingView
+    from ..views.diagram import DiagramView
 
 
 class NetLabelItem(FunctionalItem, BaseTextItem):
@@ -152,7 +152,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self._notifyNetlist()
 
     @checked
-    def setOrigin(self : Self, id : RectHandleId) -> None:
+    def setOrigin(self : Self, id : HandleId) -> None:
         super().setOrigin(id)
         self._notifyNetlist()
 
@@ -173,7 +173,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         raise NotImplementedError("block() is not implemented")
 
     @checked
-    def setBlock(self : Self, _block : bool) -> None:
+    def setBlock(self : Self, block : bool) -> None:
         raise NotImplementedError("setBlock() is not implemented")
 
     def name(self : Self) -> str:
@@ -197,18 +197,18 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self.properties.signalChanges("Value")
 
     @checked
-    def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:
+    def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         self._applyDialogCommon(dialog)
         name  = dialog.getName()
         value = dialog.getValue()
-        if name  is not NO_CHANGE: self.setName(name)
-        if value is not NO_CHANGE: self.setValue(value)
+        if isinstance(name, str):  self.setName(name)
+        if isinstance(value, str): self.setValue(value)
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
             view.action(

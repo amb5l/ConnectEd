@@ -6,15 +6,13 @@ from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import settings
+from ....app import logger, settings
 
 from ....core.check import checked
 from ....core.defs  import Z_SEGMENT
 from ....core.types import Axis, NetKind
 
 from ..scenes import withScene
-
-from ..xml import fromXmlProperties
 
 from .role import FunctionalItem
 
@@ -30,7 +28,7 @@ from .node import NodeItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
+    from ..scenes.diagram import DiagramScene
     from ..views.diagram  import DiagramView
 
 
@@ -63,8 +61,8 @@ class SegmentItem(
         node2 : NodeItem | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self._node1 = None
-        self._node2 = None
+        self._node1    = None
+        self._node2    = None
         self._line     = QLineF()
         self._ortho    = True
         self._net_kind = NetKind.UNRESOLVED
@@ -121,9 +119,11 @@ class SegmentItem(
     @withScene
     def onConnectivityChanged(
         self  : Self,
-        scene : DrawingScene | None = None,
+        scene : DiagramScene | None = None,
     ) -> None:
-        if not hasattr(scene, "netlist"):
+        from ..scenes.diagram import DiagramScene
+        if not isinstance(scene, DiagramScene):
+            logger().error("Bad scene")
             return
         kind = scene.netlist.netKindForSegment(self)
         if kind == self._net_kind:
@@ -132,8 +132,9 @@ class SegmentItem(
         self._updatePen(scene)
 
     @withScene
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
-        if scene is not None and hasattr(scene, "netlist"):
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
+        from ..scenes.diagram import DiagramScene
+        if isinstance(scene, DiagramScene):
             self._net_kind = scene.netlist.netKindForSegment(self)
         ItemPresentationMixin.onSceneChanged(self, scene)
 
@@ -189,6 +190,9 @@ class SegmentItem(
         xw   : QXmlStreamWriter,
         ids  : tuple[int, int] | None = None
     ) -> None:
+        if self._node1 is None or self._node2 is None:
+            logger().error("Uninitialized nodes")
+            return
         self.toXmlBegin(xw)
         if ids is None:
             # use node scene positions
@@ -279,12 +283,22 @@ class SegmentPreviewItem(QGraphicsLineItem):
 
     @checked
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : SegmentPreviewItem = cls(fresh=False)
-        fromXmlProperties(instance, xr)
+    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
+        """Load clipboard/document segment geometry into a preview line."""
+        attrs = xr.attributes()
+        instance = cls()
+        x1 = attrs.value("X1")
+        if x1:
+            p1 = QPointF(float(x1), float(attrs.value("Y1")))
+            p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
+            instance.setP1P2(p1, p2)
+        else:
+            logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
+        xr.readNext()
+        return instance
 
     @withScene
-    def _updatePen(self : Self, scene : DrawingScene) -> None:
+    def _updatePen(self : Self, scene : DiagramScene) -> None:
         self.setPen(scene.resources.pen(self._RESOURCE_NAME))
 
 

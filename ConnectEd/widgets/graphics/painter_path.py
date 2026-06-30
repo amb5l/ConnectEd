@@ -12,29 +12,32 @@ class PainterPath(QPainterPath):
     """QPainterPath with enhanced arc and grip support."""
 
     # instance attributes
-    _mid_pos : QPointF | None  # latest line/arc midpoint
-    _angle   : float | None    # angle of latest line/arc chord
+    _mid_pos : QPointF  # latest line/arc midpoint
+    _angle   : float    # angle of latest line/arc chord
 
     @checked
     def __init__(self : Self) -> None:
         super().__init__()
-        self._mid_pos = None
-        self._angle = None
 
     @overload
-    def lineTo(self : Self, pos : QPointF) -> None:
+    def lineTo(self : Self, p : QPointF) -> None:
         ...
 
     @overload
     def lineTo(self : Self, x : float, y : float) -> None:
         ...
 
-    def lineTo(self : Self, *args) -> None:
+    @checked
+    def lineTo(  # pyright: ignore[reportInconsistentOverload]
+        self   : Self,
+        p_or_x : QPointF | float,
+        y      : float | None = None
+    ) -> None:
         """Override to store midpoint. Accepts QPointF or (x, y) coordinates."""
-        if len(args) == 1 and isinstance(args[0], QPointF):
-            pos = args[0]
-        elif len(args) == 2:
-            pos = QPointF(float(args[0]), float(args[1]))
+        if isinstance(p_or_x, QPointF):
+            pos = p_or_x
+        elif isinstance(p_or_x, float) and isinstance(y, float):
+            pos = QPointF(p_or_x, y)
         else:
             raise TypeError("lineTo() takes either QPointF or (x, y) coordinates")
         p0 = self.currentPosition()
@@ -45,37 +48,44 @@ class PainterPath(QPainterPath):
     @overload
     def arcTo(
         self       : Self,
-        rect       : QRectF,
-        startAngle : float,  # noqa: N803
-        spanAngle  : float   # noqa: N803
+        a0         : QRectF,
+        a1         : float,   # start angle
+        a2         : float    # span angle
     ) -> None:
         ...
 
     @overload
     def arcTo(
-        self       : Self,
-        x          : float,
-        y          : float,
-        width      : float,
-        height     : float,
-        startAngle : float,  # noqa: N803
-        spanAngle  : float   # noqa: N803
+        self : Self,
+        a0   : float,  # x
+        a1   : float,  # y
+        a2   : float,  # width
+        a3   : float,  # height
+        a4   : float,  # start angle
+        a5   : float   # span angle
     ) -> None:
         ...
 
-    def arcTo(self : Self, *args) -> None:
+    @checked
+    def arcTo(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self : Self,
+        a0   : QRectF | float,       # rect or x
+        a1   : float,                # start angle or y
+        a2   : float,                # span angle or width
+        a3   : float | None = None,  # None or height
+        a4   : float | None = None,  # None or start angle
+        a5   : float | None = None   # None or span angle
+    ) -> None:
         """Draw arc. Accepts QRectF or (x, y, width, height) coordinates."""
-        if len(args) == 3 and isinstance(args[0], QRectF):
-            rect = args[0]
-            start_angle = args[1]
-            span_angle = args[2]
-        elif len(args) == 6:
-            rect = QRectF(
-                float(args[0]), float(args[1]),
-                float(args[2]), float(args[3])
-            )
-            start_angle = args[4]
-            span_angle = args[5]
+        if isinstance(a0, QRectF) and isinstance(a1, float) and isinstance(a2, float):
+            rect = a0
+            start_angle = a1
+            span_angle = a2
+        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float) \
+         and isinstance(a3, float) and isinstance(a4, float) and isinstance(a5, float):
+            rect = QRectF(a0, a1, a2, a3)
+            start_angle = a4
+            span_angle = a5
         else:
             raise TypeError(
                 "arcTo() takes (QRectF, startAngle, spanAngle) or "
@@ -89,29 +99,35 @@ class PainterPath(QPainterPath):
 
     @overload
     def arcSpanTo(
-        self      : Self,
-        pos       : QPointF,
-        spanAngle : float   # noqa: N803
+        self : Self,
+        a0   : QPointF,  # pos
+        a1   : float     # span angle
     ) -> None:
         ...
 
     @overload
     def arcSpanTo(
-        self      : Self,
-        x         : float,
-        y         : float,
-        spanAngle : float   # noqa: N803
+        self : Self,
+        a0   : float,  # x
+        a1   : float,  # y
+        a2   : float   # span angle
     ) -> None:
         ...
 
-    def arcSpanTo(self : Self, *args) -> None:
+    @checked
+    def arcSpanTo(
+        self : Self,
+        a0   : QPointF | float,     # pos or x
+        a1   : float,               # span angle or y
+        a2   : float | None = None  # None or span angle
+    ) -> None:
         """Draw arc by span angle. Accepts QPointF or (x, y) coordinates."""
-        if len(args) == 2 and isinstance(args[0], QPointF):
-            pos = args[0]
-            span_angle = args[1]
-        elif len(args) == 3:
-            pos = QPointF(float(args[0]), float(args[1]))
-            span_angle = args[2]
+        if isinstance(a0, QPointF) and isinstance(a1, float):
+            pos = a0
+            span_angle = a1
+        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float):
+            pos = QPointF(a0, a1)
+            span_angle = a2
         else:
             raise TypeError(
                 "arcSpanTo() takes (QPointF, spanAngle) or (x, y, spanAngle)"
@@ -154,29 +170,35 @@ class PainterPath(QPainterPath):
 
     @overload
     def arcSagittaTo(
-        self    : Self,
-        pos     : QPointF,
-        sagitta : float
+        self : Self,
+        a0   : QPointF,  # pos
+        a1   : float     # sagitta
     ) -> None:
         ...
 
     @overload
     def arcSagittaTo(
-        self    : Self,
-        x       : float,
-        y       : float,
-        sagitta : float
+        self : Self,
+        a0   : float,  # X
+        a1   : float,  # Y
+        a2   : float   # Sagitta
     ) -> None:
         ...
 
-    def arcSagittaTo(self : Self, *args) -> None:
+    @checked
+    def arcSagittaTo(
+        self : Self,
+        a0   : QPointF | float,     # pos or x
+        a1   : float,               # sagitta or y
+        a2   : float | None = None  # None or sagitta
+    ) -> None:
         """Draw arc by sagitta. Accepts QPointF or (x, y) coordinates."""
-        if len(args) == 2 and isinstance(args[0], QPointF):
-            pos = args[0]
-            sagitta = args[1]
-        elif len(args) == 3:
-            pos = QPointF(float(args[0]), float(args[1]))
-            sagitta = args[2]
+        if isinstance(a0, QPointF) and isinstance(a1, float):
+            pos = a0
+            sagitta = a1
+        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float):
+            pos = QPointF(a0, a1)
+            sagitta = a2
         else:
             raise TypeError(
                 "arcSagittaTo() takes (QPointF, sagitta) or (x, y, sagitta)"
@@ -225,10 +247,10 @@ class PainterPath(QPainterPath):
         # done
         self.arcTo(rect, start_angle, span_angle)
 
-    def currentMidPos(self : Self) -> QPointF | None:
+    def currentMidPos(self : Self) -> QPointF:
         """Midpoint of latest line or arc."""
         return self._mid_pos
 
-    def currentAngle(self : Self) -> float | None:
+    def currentAngle(self : Self) -> float:
         """Angle of latest line or arc chord."""
         return self._angle

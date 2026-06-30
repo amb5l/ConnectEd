@@ -1,9 +1,12 @@
-from typing import Self, Any
+from typing import Self
 from collections import defaultdict
 
 from PyQt6.QtCore    import Qt, QTimer, QEvent
 from PyQt6.QtWidgets import QGraphicsItem, QWidget, QVBoxLayout
-from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QCloseEvent
+from PyQt6.QtGui     import QStandardItemModel, QStandardItem, \
+                            QEnterEvent, QCloseEvent
+
+from ...app import logger
 
 from ..window.tree_view import TreeView
 
@@ -75,9 +78,9 @@ class QueryWindow(QWidget):
         return hierarchy
 
     def _populate(
-        self: Self,
-        obj: QStandardItemModel | QStandardItem,
-        hdict: dict[QGraphicsItem | PropertiesMixin, dict]
+        self  : Self,
+        obj   : QStandardItemModel | QStandardItem,
+        hdict : dict[QGraphicsItem, dict]
     ) -> None:
         """Populate the model or item row with hierarchical item data."""
         for item, child_item_dict in hdict.items():
@@ -97,7 +100,8 @@ class QueryWindow(QWidget):
                     QStandardItem(str(pos.y()))
                 ])
             elif isinstance(item, PropertiesMixin):
-                for prop_name, prop_value in item.properties.items():
+                for prop_name in item.properties.names():
+                    prop_value = item.properties.value(prop_name)
                     item_row.appendRow([
                         QStandardItem(),
                         QStandardItem(prop_name),
@@ -107,12 +111,17 @@ class QueryWindow(QWidget):
             if child_item_dict:
                 self._populate(item_row, child_item_dict)
 
-    def leaveEvent(self : Self, event : QEvent):
-        # Close when mouse leaves the window (with reasonable delay)
+    def leaveEvent(self : Self, a0 : QEvent | None):
+        if a0 is None:
+            logger().warning("No event")
+            return        # Close when mouse leaves the window (with reasonable delay)
         self._timer.start(1000)  # 1 second delay
-        super().leaveEvent(event)
+        super().leaveEvent(a0)
 
-    def enterEvent(self : Self, event : QEvent):
+    def enterEvent(self : Self, event : QEnterEvent | None):
+        if event is None:
+            logger().warning("No event")
+            return
         # Cancel close timer when mouse re-enters
         self._timer.stop()
         super().enterEvent(event)
@@ -120,8 +129,8 @@ class QueryWindow(QWidget):
     def show(self : Self):
         super().show()
 
-    def move(self : Self, *args : Any):
-        super().move(*args)
-
-    def closeEvent(self : Self, event : QCloseEvent):
-        super().closeEvent(event)
+    def closeEvent(self : Self, a0 : QCloseEvent | None):
+        if a0 is None:
+            logger().warning("No event")
+            return
+        super().closeEvent(a0)

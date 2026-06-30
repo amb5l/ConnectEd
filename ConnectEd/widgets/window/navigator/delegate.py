@@ -13,8 +13,8 @@ class NavItemDelegate(QStyledItemDelegate):
 
     def setModelData(
         self   : Self,
-        editor : QWidget,
-        model  : QAbstractItemModel,
+        editor : QWidget | None,
+        model  : QAbstractItemModel | None,
         index  : QModelIndex,
     ) -> None:
         if not isinstance(model, NavModel):
@@ -28,8 +28,9 @@ class NavItemDelegate(QStyledItemDelegate):
         if binding is None or isinstance(binding.subject, str):
             super().setModelData(editor, model, index)
             return
-        label = editor.text() if isinstance(editor, QLineEdit) \
-            else self.displayText(editor)
-        if not binding.doc.navSetLabel(binding.subject, label):
+        if not isinstance(editor, QLineEdit):
+            super().setModelData(editor, model, index)
+            return
+        if not binding.doc.navSetLabel(binding.subject, editor.text()):
             return
         super().setModelData(editor, model, index)

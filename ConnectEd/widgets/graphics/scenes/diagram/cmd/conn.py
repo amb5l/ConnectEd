@@ -4,12 +4,14 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......app import logger
+
 from ......core.check import checked
 
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
 
-from ...drawing.cmd import CmdSceneBase
+from ..cmd import CmdSceneBase
 
 from ..netlist import Net
 
@@ -230,8 +232,14 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         seg   : SegmentItem
     ) -> None:
         super().__init__(scene)
-        self._node1  = seg.node1()
-        self._node2  = seg.node2()
+        node1 = seg.node1()
+        node2 = seg.node2()
+        if node1 is None or node2 is None:
+            logger().error("Missing nodes")
+            self.setObsolete(True)
+            return
+        self._node1  = node1
+        self._node2  = node2
         self._seg    = seg
         self._culled = []
 
@@ -288,8 +296,14 @@ class CmdSplitSegment(CmdDiagramSceneBase):
     ) -> None:
         super().__init__(scene)
         self._node = node
-        self._node1 = seg.node1()
-        self._node2 = seg.node2()
+        node1 = seg.node1()
+        node2 = seg.node2()
+        if node1 is None or node2 is None:
+            logger().error("Missing nodes")
+            self.setObsolete(True)
+            return
+        self._node1 = node1
+        self._node2 = node2
         self._seg1 = seg
         self._seg2 = SegmentItem()
 
@@ -351,8 +365,14 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         segs = node.segments()
         self._seg1 = segs[0]
         self._seg2 = segs[1]
-        self._far1 = self._seg1.otherNode(node)
-        self._far2 = self._seg2.otherNode(node)
+        far1 = self._seg1.otherNode(node)
+        far2 = self._seg2.otherNode(node)
+        if far1 is None or far2 is None:
+            logger().error("Missing far nodes")
+            self.setObsolete(True)
+            return
+        self._far1 = far1
+        self._far2 = far2
 
     @checked
     def redo(self : Self) -> None:

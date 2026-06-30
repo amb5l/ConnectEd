@@ -72,20 +72,24 @@ class NodeItem(
         self.onSceneChanged()  # update pen, brush and graphics
 
     def degree(self : Self) -> int:
-        scene : DiagramScene | None = self.scene()
-        if scene is None or not scene.netlist.hasNode(self):
+        from ..scenes.diagram import DiagramScene
+        scene = self.scene()
+        if scene is None or not isinstance(scene, DiagramScene):
             return 0
-        return scene.netlist.nodeDegree(self)
+        return 0 if not scene.netlist.hasNode(self) \
+            else scene.netlist.nodeDegree(self)
 
     def segments(self : Self) -> list[SegmentItem]:
-        scene : DiagramScene | None = self.scene()
-        if scene is None or not scene.netlist.hasNode(self):
+        from ..scenes.diagram import DiagramScene
+        scene = self.scene()
+        if scene is None or not isinstance(scene, DiagramScene):
             return []
-        return scene.netlist.nodeSegments(self)
+        return [] if not scene.netlist.hasNode(self) \
+            else scene.netlist.nodeSegments(self)
 
     @checked
     def toXml(
-        self : Self | NodeItem,
+        self : Self,
         xw   : QXmlStreamWriter,
         id   : int | None = None
     ) -> None:
@@ -98,7 +102,7 @@ class NodeItem(
 
     @classmethod
     @checked
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> tuple[int, QPointF]:
+    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> tuple[int, QPointF]:
         id  = -1
         pos = QPointF()
         for xml_attr in xr.attributes():
@@ -140,7 +144,7 @@ class FreeNodeItem(NodeItem):
 
     @classmethod
     @checked
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> tuple[int, Self]:
+    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> tuple[int, Self]:  # pyright: ignore[reportIncompatibleMethodOverride]
         id  = -1
         pos = QPointF()
         for xml_attr in xr.attributes():

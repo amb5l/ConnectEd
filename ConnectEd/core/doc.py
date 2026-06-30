@@ -10,7 +10,7 @@ from PyQt6.QtGui  import QIcon
 from ..app import session
 
 from ..core.types import MenuEntry, MenuAction
-from ..core.xml   import saveXml
+from ..core.xml   import saveXml, FileXmlProtocol
 
 from .check import checked
 
@@ -96,7 +96,16 @@ class Doc(ABC):
 
     @checked
     def save(self : Self, path : str | None = None) -> bool:
-        return saveXml(self, path)
+        if not isinstance(self, FileXmlProtocol):
+            return False
+        save_path = saveXml(self, path)
+        if save_path is None:
+            return False
+        if path is not None and self.path() != save_path:
+            self.setPath(save_path)
+        else:
+            self.onChanged()
+        return True
 
     @classmethod
     @abstractmethod

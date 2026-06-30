@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QStandardItem, QBrush
 from ....app import logger, settings
 
 from ....core.check import checked
-from ....core.types import NoChange, NO_CHANGE, DataKind
+from ....core.types import NoChange, DataKind
 from ....core.utils import val2str, trace
 
 from ...graphics.properties import PropertiesMixin
@@ -41,7 +41,7 @@ class PropertiesItem(QStandardItem):
         self.setEditable(editable)
         self.setValue(value)
 
-    def setText(self : Self, text : str) -> None:
+    def setText(self : Self, atext : str | None) -> None:
         raise NotImplementedError("PropertiesItem.setText() is not implemented")
 
     def clear(self : Self) -> None:
@@ -69,30 +69,38 @@ class PropertiesItem(QStandardItem):
 
     @checked
     def setKind(self : Self, kind : DataKind | NoChange) -> None:
-        if kind is NO_CHANGE:
+        if isinstance(kind, NoChange):
             return
-        kind_prev = self.kind()
+        old_kind = self.kind()
+        if kind == old_kind:
+            return
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
-        if kind_prev is not None:
+        if kind != old_kind:
             # kind is being changed: applies only to custom properties
+            old_value = self.value()
+            new_value = None
             try:
                 match kind:
                     case DataKind.STR | DataKind.TEXT:
-                        self.setValue(str(self.value()))
+                        new_value = str(old_value)
                     case DataKind.INT:
-                        self.setValue(int(self.value()))
+                        new_value = int(old_value)  # pyright: ignore[reportArgumentType]
                     case DataKind.FLOAT:
-                        self.setValue(float(self.value()))
+                        new_value = float(old_value)  # pyright: ignore[reportArgumentType]
                     case DataKind.BOOL:
-                        self.setValue(bool(self.value()))
+                        new_value = bool(old_value)
                     case _:
                         logger().error(f"Invalid kind: {kind}")
             except ValueError:
                 pass
+            self.setValue(new_value)
 
     @checked
     def types(self : Self) -> tuple[type, ...]:
-        return self.kind().types()
+        kind = self.kind()
+        if kind is None:
+            return ()
+        return kind.types()
 
     @checked
     def initial(self : Self) -> Any:
@@ -112,7 +120,7 @@ class PropertiesItem(QStandardItem):
 
     @checked
     def setValue(self : Self, value : Any | None | NoChange) -> None:
-        if value is NO_CHANGE:
+        if isinstance(value, NoChange):
             return
         if not isinstance(value, self.types()) and value is not None:
             logger().error(f"Value {value} has invalid type: {type(value)}")
@@ -121,15 +129,17 @@ class PropertiesItem(QStandardItem):
         super().setText("" if value is None else val2str(value))
         self._updateAppearance()
         # special case: value of "Type" column => kind of "Value" column
-        from . import _COLS, Cell
+        from . import _COLS
         if self.column() == _COLS.index("Type"):
             model = self.model()
             if model is None:
                 return
-            value_item : Cell = model.item(self.row(), _COLS.index("Value"))
-            if value_item is None:
-                return
-            value_item.setKind(value)
+            value_item = model.item(self.row(), _COLS.index("Value"))
+            if isinstance(value_item, PropertiesItem):
+                if not isinstance(value, DataKind):
+                    logger().error(f"Value {value} is not a DataKind")
+                else:
+                    value_item.setKind(value)
 
     @checked
     def default(self : Self) -> Any:

@@ -1,4 +1,4 @@
-from typing import Self, Protocol, Any, cast
+from typing import Self, Protocol, Any, cast, runtime_checkable
 from collections.abc import Callable
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader, \
@@ -24,7 +24,8 @@ class XmlProtocol(Protocol):
         ...
 
 
-class FileXmlProtocol(XmlProtocol):
+@runtime_checkable
+class FileXmlProtocol(XmlProtocol, Protocol):
     def path(self : Self) -> str:
         ...
 
@@ -83,22 +84,22 @@ def fromXmlWrapper(
 
 def saveXml(
     instance : FileXmlProtocol,
-    path     : str | None = None
-) -> bool:
+    path     : str | None = None,
+) -> str | None:
     if path is None:
         save_path = instance.path()
     else:
         save_path = cleanPath(path)
     if save_path == "":
         logger().warning(f"Document has no path to save to: {instance}")
-        return False
+        return None
     temp_path = f"{save_path}.tmp"
     temp_file = QFile(temp_path)
     if not temp_file.open(
         QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text
     ):
         logger().warning(f"Failed to open file {temp_path} for writing")
-        return False
+        return None
     try:
         xw = QXmlStreamWriter(temp_file)
         xw.setAutoFormatting(True)
@@ -112,21 +113,17 @@ def saveXml(
         logger().error(f"Failed to save {save_path}: {e}")
         temp_file.close()
         temp_file.remove()
-        return False
+        return None
     temp_file.close()
     if QFile.exists(save_path) and not QFile.remove(save_path):
         logger().warning(f"Failed to replace {save_path}")
         temp_file.remove()
-        return False
+        return None
     if not QFile.rename(temp_path, save_path):
         logger().warning(f"Failed to rename {temp_path} to {save_path}")
         temp_file.remove()
-        return False
-    if path is not None and instance.path() != save_path:
-        instance.setPath(save_path)
-    else:
-        instance.onChanged()
-    return True
+        return None
+    return save_path
 
 
 def loadXml(
@@ -208,7 +205,8 @@ def copyXml(
     mime_data = QMimeData()
     mime_data.setData(MIME_TYPE, buffer)
     clipboard = QApplication.clipboard()
-    clipboard.setMimeData(mime_data)
+    if clipboard is not None:
+        clipboard.setMimeData(mime_data)
 
 
 @checked
@@ -218,7 +216,10 @@ def pasteXml(
     """
     Builds objects from clipboard XML; returns them and envelope metadata.
     """
-    buffer = QApplication.clipboard().text()
+    clipboard = QApplication.clipboard()
+    if clipboard is None:
+        return [], {}
+    buffer = clipboard.text()
     xr = QXmlStreamReader(buffer)
     items, attributes = fromXmlWrapper(xr, "Clipboard", xref)
     return items, attributes
@@ -228,5 +229,9 @@ def clipboardHasData() -> bool:
     """
     Checks if the clipboard has data in the expected format.
     """
-    mime_data = QApplication.clipboard().mimeData()
+
+    clipboard = QApplication.clipboard()
+    if clipboard is None:
+        return False
+    mime_data = clipboard.mimeData()
     return mime_data is not None and mime_data.hasFormat(MIME_TYPE)

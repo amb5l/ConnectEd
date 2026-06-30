@@ -1,13 +1,6 @@
-TypeAlias = "
-
-use of quotes around multiple types with | = >
-    from __future__ import annotations
-
-====
-
-checked
-
 MixinSelf is still shite
+
+error vs fatal; error handling
 
 _XML_CHILDREN frozenset
 
@@ -26,6 +19,10 @@ scoping onDocChanged to avoid total rebuild
 FunctionalItem
 
 unused functions and methods sweep
+
+Large
+-----
+- implement autobackup
 
 ================================================================================
 

@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPointF, QSizeF, Qt
+from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QColor
 
 from ConnectEd.core.defs import DEFS
@@ -9,7 +9,7 @@ from ConnectEd.core.themes import BUILTIN_THEMES, THEME_NAMES, resolveColor
 def test_load_factory_settings_top_level_keys() -> None:
     settings = loadFactorySettings()
     assert set(settings.keys()) == {
-        "startup", "mru", "display", "defaults", "prefs", "ai", "themes",
+        "startup", "mru", "ui", "display", "defaults", "prefs", "ai", "themes",
     }
 
 
@@ -39,7 +39,7 @@ def test_runtime_defaults() -> None:
     assert settings["prefs"]["file"]["open"]["dir"]
     sheet_name = settings["defaults"]["sheet"]["name"]
     assert settings["defaults"]["sheet"]["size"] == DEFS["sheets"][sheet_name]
-    assert isinstance(settings["defaults"]["extents"], QSizeF)
+    assert "extents" not in settings["defaults"]
     assert isinstance(settings["defaults"]["grid"]["pitch"], QPointF)
 
 
@@ -47,7 +47,7 @@ def test_settings_get_smoke() -> None:
     factory = loadFactorySettings()
     store = Settings()
     assert store.get("display/theme") == "dark"
-    assert isinstance(store.get("defaults/extents"), QSizeF)
+    assert store.get("defaults/sheet/name") == "A4 (landscape)"
     block_color = store.get("theme/items/BlockName/text/color")
     assert isinstance(block_color, QColor)
     expected = factory["themes"]["dark"]["items"]["BlockName"]["text"]["color"]

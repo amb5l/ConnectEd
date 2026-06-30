@@ -1,7 +1,7 @@
 from typing import Self, Any
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QLineEdit, QTextEdit
 
 from ....core.check import checked
 from ....core.types import NoChange, HandleId, DataKind
@@ -20,7 +20,10 @@ class PropertyTextItemDialog(BaseTextItemDialog):
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
-        self._top_section = PropertyGroupBox(item, item.name())
+        name = item.name()
+        if not isinstance(name, str):
+            raise TypeError("Bad name")
+        self._top_section = PropertyGroupBox(item, name)
         self._layout.addWidget(self._top_section)
 
     @checked
@@ -44,5 +47,6 @@ class PropertyTextItemDialog(BaseTextItemDialog):
         value = self._top_section._layout._value_value
         if isinstance(value, QLabel):
             return
-        value.setFocus(Qt.FocusReason.OtherFocusReason)
-        value.selectAll()
+        elif isinstance(value, QLineEdit | QTextEdit):
+            value.setFocus(Qt.FocusReason.OtherFocusReason)
+            value.selectAll()

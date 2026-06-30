@@ -7,13 +7,6 @@ from PyQt6.QtGui     import QFont
 
 from ...app import settings
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..window.tree_view import TreeView
-    MixinSelf: TypeAlias = Self | TreeView
-else:
-    MixinSelf = Self
-
 
 class UiFontSizeMixin:
     """Mixin to handle widget UI font size."""
@@ -25,8 +18,10 @@ class UiFontSizeMixin:
     _default_font_size : int
     _current_font_size : int
 
-    def initFontSize(self : Self | QWidget) -> None:
+    def initFontSize(self : Self) -> None:
         """Initialize the font size."""
+        if not isinstance(self, QWidget):
+            raise TypeError("Bad host")
         font = self.font()
         self._default_font_size = font.pointSize()
         settings_path = f"ui/{self._SETTINGS_UI_PATH}"
@@ -34,6 +29,8 @@ class UiFontSizeMixin:
 
     def setFontSize(self : Self, size : int) -> None:
         """Set the font size."""
+        if not isinstance(self, QWidget):
+            raise TypeError("Bad host")
         font = QFont()
         font.setPointSizeF(size)
         self.setFont(font)

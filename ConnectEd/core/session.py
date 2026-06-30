@@ -50,7 +50,7 @@ class Session(QObject):
         self.docChanged.emit(doc)
 
     @checked
-    def new(self : Self, doc_type : DocType) -> Doc | None:
+    def new(self : Self, doc_type : DocType) -> Doc:
         """Create a new document."""
         # generate a unique "Untitled<number>" name
         peer_docs = [
@@ -65,7 +65,8 @@ class Session(QObject):
                 if match:
                     number = max(number, int(match.group(1)) + 1)
         name = f"Untitled{number}"
-        doc = doc_type.cls(name)
+        doc = doc_type.cls()
+        doc.setName(name)
         self._open_docs.append(doc)
         return doc
 

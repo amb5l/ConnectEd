@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Self, Any
 
-from PyQt6.QtWidgets import QGridLayout, QLabel, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, \
+                            QLabel, QLineEdit, QTextEdit
 
 from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE, DataKind
+from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
 
 from ....graphics.properties import PropertiesMixin, _CUSTOM_PROPERTY_KINDS
 
@@ -34,7 +35,7 @@ class PropertyLayout(QGridLayout):
     _kind_value_layout  : QHBoxLayout
     _kind_value         : QLabel | EnumComboBox
     _value_label        : QLabel
-    _value_value        : QLabel | QWidget
+    _value_value        : QLabel | QLineEdit | QTextEdit
 
     @checked
     def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
@@ -44,7 +45,7 @@ class PropertyLayout(QGridLayout):
         kind        = self._NOT_FOUND
         value       = self._NOT_FOUND
         owner       = object.owner() if isinstance(object, PropertiesMixin) else None
-        if owner is not None and owner.properties.has(name):
+        if isinstance(owner, PropertiesMixin) and owner.properties.has(name):
             description = owner.description()
             inherent    = owner.properties.inherent(name)
             kind        = owner.properties.kind(name)
@@ -60,7 +61,10 @@ class PropertyLayout(QGridLayout):
         self._cleat_label = QLabel("Cleat:")
         self.addWidget(self._cleat_label, row, 0)
         self._cleat_value_layout = QHBoxLayout()
-        self._cleat_value = EnumComboBox(object.cleat())
+        cleat = object.cleat()
+        if not isinstance(cleat, HandleId):
+            raise TypeError("Bad cleat")
+        self._cleat_value = EnumComboBox(cleat)
         self._cleat_value_layout.addWidget(self._cleat_value)
         self._cleat_value_layout.addStretch(1)
         self.addLayout(self._cleat_value_layout, row, 1)
@@ -82,6 +86,8 @@ class PropertyLayout(QGridLayout):
         self._kind_label = QLabel("Type:")
         self.addWidget(self._kind_label, row, 0)
         self._kind_value_layout = QHBoxLayout()
+        if not isinstance(kind, DataKind):
+            raise TypeError("Bad kind")
         if inherent is False:
             self._kind_value = EnumComboBox[DataKind](kind, _CUSTOM_PROPERTY_KINDS)
         elif inherent is True:
@@ -95,16 +101,15 @@ class PropertyLayout(QGridLayout):
         # value - static or type specific editor
         self._value_label = QLabel("Value:")
         self.addWidget(self._value_label, row, 0)
-        if inherent is None \
-        or inherent is True and owner is not None and owner.properties.writeable(name) is False:
-            self._value_value = QLabel(self._NOT_FOUND)
-        else:
-            # kind specific editor
+        if isinstance(owner, PropertiesMixin) \
+        and owner.properties.writeable(name) is True:
             editor = kind.editor()
             args = {"value" : value}
             if inherent is False and kind is DataKind.KIND:
                 args["subset"] = _CUSTOM_PROPERTY_KINDS
             self._value_value = editor(**args)
+        else:
+            self._value_value = QLabel(self._NOT_FOUND)
         self.addWidget(self._value_value, row, 1)
         row += 1
 
@@ -126,5 +131,10 @@ class PropertyLayout(QGridLayout):
     def getValue(self : Self) -> Any | NoChange:
         if isinstance(self._value_value, QLabel):
             return NO_CHANGE
+        elif isinstance(self._value_value, QLineEdit):
+            text = self._value_value.text()
+        elif isinstance(self._value_value, QTextEdit):
+            text = self._value_value.toPlainText()
         else:
-            return self._value_value.value()
+            raise TypeError("Bad value widget")
+        # convert to appropriate type if necessary

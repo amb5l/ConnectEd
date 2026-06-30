@@ -10,6 +10,7 @@ from PyQt6.QtGui     import (
     QKeySequence,
     QPalette,
     QShortcut,
+    QShowEvent,
     QTextCharFormat,
     QTextCursor,
     QWheelEvent,
@@ -23,7 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .....app import settings
+from .....app import logger, settings
 
 from .....core.check import checked
 
@@ -55,6 +56,8 @@ class _AiChatFontZoomHost:
     """Shared font-zoom API for history and input sub-widgets."""
 
     _font_size : int
+    _history   : QTextBrowser
+    _input     : QPlainTextEdit
 
     def _chatFont(self : Self) -> QFont:
         font = QFont()
@@ -72,7 +75,10 @@ class _AiChatFontZoomHost:
     def _applyChatFontSize(self : Self) -> None:
         font = self._chatFont()
         self._history.setFont(font)
-        self._history.document().setDefaultFont(font)
+        document = self._history.document()
+        if document is None:
+            raise RuntimeError("No history document")
+        document.setDefaultFont(font)
         self._input.setFont(font)
         self._updateInputMaxHeight()
         self._rescaleHistoryDocumentFont()
@@ -82,7 +88,10 @@ class _AiChatFontZoomHost:
         self._input.setMaximumHeight(fm.lineSpacing() * _INPUT_MAX_LINES + 12)
 
     def _rescaleHistoryDocumentFont(self : Self) -> None:
-        cursor = QTextCursor(self._history.document())
+        document = self._history.document()
+        if document is None:
+            raise RuntimeError("No history document")
+        cursor = QTextCursor(document)
         cursor.beginEditBlock()
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
@@ -105,34 +114,43 @@ class AiChatHistoryBrowser(QTextBrowser):
     ) -> None:
         super().__init__(parent)
         self._zoom_host = host
-        self.viewport().installEventFilter(self)
+        if (viewport := self.viewport()) is None:
+            raise RuntimeError("No viewport")
+        viewport.installEventFilter(self)
 
-    def eventFilter(self : Self, watched : QObject, event : QEvent) -> bool:
-        if (
-            watched is self.viewport()
-            and event.type() == QEvent.Type.Wheel
-        ):
-            wheel = event
-            if wheel.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                delta = wheel.angleDelta().y()
+    def eventFilter(
+        self    : Self,
+        a0      : QObject | None,
+        a1      : QEvent | None,
+    ) -> bool:
+        if a0 is None or a1 is None:
+            return False
+        if a0 is self.viewport() and a1.type() == QEvent.Type.Wheel:
+            if not isinstance(a1, QWheelEvent):
+                return False
+            if a1.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                delta = a1.angleDelta().y()
                 if delta > 0:
                     self._zoom_host._increaseChatFontSize()
                 elif delta < 0:
                     self._zoom_host._decreaseChatFontSize()
-                wheel.accept()
+                a1.accept()
                 return True
-        return super().eventFilter(watched, event)
+        return super().eventFilter(a0, a1)
 
-    def wheelEvent(self : Self, event : QWheelEvent) -> None:
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
+    def wheelEvent(self : Self, e : QWheelEvent | None) -> None:
+        if e is None:
+            logger().warning("No event")
+            return
+        if e.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = e.angleDelta().y()
             if delta > 0:
                 self._zoom_host._increaseChatFontSize()
             elif delta < 0:
                 self._zoom_host._decreaseChatFontSize()
-            event.accept()
+            e.accept()
             return
-        super().wheelEvent(event)
+        super().wheelEvent(e)
 
 
 class AiChatMessageEdit(QPlainTextEdit):
@@ -152,30 +170,36 @@ class AiChatMessageEdit(QPlainTextEdit):
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
         self.setTabChangesFocus(False)
 
-    def keyPressEvent(self : Self, event : QKeyEvent) -> None:
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+    def keyPressEvent(self : Self, e : QKeyEvent | None) -> None:
+        if e is None:
+            logger().warning("No event")
+            return
+        if e.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if e.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 cursor = self.textCursor()
                 cursor.insertText("\n")
                 self.setTextCursor(cursor)
-                event.accept()
+                e.accept()
                 return
             if self._chat_widget is not None:
                 self._chat_widget._sendMessage()
-            event.accept()
+            e.accept()
             return
-        super().keyPressEvent(event)
+        super().keyPressEvent(e)
 
-    def wheelEvent(self : Self, event : QWheelEvent) -> None:
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
+    def wheelEvent(self : Self, e : QWheelEvent | None) -> None:
+        if e is None:
+            logger().warning("No event")
+            return
+        if e.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = e.angleDelta().y()
             if delta > 0:
                 self._zoom_host._increaseChatFontSize()
             elif delta < 0:
                 self._zoom_host._decreaseChatFontSize()
-            event.accept()
+            e.accept()
             return
-        super().wheelEvent(event)
+        super().wheelEvent(e)
 
 
 class AiChatWidget(QWidget, _AiChatFontZoomHost):
@@ -259,8 +283,8 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._showWelcome()
         self.refreshInputState()
 
-    def showEvent(self : Self, event) -> None:
-        super().showEvent(event)
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
+        super().showEvent(a0)
         if self._pin_welcome_top:
             self._scheduleScrollToTop()
 
@@ -355,13 +379,18 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
             self._scheduleScrollToTop()
             return
         bar = self._history.verticalScrollBar()
+        if bar is None:
+            raise RuntimeError("No vertical scroll bar")
         bar.setValue(bar.maximum())
 
     def _scrollToTop(self : Self) -> None:
         cursor = self._history.textCursor()
         cursor.movePosition(cursor.MoveOperation.Start)
         self._history.setTextCursor(cursor)
-        self._history.verticalScrollBar().setValue(0)
+        bar = self._history.verticalScrollBar()
+        if bar is None:
+            raise RuntimeError("No vertical scroll bar")
+        bar.setValue(0)
 
     def _scheduleScrollToTop(self : Self) -> None:
         self._scrollToTop()
@@ -394,7 +423,10 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._scrollHistory()
 
     def _refreshHistoryStyle(self : Self) -> None:
-        self._history.document().setDefaultStyleSheet(historyStyleSheet())
+        document = self._history.document()
+        if document is None:
+            raise RuntimeError("No history document")
+        document.setDefaultStyleSheet(historyStyleSheet())
 
     def _historyBodyCharFormat(self : Self) -> QTextCharFormat:
         """Plain body text — avoids inheriting link/bold/pre from prior HTML."""
@@ -440,7 +472,8 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
             return
         manager.refreshChatTitles()
         manager.refreshChatWidgets()
-        self._window.menuBar().updateAiMenu()
+        if (menu_bar := self._window.menuBar()) is not None:
+            menu_bar.updateAiMenu()
 
     def _stopMessage(self : Self) -> None:
         self._session.cancel()

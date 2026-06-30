@@ -1,7 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QEvent, QPoint, QPointF,QRectF
-from PyQt6.QtWidgets import QMdiArea
+from PyQt6.QtCore    import Qt, QPoint, QPointF,QRectF
 from PyQt6.QtGui     import QColor, QPainter, QPen
 
 from ....app import settings
@@ -9,12 +8,14 @@ from ....app import settings
 from ....core.check import checked
 from ....core.doc   import DocBinding
 
+from ...window.mdi_area import MdiArea
+
 from ..scenes.symbol import SymbolScene
 
-from .drawing import DrawingView, DrawingSubWindow
+from .diagram import DiagramView, DiagramSubWindow
 
 
-class SymbolView(DrawingView):
+class SymbolView(DiagramView):
     # instance attributes
     _pen : QPen
 
@@ -24,11 +25,13 @@ class SymbolView(DrawingView):
         self.onSettingsChanged()
         settings().changed.connect(self.onSettingsChanged)
 
-    def showEvent(self : Self, event : QEvent) -> None:
-        super().showEvent(event)
-        self.viewZoomAll()
-
-    def drawForeground(self : Self, painter : QPainter, rect : QRectF) -> None:
+    def drawForeground(
+        self    : Self,
+        painter : QPainter | None,
+        rect    : QRectF,
+    ) -> None:
+        if painter is None:
+            return
         super().drawForeground(painter, rect)
         painter.save()
         painter.resetTransform()
@@ -46,11 +49,11 @@ class SymbolView(DrawingView):
         self._pen = QPen(pen_color, 1, Qt.PenStyle.SolidLine)
 
 
-class SymbolSubWindow(DrawingSubWindow):
+class SymbolSubWindow(DiagramSubWindow):
     @checked
     def __init__(
         self        : Self,
-        parent      : QMdiArea | None = None,
+        parent      : MdiArea | None = None,
         doc_binding : DocBinding | None = None,
     ) -> None:
         super().__init__(parent, doc_binding)

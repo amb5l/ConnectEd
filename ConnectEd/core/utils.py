@@ -7,12 +7,18 @@ import re
 from typing      import Any
 from collections import defaultdict
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtGui  import QColor
-
-from ..app import logger
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QColor
 
 from .check import checked
+
+
+def qtItemClass(self : object) -> type[QGraphicsItem]:
+    for cls in type(self).__mro__:
+        if cls.__module__.startswith("PyQt6.") and issubclass(cls, QGraphicsItem):
+            return cls
+    raise TypeError("No QGraphicsItem base")
 
 
 def sign(x):
@@ -88,16 +94,6 @@ def trace(
             print(" " * i + call)
     else:
         print(" <- ".join(calls))
-
-
-def typeCheck(x : Any, t : type) -> None:
-    # get name of calling function/method
-    frame = inspect.currentframe().f_back
-    func_name = frame.f_code.co_name
-    if not isinstance(x, t):
-        logger().warning(f"Type {type(x)} does not match {t} ({func_name})")
-        return False
-    return True
 
 
 @checked

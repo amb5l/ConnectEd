@@ -34,9 +34,6 @@ display:
   pan:
     step: 0.1
 defaults:
-  extents:
-  - 800.0
-  - 600.0
   sheet:
     name: A4 (landscape)
   margin: 10.0

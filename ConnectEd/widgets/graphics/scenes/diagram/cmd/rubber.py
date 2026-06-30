@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, TypeVar, Generic
 
 from PyQt6.QtGui import QUndoCommand
+
+from ......app import logger
 
 from ......core.check import checked
 from ......core.types import Axis
@@ -17,31 +19,39 @@ if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
 
 
-class CmdMovePreviewRubberBase(QUndoCommand):
+TRubber = TypeVar("TRubber", bound=RubberItem)
+
+
+class CmdMovePreviewRubberBase(QUndoCommand, Generic[TRubber]):
     _scene   : DiagramScene
-    _rubber  : RubberItem
+    _rubber  : TRubber
 
     @checked(always=True)
     def __init__(
         self   : Self,
         scene  : DiagramScene,
-        rubber : RubberItem
+        rubber : TRubber
     ) -> None:
         super().__init__()
         self._scene  = scene
         self._rubber = rubber
 
-    def rubber(self : Self) -> RubberItem:
+    def rubber(self : Self) -> TRubber:
         return self._rubber
 
 
-class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase):
+class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase[RubberTeeItem]):
     _segment : SegmentItem
-    _rubber  : RubberTeeItem
 
     @checked(always=True)
     def __init__(self : Self, segment : SegmentItem, node : NodeItem) -> None:
-        super().__init__(segment.scene(), RubberTeeItem(segment, node))
+        from .. import DiagramScene
+        scene = segment.scene()
+        if not isinstance(scene, DiagramScene):
+            logger().error("Bad scene")
+            self.setObsolete(True)
+            return
+        super().__init__(scene, RubberTeeItem(segment, node))
         self._segment = segment
 
     @checked
@@ -55,11 +65,10 @@ class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase):
         self._scene.removeItem(self._rubber)
 
 
-class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
+class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase[RubberCornerItem]):
     _segment1 : SegmentItem
     _segment2 : SegmentItem
     _corner   : FreeNodeItem
-    _rubber   : RubberCornerItem
 
     @checked(always=True)
     def __init__(
@@ -76,13 +85,21 @@ class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
             segment2: Segment attached to corner.
             node:     Mobile node.
         """
-        super().__init__(
-            segment1.scene(),
-            RubberCornerItem(segment1, segment2, node)
-        )
+        from .. import DiagramScene
+        scene = segment1.scene()
+        if not isinstance(scene, DiagramScene):
+            logger().error("Bad scene")
+            self.setObsolete(True)
+            return
+        super().__init__(scene, RubberCornerItem(segment1, segment2, node))
         self._segment1 = segment1
         self._segment2 = segment2
-        self._corner   = segment1.otherNode(node)
+        corner = segment1.otherNode(node)
+        if not isinstance(corner, FreeNodeItem):
+            logger().error("Bad corner")
+            self.setObsolete(True)
+            return
+        self._corner = corner
 
     @checked
     def redo(self : Self) -> None:
@@ -99,9 +116,8 @@ class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
         self._scene.removeItem(self._rubber)
 
 
-class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase):
+class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase[RubberJogItem]):
     _segment_or_static : SegmentItem | NodeItem
-    _rubber            : RubberJogItem
 
     @checked(always=True)
     def __init__(
@@ -119,10 +135,13 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase):
             node: Mobile node.
             axis: Jog inline axis (optional).
         """
-        super().__init__(
-            mobile.scene(),
-            RubberJogItem(segment_or_static, mobile, axis)
-        )
+        from .. import DiagramScene
+        scene = mobile.scene()
+        if not isinstance(scene, DiagramScene):
+            logger().error("Bad scene")
+            self.setObsolete(True)
+            return
+        super().__init__(scene, RubberJogItem(segment_or_static, mobile, axis))
         self._segment_or_static = segment_or_static
 
     @checked

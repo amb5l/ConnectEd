@@ -6,7 +6,8 @@ from logging import Logger
 from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from .core.check import checked
+from .core.check    import checked
+from .core.log      import logger as core_logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -14,33 +15,28 @@ if TYPE_CHECKING:
     from .core.session   import Session
     from .widgets.window import Window
 
-
 class ConnectEdApp(QApplication):
     class Ready(QObject):
         window = pyqtSignal()
         splash = pyqtSignal()
 
     # instance attributes
-    _logger   : Logger   | None
-    _settings : Settings | None
-    _session  : Session  | None
-    _window   : Window   | None
+    _logger   : Logger
+    _settings : Settings
+    _session  : Session
+    _window   : Window
     _cli      : bool
     ready     : Ready
 
     @checked
     def __init__(self   : Self, cli : bool = False) -> None:
         super().__init__([])
-        self._logger   = None
-        self._settings = None
-        self._session  = None
-        self._model    = None
-        self._window   = None
-        self._cli      = cli
-        self.ready     = self.Ready()
+        self._logger = core_logger
+        self._cli    = cli
+        self.ready   = self.Ready()
 
     @checked
-    def logger(self : Self) -> Logger | None:
+    def logger(self : Self) -> Logger:
         return self._logger
 
     @checked
@@ -65,7 +61,7 @@ class ConnectEdApp(QApplication):
 
     @checked
     def window(self : Self) -> Window | None:
-        return None if self._cli else self._window
+        return self._window
 
     @checked
     def setWindow(self : Self, window : Window) -> None:
@@ -84,24 +80,31 @@ class ConnectEdApp(QApplication):
 
 @checked
 def app() -> ConnectEdApp:
-    return ConnectEdApp.instance()
+    instance = ConnectEdApp.instance()
+    if not isinstance(instance, ConnectEdApp):
+        raise RuntimeError("Bad instance")
+    return instance
 
 
 @checked
-def logger() -> Logger | None:
+def logger() -> Logger:
     return app().logger()
 
 
 @checked
-def settings() -> Settings | None:
+def settings() -> Settings:
     return app().settings()
 
 
 @checked
-def session() -> Session | None:
+def session() -> Session:
     return app().session()
 
 
 @checked
-def window() -> Window | None:
-    return app().window()
+def window() -> Window:
+    from .widgets.window import Window
+    w = app().window()
+    if not isinstance(w, Window):
+        raise TypeError("Bad window")
+    return w

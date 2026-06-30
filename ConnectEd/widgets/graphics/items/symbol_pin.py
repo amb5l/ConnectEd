@@ -16,12 +16,11 @@ from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
 from .grip     import MoveGripItem
 
-from .mixin.loc    import ItemLocMixin
-from .mixin.handle import ItemHandlesMixin
+from .mixin.edge_loc import ItemEdgeLocMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
+    from ..views.diagram import DiagramView
     from ..views.symbol  import SymbolView
 
 
@@ -29,22 +28,18 @@ class SymbolPinArrowItem(PortPinArrowItem):
     pass
 
 
-class SymbolPinItem(
-    ItemLocMixin,
-    ItemHandlesMixin[SymbolPinHandleId],
-    PortPinPathItem
-):
+class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     # class attributes
     _NODE_POS   = -PITCH
     _ARROW_CLS  = SymbolPinArrowItem
     _ARROW_POS  = 0
-    _PROPERTIES = PortPinPathItem._PROPERTIES | ItemLocMixin._PROPERTIES
+    _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(
                 cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
-    _XML_CHILDREN = {"PropertyText"}
+    _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod
     def handleIdType(cls) -> type[SymbolPinHandleId]:
@@ -66,9 +61,9 @@ class SymbolPinItem(
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         if isinstance(view, SymbolView):
             return [

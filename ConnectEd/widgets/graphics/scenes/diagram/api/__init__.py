@@ -1,29 +1,34 @@
 from __future__ import annotations
 
-from ...drawing.api import DrawingSceneApiMixin
+from typing import Self
 
 from ......core.check import checked
 
-from .add  import DiagramSceneApiAddMixin
-from .conn import DiagramSceneApiConnMixin
-from .edit import DiagramSceneApiEditMixin
+from .edit       import DiagramSceneApiEditMixin
+from .add        import DiagramSceneApiAddMixin
+from .conn       import DiagramSceneApiConnMixin
+from .properties import DiagramSceneApiPropertiesMixin
+from .util       import DiagramSceneApiUtilMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items.symbol import SymbolDefinitionItem, SymbolInstanceItem
-    from .. import DiagramScene
 
 class DiagramSceneApiMixin(
+    DiagramSceneApiEditMixin,
     DiagramSceneApiAddMixin,
     DiagramSceneApiConnMixin,
-    DiagramSceneApiEditMixin,
-    DrawingSceneApiMixin
+    DiagramSceneApiPropertiesMixin,
+    DiagramSceneApiUtilMixin
 ):
     @checked
     def symbolInstances(
-        self       : DiagramScene,
+        self       : Self,
         definition : SymbolDefinitionItem
     ) -> list[SymbolInstanceItem]:
+        from .. import DiagramScene
+        from ....items.symbol import SymbolDefinitionItem, SymbolInstanceItem
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         return [
             item for item in self.items()
             if isinstance(item, SymbolInstanceItem)

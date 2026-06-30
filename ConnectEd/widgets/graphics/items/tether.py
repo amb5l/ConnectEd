@@ -15,7 +15,7 @@ from .mixin.change   import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
+    from ..scenes.diagram import DiagramScene
     from .text            import TextItem
 
 
@@ -41,21 +41,31 @@ class TextTetherItem(
         self.onSettingsChanged()
         self.onPositionChanged(self._text_item.pos())
 
-    def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+    def mousePressEvent(
+        self  : Self,
+        event : QGraphicsSceneMouseEvent | None
+    ) -> None:
         self._text_item.mousePressEvent(event)
 
-    def mouseReleaseEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+    def mouseReleaseEvent(
+        self  : Self,
+        event : QGraphicsSceneMouseEvent | None
+    ) -> None:
         self._text_item.mouseReleaseEvent(event)
 
-    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+    def mouseDoubleClickEvent(
+        self  : Self,
+        event : QGraphicsSceneMouseEvent | None
+    ) -> None:
         self._text_item.mouseDoubleClickEvent(event)
 
     def onSettingsChanged(self : Self) -> None:
-        if (scene := self.scene()) is not None:
+        from ..scenes.diagram import DiagramScene
+        if isinstance(scene := self.scene(), DiagramScene):
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen("Tether"))

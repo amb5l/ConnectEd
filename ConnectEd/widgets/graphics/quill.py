@@ -11,7 +11,7 @@ class Quill:
     @checked
     def __init__(
         self,
-        color     : QColor | "Quill",
+        color     : QColor | Quill,
         font      : str   | None = None,
         size      : float | None = None,
         bold      : bool  | None = None,

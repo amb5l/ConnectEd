@@ -25,19 +25,22 @@ class CustomSpinBox(QSpinBox):
         self._value = self.value()
 
     @checked
-    def setEnabled(self : Self, enabled : bool) -> None:
-        if enabled and not self.isEnabled():
-            super().setEnabled(enabled)
-            self.lineEdit().setText(str(self._value))
-        elif self.isEnabled() and not enabled:
-            super().setEnabled(enabled)
+    def setEnabled(self : Self, a0 : bool) -> None:
+        line_edit = self.lineEdit()
+        if line_edit is None:
+            return
+        if a0 and not self.isEnabled():
+            super().setEnabled(a0)
+            line_edit.setText(str(self._value))
+        elif self.isEnabled() and not a0:
+            super().setEnabled(a0)
             self._value = self.value()
-            self.lineEdit().setText(self._DISABLED_TEXT)
+            line_edit.setText(self._DISABLED_TEXT)
 
-    def textFromValue(self, value: int) -> str:
+    def textFromValue(self, v: int) -> str:
         """
         Override to return custom text when the widget is disabled.
         """
         if not self.isEnabled():
             return self._DISABLED_TEXT
-        return super().textFromValue(value)
+        return super().textFromValue(v)

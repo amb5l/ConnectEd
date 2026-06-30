@@ -32,27 +32,27 @@ exists only for use via substitution in custom properties. For example,
 
 from __future__ import annotations
 
-from typing          import Self, Any, Literal, TypeAlias, Generic, TypeVar
+from typing          import Self, Any, Literal, TypeAlias, Generic, TypeVar, \
+                            cast
 from collections.abc import Callable
 from dataclasses     import dataclass
 from copy            import copy
 
 import re
 
-from PyQt6.QtCore import QObject, pyqtSignal, QPointF
-from PyQt6.QtGui  import QColor
+from PyQt6.QtCore    import QObject, pyqtSignal, QPointF
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QColor
 
 from ...app  import logger
 
 from ...core.check import checked
-
 from ...core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                           HandleId, RectHandleId, DataKind
-from ...core.utils import str2val, pascal2proper
+from ...core.utils import str2val, val2str, pascal2proper
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .scenes.drawing import DrawingScene
     from .items.property_text import PropertyTextItem
 
 
@@ -255,7 +255,7 @@ class PropertiesManager:
         # check property existence
         if not self.has(name):
             logger().warning(f"Property '{name}' not found")
-            return None
+            return False
         # get validity
         property = self._dict[name]
         if isinstance(property, InherentProperty):
@@ -346,12 +346,16 @@ class PropertiesManager:
                 # look locally, then (for items) in the scene
                 if self.has(var_name):
                     return str(self.value(var_name, slot, trail))
-                elif hasattr(self._owner, "scene"):
-                    scene : DrawingScene | None = self._owner.scene()
-                    if scene and scene.properties.has(var_name):
-                        return str(scene.properties.value(var_name, slot, trail))
-                return f"{var_name}>"  # unresolved substitution
-            return re.sub(r'\{(\w+)\}', repl, property.value)
+                else:
+                    from .items.mixin.scene import ItemSceneMixin
+                    if isinstance(self._owner, ItemSceneMixin):
+                        scene = self._owner.scene()
+                        if scene and scene.properties.has(var_name):
+                            return str(
+                                scene.properties.value(var_name, slot, trail)
+                            )
+                return f"<{var_name}>"  # unresolved substitution
+            return re.sub(r'\{(\w+)\}', repl, val2str(property.value))
         # unknown properties
         logger().warning(f"Property '{name}' has unknown type: {type(property)}")
         return None
@@ -369,13 +373,15 @@ class PropertiesManager:
         property = self._dict[name]
         # get kind
         kind = self.kind(name)
+        if not isinstance(kind, DataKind):
+            raise TypeError("Bad kind")
         # inherent properties
         if isinstance(property, InherentProperty):
             if not callable(property.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             # convert from str to appropriate type if necessary
-            if isinstance(value, str) and kind is not None and kind != DataKind.STR:
+            if isinstance(value, str) and kind != DataKind.STR:
                 value = str2val(value, kind.types()[0].__name__)
             property.setter(self._owner, value)
             return True
@@ -506,7 +512,9 @@ class PropertiesManager:
         # remove text
         if property.text is not None:
             property.text.setParentItem(None)
-            property.text.scene().removeItem(property.text)
+            scene = property.text.scene()
+            if scene is not None:
+                scene.removeItem(property.text)
             property.text = None
         # notify property receivers
         self.signalChanges(name)
@@ -550,7 +558,10 @@ class PropertiesManager:
             if self.has(name):
                 self.setValue(name, other.value(name))
             else:
-                self.add(name, other.kind(name), other.value(name))
+                kind = other.kind(name)
+                if not isinstance(kind, DataKind):
+                    raise TypeError("Bad kind")
+                self.add(name, kind, other.value(name))
 
     @checked
     def text(self : Self, name : str) -> PropertyTextItem | None:
@@ -655,7 +666,7 @@ class PropertiesManager:
             bold       = bold,
             italic     = italic,
             underline  = underline,
-            parent     = self._owner
+            parent     = cast(QGraphicsItem, self._owner)
         )
         property.text.setVisible(visible)
         return True
@@ -664,29 +675,29 @@ class PropertiesManager:
     def editText(
         self       : Self,
         name       : str,
-        visible    : bool   | NoChange = NO_CHANGE,
-        cleat      : str    | NoChange = NO_CHANGE,
-        x          : float  | NoChange = NO_CHANGE,
-        y          : float  | NoChange = NO_CHANGE,
-        rotation   : float  | NoChange = NO_CHANGE,
-        mirror_h   : bool   | NoChange = NO_CHANGE,
-        mirror_v   : bool   | NoChange = NO_CHANGE,
-        autoflip   : bool   | NoChange = NO_CHANGE,
-        origin     : str    | NoChange = NO_CHANGE,
-        align_h    : AlignH | NoChange = NO_CHANGE,
-        align_v    : AlignV | NoChange = NO_CHANGE,
-        width      : float  | NoChange = NO_CHANGE,
-        height     : float  | NoChange = NO_CHANGE,
-        pad_left   : float  | NoChange = NO_CHANGE,
-        pad_right  : float  | NoChange = NO_CHANGE,
-        pad_top    : float  | NoChange = NO_CHANGE,
-        pad_bottom : float  | NoChange = NO_CHANGE,
-        color      : QColor | NoChange = NO_CHANGE,
-        font       : str    | NoChange = NO_CHANGE,
-        size       : float  | NoChange = NO_CHANGE,
-        bold       : bool   | NoChange = NO_CHANGE,
-        italic     : bool   | NoChange = NO_CHANGE,
-        underline  : bool   | NoChange = NO_CHANGE
+        visible    : bool         | NoChange = NO_CHANGE,
+        cleat      : HandleId     | NoChange = NO_CHANGE,
+        x          : float        | NoChange = NO_CHANGE,
+        y          : float        | NoChange = NO_CHANGE,
+        rotation   : float        | NoChange = NO_CHANGE,
+        mirror_h   : bool         | NoChange = NO_CHANGE,
+        mirror_v   : bool         | NoChange = NO_CHANGE,
+        autoflip   : bool         | NoChange = NO_CHANGE,
+        origin     : RectHandleId | NoChange = NO_CHANGE,
+        align_h    : AlignH       | NoChange = NO_CHANGE,
+        align_v    : AlignV       | NoChange = NO_CHANGE,
+        width      : float        | NoChange = NO_CHANGE,
+        height     : float        | NoChange = NO_CHANGE,
+        pad_left   : float        | NoChange = NO_CHANGE,
+        pad_right  : float        | NoChange = NO_CHANGE,
+        pad_top    : float        | NoChange = NO_CHANGE,
+        pad_bottom : float        | NoChange = NO_CHANGE,
+        color      : QColor       | NoChange = NO_CHANGE,
+        font       : str          | NoChange = NO_CHANGE,
+        size       : float        | NoChange = NO_CHANGE,
+        bold       : bool         | NoChange = NO_CHANGE,
+        italic     : bool         | NoChange = NO_CHANGE,
+        underline  : bool         | NoChange = NO_CHANGE
     ) -> bool:
         """
         Edit a property text item.
@@ -705,29 +716,29 @@ class PropertiesManager:
         # get PropertyTextItem instance
         pt = property.text
         # edit PropertyTextItem
-        if visible    is not NO_CHANGE: pt.setVisible(visible)
-        if cleat      is not NO_CHANGE: pt.setCleat(cleat)
-        if x          is not NO_CHANGE: pt.setX(x)
-        if y          is not NO_CHANGE: pt.setY(y)
-        if rotation   is not NO_CHANGE: pt.setRotation(rotation)
-        if mirror_h   is not NO_CHANGE: pt.setMirrorH(mirror_h)
-        if mirror_v   is not NO_CHANGE: pt.setMirrorV(mirror_v)
-        if autoflip   is not NO_CHANGE: pt.setAutoflip(autoflip)
-        if origin     is not NO_CHANGE: pt.setOrigin(origin)
-        if align_h    is not NO_CHANGE: pt.setAlignH(align_h)
-        if align_v    is not NO_CHANGE: pt.setAlignV(align_v)
-        if width      is not NO_CHANGE: pt.setWidth(width)
-        if height     is not NO_CHANGE: pt.setHeight(height)
-        if pad_left   is not NO_CHANGE: pt.setPadLeft(pad_left)
-        if pad_right  is not NO_CHANGE: pt.setPadRight(pad_right)
-        if pad_top    is not NO_CHANGE: pt.setPadTop(pad_top)
-        if pad_bottom is not NO_CHANGE: pt.setPadBottom(pad_bottom)
-        if color      is not NO_CHANGE: pt.setTextColor(color)
-        if font       is not NO_CHANGE: pt.setTextFont(font)
-        if size       is not NO_CHANGE: pt.setTextSize(size)
-        if bold       is not NO_CHANGE: pt.setTextBold(bold)
-        if italic     is not NO_CHANGE: pt.setTextItalic(italic)
-        if underline  is not NO_CHANGE: pt.setTextUnderline(underline)
+        if not isinstance(visible    , NoChange): pt.setVisible(visible)
+        if not isinstance(cleat      , NoChange): pt.setCleat(cleat)
+        if not isinstance(x          , NoChange): pt.setX(x)
+        if not isinstance(y          , NoChange): pt.setY(y)
+        if not isinstance(rotation   , NoChange): pt.setRotation(rotation)
+        if not isinstance(mirror_h   , NoChange): pt.setMirrorH(mirror_h)
+        if not isinstance(mirror_v   , NoChange): pt.setMirrorV(mirror_v)
+        if not isinstance(autoflip   , NoChange): pt.setAutoflip(autoflip)
+        if not isinstance(origin     , NoChange): pt.setOrigin(origin)
+        if not isinstance(align_h    , NoChange): pt.setAlignH(align_h)
+        if not isinstance(align_v    , NoChange): pt.setAlignV(align_v)
+        if not isinstance(width      , NoChange): pt.setWidth(width)
+        if not isinstance(height     , NoChange): pt.setHeight(height)
+        if not isinstance(pad_left   , NoChange): pt.setPadLeft(pad_left)
+        if not isinstance(pad_right  , NoChange): pt.setPadRight(pad_right)
+        if not isinstance(pad_top    , NoChange): pt.setPadTop(pad_top)
+        if not isinstance(pad_bottom , NoChange): pt.setPadBottom(pad_bottom)
+        if not isinstance(color      , NoChange): pt.setTextColor(color)
+        if not isinstance(font       , NoChange): pt.setTextFont(font)
+        if not isinstance(size       , NoChange): pt.setTextSize(size)
+        if not isinstance(bold       , NoChange): pt.setTextBold(bold)
+        if not isinstance(italic     , NoChange): pt.setTextItalic(italic)
+        if not isinstance(underline  , NoChange): pt.setTextUnderline(underline)
         return True
 
     @checked
@@ -757,7 +768,10 @@ class PropertiesManager:
         # unparent PropertyTextItem
         property.text.setParentItem(None)
         # remove from scene
-        property.text.scene().removeItem(property.text)
+        scene = property.text.scene()
+        if scene is None:
+            raise RuntimeError("No scene")
+        scene.removeItem(property.text)
         # remove reference
         property.text = None
         return True
@@ -765,28 +779,38 @@ class PropertiesManager:
     @checked
     def addMissingTextsFrom(self : Self, other : PropertiesManager) -> None:
         for pt in other.texts():
-            if not self.has(pt.name()):
+            name = pt.name()
+            if name is None:
+                continue
+            if not self.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
                 continue
-            if self.text(pt.name()) is not None:
+            if self.text(name) is not None:
                 continue
             self.addText(*pt.propertyTuple())
 
     @checked
     def removeTextsNotIn(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
-            if not other.has(pt.name()):
+            name = pt.name()
+            if name is None:
+                continue
+            if not other.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
                 continue
-            if other.text(pt.name()) is None:
-                self.delText(pt.name())
+            if other.text(name) is None:
+                self.delText(name)
 
     @checked
     def syncTextFrom(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
-            if not other.has(pt.name()):
+            name = pt.name()
+            if name is None:
+                continue
+            if not other.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
-            other_pt = other.text(pt.name())
+                continue
+            other_pt = other.text(name)
             if other_pt is None:
                 continue
             pt.setCleat(other_pt.cleat())

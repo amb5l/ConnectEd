@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class SymbolScene(DiagramScene):
-    """Scene for editing a single symbol."""
+    """Scene for editing a single symbol definition."""
 
     # instance attributes
     _symbol : SymbolDefinitionItem | None  # symbol being edited
@@ -44,15 +44,15 @@ class SymbolScene(DiagramScene):
         # store result
         self._brect = rect
 
+    def symbol(self : Self) -> SymbolDefinitionItem | None:
+        return self._symbol
+
     def drawBackground(
         self    : Self,
-        painter : QPainter,
-        rect    : QRectF
+        painter : QPainter | None,
+        rect    : QRectF | None
     ) -> None:
-        super().drawBackground(painter, rect)
-        if self._brect is not None:
-            pen = QPen(settings().get("theme/border"), 0, Qt.PenStyle.DashLine)
-            painter.save()
-            painter.setPen(pen)
-            painter.drawRect(self._brect)
-            painter.restore()
+        if painter is None or rect is None:
+            return
+        # background
+        painter.fillRect(rect, settings().get("theme/background"))

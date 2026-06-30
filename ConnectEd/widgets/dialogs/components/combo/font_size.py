@@ -69,7 +69,7 @@ class FontSizeComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def value(self : Self) -> float | None | NoChange:
+    def value(self : Self) -> float | NoChange:
         r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
         return r if r != self._initial else NO_CHANGE
 

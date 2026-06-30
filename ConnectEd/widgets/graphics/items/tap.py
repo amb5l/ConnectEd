@@ -19,14 +19,9 @@ from .node   import TapMajorNodeItem, TapMinorNodeItem
 from .handle import HandleItem
 from .grip   import MoveGripItem
 
-from .mixin import ItemMixin
-
 from .mixin.transform import ItemTransformMixin
 from .mixin.paint     import ItemPaintMixin
-from .mixin.handle    import ItemHandlesMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -36,14 +31,9 @@ if TYPE_CHECKING:
 
 class TapItem(
     FunctionalItem,
-    ItemMixin,
     ItemTransformMixin,
     ItemPaintMixin,
-    ItemHandlesMixin[TapHandleId],
-    ItemChangeMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin,
+    PrimaryItemMixin,
     QGraphicsLineItem
 ):
     # class attributes
@@ -73,12 +63,11 @@ class TapItem(
         return DataKind.TAP_HANDLE
 
     # instance attributes
+    _suffix      : str
     _line        : QLineF
     _major_node  : TapMajorNodeItem
     _minor_node  : TapMinorNodeItem
     _net_kind    : NetKind
-    _index_width : float
-    _range_width : float
 
 
     @checked
@@ -96,8 +85,6 @@ class TapItem(
         self._minor_node = TapMinorNodeItem(self)
         self._minor_node.setPos(PITCH, PITCH)
         self._net_kind = NetKind.UNRESOLVED
-        self._index_width = 15.0  # default fixed width
-        self._range_width = -1.0  # auto width
 
     @checked
     def onSettingsChanged(self : Self) -> None:
@@ -144,7 +131,7 @@ class TapItem(
         return self._suffix
 
     @checked
-    def setSuffix(self : Self | PropertiesMixin, suffix : str) -> None:
+    def setSuffix(self : Self, suffix : str) -> None:
         self._suffix = suffix
         pt = self.properties.text("Suffix")
         if pt is not None:
@@ -165,9 +152,9 @@ class TapItem(
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DiagramView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
             view.action("Rotate CW",  lambda: self.rotateCW(),  shortcut="]"),

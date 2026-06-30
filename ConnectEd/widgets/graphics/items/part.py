@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from typing import Self
 
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import PropertiesMixin, PropertyTextSpec, InherentProperty
+from ..properties import PropertyTextSpec, InherentProperty
 
-MixinSelf = Self | PropertiesMixin
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..properties import PropertiesManager
+
 
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
@@ -34,23 +39,26 @@ class PartItemMixin:
     _label : str
     _name  : str
 
+    # external instance attributes
+    properties : PropertiesManager  # provided by PropertiesMixin
+
     @checked
-    def initPart(self : MixinSelf) -> None:
+    def initPart(self : Self) -> None:
         self._label = ""
         self._name = ""
 
-    def label(self : MixinSelf) -> str:
+    def label(self : Self) -> str:
         return self._label
 
     @checked
-    def setLabel(self : MixinSelf, label : str) -> None:
+    def setLabel(self : Self, label : str) -> None:
         self._label = label
         self.properties.signalChanges("Label")
 
-    def name(self : MixinSelf) -> str:
+    def name(self : Self) -> str:
         return self._name
 
     @checked
-    def setName(self : MixinSelf, name : str) -> None:
+    def setName(self : Self, name : str) -> None:
         self._name = name
         self.properties.signalChanges("Name")

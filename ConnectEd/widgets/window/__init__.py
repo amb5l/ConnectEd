@@ -11,7 +11,7 @@ from PyQt6.QtCore    import Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMdiSubWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
-from ...app import app, settings
+from ...app import app, logger, settings
 
 from ...core.check import checked
 from ...core.defs  import APP_NAME
@@ -56,6 +56,8 @@ class Window(QMainWindow):
         app().setWindow(self)
         # default position
         screen = self.screen()
+        if screen is None:
+            raise RuntimeError("No screen")
         screen_size = screen.size()
         self.resize(screen_size.width() // 2, screen_size.height() // 2)
         frame_geometry = self.frameGeometry()
@@ -123,7 +125,10 @@ class Window(QMainWindow):
             messages.appendPlainText("ConnectEd ready!")
         app().ready.window.emit()
 
-    def closeEvent(self : Self, event : QCloseEvent) -> None:
+    def closeEvent(self : Self, a0 : QCloseEvent | None) -> None:
+        if a0 is None:
+            logger().warning("No close event")
+            return
         try:
             self._mdi_area.subWindowActivated.disconnect(
                 self._menu_bar._actions.onSubWindowActivated
@@ -148,7 +153,7 @@ class Window(QMainWindow):
         except TypeError: # workaround for Qt cleanup
             pass
         settings().set("startup/geometry", self.saveGeometry().data())
-        super().closeEvent(event)
+        super().closeEvent(a0)
 
     def _onSubWindowActivated(
         self      : Self,
@@ -169,9 +174,7 @@ class Window(QMainWindow):
         return self._menu_bar
 
     @checked
-    def statusBar(self : Self) -> StatusBar | None:
-        if not hasattr(self, "_status_bar"):
-            return None
+    def statusBar(self : Self) -> StatusBar:
         return self._status_bar
 
     @checked
@@ -181,11 +184,16 @@ class Window(QMainWindow):
         return self._navigator_dock
 
     @checked
-    def navigator(self : Self) -> Navigator | None:
+    def navigator(self : Self) -> Navigator:
         dock = self.navigatorDock()
         if dock is None:
-            return None
-        return dock.widget()
+            raise RuntimeError("Navigator dock not initialized")
+        widget = dock.widget()
+        if widget is None:
+            raise RuntimeError("Navigator widget not initialized")
+        if not isinstance(widget, Navigator):
+            raise RuntimeError("Navigator widget is not a Navigator")
+        return widget
 
     @checked
     def netlistDock(self : Self) -> NetlistBrowserDock | None:
@@ -198,7 +206,8 @@ class Window(QMainWindow):
         dock = self.netlistDock()
         if dock is None:
             return None
-        return dock.widget()
+        widget = dock.widget()
+        return widget if isinstance(widget, NetlistBrowser) else None
 
     @checked
     def messagesDock(self : Self) -> MessagesViewDock | None:
@@ -211,7 +220,7 @@ class Window(QMainWindow):
         dock = self.messagesDock()
         if dock is None:
             return None
-        return dock.text_view
+        return dock._text_view
 
     @checked
     def transcriptDock(self : Self) -> TranscriptViewDock | None:
@@ -224,7 +233,7 @@ class Window(QMainWindow):
         dock = self.transcriptDock()
         if dock is None:
             return None
-        return dock.text_view
+        return dock._text_view
 
     @checked
     def logDock(self : Self) -> LogViewDock | None:
@@ -237,7 +246,7 @@ class Window(QMainWindow):
         dock = self.logDock()
         if dock is None:
             return None
-        return dock.text_view
+        return dock._text_view
 
     @checked
     def aiManager(self : Self) -> AiManager | None:
@@ -270,7 +279,7 @@ class Window(QMainWindow):
         return chats[0]
 
     @checked
-    def mdiArea(self : Self) -> MdiArea | None:
+    def mdiArea(self : Self) -> MdiArea:
         if not hasattr(self, "_mdi_area"):
-            return None
+            raise RuntimeError("Window MDI area not initialized")
         return self._mdi_area

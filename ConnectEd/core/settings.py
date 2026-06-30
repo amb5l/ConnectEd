@@ -17,7 +17,7 @@ from pathlib import Path
 
 import yaml
 
-from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QPointF, QSizeF
+from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QPointF
 
 from ..app import logger
 
@@ -70,6 +70,8 @@ _APP_LEAF_KINDS : dict[str, str] = {
     "prefs/mouse/drag"               : "int",
     "prefs/mouse/wheel"              : "int",
     "startup/geometry"               : "bytes",
+    "ui/default/font/size"           : "int",
+    "ui/navigator/font/size"         : "int",
 }
 
 
@@ -119,13 +121,11 @@ def _applyRuntimeDefaults(settings : dict[str, Any]) -> None:
     sheet_name = settings["defaults"]["sheet"]["name"]
     settings["defaults"]["sheet"]["size"] = DEFS["sheets"][sheet_name]
 
-    ext = settings["defaults"]["extents"]
-    settings["defaults"]["extents"] = QSizeF(float(ext[0]), float(ext[1]))
-
     pitch = settings["defaults"]["grid"]["pitch"]
-    settings["defaults"]["grid"]["pitch"] = QPointF(
-        float(pitch[0]), float(pitch[1])
-    )
+    if isinstance(pitch, list):
+        settings["defaults"]["grid"]["pitch"] = QPointF(
+            float(pitch[0]), float(pitch[1])
+        )
 
 
 @checked
@@ -275,7 +275,10 @@ class Settings(QObject):
 
     def _getSettingKind(self : Self, path : str) -> str | None:
         """Determine the expected type of a setting based on FACTORY_SETTINGS."""
-        value = self._get(FACTORY_SETTINGS, path)
+        try:
+            value = self._get(FACTORY_SETTINGS, path)
+        except KeyError:
+            return None
         return None if isinstance(value, dict) else type(value).__name__
 
     def _load(
@@ -297,7 +300,7 @@ class Settings(QObject):
                 kind = self._getSettingKind(full_path)
                 if kind is not None:
                     logger().debug(f"Loading setting: {full_path} = {value} ({kind})")
-                    settings[key] = str2val(value, kind)
+                    settings[key] = str2val(str(value), kind)
                 else:
                     logger().warning(f"Unknown setting: {full_path}")
 

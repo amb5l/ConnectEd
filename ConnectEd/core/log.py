@@ -1,8 +1,10 @@
-import os, logging, weakref
+from __future__ import annotations
 
-from typing import Self
+import os
+import logging
+import weakref
 
-from PyQt6.QtWidgets import QPlainTextEdit
+from typing import Self, Protocol
 
 from .defs import APP_NAME, LOG_FILENAME
 
@@ -16,13 +18,20 @@ class RelativePathFormatter(logging.Formatter):
         return super().format(record)
 
 
-class LogViewerHandler(logging.Handler):
-    log_viewer : QPlainTextEdit
+class LogViewerProtocol(Protocol):
+    _handler : LogViewerHandler
 
-    def __init__(self : Self, log_viewer : QPlainTextEdit) -> None:
+    def appendPlainText(self : Self, text : str) -> None:
+        ...
+
+
+class LogViewerHandler(logging.Handler):
+    log_viewer : LogViewerProtocol
+
+    def __init__(self : Self, log_viewer : LogViewerProtocol) -> None:
         super().__init__()
         self.log_viewer = weakref.proxy(log_viewer)
-        self.log_viewer.handler = self
+        self.log_viewer._handler = self
 
     def emit(self : Self, record : logging.LogRecord) -> None:
         try:
@@ -51,11 +60,12 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def addLogViewerHandler(log_viewer : QPlainTextEdit) -> None:
+def addLogViewerHandler(log_viewer : LogViewerProtocol) -> LogViewerHandler:
     log_viewer_handler = LogViewerHandler(log_viewer)
     log_viewer_handler.setLevel(logging.DEBUG)  # Or whatever level you prefer
     log_viewer_handler.setFormatter(formatter)  # Use the same formatter as other handlers
     logger.addHandler(log_viewer_handler)
-    return log_viewer_handler # return the handler so it can be removed later
+    return log_viewer_handler
+
 
 # TODO review logging levels for console, file, viewer

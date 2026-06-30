@@ -7,33 +7,26 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.defs  import PITCH
-from ....core.types import RectHandleId, PortHandleId, DataKind
+from ....core.types import HandleId, RectHandleId, PortHandleId, DataKind
 from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
-from .role import FunctionalItem
-
 from .port_pin import PortPinArrowItem, PortPinLineItem
+from .grip     import GripItem, MoveGripItem, ResizeGripItem
 
 from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
+    from ..views.diagram import DiagramView
 
 
 class PortArrowItem(PortPinArrowItem):
     def resourcesName(self : Self) -> str:
         return "PortArrow"
 
-class PortItem(
-    FunctionalItem,
-    ItemTransformMixin,
-    ItemHandlesMixin[PortHandleId],
-    PortPinLineItem
-):
+class PortItem(ItemTransformMixin, PortPinLineItem):
     # class attributes
     _NODE_POS  = 0
     _ARROW_CLS = PortArrowItem
@@ -46,7 +39,7 @@ class PortItem(
                 cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
-    _XML_CHILDREN = {"PropertyText"}
+    _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod
     def handleIdType(cls) -> type[PortHandleId]:
@@ -56,15 +49,19 @@ class PortItem(
     def handleIdKind(cls) -> DataKind:
         return DataKind.PORT_HANDLE
 
+    @classmethod
+    def handleGripType(cls, id : HandleId) -> type[GripItem]:
+        return MoveGripItem if id == PortHandleId.NODE else ResizeGripItem
+
     @checked
     def moveHandleBy(self : Self, _ : PortHandleId, d : QPointF) -> None:
         self.setPos(self.pos() + d)
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
             view.action(

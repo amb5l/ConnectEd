@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Self, overload
+from typing      import Self, overload
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF, QRectF, \
                             QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
+from PyQt6.QtWidgets import QGraphicsPathItem, QMenu, QGraphicsItem
 from PyQt6.QtGui     import QAction
 
 from ....app import logger
@@ -19,22 +20,25 @@ from ..properties   import InherentProperty
 from ..xml          import fromXmlProperties
 from ..painter_path import PainterPath
 
-from .grip import VertexGripItem, SegmentGripItem, ResizeGripItem
+from .grip import GripShape, GripShapeMixin, GripItem, ResizeGripItem
 
 from .role import DecorativeItem
 
-from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
 from .mixin.xml       import ItemXmlMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
-    from ..views.drawing  import DrawingView
+    from ..scenes.diagram import DiagramScene
+    from ..views.diagram  import DiagramView
 
 
-class PolyVtxItem(VertexGripItem):
+class PolyVtxItem(GripShapeMixin, GripItem):
+    # class attributes
+    _SHAPE = GripShape.DIAMOND
+
     # instance attributes
     _index : int  # index of vertex
 
@@ -54,13 +58,15 @@ class PolyVtxItem(VertexGripItem):
 
     @checked
     def moveBy(
-        self   : Self,
-        dx_d   : float | QPointF,
-        dy     : float | None = None
+        self : Self,
+        dx   : float | QPointF,
+        dy   : float | None = None
     ) -> None:
-        delta = dx_d if isinstance(dx_d, QPointF) \
-            else QPointF(dx_d, dy if dy is not None else 0.0)
-        parent : PolylineItem = self.parentItem()
+        delta = dx if isinstance(dx, QPointF) \
+            else QPointF(dx, dy if dy is not None else 0.0)
+        parent = self.parentItem()
+        if not isinstance(parent, PolylineItem):
+            raise TypeError("Bad parent")
         if self.index() == 0 and parent.selectMode() == 0:
             parent.setPos(parent.pos() + delta)
         else:
@@ -69,9 +75,9 @@ class PolyVtxItem(VertexGripItem):
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         items = []
         return items
@@ -84,7 +90,10 @@ class PolyVtxItem(VertexGripItem):
         xw.writeEndElement()
 
 
-class PolySegItem(SegmentGripItem):
+class PolySegItem(GripShapeMixin, GripItem):
+    # class attributes
+    _SHAPE = GripShape.ARROW
+
     # instance attributes
     _v1    : PolyVtxItem   # start vertex
     _v2    : PolyVtxItem   # end vertex
@@ -129,9 +138,9 @@ class PolySegItem(SegmentGripItem):
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         items = []
         a = self.sweep()
@@ -146,33 +155,49 @@ class PolySegItem(SegmentGripItem):
     def _toLine(self : Self) -> None:
         if self.sweep() is None:
             return
-        scene : DrawingScene = self.scene()
+        scene= self.scene()
+        if scene is None:
+            raise TypeError("No scene")
         scene.editPolySeg(self, None, undoable=True)
 
     @checked
-    def _toArc(self : Self, view : DrawingView) -> None:
-        dialog = ArcDialog(self.sweep(), view)
+    def _toArc(self : Self, view : DiagramView) -> None:
+        sweep = self.sweep()
+        if sweep is None:
+            sweep = 0.0
+        dialog = ArcDialog(sweep, view)
         if dialog.exec():
-            scene : DrawingScene = self.scene()
+            scene = self.scene()
+            if scene is None:
+                raise TypeError("No scene")
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
+
+
+@dataclass
+class PolylineMoveState:
+    pos      : QPointF
+    vertices : list[QPointF]
 
 
 class PolylineResizeGripItem(ResizeGripItem):
     """Grip for resizing polyline items."""
 
     @checked
-    def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:
-        item : PolylineItem = self.item()
+    def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:  # pyright: ignore[reportIncompatibleMethodOverride]
+        item = self.item()
+        if not isinstance(item, PolylineItem):
+            raise TypeError("Bad item")
         return self.scenePos(), [v.pos() for v in item.vertices()]
 
     @checked
-    def moveRestore(
-        self  : Self,
-        state : tuple[QPointF, list[QPointF]]
-    ) -> None:
-        item : PolylineItem = self.item()
+    def moveRestore(self : Self, state : tuple[QPointF, list[QPointF]]) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+        item = self.item()
+        if not isinstance(item, PolylineItem):
+            raise TypeError("Bad item")
         pos, vertices = state
-        self.moveBy(pos - self.scenePos())
+        self.moveBy(
+            pos.x() - self.scenePos().x(), pos.y() - self.scenePos().y()
+        )
         for i, v in enumerate(item.vertices()):
             v.setPos(vertices[i])
 
@@ -215,9 +240,10 @@ class PolylineItem(
         pos      : QPointF | None = None,
         vertices : list[QPointF] | None = None,
         closed   : bool = False,
+        parent   : QGraphicsItem | None = None,
         fresh    : bool = True
     ) -> None:
-        super().__init__()
+        super().__init__(parent)
         self.initItem(fresh)
         self.setPos(pos or QPointF())
         # initialize vertices and segments
@@ -233,7 +259,7 @@ class PolylineItem(
         self._select_mode = 1 if fresh else 0
 
     @checked
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         """Initialize vertices, segments, and APs on scene change."""
         super().onSceneChanged(scene)
         for vtx in self._vertices:
@@ -245,7 +271,7 @@ class PolylineItem(
                 h._grip.onSceneChanged(scene)
 
     def onSelectionModeChanged(self : Self) -> None:
-        scene : DrawingScene | None = self.scene()
+        scene : DiagramScene | None = self.scene()
         if scene is not None:
             scene.updateGrips()
 
@@ -264,7 +290,7 @@ class PolylineItem(
     @checked
     def addVertex(
         self   : Self,
-        pos   : QPointF | None = None,
+        pos   : QPointF,
         sweep : float | None = None
     ) -> PolyVtxItem:
         """Add a new vertex."""
@@ -348,8 +374,8 @@ class PolylineItem(
     @overload
     def setPoints(
         self : Self,
-        x1   : float | int,
-        y1   : float | int,
+        p1   : float | int,
+        p2   : float | int,
         x2   : float | int,
         y2   : float | int
     ) -> None:
@@ -357,21 +383,24 @@ class PolylineItem(
 
     @checked
     def setPoints(
-        self : Self,
-        p1_x1 : QPointF | float | int,
-        p2_y1 : QPointF | float | int,
+        self  : Self,
+        p1    : QPointF | float | int,
+        p2    : QPointF | float | int,
         x2    : float | int | None = None,
         y2    : float | int | None = None
     ) -> None:
         # normalise arguments
-        if x2 is None or y2 is None:
-            x1 = p1_x1.x()
-            y1 = p1_x1.y()
-            x2 = p2_y1.x()
-            y2 = p2_y1.y()
+        if isinstance(p1, QPointF) and isinstance(p2, QPointF):
+            x1 = p1.x()
+            y1 = p1.y()
+            x2 = p2.x()
+            y2 = p2.y()
+        elif isinstance(p1, float | int) and isinstance(p2, float | int) \
+         and x2 is not None and y2 is not None:
+            x1 = p1
+            y1 = p2
         else:
-            x1 = p1_x1
-            y1 = p2_y1
+            raise TypeError("Bad arguments")
         # x1,y1 = top left; x2,y2 = bottom right
         x1, x2 = min(x1, x2), max(x1, x2)
         y1, y2 = min(y1, y2), max(y1, y2)
@@ -413,7 +442,7 @@ class PolylineItem(
             case RectHandleId.MIDDLE_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
             case RectHandleId.MIDDLE_CENTER:
-                self.moveBy(d)
+                self.moveBy(d.x(), d.y())
             case RectHandleId.MIDDLE_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
             case RectHandleId.BOTTOM_LEFT:
@@ -425,11 +454,19 @@ class PolylineItem(
             case _:
                 raise ValueError(f"Invalid handle: {id}")
 
+    def setGripsVisible(self : Self, visible : bool) -> None:
+        super().setGripsVisible(visible)
+        show_vtx = visible and self.selectMode() == 1
+        for i, vertex in enumerate(self._vertices):
+            vertex.setVisible((visible and i == 0) or show_vtx)
+        for segment in self._segments:
+            segment.setVisible(show_vtx)
+
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         items = []
         return items
@@ -460,19 +497,27 @@ class PolylineItem(
                 v_prev = v.pos()
                 path.moveTo(v_prev)
             else:
-                if self._segments[i-1].sweep() is None:
+                sweep = self._segments[i-1].sweep()
+                if sweep is None:
                     path.lineTo(v.pos())
                 else:
-                    path.arcSpanTo(v.pos(), self._segments[i-1].sweep())
-                self._segments[i-1].setPos(path.currentMidPos())
-                self._segments[i-1].setRotation(path.currentAngle())
+                    path.arcSpanTo(v.pos(), sweep)
+                mid_pos = path.currentMidPos()
+                if mid_pos is None:
+                    raise TypeError("No mid pos")
+                angle = path.currentAngle()
+                if angle is None:
+                    raise TypeError("No angle")
+                self._segments[i-1].setPos(mid_pos)
+                self._segments[i-1].setRotation(angle)
                 v_prev = v.pos()
         # handle closed case
         if self._closed:
-            if self._segments[-1].sweep() is None:
+            sweep = self._segments[-1].sweep()
+            if sweep is None:
                 path.lineTo(self._vertices[0].pos())
             else:
-                path.arcSpanTo(self._vertices[0].pos(), self._segments[-1].sweep())
+                path.arcSpanTo(self._vertices[0].pos(), sweep)
             self._segments[-1].setPos(path.currentMidPos())
             self._segments[-1].setRotation(path.currentAngle())
             path.closeSubpath()
@@ -505,7 +550,11 @@ class PolylineItem(
 
     @checked
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+    def fromXml(
+        cls    : type[Self],
+        xr     : QXmlStreamReader,
+        parent : QGraphicsItem | None = None
+    ) -> Self:
         xml_item_name = cls.__name__.removesuffix("Item")
         instance : PolylineItem = cls(fresh=False)
         fromXmlProperties(instance, xr)
@@ -545,26 +594,23 @@ class PolylineItem(
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""
         self._segments = []
-        if len(self._vertices) < 2:  # degenerate case
+        n = len(self._vertices)
+        if n < 2:  # degenerate case
             return
-        for i in range(len(self._vertices) - 1):
+        for i in range(n - 1):
             v1 = self._vertices[i]
             v2 = self._vertices[i+1]
-            self._segments.append(PolySegItem(self, v1, v2, None))
-        if self._closed:
-            self._segments.append(PolySegItem(self, v2, self._vertices[0], None))
+            self._segments.append(PolySegItem(self, v1, v2))
+            if i == n - 1 and self._closed:
+                self._segments.append(PolySegItem(self, v2, self._vertices[0]))
 
     @checked
-    def _cloneAfter(
-        self   : Self,
-        source : PolylineItem,
-        clone  : PolylineItem,
-    ) -> None:
+    def _cloneAfter(self : Self, clone : Self) -> None:
         """Copy vertex graph and segment sweeps after ItemCloneMixin clone."""
-        for i in range(1, source.vertexCount()):
+        for i in range(1, self.vertexCount()):
             clone.addVertex(
-                source.vertex(i).scenePos(),
-                source.segment(i - 1).sweep(),
+                self.vertex(i).scenePos(),
+                self.segment(i - 1).sweep(),
             )
-        if source.closed():
-            clone.close(source.segment(source.vertexCount() - 1).sweep())
+        if self.closed():
+            clone.close(self.segment(self.vertexCount() - 1).sweep())

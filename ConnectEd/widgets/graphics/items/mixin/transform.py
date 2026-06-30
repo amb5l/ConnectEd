@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing      import Self, overload
+from typing      import Self, TypeVar, Generic
 from dataclasses import replace
 
 from PyQt6.QtCore    import QPointF
@@ -10,7 +10,10 @@ from PyQt6.QtGui     import QTransform
 from .....core.check import checked
 from .....core.types import DataKind, HandleId
 
-from ...properties import InherentProperty, PropertiesMixin
+from ...properties import InherentProperty, PropertiesManager, PropertiesMixin
+
+from ..protocols import OnSceneOrientationChangedProtocol
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -22,7 +25,7 @@ class ItemTransformMixin:
     """Combines previous position, rotation and mirror mixins."""
 
     # class attributes
-    _ORIGIN : HandleId | None  # undefined = no origin on this item
+    _ORIGIN : HandleId  # undefined = no origin on this item
     _PROPERTIES_POS = {
         "X" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
@@ -63,7 +66,7 @@ class ItemTransformMixin:
         _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
     _PROPERTY_ORIGIN = InherentProperty["ItemTransformMixin"](
         kind   = None,
-        worthy = lambda self: self.origin() is not None,
+        worthy = lambda self: self.hasOrigin(),
         getter = lambda self: self.origin(),
         setter = lambda self, value: self.setOrigin(value)
     )
@@ -81,69 +84,65 @@ class ItemTransformMixin:
     }
 
     # instance attributes
-    _mirror_h : bool
-    _mirror_v : bool
+    _origin    : HandleId
+    _mirror_h  : bool
+    _mirror_v  : bool
+
+    # external instance attributes
+    properties : PropertiesManager  # provided by PropertiesMixin
 
     @checked
-    def initTransform(self : Self | QGraphicsItem) -> None:
+    def initTransform(self : Self) -> None:
         self._mirror_h = False
         self._mirror_v = False
         if hasattr(self, "_ORIGIN"):
-            from .handle import ItemHandlesMixin
-            if not isinstance(self, ItemHandlesMixin):
-                raise TypeError("ItemTransformMixin requires ItemHandlesMixin")
             self.setOrigin(self._ORIGIN)
 
     @checked
-    def onPositionChanged(
-        self : Self | QGraphicsItem | PropertiesMixin,
-        _pos : QPointF | None = None
-    ) -> None:
-        self.properties.signalChanges(["X", "Y"])
+    def onPositionChanged(self : Self, _pos : QPointF | None = None) -> None:
+        if isinstance(self, PropertiesMixin):
+            self.properties.signalChanges(["X", "Y"])
+        return
 
     @checked
-    def onRotationChanged(self : Self | PropertiesMixin, _angle : float) -> None:
+    def onRotationChanged(self : Self, _angle : float) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         # process self scene rotation changes
-        if hasattr(self, "onSceneRotationChanged"):
-            self.onSceneRotationChanged()
+        if isinstance(self, OnSceneOrientationChangedProtocol):
+            self.onSceneOrientationChanged()
         # propagate to children
         for child in self.childItems():
-            if hasattr(child, "onSceneRotationChanged"):
-                child.onSceneRotationChanged()
+            if isinstance(child, OnSceneOrientationChangedProtocol):
+                child.onSceneOrientationChanged()
         # broadcast change
         self.properties.signalChanges("Rotation")
 
     @checked
-    def onMirrorChanged(self : Self | PropertiesMixin) -> None:
+    def onMirrorChanged(self : Self) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         # rebuild local transform to include mirror scale
         self.updateTransform()
         # process self scene mirror change
-        if hasattr(self, "onSceneMirrorChanged"):
-            self.onSceneMirrorChanged()
+        if isinstance(self, OnSceneOrientationChangedProtocol):
+            self.onSceneOrientationChanged()
         # propagate to children
         for child in self.childItems():
-            if hasattr(child, "onSceneMirrorChanged"):
-                child.onSceneMirrorChanged()
+            if isinstance(child, OnSceneOrientationChangedProtocol):
+                child.onSceneOrientationChanged()
         # broadcast changes
         self.properties.signalChanges(["MirrorH", "MirrorV"])
 
-    @overload
-    def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:
-        ...
-
-    @overload
-    def moveBy(self : Self | QGraphicsItem, d : QPointF) -> None:
-        ...
-
     @checked
     def moveBy(
-        self : Self | QGraphicsItem,
-        dx_d : float | QPointF,
-        dy   : float | None = None
+        self : Self,
+        dx   : float,
+        dy   : float
     ) -> None:
         """Move item by scene offset, accounting for parent scene rotation."""
-        dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
-        dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         a = self.parentSceneRotation()
         match a:
             case 0   : QGraphicsItem.moveBy(self,  dx,  dy)
@@ -156,16 +155,22 @@ class ItemTransformMixin:
                 QGraphicsItem.moveBy(self, rotated_offset.x(), rotated_offset.y())
 
     @checked
-    def rotateCW(self : Self | QGraphicsItem) -> None:
+    def rotateCW(self : Self) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         self.setRotation((self.rotation() + 90.0) % 360.0)
 
     @checked
-    def rotateCCW(self : Self | QGraphicsItem) -> None:
+    def rotateCCW(self : Self) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         self.setRotation((self.rotation() - 90.0) % 360.0)
 
     @checked
-    def parentSceneRotation(self : Self | QGraphicsItem) -> float:
+    def parentSceneRotation(self : Self) -> float:
         """Returns total effective rotation angle (degrees) of the parent."""
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         angle = 0.0
         item = self.parentItem()
         while item is not None:
@@ -174,8 +179,10 @@ class ItemTransformMixin:
         return angle % 360.0
 
     @checked
-    def sceneRotation(self : Self | QGraphicsItem) -> float:
+    def sceneRotation(self : Self) -> float:
         """Returns total effective rotation angle (degrees) of the item."""
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         return (self.parentSceneRotation() + self.rotation()) % 360.0
 
     @checked
@@ -188,8 +195,10 @@ class ItemTransformMixin:
         self.onMirrorChanged()
 
     @checked
-    def parentSceneMirrorH(self : Self | QGraphicsItem) -> bool:
+    def parentSceneMirrorH(self : Self) -> bool:
         """Returns effective horizontal mirroring of the parent."""
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         mirror_h = False
         item = self.parentItem()
         while item is not None:
@@ -199,7 +208,7 @@ class ItemTransformMixin:
         return mirror_h
 
     @checked
-    def sceneMirrorH(self : Self | QGraphicsItem) -> bool:
+    def sceneMirrorH(self : Self) -> bool:
         """Returns effective horizontal mirroring of this item."""
         return self.parentSceneMirrorH() ^ self.mirrorH()
 
@@ -213,10 +222,12 @@ class ItemTransformMixin:
         self.onMirrorChanged()
 
     @checked
-    def parentSceneMirrorV(self : Self | QGraphicsItem) -> bool:
+    def parentSceneMirrorV(self : Self) -> bool:
         """Returns effective vertical mirroring of the parent."""
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         mirror_v = False
-        item : Self | QGraphicsItem | None = self.parentItem()
+        item = self.parentItem()
         while item is not None:
             if isinstance(item, ItemTransformMixin):
                 mirror_v ^= item.mirrorV()
@@ -224,40 +235,48 @@ class ItemTransformMixin:
         return mirror_v
 
     @checked
-    def sceneMirrorV(self : Self | QGraphicsItem) -> bool:
+    def sceneMirrorV(self : Self) -> bool:
         """Returns effective vertical mirroring of this item."""
         return self.parentSceneMirrorV() ^ self.mirrorV()
 
     @checked
-    def origin(self : Self) -> HandleId | None:
-        return getattr(self, "_origin", None)
+    def hasOrigin(self : Self) -> bool:
+        return hasattr(self, "_origin")
 
     @checked
-    def setOrigin(
-        self : Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin,
-        id   : HandleId
-    ) -> None:
+    def origin(self : Self) -> HandleId:
+        return self._origin
+
+    @checked
+    def setOrigin(self : Self, id : HandleId) -> None:
         """Set origin handle without shifting the item in scene."""
-        old_id   = self.origin()
-        old_spos : QPointF | None = None
-        if self.scene() is not None and old_id is not None and old_id != id \
-        and hasattr(self, "_handles"):
-            old_spos = self.getHandle(old_id).scenePos()
+        from .handle import ItemHandlesMixin
+        if not isinstance(self, QGraphicsItem) \
+        or not isinstance(self, ItemHandlesMixin):
+            raise TypeError("Bad host")
+        if not isinstance(id, self.handleIdType()):
+            raise TypeError("Bad handle ID type")
+        old_id = None
+        old_spos = None
+        if self.hasOrigin():
+            old_id = self._origin
+            if self.scene() is not None and old_id != id:
+                old_spos = self.getHandle(old_id).scenePos()
         self._origin = id
         self.updateTransform()
-        if hasattr(self, "_handles"):
-            for handle in self._handles.values():
-                handle.grip().updatePath()
+        for handle in self.handles().values():
+            handle.grip().updatePath()
         self.onOriginChanged(old_id, id)
-        if old_spos is not None and old_id is not None:
+        if old_id is not None and old_spos is not None:
             actual = self.getHandle(old_id).scenePos()
             parent = self.parentItem()
             if parent is None:
                 delta = old_spos - actual
                 QGraphicsItem.moveBy(self, delta.x(), delta.y())
             else:
-                pd = parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
-                QGraphicsItem.moveBy(self, pd.x(), pd.y())
+                parent_delta = \
+                    parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
+                QGraphicsItem.moveBy(self, parent_delta.x(), parent_delta.y())
         self.properties.signalChanges("Origin")
 
     def onOriginChanged(
@@ -270,6 +289,10 @@ class ItemTransformMixin:
 
     @checked
     def getOriginHandle(self : Self | ItemHandlesMixin) -> HandleItem:
+        from .handle import ItemHandlesMixin
+        if not isinstance(self, ItemTransformMixin) \
+        or not isinstance(self, ItemHandlesMixin):
+            raise TypeError("Bad host")
         return self.getHandle(self._origin)
 
     @checked
@@ -285,6 +308,11 @@ class ItemTransformMixin:
           `transformOriginPoint`. The shift collapses to a no-op, so
           `setTransform` just carries the mirror scale.
         """
+        from .handle import ItemHandlesMixin
+        if not isinstance(self, QGraphicsItem)     \
+        or not isinstance(self, ItemTransformMixin) \
+        or not isinstance(self, ItemHandlesMixin):
+            raise TypeError("Bad host")
         # pick pivot: origin handle position (if any), else local (0, 0)
         if getattr(self, "_ORIGIN", None) is not None \
         and getattr(self, "_origin", None) is not None \

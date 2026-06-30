@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, TypeAlias
+from typing          import Self, cast
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
@@ -8,7 +8,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.check import checked
-from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
+from .....core.utils import val2str
+from .....core.xml   import toXmlStartElement, toXmlEndElement, \
+                            fromXml, copyXml, pasteXml, XmlProtocol
 
 from ...xml import toXmlProperties, fromXmlProperties
 
@@ -28,20 +30,17 @@ from ...items.block     import BlockItem
 from ...items.symbol    import SymbolDefinitionItem, SymbolInstanceItem
 
 # connectivity items
-from ...items.segment   import SegmentItem, SegmentPreviewItem
+from ...items.segment   import SegmentItem
 from ...items.node      import NodeItem, FreeNodeItem, FixedNodeItem
 from ...items.net_label import NetLabelItem
 
-from ...items.mixin   import ItemXmlMixin
+from ...items.mixin.xml import ItemXmlMixin
 
 from .netlist import _netNameAndSuffix
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DiagramScene
-    MixinSelf: TypeAlias = Self | DiagramScene
-else:
-    MixinSelf = Self
 
 
 class DiagramSceneXmlMixin:
@@ -51,13 +50,17 @@ class DiagramSceneXmlMixin:
 
     @checked
     def toXml(
-        self  : MixinSelf,
+        self  : Self,
         xw    : QXmlStreamWriter,
-        items : list[QGraphicsItem] | None = None,
+        items : QGraphicsItem | list[QGraphicsItem] | None = None,
     ) -> None:
+        from . import DiagramScene
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         full_scene = items is None
         if full_scene:
             items = self.items()
+        elif not isinstance(items, list):
+            items = [items]
         # filter out unparented items
         items = [item for item in items if item.parentItem() is None]
         if not items:
@@ -87,13 +90,28 @@ class DiagramSceneXmlMixin:
             toXmlEndElement(xw)
 
     @checked
+    def copy(
+        self  : Self,
+        items : QGraphicsItem | list[QGraphicsItem],
+        pos   : QPointF | None = None
+    ) -> None:
+        from . import DiagramScene
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        items = self._topItems(items)
+        metadata = None
+        if pos is not None:
+            metadata = {"X" : val2str(pos.x()), "Y" : val2str(pos.y())}
+        copyXml(cast(list[XmlProtocol], items), metadata)
+
+    @checked
     def _toXmlSymbolDefinitions(
-        self  : MixinSelf,
+        self  : Self,
         xw    : QXmlStreamWriter,
         items : list[QGraphicsItem]
     ) -> None:
-        """Serialise symbols that are used in the scene.
-        """
+        """Serialise symbols that are used in the scene."""
+        from . import DiagramScene
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         definitions = self.symbolDefinitions()
         instances = [
             item for item in items if isinstance(item, SymbolInstanceItem)
@@ -117,7 +135,9 @@ class DiagramSceneXmlMixin:
         toXmlEndElement(xw)
 
     @checked
-    def _toXmlNetlist(self : MixinSelf, xw : QXmlStreamWriter) -> None:
+    def _toXmlNetlist(self : Self, xw : QXmlStreamWriter) -> None:
+        from . import DiagramScene
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         toXmlStartElement(xw, "Netlist")
         id_by_node = {
             node: node_id for node_id, node in enumerate(self.netlist.nodes())
@@ -130,7 +150,7 @@ class DiagramSceneXmlMixin:
                 node.toXml(xw, id_by_node[node])
         for subnet in sorted(
             self.netlist.subnets().values(),
-            key=lambda s : s.id,
+            key=lambda s : -1 if s.id is None else s.id,
         ):
             xw.writeStartElement("Subnet")
             xw.writeAttribute("ID", str(subnet.id))
@@ -165,28 +185,23 @@ class DiagramSceneXmlMixin:
     @classmethod
     @checked
     def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
-        scene : Self = cls(fresh=False)
+        from . import DiagramScene
+        if not issubclass(cls, DiagramScene):
+            raise TypeError("Bad host")
+        scene = cls(doc=None, fresh=False)
         scene.loadFromXml(xr)
         return scene
 
     @checked
     def loadFromXml(
-        self : MixinSelf,
+        self : Self,
         xr   : QXmlStreamReader
     ) -> None:
+        from . import DiagramScene
+        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         node_by_id : dict[int, NodeItem] = {}
         id_by_node : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
-
-        def fromXmlSegment(xr : QXmlStreamReader) -> None:
-            attrs = xr.attributes()
-            x1 = attrs.value("X1")
-            if x1:
-                p1 = QPointF(float(x1), float(attrs.value("Y1")))
-                p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
-                self.addSegment(p1, p2, undoable=False)
-            else:
-                logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
 
         def fromXmlFixedNode(xr : QXmlStreamReader) -> None:
             node_id, pos = NodeItem.fromXml(xr)
@@ -296,7 +311,6 @@ class DiagramSceneXmlMixin:
                 "Subnet"    : fromXmlSubnet,
                 "Net"       : fromXmlNet,
             }, ptag="Netlist")
-            return None
 
         def fromXmlSymbolDefinitions(xr : QXmlStreamReader) -> None:
             xr.readNext()
@@ -306,22 +320,32 @@ class DiagramSceneXmlMixin:
                 ptag="Symbols"
             )
             self._symbols |= {symbol.name(): symbol for symbol in symbols}
-            return None
 
         def fromXmlItem(
             xr       : QXmlStreamReader,
-            item_cls : type[ItemXmlMixin]
-        ) -> ItemXmlMixin:
-            item = item_cls.fromXml(xr)
-            self.addItem(item)
-            if isinstance(item, SymbolInstanceItem):
-                name = item.name()
-                definition = self._symbols.get(name, None)
-                if definition:
-                    item.sync(definition)
+            item_cls : type[XmlProtocol]
+        ) -> None:
+            if item_cls == SegmentItem:
+                attrs = xr.attributes()
+                x1 = attrs.value("X1")
+                if x1:
+                    p1 = QPointF(float(x1), float(attrs.value("Y1")))
+                    p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
+                    self.addSegment(p1, p2, undoable=False)
                 else:
-                    logger().warning(f"Symbol {name} not found")
-            return item
+                    logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
+            else:
+                item = item_cls.fromXml(xr)
+                if not isinstance(item, QGraphicsItem):
+                    raise TypeError("Bad item")
+                self.addItem(item)
+                if isinstance(item, SymbolInstanceItem):
+                    name = item.name()
+                    definition = self._symbols.get(name, None)
+                    if definition:
+                        item.syncFromDefinition(definition)
+                    else:
+                        logger().warning(f"Symbol {name} not found")
 
         top_element_name = self._XML_TAG
         if xr.name() != top_element_name:
@@ -332,63 +356,36 @@ class DiagramSceneXmlMixin:
 
         xref = {
             "Symbols" : fromXmlSymbolDefinitions,
-            "Segment" : fromXmlSegment,
-            "Netlist" : fromXmlNetlist,
+            "Netlist" : fromXmlNetlist
         }
-        _item_classes = {
-            "Line"         : LineItem,
-            "Rectangle"    : RectangleItem,
-            "Ellipse"      : EllipseItem,
-            "Polyline"     : PolylineItem,
-            "Text"         : TextItem,
-            "Port"         : PortItem,
-            "BufGate"      : BufGateItem,
-            "AndGate"      : AndGateItem,
-            "OrGate"       : OrGateItem,
-            "XorGate"      : XorGateItem,
-            "Block"        : BlockItem,
-            "Symbol"       : SymbolInstanceItem,
-            "NetLabel"     : NetLabelItem
-        }
-        for item_name, item_cls in _item_classes.items():
-            tag = item_name.removesuffix("Item")
-            xref[tag] = lambda xr, cls=item_cls: fromXmlItem(xr, cls)
+        for item_name, item_cls in diagram_scene_xml_items.items():
+            xref[item_name] = \
+                lambda xr, cls=item_cls: (fromXmlItem(xr, cls), None)[1]
 
         fromXml(xr, xref, ptag=top_element_name)
         self.setLive(True)
 
     @checked
-    def fromXmlClipboard(
-        self  : MixinSelf,
-        xr    : QXmlStreamReader
-    ) -> tuple[QPointF, list[QGraphicsItem]]:
-        items = []
-        top_element_name = "Clipboard"
-        if xr.name() != top_element_name:
-            raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        xml_attrs = xr.attributes()
-        for xml_attr in xml_attrs:
-            if xml_attr.name() == "X":
-                x = float(xml_attr.value())
-            elif xml_attr.name() == "Y":
-                y = float(xml_attr.value())
-            else:
-                logger().warning(f"Unexpected attribute: {xml_attr.name()}")
-                xr.readNext()
-        pos = QPointF(x, y)
-        from ...items import _item_classes
-        while not (xr.isEndElement() and xr.name() == top_element_name):
-            if xr.isStartElement():
-                element_name = xr.name()
-                item_name = element_name + "Item"
-                if element_name == "Segment":
-                    item = SegmentPreviewItem.fromXml(xr)
-                    items.append(item)
-                elif item_name in _item_classes:
-                    item_cls : type[ItemXmlMixin] = _item_classes[item_name]
-                    item = item_cls.fromXml(xr)
-                    items.append(item)
-                else:
-                    logger().warning(f"Unexpected element: {element_name}")
-                    xr.readNext()
-        return pos, items
+    def paste(self : Self) -> tuple[list[QGraphicsItem], QPointF | None]:
+        items, attributes = pasteXml(diagram_scene_xml_items)
+        x = attributes.get("X", None)
+        y = attributes.get("Y", None)
+        pos = None if x is None or y is None else QPointF(float(x), float(y))
+        return cast(list[QGraphicsItem], items), pos
+
+diagram_scene_xml_items : dict[str, type[XmlProtocol]] = {
+    "Line"         : LineItem,
+    "Rectangle"    : RectangleItem,
+    "Ellipse"      : EllipseItem,
+    "Polyline"     : PolylineItem,
+    "Text"         : TextItem,
+    "Port"         : PortItem,
+    "BufGate"      : BufGateItem,
+    "AndGate"      : AndGateItem,
+    "OrGate"       : OrGateItem,
+    "XorGate"      : XorGateItem,
+    "Block"        : BlockItem,
+    "Symbol"       : SymbolInstanceItem,
+    "NetLabel"     : NetLabelItem,
+    "Segment"      : SegmentItem
+}

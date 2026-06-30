@@ -5,7 +5,7 @@ from typing import Self
 from PyQt6.QtCore import QXmlStreamWriter
 
 from ....core.check import checked
-from ....core.types import DataKind
+from ....core.types import RectHandleId, DataKind
 
 from PyQt6.QtWidgets import QGraphicsRectItem
 
@@ -27,8 +27,12 @@ from .mixin.clone        import ItemCloneMixin
 from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..scenes.symbol import SymbolScene
 
-class SymbolDefinitionItem(
+
+class SymbolBaseItem(
     FunctionalItem,
     ItemMixin,
     ItemPresentationMixin,
@@ -43,6 +47,7 @@ class SymbolDefinitionItem(
     QGraphicsRectItem
 ):
     # class attributes
+    _ORIGIN = RectHandleId.TOP_LEFT
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \
         {
@@ -50,19 +55,27 @@ class SymbolDefinitionItem(
                 kind   = DataKind.STR,
                 getter = lambda self: self.verilogLibrary(),
                 setter = lambda self, value: self.setVerilogLibrary(value),
-                tip    = "Library where the module is defined (normally for simulation). Used for explanatory comments only."
+                tip = (
+                    "Library where the module is defined (normally for "
+                    "simulation). Used for explanatory comments only."
+                )
             ),
             "Verilog Name" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.verilogName(),
                 setter = lambda self, value: self.setVerilogName(value),
-                tip    = "Name of the module (optional, overrides 'Name' if specified)."
+                tip = (
+                    "Name of the module (optional, overrides 'Name' if "
+                    "specified)."
+                )
             ),
             "VHDL Instantiation Style" : InherentProperty["SymbolDefinitionItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlInstantiationStyle(),
                 setter = lambda self, value: self.setVhdlInstantiationStyle(value),
-                tip    = "'component' (default if not specified) or 'entity'."
+                tip = (
+                    "'component' (default if not specified) or 'entity'."
+                )
             ),
             "VHDL Library" : InherentProperty["SymbolDefinitionItem"](
                 kind = DataKind.STR,
@@ -110,10 +123,7 @@ class SymbolDefinitionItem(
                 )
             )
         }
-    _XML_CHILDREN = {
-        "SymbolPin", "PropertyText", \
-        "Line", "Rectangle", "Ellipse", "Polyline", "Text"
-    }
+
 
     # instance attributes
     _verilog_library          : str
@@ -232,12 +242,37 @@ class SymbolDefinitionItem(
         return (False, False)
 
 
+class SymbolDefinitionItem(SymbolBaseItem):
+    # class attributes
+    _XML_CHILDREN = frozenset({
+        "SymbolPin", "PropertyText", \
+        "Line", "Rectangle", "Ellipse", "Polyline", "Text"
+    })
+
+    def syncFromScene(
+        self  : Self,
+        scene : SymbolScene
+    ) -> None:
+        updated = scene.symbol()
+        if updated is None: return
+        # remove all current children
+        for child in self.childItems():
+            child.setParentItem(None)
+        # sync shape
+        self.setRect(updated.rect())
+        # copy children
+        for child in updated.childItems():
+            if isinstance(child, SymbolPinItem | DecorativeItem):
+                clone = child.clone()
+                clone.setParentItem(self)
+
+
 class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
     # class attributes
     _PROPERTIES = \
         SymbolDefinitionItem._PROPERTIES | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
-    _XML_CHILDREN = {"PropertyText"}
+    _XML_CHILDREN = frozenset({"PropertyText"})
 
     # instance attributes
     _definition : SymbolDefinitionItem | None = None  # master symbol definition
@@ -255,7 +290,7 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
         self.toXmlEnd(xw)
 
     @checked
-    def sync(
+    def syncFromDefinition(
         self        : Self,
         definition  : SymbolDefinitionItem,
         *,
@@ -283,8 +318,9 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
             for child in self.childItems():
                 if isinstance(child, cls):
                     child.setParentItem(None)
-                    if self.scene() is not None:
-                         self.scene().removeItem(child)
+                    scene = self.scene()
+                    if scene is not None:
+                         scene.removeItem(child)
 
         def _cloneChildren(cls : type) -> None:
             for child in definition.childItems():

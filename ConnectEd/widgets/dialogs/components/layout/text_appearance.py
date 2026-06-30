@@ -98,27 +98,27 @@ class TextAppearanceLayout(QVBoxLayout):
         self.addLayout(self._options_layout)
 
     @checked
-    def getColor(self : Self) -> QColor | None | NoChange:
+    def getColor(self : Self) -> QColor | NoChange:
         return self._color_combo.value()
 
     @checked
-    def getFont(self : Self) -> str | None | NoChange:
+    def getFont(self : Self) -> str | NoChange:
         return self._font_combo.value()
 
     @checked
-    def getSize(self : Self) -> float | None | NoChange:
+    def getSize(self : Self) -> float | NoChange:
         return self._size_combo.value()
 
     @checked
-    def getBold(self : Self) -> bool | None | NoChange:
+    def getBold(self : Self) -> bool | NoChange:
         return self._bold_combo.value()
 
     @checked
-    def getItalic(self : Self) -> bool | None | NoChange:
+    def getItalic(self : Self) -> bool | NoChange:
         return self._italic_combo.value()
 
     @checked
-    def getUnderline(self : Self) -> bool | None | NoChange:
+    def getUnderline(self : Self) -> bool | NoChange:
         return self._underline_combo.value()
 
 
@@ -169,26 +169,29 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
 
     def _updatePreview(self : Self) -> None:
         font = self._font_combo.value()
-        if font is NO_CHANGE:
+        if isinstance(font, NoChange):
             font = self._initial_font
-        if font == None:
+        if font is None:
             font = self._default_font
         bold = self._bold_combo.value()
-        if bold is NO_CHANGE:
+        if isinstance(bold, NoChange):
             bold = self._initial_bold
-        if bold == None:
+        if bold is None:
             bold = self._default_bold
         italic = self._italic_combo.value()
-        if italic is NO_CHANGE:
+        if isinstance(italic, NoChange):
             italic = self._initial_italic
-        if italic == None:
+        if italic is None:
             italic = self._default_italic
         underline = self._underline_combo.value()
-        if underline is NO_CHANGE:
+        if isinstance(underline, NoChange):
             underline = self._initial_underline
-        if underline == None:
+        if underline is None:
             underline = self._default_underline
-        if any(x in (None, NO_CHANGE) for x in (font, bold, italic, underline)):
+        if isinstance(font, NoChange) \
+        or isinstance(bold, NoChange) \
+        or isinstance(italic, NoChange) \
+        or isinstance(underline, NoChange):
             self._preview.setText("") # options are ambiguous
             return
         qfont = QFont()

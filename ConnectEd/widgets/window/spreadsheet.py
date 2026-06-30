@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, Any
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, QTransposeProxyModel
+from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, \
+                            QTransposeProxyModel, QAbstractItemModel
 from PyQt6.QtWidgets import QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
                             QHeaderView, QStyledItemDelegate, QComboBox, \
-                            QStyleOptionViewItem
+                            QStyleOptionViewItem, QGraphicsItem
 from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem, QFontMetrics, \
@@ -25,14 +26,14 @@ from .sub_window import DocSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..graphics.scenes.drawing import DrawingScene
-    from ..graphics.items.mixin import ItemMixin
+    from ..graphics.items.mixin   import ItemMixin
+    from ..graphics.views.diagram import DiagramScene
 
 
 class SpreadsheetCell(QStandardItem):
     """Custom item for spreadsheet cells, storing string values."""
     @checked
-    def __init__(self : Self, value : any) -> None:
+    def __init__(self : Self, value : Any) -> None:
         text_value = "" if value is None else str(value)
         super().__init__(text_value)
         self.setFlags(
@@ -48,8 +49,8 @@ class SpreadsheetCell(QStandardItem):
 
 class SpreadsheetComboDelegate(QStyledItemDelegate):
     """Base delegate for combo box editing."""
-    TOOLTIP = None
-    ENTRIES = None
+    TOOLTIP : str
+    ENTRIES : list[str]
 
     @checked
     def __init__(self : Self):
@@ -57,7 +58,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
 
     def createEditor(
         self   : Self,
-        parent : QWidget,
+        parent : QWidget | None,
         option : QStyleOptionViewItem,
         index  : QModelIndex
     ) -> QComboBox | None:
@@ -74,11 +75,13 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
             logger().error(f"Error creating editor for delegate {self.__class__.__name__}: {e}")
             return None
 
-    def setEditorData(self : Self, editor : QComboBox, index : QModelIndex):
-        if editor is None:
-            logger().error("Editor is None in setEditorData")
-            return
-        value = index.model().data(index, Qt.ItemDataRole.EditRole)
+    def setEditorData(self : Self, editor : QWidget | None, index : QModelIndex):
+        if not isinstance(editor, QComboBox):
+            raise ValueError("Editor is not a QComboBox")
+        model = index.model()
+        if model is None:
+            raise RuntimeError("No model")
+        value = model.data(index, Qt.ItemDataRole.EditRole)
         value_str = str(value) if value is not None else ""
         if value_str in self.ENTRIES:
             editor.setCurrentText(value_str)
@@ -88,24 +91,26 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
 
     def setModelData(
         self   : Self,
-        editor : QComboBox,
-        model  : QStandardItemModel,
+        editor : QWidget | None,
+        model  : QAbstractItemModel | None,
         index : QModelIndex
     ):
-        if editor is None:
-            logger().error("Editor is None in setModelData")
-            return
+        if not isinstance(editor, QComboBox):
+            raise ValueError("Editor is not a QComboBox")
+        if not isinstance(model, QStandardItemModel):
+            raise ValueError("Model is not a QStandardItemModel")
         text = editor.currentText()
         model.setData(index, text, Qt.ItemDataRole.EditRole)
 
     def updateEditorGeometry(
         self   : Self,
-        editor : QComboBox,
+        editor : QWidget | None,
         option : QStyleOptionViewItem,
         index  : QModelIndex
     ):
-        if editor is not None:
-            editor.setGeometry(option.rect)
+        if not isinstance(editor, QComboBox):
+            raise ValueError("Editor is not a QComboBox")
+        editor.setGeometry(option.rect)
 
     def sizeHint(
         self   : Self,
@@ -159,21 +164,24 @@ class SpreadsheetHeader(QHeaderView):
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
 
-    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, a0 : QContextMenuEvent | None) -> None:
+        if a0 is None:
+            logger().warning("No event")
+            return
         o = Qt.Orientation
         if (self.orientation() == o.Horizontal and not self._transposed) \
         or (self.orientation() == o.Vertical and self._transposed):
-            pos = event.pos()
+            pos = a0.pos()
             if self.orientation() == o.Horizontal:
                 section = self.logicalIndexAt(pos.x())
             else:
                 section = self.logicalIndexAt(pos.y())
             if section >= 0 and section < self._len:
-                self._showContextMenu(section, event.globalPos())
+                self._showContextMenu(section, a0.globalPos())
             else:
-                super().contextMenuEvent(event)
+                super().contextMenuEvent(a0)
         else:
-            super().contextMenuEvent(event)
+            super().contextMenuEvent(a0)
 
     def _showContextMenu(self : Self, header_index : int, global_pos : QPoint):
         menu = Menu(self)
@@ -259,31 +267,40 @@ class SpreadsheetTable(QTableView):
         # corner button styling
         self._styled = False
 
-    def showEvent(self : Self, event : QShowEvent):
-        super().showEvent(event)
+    def showEvent(self : Self, a0 : QShowEvent | None) -> None:
+        if a0 is None:
+            logger().warning("No event")
+            return
+        super().showEvent(a0)
         self.style_corner_button()
 
-    def wheelEvent(self : Self, event : QWheelEvent) -> None:
+    def wheelEvent(self : Self, a0 : QWheelEvent | None) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
-        modifiers = event.modifiers()
+        if a0 is None:
+            logger().warning("No event")
+            return
+        modifiers = a0.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
             widget : SpreadsheetWidget = self._parent
             tab_widget : SpreadsheetTabWidget = widget._parent
-            delta = event.angleDelta().y()
+            delta = a0.angleDelta().y()
             if delta > 0:
                 tab_widget.increaseFontSize()
             elif delta < 0:
                 tab_widget.decreaseFontSize()
-            event.accept()
+            a0.accept()
         else:
-            super().wheelEvent(event)
+            super().wheelEvent(a0)
 
-    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, a0 : QContextMenuEvent | None) -> None:
         """Show context menu for table cells."""
+        if a0 is None:
+            logger().warning("No event")
+            return
         menu = Menu(self)
         menu.addAction(self._parent._actions.unsort)
         menu.addAction(self._parent._actions.transpose)
-        menu.exec(event.globalPos())
+        menu.exec(a0.globalPos())
 
     def style_corner_button(self : Self) -> None:
         if self._styled:
@@ -323,6 +340,8 @@ class SpreadsheetWidget(QWidget):
         parent   : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        if not isinstance(parent, SpreadsheetTabWidget):
+            raise ValueError("Parent is not a SpreadsheetTabWidget")
         self._parent = parent
         self._undo_stack = QUndoStack()
         self._transposed = False
@@ -375,6 +394,8 @@ class SpreadsheetWidget(QWidget):
         for row in range(top_left.row(), bottom_right.row() + 1):
             for col in range(top_left.column(), bottom_right.column() + 1):
                 item = self._model.item(row, col)
+                if not isinstance(item, SpreadsheetCell):
+                    raise ValueError("Item is not a SpreadsheetCell")
                 if item.changed():
                     item.setBackground(self._parent._highlight)
                 else:
@@ -386,7 +407,10 @@ class SpreadsheetWidget(QWidget):
             current_index = table.currentIndex()
             if current_index.isValid():
                 table.closePersistentEditor(current_index)
-                table.setCurrentIndex(table.model().createIndex(-1, -1))
+                model = table.model()
+                if model is None:
+                    raise RuntimeError("No model")
+                table.setCurrentIndex(model.createIndex(-1, -1))
         self._table_model.clearFocus()
         self._table_proxy.clearFocus()
 
@@ -436,7 +460,10 @@ class SpreadsheetWidget(QWidget):
     def _updateHeaderText(self : Self) -> None:
         """Update header text to include sort indicators."""
         for i in range(self._model.columnCount()):
-            name = self._model.horizontalHeaderItem(i).text()
+            horizontal_header_item = self._model.horizontalHeaderItem(i)
+            if horizontal_header_item is None:
+                raise RuntimeError("No horizontal header item")
+            name = horizontal_header_item.text()
             if i in self._sorting:
                 order = self._sorting[i]
                 if self._transposed:
@@ -542,7 +569,7 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
-    _tab_items      : dict[str, list[ItemMixin]]
+    _tab_items      : dict[str, list[QGraphicsItem]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
     _tab_models     : dict[str, QStandardItemModel]
@@ -556,7 +583,7 @@ class SpreadsheetTabWidget(QTabWidget):
     @checked
     def __init__(
         self   : Self,
-        items  : list[ItemMixin],
+        items  : list[QGraphicsItem],
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -581,56 +608,56 @@ class SpreadsheetTabWidget(QTabWidget):
         self._tab_htypenames = {}
         self._tab_models     = {}
         self._tab_proxies    = {}
-        for tab_name, tab_items in self._tab_items.items():
-            self._tab_headings[tab_name] = {}
-            self._tab_htypenames[tab_name] = {}
-            tab_attributes = None
-            tab_properties = set()
-            for e in tab_items:
-                if tab_attributes is None:
-                    tab_attributes = e.getAttributes()
-                    for a in tab_attributes:
-                        self._tab_htypenames[tab_name][a] = \
-                            e.getAttributeKind(a)
-                else:
-                    if tab_attributes != e.getAttributes():
-                        logger().error("Inconsistent inherent properties")
-                        self._tab_items.pop(tab_name)
-                        self._tab_headings.pop(tab_name)
-                        self._tab_htypenames.pop(tab_name)
-                        break
-                for p in e.getProperties():
-                    tab_properties.add(p)
-                    self._tab_htypenames[tab_name][p] = "str"
-            self._tab_headings[tab_name] = \
-                {name : False for name in sorted(tab_properties)}
-            self._tab_headings[tab_name].update(
-                {name : True for name in tab_attributes}
-            )
-            num_items = len(tab_items)
-            num_headings = len(self._tab_headings[tab_name])
-            self._tab_models[tab_name] = QStandardItemModel(
-                num_items, num_headings, self
-            )
-            self._tab_proxies[tab_name] = QTransposeProxyModel()
-            self._tab_proxies[tab_name].setSourceModel(self._tab_models[tab_name])
-            for i, name in enumerate(self._tab_headings[tab_name].keys()):
-                self._tab_models[tab_name].setHorizontalHeaderItem(
-                    i, QStandardItem(name)
-                )
-            for i in range(num_items):
-                self._tab_models[tab_name].setVerticalHeaderItem(
-                    i, QStandardItem(str(i + 1))
-                )
-            rows = [
-                [e.getPropAttr(h) for h in self._tab_headings[tab_name].keys()] \
-                    for e in self._tab_items[tab_name]
-            ]
-            for row_idx, row in enumerate(rows):
-                for col_idx, value in enumerate(row):
-                    self._tab_models[tab_name].setItem(
-                        row_idx, col_idx, SpreadsheetCell(value)
-                    )
+        #for tab_name, tab_items in self._tab_items.items():
+        #    self._tab_headings[tab_name] = {}
+        #    self._tab_htypenames[tab_name] = {}
+        #    tab_attributes = None
+        #    tab_properties = set()
+        #    for e in tab_items:
+        #        if tab_attributes is None:
+        #            tab_attributes = e.getAttributes()
+        #            for a in tab_attributes:
+        #                self._tab_htypenames[tab_name][a] = \
+        #                    e.getAttributeKind(a)
+        #        else:
+        #            if tab_attributes != e.getAttributes():
+        #                logger().error("Inconsistent inherent properties")
+        #                self._tab_items.pop(tab_name)
+        #                self._tab_headings.pop(tab_name)
+        #                self._tab_htypenames.pop(tab_name)
+        #                break
+        #        for p in e.getProperties():
+        #            tab_properties.add(p)
+        #            self._tab_htypenames[tab_name][p] = "str"
+        #    self._tab_headings[tab_name] = \
+        #        {name : False for name in sorted(tab_properties)}
+        #    self._tab_headings[tab_name].update(
+        #        {name : True for name in tab_attributes}
+        #    )
+        #    num_items = len(tab_items)
+        #    num_headings = len(self._tab_headings[tab_name])
+        #    self._tab_models[tab_name] = QStandardItemModel(
+        #        num_items, num_headings, self
+        #    )
+        #    self._tab_proxies[tab_name] = QTransposeProxyModel()
+        #    self._tab_proxies[tab_name].setSourceModel(self._tab_models[tab_name])
+        #    for i, name in enumerate(self._tab_headings[tab_name].keys()):
+        #        self._tab_models[tab_name].setHorizontalHeaderItem(
+        #            i, QStandardItem(name)
+        #        )
+        #    for i in range(num_items):
+        #        self._tab_models[tab_name].setVerticalHeaderItem(
+        #            i, QStandardItem(str(i + 1))
+        #        )
+        #    rows = [
+        #        [e.getPropAttr(h) for h in self._tab_headings[tab_name].keys()] \
+        #            for e in self._tab_items[tab_name]
+        #    ]
+        #    for row_idx, row in enumerate(rows):
+        #        for col_idx, value in enumerate(row):
+        #            self._tab_models[tab_name].setItem(
+        #                row_idx, col_idx, SpreadsheetCell(value)
+        #            )
         # highlight
         self._transparent = QBrush(Qt.GlobalColor.transparent)
         self.updateHighlight()
@@ -655,7 +682,9 @@ class SpreadsheetTabWidget(QTabWidget):
         """Close the tab at the given index."""
         self.removeTab(index)
         if self.count() == 0:
-            self.parent().close()
+            if not isinstance(parent := self.parent(), QWidget):
+                raise TypeError("Bad parent")
+            parent.close()
 
     def updateHighlight(self : Self) -> None:
         if settings().get("display/theme") == "dark":
@@ -671,7 +700,7 @@ class SpreadsheetTabWidget(QTabWidget):
             delegate : QStyledItemDelegate
         ) -> None:
             if kind not in self._delegates:
-                self._delegates[kind] = delegate()
+                self._delegates[kind] = delegate
                 self._delegates[kind].destroyed.connect(
                     lambda: self.onDelegateDestroyed()
                 )
@@ -685,7 +714,7 @@ class SpreadsheetTabWidget(QTabWidget):
                 match kind:
                     case "APLoc":
                         _setupDelegate(
-                            tab_name, idx, kind, SpreadsheetAPDelegate
+                            tab_name, idx, kind, SpreadsheetAPDelegate()
                         )
                     case _:
                         pass
@@ -717,14 +746,14 @@ class SpreadsheetTabWidget(QTabWidget):
 
 
 class SpreadsheetSubWindow(DocSubWindow):
-    _scene      : DrawingScene
+    _scene      : DiagramScene
     _tab_widget : QTabWidget | None
 
     @checked
     def __init__(
             self  : Self,
-            scene : DrawingScene,
-            items : list[ItemMixin]
+            scene : DiagramScene,
+            items : list[QGraphicsItem]
         ) -> None:
         super().__init__()
         self._scene = scene
@@ -745,11 +774,17 @@ class SpreadsheetSubWindow(DocSubWindow):
             self.setWidget(label)
             self.setWindowTitle("Properties")
 
-    def closeEvent(self : Self, event : QCloseEvent) -> None:
+    def closeEvent(self : Self, closeEvent : QCloseEvent | None) -> None:  # noqa: N803
         """Handle subwindow close event."""
-        window().menuBar().updateWindowMenu()
-        super().closeEvent(event)
+        if closeEvent is None:
+            logger().warning("No close event")
+            return
+        menu_bar = window().menuBar()
+        if menu_bar is None:
+            raise RuntimeError("No menu bar")
+        menu_bar.updateWindowMenu()
+        super().closeEvent(closeEvent)
 
-    def scene(self : Self) -> DrawingScene:
+    def scene(self : Self) -> DiagramScene:
         """To play nicely with the MDI area."""
         return self._scene

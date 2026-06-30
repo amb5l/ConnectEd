@@ -16,7 +16,7 @@ class Action(QAction):
     def __init__(
         self      : Self,
         parent    : QObject,
-        text      : str,
+        text      : str | None = None,
         tooltip   : str | None = None,
         shortcut  : ShortcutType | None = None,
         checkable : bool = False,
@@ -24,7 +24,8 @@ class Action(QAction):
         data      : Any = None
     ) -> None:
         super().__init__(parent)
-        self.setText(text)
+        if text is not None:
+            self.setText(text)
         if tooltip is not None:
             self.setToolTip(tooltip)
         if shortcut is not None:

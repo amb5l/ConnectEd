@@ -50,7 +50,9 @@ class Navigator(
         self._updateGroups()
         # initialise this widget
         super().__init__(self._model, parent)
-        self.header().setVisible(False)
+        if (header := self.header()) is None:
+            raise RuntimeError("No header")
+        header.setVisible(False)
         self.setItemDelegate(NavItemDelegate(self))
         self.setEditTriggers(QAbstractItemView.EditTrigger.EditKeyPressed)
         # initialise context menus

@@ -11,7 +11,7 @@ from ....core.types import NoChange, NO_CHANGE
 
 class SizeValidator(QValidator):
     @checked
-    def validate(
+    def validate(  # pyright: ignore[reportIncompatibleMethodOverride]
         self : Self, text : str, pos : int
     ) -> tuple[QValidator.State, str, int]:
         text = text.strip()

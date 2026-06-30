@@ -24,7 +24,7 @@ class ColorDialog(QColorDialog):
         self.currentColorChanged.connect(self._on_color_changed)
 
     @checked
-    def value(self : Self) -> QColor | None:
+    def value(self : Self) -> QColor:
         return self.currentColor()
 
     def _find_html_box(self : Self) -> None:

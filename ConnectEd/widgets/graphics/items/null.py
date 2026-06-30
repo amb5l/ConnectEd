@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QRectF, QXmlStreamWriter
+from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
@@ -33,8 +33,8 @@ class NullItem(QGraphicsItem):
 
     def paint(
         self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
+        painter : QPainter | None,
+        option  : QStyleOptionGraphicsItem | None,
+        widget  : QWidget | None = None
     ) -> None:
         logger().error("Paint should never be called")

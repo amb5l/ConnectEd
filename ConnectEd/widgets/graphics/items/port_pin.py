@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....app import settings
@@ -10,27 +9,25 @@ from ....app import settings
 from ....core.check import checked
 from ....core.defs  import WIDTH
 from ....core.types import Direction, DataKind
+from ....core.utils import qtItemClass
 
-from ..properties import PropertiesMixin, InherentProperty
+from ..properties import InherentProperty
 
 from ..scenes import withScene
 
-from .handle import HandleItem
-from .grip   import MoveGripItem
-from .node   import FixedNodeItem
+from .role      import FunctionalItem
+from .node      import FixedNodeItem
+from .protocols import SetPenProtocol
 
-from .mixin           import ItemMixin, ItemNamesMixin
+from .mixin.names     import ItemNamesMixin
+from .mixin.primary   import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
 from .mixin.paint     import ItemPaintMixin
 from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
+    from ..scenes.diagram import DiagramScene
 
 
 class PortPinArrowItem(
@@ -50,15 +47,7 @@ class PortPinArrowItem(
             parent.setSelected(selected)
 
 
-class PortPinMixin(
-    ItemMixin,
-    ItemPaintMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin
-):
+class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     """
     Mixin for ports and gate/block/symbol pins.
     """
@@ -101,7 +90,9 @@ class PortPinMixin(
         parent : QGraphicsItem | None = None,
         fresh  : bool = True
     ) -> None:
-        super().__init__(parent)
+        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
+        if not isinstance(parent, QGraphicsItem): raise TypeError("Bad parent")
+        qtItemClass(self).__init__(parent)
         # node
         self._node = FixedNodeItem(parent=self)
         self._node.setPos(self._NODE_POS, 0)
@@ -121,7 +112,7 @@ class PortPinMixin(
             self.onSceneChanged(scene)
 
     @checked
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
         self._updateGraphics(scene)
@@ -130,11 +121,11 @@ class PortPinMixin(
         self._updateArrowPenBrush(scene)
         self._updateNameHandle()
         for handle in self._handles.values():
-            handle.onSceneRotationChanged()
+            handle.onSceneOrientationChanged()
 
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
-        scene : DrawingScene = self.scene()
+        scene = self.scene()
         if scene is None:
             return
         self._updatePen(scene)
@@ -142,23 +133,6 @@ class PortPinMixin(
         self._updateNameHandle()
         self._node.setSelected(selected)
         self._arrow.setSelected(selected)
-
-    @checked
-    def initHandles(self : Self | ItemHandlesMixin) -> None:
-        self._handles = {
-            self.handleIdType()("Name"): HandleItem(
-                id       = self.handleIdType()("Name"),
-                pos      = QPointF(0, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            ),
-            self.handleIdType()("Node"): HandleItem(
-                id       = self.handleIdType()("Node"),
-                pos      = QPointF(0, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            )
-        }
 
     def node(self : Self) -> FixedNodeItem:
         return self._node
@@ -195,25 +169,35 @@ class PortPinMixin(
     def bus(self : Self) -> bool:
         return self._bus
 
-    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
+    def _resourceKey(self : Self) -> tuple[bool, bool]:
+        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
+        return (self.bus(), self.isSelected())
+
+    def _resourceKeyDefault(self : Self) -> tuple[bool, bool]:
+        return (False, False)
+
+    def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
     def _updatePen(
-        self  : Self | QGraphicsItem | QGraphicsPathItem,
-        scene : DrawingScene
+        self  : Self,
+        scene : DiagramScene
     ) -> None:
+        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
+        if not isinstance(self, SetPenProtocol): raise TypeError("Bad host")
         key = (self.bus(), self.isSelected())
         self.setPen(scene.resources.pen(self.resourcesName(), key))
 
-    def _updateArrowPath(self : Self, scene : DrawingScene) -> None:
+    def _updateArrowPath(self : Self, scene : DiagramScene) -> None:
         self._arrow.setPath(scene.resources.path(
             self._arrow.resourcesName(), self._direction
         ))
 
     def _updateArrowPenBrush(
-        self  : Self | QGraphicsItem | QGraphicsPathItem,
-        scene : DrawingScene
+        self  : Self,
+        scene : DiagramScene
     ) -> None:
+        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         key = self.isSelected()
         self._arrow.setPen(scene.resources.pen(self._arrow.resourcesName(), key))
         self._arrow.setBrush(scene.resources.brush(self._arrow.resourcesName(), key))
@@ -227,7 +211,7 @@ class PortPinLineItem(PortPinMixin, QGraphicsLineItem):
     Base class for ports and block pins.
     """
 
-    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
+    def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         self.setLine(scene.resources.line(self.resourcesName()))
 
     def _updateNameHandle(self : Self) -> None:
@@ -283,11 +267,11 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self.properties.signalChanges("Clock")
 
     @withScene
-    def _updateGraphics(self : Self, scene : DrawingScene) -> None:
+    def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         key = (self._clock, self._dot)
         self.setPath(scene.resources.path(self.resourcesName(), key))
 
-    def _updateNameHandle(self : Self | ItemHandlesMixin) -> None:
+    def _updateNameHandle(self : Self) -> None:
         """Allow for clock symbol."""
         settings_path = f"theme/items/{self.settingsName()}/pin"
         x = 0

@@ -1,5 +1,13 @@
 {
-    "python.pythonPath": ".venv/Scripts/python.exe",
+    "python.defaultInterpreterPath": ".venv/Scripts/python.exe",
+    "cursorpyright.analysis.typeCheckingMode": "standard",
+    "cursorpyright.analysis.diagnosticMode": "workspace",
+    "cursorpyright.analysis.exclude": [
+        ".*/**",
+        "ConnectEd/hdl/**",
+        "examples/**",
+        "tests/**",
+    ],
     "files.trimTrailingWhitespace": true,
     "cursorpyright.analysis.inlayHints.genericTypes": false,
     "[markdown]": {

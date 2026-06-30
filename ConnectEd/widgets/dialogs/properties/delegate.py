@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing  import Self, TypeAlias
+from typing  import Self
 from inspect import signature
 
-from PyQt6.QtCore    import QModelIndex
+from PyQt6.QtCore    import QModelIndex, QAbstractItemModel
 from PyQt6.QtWidgets import QWidget, QLineEdit, \
                             QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
@@ -32,52 +32,49 @@ from .item import PropertiesItem
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import PropertiesDialog
-    EditorType : TypeAlias = \
-        EnumComboBox[DataKind]          | \
-        StrEditor                       | \
-        TextEditor                      | \
-        IntEditor                       | \
-        FloatEditor                     | \
-        SizeEditor                      | \
-        BoolEditor                      | \
-        EnumComboBox[Display]           | \
-        EnumComboBox                    | \
-        EnumComboBox[RectHandleId]      | \
-        EnumComboBox[LineHandleId]      | \
-        EnumComboBox[BlockPinHandleId]  | \
-        EnumComboBox[SymbolPinHandleId] | \
-        EnumComboBox[AlignH]            | \
-        EnumComboBox[AlignV]            | \
-        EnumComboBox[Edge]              | \
-        EnumComboBox[Direction]         | \
-        ColorComboBox                   | \
-        LineStyleComboBox               | \
-        LineWidthComboBox               | \
-        FillStyleComboBox               | \
-        FontFamilyComboBox              | \
-        FontSizeComboBox                | \
+    EditorType = (
+        StrEditor,
+        TextEditor,
+        IntEditor,
+        FloatEditor,
+        SizeEditor,
+        BoolEditor,
+        EnumComboBox,
+        ColorComboBox,
+        LineStyleComboBox,
+        LineWidthComboBox,
+        FillStyleComboBox,
+        FontFamilyComboBox,
+        FontSizeComboBox,
         FontBoolComboBox
+    )
 
 
 class PropertiesDelegate(QStyledItemDelegate):
     _dialog : PropertiesDialog
 
     @checked
-    def __init__(self : Self, dialog : QWidget) -> None:
+    def __init__(self : Self, dialog : PropertiesDialog) -> None:
         super().__init__(dialog)
         self._dialog = dialog
 
     def createEditor(
         self   : Self,
-        parent : QWidget,
+        parent : QWidget | None,
         option : QStyleOptionViewItem,
         index  : QModelIndex
     ) -> QWidget | None:
-        model : QStandardItemModel = index.model()
-        item : PropertiesItem = model.itemFromIndex(index)
+        model = index.model()
+        if not isinstance(model, QStandardItemModel):
+            return None
+        item = model.itemFromIndex(index)
+        if not isinstance(item, PropertiesItem):
+            return None
         if item.value() is None:
             return None
         kind = item.kind()
+        if kind is None:
+            return None
         editor = kind.editor()
         args = {
             "value"   : item.value(),
@@ -101,23 +98,38 @@ class PropertiesDelegate(QStyledItemDelegate):
         return e
 
     @checked
-    def setEditorData(self : Self, editor : EditorType, index : QModelIndex) -> None:
-        item : PropertiesItem = index.model().item(index.row(), index.column())
-        if item.initial() is not None:
-            editor.setValue(item.initial())
+    def setEditorData(
+        self   : Self,
+        editor : QWidget | None,
+        index  : QModelIndex
+    ) -> None:
+        if not isinstance(editor, EditorType):
+            return
+        model = index.model()
+        if not isinstance(model, QStandardItemModel):
+            return
+        item = model.itemFromIndex(index)
+        if isinstance(item, PropertiesItem):
+            if item.initial() is not None:
+                editor.setValue(item.initial())
 
     @checked
     def setModelData(
         self   : Self,
-        editor : EditorType,
-        model  : QStandardItemModel,
+        editor : QWidget | None,
+        model  : QAbstractItemModel | None,
         index  : QModelIndex
     ) -> None:
-        if isinstance(editor, QLineEdit) \
-                and not editor.hasAcceptableInput():
+        if not isinstance(editor, EditorType):
+            return
+        if isinstance(editor, QLineEdit) and not editor.hasAcceptableInput():
+            return
+        if not isinstance(model, QStandardItemModel):
             return
         value = editor.value()
         if value is None:
             return
-        item: PropertiesItem = model.itemFromIndex(index)
+        item = model.itemFromIndex(index)
+        if not isinstance(item, PropertiesItem):
+            return
         item.setValue(value)

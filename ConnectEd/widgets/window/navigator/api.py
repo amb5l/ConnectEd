@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, TypeAlias
+from typing import Self
 
 from ....app import logger, session, settings
 
@@ -12,24 +12,21 @@ from ...dialogs.file import FileNewDialog, FileOpenDialog, FileSaveAsDialog
 
 from ..sub_window import DocSubWindow
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import Navigator
-    MixinSelf: TypeAlias = Self | Navigator
-else:
-    MixinSelf = Self
-
 
 class NavigatorApiMixin:
-    def docNew(self : MixinSelf, doc_type : DocType) -> None:
+    def docNew(self : Self, doc_type : DocType) -> None:
         """Create a new document."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         doc = session().new(doc_type)
         group_item = self._group_items.get(doc_type.group, None)
         parent = self._model if group_item is None else group_item
         self._addDoc(parent, doc)
 
-    def docNewPrompt(self : MixinSelf) -> None:
+    def docNewPrompt(self : Self) -> None:
         """Create a new document."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         dialog = FileNewDialog(self)
         if not dialog.exec():
             return
@@ -38,8 +35,10 @@ class NavigatorApiMixin:
             return
         self.docNew(doc_type)
 
-    def docLoad(self : MixinSelf, path : str) -> None:
+    def docLoad(self : Self, path : str) -> None:
         """Load a file."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         path = cleanPath(path)
         doc = session().load(path)
         if doc is None:
@@ -52,16 +51,18 @@ class NavigatorApiMixin:
         parent = self._model if group_item is None else group_item
         self._addDoc(parent, doc, path)
 
-    def docSave(self : MixinSelf, doc : Doc) -> None:
+    def docSave(self : Self, doc : Doc) -> None:
         """Save a document."""
         session().save(doc)
 
-    def docSaveAs(self : MixinSelf, doc : Doc, path : str) -> None:
+    def docSaveAs(self : Self, doc : Doc, path : str) -> None:
         """Save a document as."""
         session().saveAs(doc, path)
 
-    def docSaveAsPrompt(self : MixinSelf, doc : Doc) -> None:
+    def docSaveAsPrompt(self : Self, doc : Doc) -> None:
         """Save a document as."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         doc_type = session().docTypeForDoc(doc)
         if doc_type is None:
             return
@@ -71,20 +72,24 @@ class NavigatorApiMixin:
         path = dialog.selectedFiles()[0]
         self.docSaveAs(doc, path)
 
-    def docClose(self : MixinSelf, doc : Doc) -> None:
+    def docClose(self : Self, doc : Doc) -> None:
         """Close a document and its editors."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         self._closeSubwindowsForDoc(doc)
         session().close(doc)
 
-    def fileNew(self : MixinSelf) -> None:
+    def fileNew(self : Self) -> None:
         """Create a new document."""
         self.docNewPrompt()
 
     def fileOpen(
-        self     : MixinSelf,
+        self     : Self,
         doc_type : DocType | None = None,
     ) -> None:
         """Open a document."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         dialog = FileOpenDialog(self, doc_type)
         if not dialog.exec():
             return
@@ -92,8 +97,10 @@ class NavigatorApiMixin:
         for file in files:
             self.docLoad(file)
 
-    def fileSave(self : MixinSelf, subwindow : DocSubWindow) -> None:
+    def fileSave(self : Self, subwindow : DocSubWindow) -> None:
         """Save a document."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         doc = self._docFromSubWindow(subwindow)
         if doc is None:
             return
@@ -103,9 +110,8 @@ class NavigatorApiMixin:
             self.docSaveAsPrompt(doc)
 
     def fileSaveAs(
-        self      : MixinSelf,
-        subwindow : DocSubWindow,
-        path      : str
+        self      : Self,
+        subwindow : DocSubWindow
     ) -> None:
         """Save a document as."""
         doc = self._docFromSubWindow(subwindow)
@@ -114,8 +120,10 @@ class NavigatorApiMixin:
             return
         self.docSaveAsPrompt(doc)
 
-    def fileClose(self : MixinSelf, subwindow : DocSubWindow) -> None:
+    def fileClose(self : Self, subwindow : DocSubWindow) -> None:
         """Close an editor, or the whole document when appropriate."""
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         doc = self._docFromSubWindow(subwindow)
         if doc is None:
             subwindow.close()
@@ -130,8 +138,14 @@ class NavigatorApiMixin:
         else:
             subwindow.close()
 
+    def editCopy(self : Self) -> None:
+        raise NotImplementedError("Not implemented")
+
+    def editPaste(self : Self) -> None:
+        raise NotImplementedError("Not implemented")
+
     def _docFromSubWindow(
-        self      : MixinSelf,
+        self      : Self,
         subwindow : DocSubWindow
     ) -> Doc | None:
         doc_binding = subwindow.docBinding()

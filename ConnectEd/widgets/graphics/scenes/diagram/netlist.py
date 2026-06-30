@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import networkx
 
-from typing      import Self
+from typing      import Self, cast
 from dataclasses import dataclass, field
 
 from PyQt6.QtCore import QPointF, QLineF
@@ -92,7 +92,8 @@ class Netlist:
     @checked
     def nodeDegree(self : Self, node : NodeItem) -> int:
         """Number of segments connected to the node."""
-        return self._graph.degree(node)
+        from networkx.classes.reportviews import DegreeView
+        return cast(DegreeView, self._graph.degree)[node]
 
     @checked
     def nodeSegments(self : Self, node : NodeItem) -> list[SegmentItem]:
@@ -138,7 +139,10 @@ class Netlist:
             if isinstance(node_parent, PortItem):
                 full_name = node_parent.name()
             elif isinstance(node_parent, GatePinItem | BlockPinItem | SymbolPinItem):
-                pin_parent : PinParent | None = node_parent.parentItem()
+                pin_parent = node_parent.parentItem()
+                if not isinstance(pin_parent, PinParent):
+                    logger().error("Bad pin parent")
+                    return "", "", "?"
                 label = pin_parent.label()
                 pin_name = node_parent.name()
                 full_name = f"{label}_{pin_name}"
@@ -259,19 +263,23 @@ class Netlist:
         subnet2 = self.nodeSubnet(node2)
         if subnet1 is None and subnet2 is None:
             self._resolveSubnet(self._newSubnet({node1, node2}))
-        elif subnet1 is None:
+        elif subnet1 is None and subnet2 is not None:
             self._addNodesToSubnet(subnet2, node1)
             self._resolveSubnet(subnet2)
-        elif subnet2 is None:
+        elif subnet2 is None and subnet1 is not None:
             self._addNodesToSubnet(subnet1, node2)
             self._resolveSubnet(subnet1)
         elif subnet1 is subnet2:
             pass
-        else:
+        elif subnet1 is not None and subnet2 is not None:
             subnet1.nodes |= subnet2.nodes
             for node in subnet2.nodes:
+                if subnet1.id is None:
+                    raise ValueError("Subnet ID is None")
                 self._node2subnet[node] = subnet1.id
             self._detachSubnetFromNet(subnet2)
+            if subnet2.id is None:
+                raise ValueError("Subnet ID is None")
             self._subnets.pop(subnet2.id, None)
             self._resolveSubnet(subnet1)
         subnet = self.nodeSubnet(node1)
@@ -334,7 +342,7 @@ class Netlist:
     @checked
     def _dropIsolated(self : Self, node : NodeItem) -> None:
         """Remove a degree-0 node from the graph and subnet layer."""
-        if node in self._graph and self._graph.degree(node) != 0:
+        if node in self._graph and self.nodeDegree(node) != 0:
             return
         if node not in self._graph and self.nodeSubnet(node) is None \
         and not self._subnetsContainingNode(node):
@@ -467,6 +475,8 @@ class Netlist:
             nodes = {nodes}
         subnet = Subnet(id=self._subnet_id)
         self._subnet_id += 1
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         self._subnets[subnet.id] = subnet
         if nodes:
             self._addNodesToSubnet(subnet, nodes)
@@ -474,6 +484,8 @@ class Netlist:
         # its own unresolved net, keyed by subnet id; later resolution may
         # migrate it into a named net.
         net = Net(name=None, suffix=None)
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         self._nets[subnet.id] = net
         self._attachSubnetToNet(subnet, net)
         return subnet
@@ -483,6 +495,8 @@ class Netlist:
         """Drop a subnet entirely (detach from its net, drop from index)."""
         net_removed = subnet.net is not None and len(subnet.net.subnets) <= 1
         self._detachSubnetFromNet(subnet)
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         self._subnets.pop(subnet.id, None)
         if net_removed:
             self._scene.netlistChanged.emit()
@@ -497,6 +511,8 @@ class Netlist:
             nodes = {nodes}
         subnet.nodes |= nodes
         for node in nodes:
+            if subnet.id is None:
+                raise ValueError("Subnet ID is None")
             self._node2subnet[node] = subnet.id
 
     def _removeNodeFromSubnet(self : Self, node : NodeItem, subnet : Subnet) -> None:
@@ -542,22 +558,27 @@ class Netlist:
             trail = []
         if subnet.id in trail:
             return
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         trail.append(subnet.id)
         tapped_subnets : set[int] = set()
         # gather names from nodes
-        label_names   : list[str] = []
-        tap_names     : list[str] = []
-        i_port_names  : list[str] = []
-        io_port_names : list[str] = []
-        o_port_names  : list[str] = []
-        pin_names     : list[tuple[str, str] | str] = []
+        label_names     : list[str] = []
+        tap_names       : list[str] = []
+        i_port_names    : list[str] = []
+        io_port_names   : list[str] = []
+        o_port_names    : list[str] = []
+        pin_names       : list[str] = []
+        pin_name_tuples : list[tuple[str, str] | str] = []
         for label in self.labelsTouchingSubnet(subnet.nodes):
             if label.name() == "Name":
                 label_names.append(label.value())
         for node in subnet.nodes:
             # taps (minor end)
             if isinstance(node, TapMinorNodeItem):
-                tap : TapItem | None = node.parentItem()
+                tap = node.parentItem()
+                if not isinstance(tap, TapItem):
+                    raise ValueError("Bad tap")
                 tap_major_node = tap.majorNode()
                 if tap_major_node not in self._node2subnet:
                     continue
@@ -572,8 +593,12 @@ class Netlist:
                 tap_names.append(tap_major_subnet_name)
             # taps (major end)
             elif isinstance(node, TapMajorNodeItem):
-                tap : TapItem | None = node.parentItem()
+                tap = node.parentItem()
+                if not isinstance(tap, TapItem):
+                    raise ValueError("Bad tap")
                 tap_minor_node = tap.minorNode()
+                if not isinstance(tap_minor_node, FreeNodeItem):
+                    raise ValueError("Bad tap minor node")
                 if tap_minor_node not in self._node2subnet:
                     continue
                 tapped_subnets.add(self._node2subnet[tap_minor_node])
@@ -592,13 +617,16 @@ class Netlist:
                 elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
                     pin_parent = node_parent.parentItem()
                     if isinstance(pin_parent, PinParent):
-                        pin_names.append((pin_parent.label(), node_parent.name()))
+                        pin_parent_label = pin_parent.label() or ""
+                        pin_name_tuples.append(
+                            (pin_parent_label, node_parent.name())
+                        )
         # sort pin name tuples
-        if pin_names:
-            pin_names.sort(key=lambda x: (x[0], x[1]))
+        if pin_name_tuples:
+            pin_name_tuples.sort(key=lambda x: (x[0], x[1]))
         # convert pin name tuples to single strings
         pin_names = \
-            [f"{label}_{name}" for label, name in pin_names]
+            [f"{label}_{name}" for label, name in pin_name_tuples]
         # aggregate names
         all_names = \
             label_names + tap_names + \
@@ -662,7 +690,10 @@ class Netlist:
             self._scene.netlistChanged.emit()
         elif old_suffix != resolved_suffix:
             # no name change, suffix change => just refresh the current net
-            self._refreshNet(subnet.net)
+            subnet_net = subnet.net
+            if subnet_net is None:
+                raise ValueError("Subnet net is None")
+            self._refreshNet(subnet_net)
             self._scene.netlistChanged.emit()
         # resolve tapped subnets
         for subnet_id in tapped_subnets:
@@ -673,6 +704,8 @@ class Netlist:
     @checked
     def _attachSubnetToNet(self : Self, subnet : Subnet, net : Net) -> None:
         subnet.net = net
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         net.subnets.add(subnet.id)
         net_key = subnet.id if net.name is None else net.name
         self._subnet2net[subnet.id] = net_key
@@ -680,8 +713,12 @@ class Netlist:
     @checked
     def _detachSubnetFromNet(self : Self, subnet : Subnet) -> None:
         """Remove `subnet` from its current net, deleting the net if empty."""
+        if subnet.id is None:
+            raise ValueError("Subnet ID is None")
         self._subnet2net.pop(subnet.id)
         net = subnet.net
+        if net is None:
+            raise ValueError("Subnet net is None")
         net.subnets.discard(subnet.id)
         if not net.subnets:
             # remove empty net

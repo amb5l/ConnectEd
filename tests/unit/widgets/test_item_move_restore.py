@@ -19,8 +19,6 @@ def connect_ed_app() -> ConnectEdApp:
         changed = pyqtSignal(str)
 
         def get(self, path : str, default=None):
-            if path == "defaults/extents":
-                return QPointF(1000.0, 1000.0)
             return default
 
     app.setSettings(_FakeSettings())

@@ -10,7 +10,7 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, cast
 
 from PyQt6.QtCore    import QSize, QXmlStreamWriter, QXmlStreamReader
 
@@ -22,6 +22,8 @@ from ..core.session import DocType, Session
 from ..core.types   import MenuAction, MenuSeparator, MenuEntry
 from ..core.doc     import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
 from ..core.icon    import SvgIconSingleton
+from ..core.xml     import loadXml
+from ..core.utils   import cleanPath
 
 from ..widgets.dialogs.unsaved_changes import UnsavedChangesDialog
 
@@ -30,7 +32,8 @@ if TYPE_CHECKING:
     from ..widgets.window.sub_window       import DocSubWindow
     from ..widgets.graphics.scenes.diagram import DiagramScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
-    from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
+
+from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
 
 
 _SYMBOL_CONTAINER = "Symbols"
@@ -50,7 +53,7 @@ class HdlSchematicDiagramDoc(Doc):
     _XML_TAG = "HdlSchematicDiagram"
 
     _path             : str
-    _scene            : DiagramScene | None
+    _scene            : DiagramScene
     _symbol_container : str
     _symbol_scenes    : dict[SymbolDefinitionItem, SymbolScene]
     _dirty            : list[SymbolDefinitionItem | str]
@@ -64,8 +67,9 @@ class HdlSchematicDiagramDoc(Doc):
         self._symbol_scenes = {}
         self._dirty = []
         self.setName(name or "Untitled")
-        self._scene.undo_stack.setClean()
-        self._scene.undo_stack.cleanChanged.connect(
+        undo_stack = self._scene.undo_stack
+        undo_stack.setClean()
+        undo_stack.cleanChanged.connect(
             lambda clean: self._onCleanChanged(self._scene, clean)
         )
 
@@ -76,15 +80,19 @@ class HdlSchematicDiagramDoc(Doc):
         self    : Self,
         subject : DocSubjectProtocol | None = None
     ) -> bool:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
         if subject is None:
             subject = self._scene
-        if subject is self._scene:
-            return self._scene.undo_stack.isClean() \
-                and self._dirtySymbolCount() == 0
-        elif subject in self._symbol_scenes:
-            return self._symbol_scenes[subject].undo_stack.isClean()
+        if isinstance(subject, DiagramScene):
+            return subject.undo_stack.isClean() and self._dirtySymbolCount() == 0
+        elif isinstance(subject, SymbolDefinitionItem):
+            if subject in self._symbol_scenes:
+                return self._symbol_scenes[subject].undo_stack.isClean()
+            else:
+                return subject in self._dirty
         else:
-            return subject in self._dirty
+            logger().error(f"Unsupported subject type: {type(subject)}")
+            return False
 
     @checked
     def name(self : Self) -> str:
@@ -100,7 +108,6 @@ class HdlSchematicDiagramDoc(Doc):
 
     @checked
     def setPath(self : Self, path : str) -> None:
-        from ..core.utils import cleanPath
         path = cleanPath(path)
         if path == self._path:
             return
@@ -127,9 +134,7 @@ class HdlSchematicDiagramDoc(Doc):
     @classmethod
     @checked
     def load(cls : type[Self], path : str) -> Self | None:
-        from ..core.utils import cleanPath
-        from ..core.xml import loadXml
-        return loadXml(cleanPath(path), {cls.tag(): cls})
+        return cast(Self, loadXml(cleanPath(path), {cls.tag(): cls}))
 
     @checked
     def save(self : Self, path : str | None = None) -> bool:
@@ -143,13 +148,13 @@ class HdlSchematicDiagramDoc(Doc):
     def navItemSpec(self : Self) -> NavItemSpec:
         return NavItemSpec(
             subject  = self._scene,
-            icon     = SchematicIcon(),  # TODO remove this, containers don't have icons
+            icon     = SchematicIcon().get(),  # TODO remove this, containers don't have icons
             tip      = self._path or "(not saved)",
             children = [
                 NavItemSpec(
                     subject  = self._symbol_container,
                     children = [
-                        NavItemSpec(subject = s, icon = SymbolIcon())
+                        NavItemSpec(subject = s, icon = SymbolIcon().get())
                         for s in self._scene.symbolDefinitions().values()
                     ],
                 ),
@@ -193,7 +198,7 @@ class HdlSchematicDiagramDoc(Doc):
     @checked
     def navToolTip(
         self    : Self,
-        subject : DocSubjectProtocol
+        subject : DocSubjectProtocol | None = None
     ) -> str | None:
         return self._path or "(not saved)" if subject is self._scene else None
 
@@ -206,25 +211,44 @@ class HdlSchematicDiagramDoc(Doc):
         if subject is None: subject = self._scene
         if subject is self._scene:
             nav = window().navigator()
-            return [
+            return list[MenuEntry]([
                 MenuAction("Save", lambda: nav.docSave(self)),
                 MenuAction("Save As...", lambda: nav.docSaveAsPrompt(self)),
                 MenuAction("Close", lambda: nav.docClose(self)),
                 MenuSeparator(),
-                MenuAction("Edit", lambda s=subject: self.showWindow(s)),
-                MenuAction("New Window", lambda s=subject: self.newWindow(s)),
-            ]
+                MenuAction(
+                    "Edit",
+                    lambda s=subject: (self.showWindow(s), None)[1]
+                ),
+                MenuAction(
+                    "New Window",
+                    lambda s=subject: (self.newWindow(s), None)[1]
+                ),
+            ])
         elif subject == self._symbol_container:
-            return [
+            return list[MenuEntry]([
                 MenuAction("New Symbol", lambda: self.newSymbolHandler()),
                 MenuSeparator(),
-                MenuAction("Refresh All", lambda: self.refreshSymbolsHandler()),
-                MenuAction("Purge All", lambda: self.purgeSymbolsHandler()),
-            ]
-        elif subject in self._scene.symbolDefinitions().values():
-            return [
-                MenuAction("Edit", lambda s=subject: self.showWindow(s)),
-                MenuAction("New Window", lambda s=subject: self.newWindow(s)),
+                MenuAction(
+                    "Refresh All",
+                    lambda: self.refreshSymbolsHandler()
+                ),
+                MenuAction(
+                    "Purge All",
+                    lambda: self.purgeSymbolsHandler()
+                ),
+            ])
+        elif isinstance(subject, SymbolDefinitionItem) \
+        and subject in self._scene.symbolDefinitions().values():
+            return list[MenuEntry]([
+                MenuAction(
+                    "Edit",
+                    lambda s=subject: (self.showWindow(s), None)[1]
+                ),
+                MenuAction(
+                    "New Window",
+                    lambda s=subject: (self.newWindow(s), None)[1]
+                ),
                 MenuSeparator(),
                 MenuAction(
                     "Duplicate",
@@ -240,8 +264,11 @@ class HdlSchematicDiagramDoc(Doc):
                     "Refresh",
                     lambda s=subject: self.refreshSymbolHandler(s)
                 ),
-                MenuAction("Replace", lambda s=subject: self.replaceSymbolHandler(s)),
-            ]
+                MenuAction(
+                    "Replace",
+                    lambda s=subject: self.replaceSymbolHandler(s)
+                ),
+            ])
         return []
 
     # --- MDI (subwindows) -----------------------------------------------------
@@ -323,7 +350,8 @@ class HdlSchematicDiagramDoc(Doc):
         # clean up _symbol_scenes, update _dirty
         subwindows = window().mdiArea().docSubjectSubWindows(self, subject)
         if len(subwindows) == 1:
-                if subject in self._symbol_scenes:
+                if isinstance(subject, SymbolDefinitionItem) \
+                and subject in self._symbol_scenes:
                     scene = self._symbol_scenes[subject]
                     if not scene.undo_stack.isClean():
                         self._dirty.append(subject)
@@ -340,10 +368,12 @@ class HdlSchematicDiagramDoc(Doc):
         subject = self._subjectFromSubwindow(subwindow)
         if subject is None: return False
         if isinstance(subject, DiagramScene):
-            window().navigator().fileSaveAs(subwindow)
+            window().navigator().fileSave(subwindow)
             return True
         elif isinstance(subject, SymbolDefinitionItem):
-            return self._symbol_scenes[subject].commit()
+            scene = self._symbol_scenes[subject]
+            subject.syncFromScene(scene)
+            scene.undo_stack.setClean()
             return True
         logger().error(f"Unsupported subject type: {type(subject)}")
         return False
@@ -356,43 +386,50 @@ class HdlSchematicDiagramDoc(Doc):
 
     def newSymbolHandler(self : Self) -> None:
         # add new symbol definition to scene and navigator
-        self._scene.newSymbol()  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.newSymbol()  # scene API (undoable)
 
     def refreshSymbolsHandler(self : Self) -> None:
         # refresh all symbol definitions in scene and navigator
-        self._scene.refreshSymbols()  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.refreshSymbols()  # scene API (undoable)
 
     def purgeSymbolsHandler(self : Self) -> None:
         # purge all symbol definitions from scene and navigator
-        self._scene.purgeSymbols()  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.purgeSymbols()  # scene API (undoable)
 
     def duplicateSymbolHandler(
         self : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # duplicate symbol definition in scene and navigator
-        self._scene.duplicateSymbol(subject)  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.duplicateSymbol(subject)  # scene API (undoable)
 
     def deleteSymbolHandler(
         self : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # delete symbol definition from scene and navigator
-        self._scene.deleteSymbol(subject)  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.deleteSymbol(subject)  # scene API (undoable)
 
     def refreshSymbolHandler(
         self : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # refresh symbol definition in scene and navigator
-        self._scene.refreshSymbol(subject)  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.refreshSymbol(subject)  # scene API (undoable)
 
     def replaceSymbolHandler(
         self : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # replace symbol definition in scene and navigator
-        self._scene.replaceSymbol(subject)  # scene API (undoable)
+        raise NotImplementedError("Not implemented")
+        #self._scene.replaceSymbol(subject)  # scene API (undoable)
 
     # --- helpers --------------------------------------------------------------
 
@@ -412,10 +449,12 @@ class HdlSchematicDiagramDoc(Doc):
         if subject is not self._scene and subject not in symbols:
             logger().error(f"Document does not contain subject {subject}")
             return None
+        binding = DocBinding(self, subject)
+        mdi_area = window().mdiArea()
         if isinstance(subject, DiagramScene):
             scene = subject
-            view_cls = DiagramView
-            subwindow_cls = DiagramSubWindow
+            view = DiagramView(scene)
+            subwindow = DiagramSubWindow(mdi_area, binding)
         elif isinstance(subject, SymbolDefinitionItem):
             if subject not in self._symbol_scenes:
                 scene = SymbolScene()
@@ -429,30 +468,27 @@ class HdlSchematicDiagramDoc(Doc):
                     self._dirty.remove(subject)
             else:
                 scene = self._symbol_scenes[subject]
-            view_cls = SymbolView
-            subwindow_cls = SymbolSubWindow
+            view = SymbolView(scene)
+            subwindow = SymbolSubWindow(mdi_area, binding)
         else:
             logger().error(f"Unsupported subject type: {type(subject)}")
             return None
-        view = view_cls(scene)
-        binding = DocBinding(self, subject)
-        mdi_area = window().mdiArea()
-        subwindow = subwindow_cls(mdi_area, binding)
         subwindow.setWidget(view)
         mdi_area.addSubWindow(subwindow)
         return subwindow
 
     def _isSymbolClean(self : Self, subject : DocSubjectProtocol) -> bool:
         from ..widgets.graphics.items.symbol import SymbolDefinitionItem
+        if not isinstance(subject, SymbolDefinitionItem):
+            raise TypeError("Bad subject")
         if subject in self._symbol_scenes:
             return self._symbol_scenes[subject].undo_stack.isClean()
-        return isinstance(subject, SymbolDefinitionItem) \
-            and subject not in self._dirty
+        return subject not in self._dirty
 
     def _dirtySymbolCount(self : Self) -> int:
         return sum(
-            1 for s in self._scene.symbolDefinitions()
-            if not self._isSymbolClean(s)
+            1 for symbol in self._scene.symbolDefinitions().values()
+            if not self._isSymbolClean(symbol)
         )
 
     def _onCleanChanged(
@@ -461,6 +497,8 @@ class HdlSchematicDiagramDoc(Doc):
         clean   : bool
     ) -> None:
         from ..widgets.graphics.items.symbol import SymbolDefinitionItem
+        if not isinstance(subject, SymbolDefinitionItem):
+            raise TypeError("Bad subject")
         if not clean:
             if subject not in self._dirty:
                 self._dirty.append(subject)

@@ -6,6 +6,8 @@ from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QColor, QPaintEvent
 
+from ..app import logger
+
 from ..core.check import checked
 
 
@@ -37,7 +39,10 @@ class MarqueeRubberBand(QRubberBand):
         self.offset = (self.offset + 1) % (2 * self.DASH_LEN)
         self.update()
 
-    def paintEvent(self : Self, event : QPaintEvent) -> None:
+    def paintEvent(self : Self, a0 : QPaintEvent | None) -> None:
+        if a0 is None:
+            logger().warning("No event")
+            return
         painter = QPainter(self)
         rect = self.rect().adjusted(0, 0, -1, -1)
         pen = QPen(QColor(255, 255, 255))
@@ -62,7 +67,7 @@ class MarqueeRubberBand(QRubberBand):
 class Marquee:
     parent      : QGraphicsView
     rubber_band : MarqueeRubberBand
-    point1      : QPoint
+    point1      : QPoint | None
 
     @checked
     def __init__(self : Self, parent : QGraphicsView) -> None:
@@ -79,20 +84,24 @@ class Marquee:
         self.rubber_band.show()
 
     def resize(self : Self, pos : QPoint) -> None:
+        point1 = self.point1
+        if point1 is None:
+            raise RuntimeError("No point1")
         self.rubber_band.setGeometry(
             QRect(
-                self.point1.x(), self.point1.y(),
-                pos.x() - self.point1.x(),
-                pos.y() - self.point1.y()
+                point1.x(), point1.y(),
+                pos.x() - point1.x(), pos.y() - point1.y()
             ).normalized()
         )
 
     def end(self : Self, pos : QPoint) -> None:
+        point1 = self.point1
+        if point1 is None:
+            raise RuntimeError("No point1")
         self.rubber_band.setGeometry(
             QRect(
-                self.point1.x(), self.point1.y(),
-                pos.x() - self.point1.x(),
-                pos.y() - self.point1.y()
+                point1.x(), point1.y(),
+                pos.x() - point1.x(), pos.y() - point1.y()
             ).normalized()
         )
         self.rubber_band.hide()

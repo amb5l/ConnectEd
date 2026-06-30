@@ -36,9 +36,9 @@ class TextDialog(QDialog):
         # set layout
         self.setLayout(self._dialog_layout)
 
-    def showEvent(self : Self, event : QShowEvent) -> None:
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
         """Override showEvent to select all text when dialog appears."""
-        super().showEvent(event)
+        super().showEvent(a0)
         if self._value_layout.getText() == "<text>":
             self._value_layout._text_editor.selectAll()
             self._value_layout._text_editor.setFocus()

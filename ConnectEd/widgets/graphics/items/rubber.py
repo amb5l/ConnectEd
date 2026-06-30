@@ -20,14 +20,14 @@ from .role import ChromeItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
+    from ..scenes.diagram import DiagramScene
 
 
 class RubberItem(QGraphicsPathItem):
     """Base class for rubber preview items."""
-    _static    : NodeItem  # static node
-    _mobile    : NodeItem  # mobile node
-    _axis      : Axis      # connected segment axis
+    _static : NodeItem     # static node
+    _mobile : NodeItem     # mobile node
+    _axis   : Axis | None  # connected segment axis
 
     def settingsName(self : Self) -> str:
         return "rubber"
@@ -49,7 +49,7 @@ class RubberItem(QGraphicsPathItem):
                 self.onSceneChanged(value)
         return super().itemChange(change, value)
 
-    def onSceneChanged(self : Self, scene : DrawingScene | None) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen(self.resourcesName()))
@@ -88,15 +88,21 @@ class RubberTeeItem(ChromeItem, RubberItem):
     ) -> None:
         # initialise superclass
         super().__init__()
+        # sanity
+        other_node = segment.otherNode(node)
+        if other_node is None:
+            raise ValueError("other node is None")
+        axis = segment.axis()
+        if axis is None:
+            raise ValueError("axis is None")
         # set instance attributes
-        self._static = segment.otherNode(node)
+        self._static = other_node
         self._mobile = node
         # positioning
-        junc_node = segment.otherNode(node)
+        junc_node = other_node
         junc_spos = junc_node.scenePos()
         self.setPos(junc_spos)  # this item origin lies on junction
         # build perpendicular segment
-        axis = segment.axis()
         self._axis = axis
         perp_p1 = junc_spos
         perp_p2 = perp_p1
@@ -107,7 +113,10 @@ class RubberTeeItem(ChromeItem, RubberItem):
             junc_seg_axis = junc_seg.axis()
             if junc_seg_axis is None or junc_seg_axis == axis:
                 continue
-            new_p = junc_seg.otherNode(junc_node).scenePos()
+            junc_seg_other_node = junc_seg.otherNode(junc_node)
+            if junc_seg_other_node is None:
+                raise ValueError("junc_seg_other_node is None")
+            new_p = junc_seg_other_node.scenePos()
             # update perp_p1 or perp_p2
             lx = QLineF(perp_p1, perp_p2).length()  # existing perp path length
             l1 = QLineF(new_p, perp_p2).length()    # length if perp_p1 => new_p
@@ -177,14 +186,21 @@ class RubberCornerItem(ChromeItem, RubberItem):
         # positioning
         node_spos = node.scenePos()
         corner_node = segment1.otherNode(node)
+        if corner_node is None:
+            raise ValueError("corner node is None")
         corner_spos = corner_node.scenePos()
         origin_node = segment2.otherNode(corner_node)
+        if origin_node is None:
+            raise ValueError("origin node is None")
         origin_spos = origin_node.scenePos()
         self.setPos(origin_spos)
         # set instance attributes
         self._static = origin_node
         self._mobile = node
-        self._axis   = segment1.axis()
+        axis = segment1.axis()
+        if axis is None:
+            raise ValueError("axis is None")
+        self._axis = axis
         # initialise path
         path = QPainterPath()
         path.moveTo(0, 0)
@@ -218,8 +234,8 @@ class RubberJogItem(ChromeItem, RubberItem):
     """
 
     # instance attributes
-    _pol    : Polarity  # axis direction (+ or -)
-    _lane   : float     # scene coordinate of jog lane
+    _pol    : Polarity      # axis direction (+ or -)
+    _lane   : float | None  # scene coordinate of jog lane
 
     @overload
     def __init__(
@@ -240,7 +256,7 @@ class RubberJogItem(ChromeItem, RubberItem):
         ...
 
     @checked
-    def __init__(
+    def __init__(  # pyright: ignore[reportInconsistentOverload]
         self              : Self,
         segment_or_static : SegmentItem | NodeItem,
         mobile            : NodeItem,
@@ -260,7 +276,11 @@ class RubberJogItem(ChromeItem, RubberItem):
         if isinstance(segment_or_static, SegmentItem):
             segment = segment_or_static
             static = segment.otherNode(mobile)
+            if static is None:
+                raise ValueError("static node is None")
             axis = segment.axis()  # override arg if supplied
+            if axis is None:
+                raise ValueError("axis is None")
         elif isinstance(segment_or_static, NodeItem):
             static = segment_or_static
         static_spos = static.scenePos()
@@ -292,7 +312,7 @@ class RubberJogItem(ChromeItem, RubberItem):
         self.updatePath()
 
     @checked
-    def axis(self : Self) -> Axis:
+    def axis(self : Self) -> Axis | None:
         return self._axis
 
     @checked
@@ -395,7 +415,7 @@ class RubberJogItem(ChromeItem, RubberItem):
         dy = mobile_spos.y() - sy
         path = QPainterPath()
         path.moveTo(0, 0)
-        if self.isStraight() or self.isDegenerate():
+        if self.isStraight() or self._lane is None:
             path.lineTo(dx, dy)
         elif self._axis == Axis.H:
             jog_x = self._lane - sx

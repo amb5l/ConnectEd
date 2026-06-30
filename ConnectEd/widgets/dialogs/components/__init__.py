@@ -18,9 +18,7 @@ def customIconSize() -> QSize:
 
 
 class BaseIcon(SvgIconSingleton):
-    @property
-    def SIZE(self) -> QSize:
-        return customIconSize()
+    SIZE = customIconSize()
 
 class NoChangeIcon(BaseIcon):
     PATH = getIconPath("no_change.svg")

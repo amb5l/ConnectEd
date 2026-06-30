@@ -11,8 +11,9 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
                             QTransform, QTextCursor
 
+from ....core.utils import qtItemClass
 from ....core.types import NoChange, NO_CHANGE, \
-                           AlignH, AlignV, RectHandleId, DataKind
+                           AlignH, AlignV, HandleId, RectHandleId, DataKind
 
 from ....resources.icons import AnchorTopLeftIcon,      \
                                 AnchorTopCenterIcon,    \
@@ -39,15 +40,15 @@ from .grip import ResizeGripItem
 
 from .role import DecorativeItem
 
-from .mixin              import PrimaryItemMixin
-from .mixin.transform    import ItemTransformMixin
-from .mixin.handle       import ItemRectHandlesMixin
-from .mixin.shape        import ItemShapeMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.shape     import ItemShapeMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
     from ...dialogs.items.text import BaseTextItemDialog, TextItemDialog
+    from ..views.diagram import DiagramView
 
 
 @dataclass
@@ -76,6 +77,9 @@ class TextState:
 
     @classmethod
     def fromItem(cls, item : TextItem) -> Self:
+        origin = item.origin()
+        if not isinstance(origin, RectHandleId):
+            raise TypeError("Bad origin")
         return cls(
             text       = item.text(),
             block      = item.block(),
@@ -83,7 +87,7 @@ class TextState:
             mirror_h   = item.mirrorH(),
             mirror_v   = item.mirrorV(),
             autoflip   = item.autoflip(),
-            origin     = item.origin(),
+            origin     = origin,
             align_h    = item.alignH(),
             align_v    = item.alignV(),
             width      = item.width(),
@@ -109,7 +113,7 @@ class TextChange:
     mirror_h   : bool          | NoChange = NO_CHANGE
     mirror_v   : bool          | NoChange = NO_CHANGE
     autoflip   : bool          | NoChange = NO_CHANGE
-    origin     : str           | NoChange = NO_CHANGE
+    origin     : RectHandleId  | NoChange = NO_CHANGE
     align_h    : AlignH        | NoChange = NO_CHANGE
     align_v    : AlignV        | NoChange = NO_CHANGE
     width      : float         | NoChange = NO_CHANGE
@@ -130,18 +134,21 @@ class TextResizeGripItem(ResizeGripItem):
     """Grip for resizing text items."""
 
     @checked
-    def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
-        item : TextItem = self.item()
+    def moveSave(self : Self) -> tuple[QPointF, float, float]:  # pyright: ignore[reportIncompatibleMethodOverride]
+        item = self.item()
+        if not isinstance(item, BaseTextItem):
+            raise TypeError("Bad item")
         return self.scenePos(), item.width(), item.height()
 
     @checked
-    def moveRestore(
-        self  : Self,
-        state : tuple[QPointF, float | None, float | None]
-    ) -> None:
+    def moveRestore(self  : Self, state : tuple[QPointF, float, float]) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         pos, width, height = state
-        item : TextItem = self.item()
-        self.moveBy(pos - self.scenePos())
+        item = self.item()
+        if not isinstance(item, BaseTextItem):
+            raise TypeError("Bad item")
+        self.moveBy(
+            pos.x() - self.scenePos().x(), pos.y() - self.scenePos().y()
+        )
         item.setWidth(width)
         item.setHeight(height)
 
@@ -303,6 +310,7 @@ class BaseTextItem(
         self._pad_top    = pad_top
         self._pad_bottom = pad_bottom
         self._hshape = QPainterPath()
+        self._brect  = QRectF()
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
         self._child._setText(text)
@@ -326,16 +334,13 @@ class BaseTextItem(
         self._child.onGeometryChanged()
         self.updateHandlePositions()
 
-    def onSceneRotationChanged(self : Self) -> None:
-        self._child.onSceneOrientationChanged()
-
-    def onSceneMirrorChanged(self : Self) -> None:
+    def onSceneOrientationChanged(self : Self) -> None:
         self._child.onSceneOrientationChanged()
 
     def onOriginChanged(
         self : Self,
-        _old : RectHandleId | None,
-        _new : RectHandleId,
+        _old : HandleId | None,
+        _new : HandleId,
     ) -> None:
         self.onGeometryChanged()
 
@@ -485,7 +490,7 @@ class BaseTextItem(
         return self._brect
 
     @checked
-    def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         """
         Resize/move the text as appropriate. `delta` is supplied in scene
         coordinates; convert it to a parent-local delta (for repositioning
@@ -496,10 +501,10 @@ class BaseTextItem(
         zero = QPointF(0, 0)
         parent = self.parentItem()
         if parent is None:
-            pd = delta
+            pd = d
         else:
-            pd = parent.mapFromScene(delta) - parent.mapFromScene(zero)
-        ld = self.mapFromScene(delta) - self.mapFromScene(zero)
+            pd = parent.mapFromScene(d) - parent.mapFromScene(zero)
+        ld = self.mapFromScene(d) - self.mapFromScene(zero)
         origin_name = self.origin().value
         match id:
             case RectHandleId.TOP_LEFT:
@@ -519,7 +524,7 @@ class BaseTextItem(
                 if "Left" in origin_name: self.moveByX(pd.x())
                 self.resizeX(-ld.x())
             case RectHandleId.MIDDLE_CENTER:
-                self.moveBy(pd)
+                self.moveBy(pd.x(), pd.y())
             case RectHandleId.MIDDLE_RIGHT:
                 if "Right" in origin_name: self.moveByX(pd.x())
                 self.resizeX(ld.x())
@@ -566,7 +571,7 @@ class BaseTextItem(
     def boundingRect(self : Self) -> QRectF:
         return self._brect
 
-    def originMenu(self : Self, view : DrawingView) -> QMenu:
+    def originMenu(self : Self, view : DiagramView) -> QMenu:
         menu = QMenu("Origin", view)
         menu.addActions([
             view.action(
@@ -626,7 +631,7 @@ class BaseTextItem(
         ])
         return menu
 
-    def alignmentMenu(self : Self, view : DrawingView) -> QMenu:
+    def alignmentMenu(self : Self, view : DiagramView) -> QMenu:
         menu = QMenu("Alignment", view)
         menu.addActions([
             view.action(
@@ -691,37 +696,37 @@ class BaseTextItem(
         bold       = dialog.getBold()
         italic     = dialog.getItalic()
         underline  = dialog.getUnderline()
-        if rotation   is not NO_CHANGE: self.setRotation(rotation)
-        if mirror_h   is not NO_CHANGE: self.setMirrorH(mirror_h)
-        if mirror_v   is not NO_CHANGE: self.setMirrorV(mirror_v)
-        if autoflip   is not NO_CHANGE: self.setAutoflip(autoflip)
-        if align_h    is not NO_CHANGE: self.setAlignH(align_h)
-        if align_v    is not NO_CHANGE: self.setAlignV(align_v)
-        if origin     is not NO_CHANGE: self.setOrigin(origin)
-        if pad_left   is not NO_CHANGE: self.setPadLeft(pad_left)
-        if pad_right  is not NO_CHANGE: self.setPadRight(pad_right)
-        if pad_top    is not NO_CHANGE: self.setPadTop(pad_top)
-        if pad_bottom is not NO_CHANGE: self.setPadBottom(pad_bottom)
-        if color      is not NO_CHANGE: self.setTextColor(color)
-        if font       is not NO_CHANGE: self.setTextFont(font)
-        if size       is not NO_CHANGE: self.setTextSize(size)
-        if bold       is not NO_CHANGE: self.setTextBold(bold)
-        if italic     is not NO_CHANGE: self.setTextItalic(italic)
-        if underline  is not NO_CHANGE: self.setTextUnderline(underline)
+        if not isinstance( rotation   , NoChange ): self.setRotation(rotation)
+        if not isinstance( mirror_h   , NoChange ): self.setMirrorH(mirror_h)
+        if not isinstance( mirror_v   , NoChange ): self.setMirrorV(mirror_v)
+        if not isinstance( autoflip   , NoChange ): self.setAutoflip(autoflip)
+        if not isinstance( align_h    , NoChange ): self.setAlignH(align_h)
+        if not isinstance( align_v    , NoChange ): self.setAlignV(align_v)
+        if not isinstance( origin     , NoChange ): self.setOrigin(origin)
+        if not isinstance( pad_left   , NoChange ): self.setPadLeft(pad_left)
+        if not isinstance( pad_right  , NoChange ): self.setPadRight(pad_right)
+        if not isinstance( pad_top    , NoChange ): self.setPadTop(pad_top)
+        if not isinstance( pad_bottom , NoChange ): self.setPadBottom(pad_bottom)
+        if not isinstance( color      , NoChange ): self.setTextColor(color)
+        if not isinstance( font       , NoChange ): self.setTextFont(font)
+        if not isinstance( size       , NoChange ): self.setTextSize(size)
+        if not isinstance( bold       , NoChange ): self.setTextBold(bold)
+        if not isinstance( italic     , NoChange ): self.setTextItalic(italic)
+        if not isinstance( underline  , NoChange ): self.setTextUnderline(underline)
 
     @checked
     def applyDialog(self : Self, dialog : TextItemDialog) -> None:
         self._applyDialogCommon(dialog)
         text  = dialog.getText()
         block = dialog.getBlock()
-        if text  is not NO_CHANGE: self.setText(text)
-        if block is not NO_CHANGE: self.setBlock(block)
+        if not isinstance( text  , NoChange ): self.setText(text)
+        if not isinstance( block , NoChange ): self.setBlock(block)
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         """Return context menu items for Text item."""
         items = [
@@ -776,22 +781,23 @@ class BaseTextItem(
         self._hshape.addRect(self._brect)
 
 class TextRendererMixin(ItemShapeMixin):
-    def initRenderer(self : Self | TextLineRenderer | TextBlockRenderer) -> None:
+    def initRenderer(self : Self) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, False)
         self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.initShape()  # empty hit detect shape
 
-
-    def onSceneOrientationChanged(
-        self : Self | TextLineRenderer | TextBlockRenderer
-    ) -> None:
+    def onSceneOrientationChanged(self : Self) -> None:
         """
         Counter-rotate and/or counter-mirror so text stays readable for the
         parent's effective scene rotation and mirror. Pivots at the layout
         rect centre so the flip respects the width/height box.
         """
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         parent = self.parentItem()
-        if not isinstance(parent, TextItem):
+        if not isinstance(parent, BaseTextItem):
             return
         self.setRotation(0)
         if not parent.autoflip():
@@ -813,23 +819,21 @@ class TextRendererMixin(ItemShapeMixin):
         self.setTransform(transform)
         self.update()
 
-    def onSelectionChanged(
-        self : Self | TextLineRenderer | TextBlockRenderer,
-        _selected : bool
-    ) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
+        if not isinstance(self, TextLineRenderer | TextBlockRenderer):
+            raise TypeError("Bad host")
         self._paint_override()
 
-    @checked
-    def setFont(
-        self : Self | TextLineRenderer | TextBlockRenderer,
-        font : QFont
+    def contextMenuEvent(
+        self  : Self,
+        event : QGraphicsSceneContextMenuEvent | None
     ) -> None:
-        font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
-        super().setFont(font)
-
-    def contextMenuEvent(self : Self,  event : QGraphicsSceneContextMenuEvent) -> None:
         """Bounce context menu event to parent."""
-        parent: TextItem = self.parentItem()
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
+        parent = self.parentItem()
+        if not isinstance(parent, BaseTextItem):
+            raise TypeError("Bad parent")
         parent.contextMenuEvent(event)
 
     def settingsName(self : Self) -> str:
@@ -855,15 +859,22 @@ class TextRendererMixin(ItemShapeMixin):
 
     def _paint_selected(
         self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
+        painter : QPainter | None,
+        option  : QStyleOptionGraphicsItem | None,
+        widget  : QWidget | None
     ) -> None:
         """
         Paint method override for selected state.
         """
+        if not isinstance(painter, QPainter) \
+        or not isinstance(option, QStyleOptionGraphicsItem) \
+        or not isinstance(widget, QWidget):
+            raise TypeError("Bad arguments")
         option.state &= ~QStyle.StateFlag.State_Selected
-        super().paint(painter, option, widget)
+        super = qtItemClass(self)
+        if not isinstance(super, QGraphicsItem):
+            raise TypeError("Bad super")
+        super.paint(painter, option, widget)
 
 
 class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
@@ -887,24 +898,26 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         """Propagate selection state to parent."""
         match change:
             case self.GraphicsItemChange.ItemSelectedHasChanged:
-                parent : TextItem | None = self.parentItem()
-                if parent is not None:
-                    QGraphicsItem.setSelected(parent, value)
+                parent = self.parentItem()
+                if isinstance(parent, QGraphicsItem):
+                    parent.setSelected(bool(value))
         return super().itemChange(change, value)
 
     @checked
-    def setText(self : Self, text : str) -> None:
+    def setText(self : Self, text : str | None) -> None:
         self._setText(text)
-        parent : TextItem | None = self.parentItem()
-        if parent is not None:
+        parent = self.parentItem()
+        if isinstance(parent, BaseTextItem):
             parent.onGeometryChanged()
 
-    def _setText(self : Self, text : str) -> None:
-        super().setText(text)
+    @checked
+    def setFont(self : Self, font : QFont) -> None:
+        font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
+        super().setFont(font)
 
     def onGeometryChanged(self : Self) -> None:
-        parent : TextItem = self.parentItem()
-        if parent is None:
+        parent = self.parentItem()
+        if not isinstance(parent, BaseTextItem):
             return
         align_h = parent._align_h
         align_v = parent._align_v
@@ -955,15 +968,20 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         self.setBrush(brush)
 
     def boundingRect(self: Self) -> QRectF:
-        parent : TextItem = self.parentItem()
+        parent = self.parentItem()
+        if not isinstance(parent, BaseTextItem):
+            raise TypeError("Bad host")
         return parent.boundingRect()
+
+    def _setText(self : Self, text : str | None) -> None:
+        super().setText(text)
 
     def _paint_override(self : Self) -> None:
         """
         Update paint method override for best performance.
         """
-        parent : TextItem = self.parentItem()
-        if parent is not None and parent.isSelected():
+        parent = self.parentItem()
+        if isinstance(parent, BaseTextItem) and parent.isSelected():
             if self._clip_rect is not None:
                 self.paint = self._paint_selected_clipped
             else:
@@ -974,16 +992,21 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
 
     def _paint_selected_clipped(
         self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
+        painter : QPainter | None,
+        option  : QStyleOptionGraphicsItem | None,
+        widget  : QWidget | None
     ) -> None:
         """
         Paint method override for selected state with clipping.
         """
+        if not isinstance(painter, QPainter) \
+        or not isinstance(option, QStyleOptionGraphicsItem) \
+        or not isinstance(widget, QWidget):
+            raise TypeError("Bad arguments")
         option.state &= ~QStyle.StateFlag.State_Selected
         painter.save()
-        painter.setClipRect(self._clip_rect)
+        if self._clip_rect is not None:
+            painter.setClipRect(self._clip_rect)
         super().paint(painter, option, widget)
         painter.restore()
 
@@ -1003,15 +1026,19 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     @checked
     def setText(self : Self, text : str) -> None:
         self._setText(text)
-        parent : TextItem | None = self.parentItem()
-        if parent is not None:
+        parent = self.parentItem()
+        if isinstance(parent, BaseTextItem):
             parent.onGeometryChanged()
 
-    def _setText(self : Self, text : str) -> None:
-        self.setPlainText(text)
+    @checked
+    def setFont(self : Self, font : QFont) -> None:
+        font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
+        super().setFont(font)
 
     def onGeometryChanged(self : Self) -> None:
-        parent : TextItem = self.parentItem()
+        parent = self.parentItem()
+        if not isinstance(parent, BaseTextItem):
+            return
         align_h = parent._align_h
         align_v = parent._align_v
         width   = parent._width
@@ -1019,6 +1046,8 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         pad_l, pad_r, pad_t, pad_b = parent._padding()
         # get underlying document
         doc = self.document()
+        if doc is None:
+            raise ValueError("No document")
         # apply horizontal alignment
         option = doc.defaultTextOption()
         option.setAlignment(align_h.value)
@@ -1029,7 +1058,11 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         block_fmt.setAlignment(align_h.value)
         cursor.setBlockFormat(block_fmt)
         root_frame = doc.rootFrame()
+        if root_frame is None:
+            raise ValueError("No root frame")
         fmt = root_frame.frameFormat()
+        if fmt is None:
+            raise ValueError("No frame format")
         fmt.setMargin(0)  # measure and lay out without frame margins
         root_frame.setFrameFormat(fmt)
         # apply width constraint inside horizontal padding
@@ -1076,8 +1109,11 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     def setColor(self : Self, color : QColor) -> None:
         self.setDefaultTextColor(color)
 
+    def _setText(self : Self, text : str) -> None:
+        self.setPlainText(text)
+
     def _paint_override(self : Self) -> None:
-        parent : TextItem = self.parentItem()
+        parent = self.parentItem()
         if parent is not None and parent.isSelected():
             self.paint = self._paint_selected
         else:

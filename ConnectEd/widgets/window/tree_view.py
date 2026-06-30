@@ -4,7 +4,8 @@ from PyQt6.QtCore    import Qt, QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QShortcut, QKeySequence, QWheelEvent
 
-from ...app       import settings
+from ...app       import logger, settings
+
 from ...resources import getIconPath
 
 from ...core.check import checked
@@ -31,15 +32,18 @@ class TreeView(UiFontSizeMixin, QTreeView):
         self.decreaseFontShortcut = QShortcut(QKeySequence("Ctrl+-"), self)
         self.decreaseFontShortcut.activated.connect(self.decreaseFontSize)
 
-    def wheelEvent(self : Self, event : QWheelEvent) -> None:
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if event.angleDelta().y() > 0:
-                self.increaseFontSize()
-            elif event.angleDelta().y() < 0:
-                self.decreaseFontSize()
-            event.accept()
+    def wheelEvent(self : Self, a0 : QWheelEvent | None) -> None:
+        if a0 is None:
+            logger().warning("No event")
             return
-        super().wheelEvent(event)
+        if a0.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if a0.angleDelta().y() > 0:
+                self.increaseFontSize()
+            elif a0.angleDelta().y() < 0:
+                self.decreaseFontSize()
+            a0.accept()
+            return
+        super().wheelEvent(a0)
 
     def _customizeAppearance(self : Self) -> None:
         if settings().get("display/theme") == "dark":

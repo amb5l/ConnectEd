@@ -20,6 +20,8 @@ from .widgets.window import Window
 
 def main(func : Callable | None = None) -> int:
     def _func():
+        if func is None:
+            raise RuntimeError("No function")
         try:
             func(app)
         finally:
@@ -39,8 +41,14 @@ def main(func : Callable | None = None) -> int:
             app.ready.window.connect(_func)
         else:
             app.ready.splash.connect(_func)
+    splash = None
     if not (known_args.cli or known_args.nosplash):
-        scheme = app.styleHints().colorScheme()
+        style_hints = app.styleHints()
+        if style_hints is None:
+            raise RuntimeError("No style hints")
+        scheme = style_hints.colorScheme()
+        if scheme is None:
+            raise RuntimeError("No color scheme")
         splash = Splash(scheme == Qt.ColorScheme.Light)
         splash.show()
     app.setLogger(logger)
@@ -67,7 +75,7 @@ def main(func : Callable | None = None) -> int:
     if not known_args.cli:
         Window() # create window
     app.processEvents()
-    if not (known_args.cli or known_args.nosplash):
+    if not (known_args.cli or known_args.nosplash) and splash is not None:
         splash.finish(app.window())
     r = 0
     if func is not None and known_args.cli:

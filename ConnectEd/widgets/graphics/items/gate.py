@@ -7,6 +7,8 @@ from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ....app import logger
+
 from ....core.check import checked
 from ....core.types import Direction, DataKind
 
@@ -18,13 +20,13 @@ from .role import FunctionalItem
 
 from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
-from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
-    from ..views.drawing import DrawingView
+    from ..scenes.diagram import DiagramScene
+    from ..views.diagram  import DiagramView
 
 
 class GateFunc(Enum):
@@ -34,39 +36,26 @@ class GateFunc(Enum):
     XOR_XNOR = "XOR/XNOR"
 
 
-class GateLabelMixin:
+class GateItem(
+    FunctionalItem,
+    ItemTransformMixin,
+    PrimaryItemMixin,
+    QGraphicsPathItem
+):
     # class attributes
     _PROPERTIES_LABEL = {
-        "Label" : InherentProperty["GateLabelMixin"](
+        "Label" : InherentProperty["GateItem"](
             kind   = DataKind.STR,
             worthy = lambda self: self.label() != "",
             getter = lambda self: self.label(),
             setter = lambda self, value: self.setLabel(value)
         )
     }
+    _PIN_CLS : type[GatePinItem]
+    _XML_CHILDREN = frozenset({"PropertyText"})
 
     # instance attributes
     _label : str = ""
-
-    def label(self : Self) -> str:
-        return self._label
-
-    @checked
-    def setLabel(self : Self, label : str) -> None:
-        self._label = label
-        if hasattr(self, "properties"):
-            self.properties.signalChanges("Label")
-
-
-class GateItem(
-    GateLabelMixin,
-    ItemTransformMixin,
-    PrimaryItemMixin,
-    QGraphicsPathItem
-):
-    # class attributes
-    _PIN_CLS : GatePinItem
-    _XML_CHILDREN = {"PropertyText"}
 
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:
@@ -90,7 +79,7 @@ class GateItem(
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def ctxMenuItems(self : Self, view : DrawingView, _spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : DiagramView, spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
@@ -103,7 +92,7 @@ class GateItem(
         ]
 
 
-class BufGateItem(FunctionalItem, GateItem):
+class BufGateItem(GateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
@@ -154,19 +143,26 @@ class BufGateItem(FunctionalItem, GateItem):
         Build concurrent assignment VHDL code:
         label: o <= not i1
         """
-        scene : DrawingScene = self.scene()
+        scene = self.scene()
+        if scene is None:
+            logger().error("No scene")
+            return ""
+        output_net = scene.netlist.nodeNet(self._output.node())
+        input_net = scene.netlist.nodeNet(self._input.node())
+        if output_net is None or input_net is None:
+            return ""
         s = ""
         # label (optional)
         label = self.label()
         if label:
             s += f"{label}: "
         # output net
-        s += f"{scene.getPinNetName(self._output)} <= "
+        s += f"{output_net.name} <= "
         # inversion
         if self._output.inverted() != self._input.inverted():
             s += "not "
         # input net
-        s += scene.getPinNetName(self._input)
+        s += f"{input_net.name}"
         # semicolon
         s += " ;"
         return s
@@ -178,7 +174,14 @@ class BufGateItem(FunctionalItem, GateItem):
             o = ~i
         end
         """
-        scene : DrawingScene = self.scene()
+        scene = self.scene()
+        if scene is None:
+            logger().error("No scene")
+            return ""
+        output_net = scene.netlist.nodeNet(self._output.node())
+        input_net = scene.netlist.nodeNet(self._input.node())
+        if output_net is None or input_net is None:
+            return ""
         s = ""
         # label (optional)
         label = self.label()
@@ -187,11 +190,11 @@ class BufGateItem(FunctionalItem, GateItem):
         # always @(*) begin
         s += "always @(*) begin\n"
         # output net
-        s += f"    {scene.getPinNetName(self._output)} = "
+        s += f"    {output_net.name} = "
         # inversion
         s += "~" if self._output.inverted() != self._input.inverted() else ""
         # input net
-        s += scene.getPinNetName(self._input)
+        s += f"{input_net.name}"
         # semicolon
         s += ";\n"
         # end
@@ -275,22 +278,36 @@ class LogicGateItem(GateItem):
         Build concurrent assignment VHDL code:
         label: o <= i1 and not i2 and i3 ...
         """
-        scene : DrawingScene = self.scene()
+        scene = self.scene()
+        if scene is None:
+            logger().error("No scene")
+            return ""
+        output_net = scene.netlist.nodeNet(self._output.node())
+        input_nets = [
+            scene.netlist.nodeNet(input_pin.node())
+            for input_pin in self._inputs
+        ]
+        if output_net is None \
+        or any(input_net is None for input_net in input_nets):
+            return ""
         s = ""
         # label (optional)
         label = self.label()
         if label:
             s += f"{label}: "
         # output net
-        output_net_name = scene.getPinNetName(self._output)
-        s += f"{output_net_name} <= "
+        s += f"{output_net.name} <= "
         # output inversion - open parenthesis
         if self._output.inverted():
             s += "not ("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
-            net_name = scene.getPinNetName(input_pin)
-            s += f" {self._VHDL_OPERATOR} " if n > 0 else ""
+            input_net = input_nets[n]
+            if input_net is None:
+                logger().error("No input net")
+                return ""
+            net_name = input_net.name
+            s += f" and " if n > 0 else ""
             s += f"{('not ' if input_pin.inverted() else '')}{net_name}"
         # semicolon
         s += " ;"
@@ -306,7 +323,18 @@ class LogicGateItem(GateItem):
             o = i1 & ~i2 & i3 ...
         end
         """
-        scene : DrawingScene = self.scene()
+        scene = self.scene()
+        if scene is None:
+            logger().error("No scene")
+            return ""
+        output_net = scene.netlist.nodeNet(self._output.node())
+        input_nets = [
+            scene.netlist.nodeNet(input_pin.node())
+            for input_pin in self._inputs
+        ]
+        if output_net is None \
+        or any(input_net is None for input_net in input_nets):
+            return ""
         s = ""
         # label (optional)
         label = self.label()
@@ -315,15 +343,18 @@ class LogicGateItem(GateItem):
         # always @(*) begin
         s += "always @(*) begin\n"
         # output net
-        output_net_name = scene.getPinNetName(self._output)
-        s += f"    {output_net_name} = "
+        s += f"{output_net.name} = "
         # output inversion - open parenthesis
         if self._output.inverted():
             s += "~("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
-            net_name = scene.getPinNetName(input_pin)
-            s += f" {self._VLOG_OPERATOR} " if n > 0 else ""
+            input_net = input_nets[n]
+            if input_net is None:
+                logger().error("No input net")
+                return ""
+            net_name = input_net.name
+            s += " & " if n > 0 else ""
             s += f"{('~' if input_pin.inverted() else '')}{net_name}"
         # output inversion - close parenthesis
         if self._output.inverted():
@@ -382,7 +413,7 @@ class LogicGateItem(GateItem):
         self.properties.signalChanges("Inputs")
 
 
-class AndGateItem(FunctionalItem, LogicGateItem):
+class AndGateItem(LogicGateItem):
     _VHDL_OPERATOR = "and"
 
     def initPath(self : Self) -> None:
@@ -395,7 +426,7 @@ class AndGateItem(FunctionalItem, LogicGateItem):
         self.setPath(path)
 
 
-class OrGateItem(FunctionalItem, LogicGateItem):
+class OrGateItem(LogicGateItem):
     _MID_PIN_CLS = OrGatePinItem
     _VHDL_OPERATOR = "or"
 

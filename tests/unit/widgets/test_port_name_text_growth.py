@@ -155,7 +155,7 @@ def test_loaded_test_dsn_port_and_right_block_pins(
     pt = port.properties.text("Name")
     assert pt is not None
     assert _text_anchored_to_cleat(pt)
-    pt.onSceneRotationChanged()
+    pt.onSceneOrientationChanged()
     assert _text_anchored_to_cleat(pt)
 
     block = next(item for item in scene.items() if isinstance(item, BlockItem))
@@ -167,5 +167,5 @@ def test_loaded_test_dsn_port_and_right_block_pins(
         pin_pt = pin.properties.text("Name")
         assert pin_pt is not None
         assert _text_anchored_to_cleat(pin_pt)
-        pin_pt.onSceneRotationChanged()
+        pin_pt.onSceneOrientationChanged()
         assert _text_anchored_to_cleat(pin_pt)

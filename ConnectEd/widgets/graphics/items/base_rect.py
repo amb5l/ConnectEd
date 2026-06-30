@@ -3,22 +3,23 @@
 from typing import Self, overload
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
+                            QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import InherentProperty
+from ..properties import InherentProperty, PropertiesMixin
 
-from .mixin            import PrimaryItemMixin
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
+    from ..views.diagram  import DiagramView
 
 
 class BaseRectangleMixin(
@@ -70,7 +71,7 @@ class BaseRectangleMixin(
         ...
 
     @checked
-    def __init__(
+    def __init__(  # pyright: ignore[reportInconsistentOverload]
         self       : Self,
         p1_or_pos  : QPointF | None = None,
         p2_or_size : QPointF | QSizeF | None = None,
@@ -88,8 +89,15 @@ class BaseRectangleMixin(
         self.setPoints(p1_or_pos, p2_or_size)
         self.onGeometryChanged()
 
-    def onGeometryChanged(self : Self | QGraphicsRectItem) -> None:
+    def onGeometryChanged(self : Self) -> None:
         self.updateHandlePositions()
+
+    @overload
+    def setRect(
+        self : Self,
+        rect : QRectF
+    ) -> None:
+        ...
 
     @overload
     def setRect(
@@ -101,20 +109,33 @@ class BaseRectangleMixin(
     ) -> None:
         ...
 
-    @overload
-    def setRect(
+    def setRect(  # pyright: ignore[reportInconsistentOverload]
         self : Self,
-        rect : QRectF
+        rect_or_ax : QRectF | float | int,
+        ay         : float | int | None = None,
+        w          : float | int | None = None,
+        h          : float | int | None = None
     ) -> None:
-        ...
-
-    def setRect(self, *args, **kwargs) -> None:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         old = self.rect()
-        proxy : QGraphicsRectItem | QGraphicsEllipseItem = super()
-        proxy.setRect(*args, **kwargs)
+        if isinstance(rect_or_ax, QRectF) \
+        and ay is None and w is None and h is None:
+            rect = rect_or_ax
+        elif isinstance(rect_or_ax, float | int) \
+        and isinstance(ay, float | int) \
+        and isinstance(w, float | int) \
+        and isinstance(h, float | int):
+            rect = QRectF(rect_or_ax, ay, w, h)
+        else:
+            raise TypeError("bad arguments")
+        if isinstance(self, QGraphicsRectItem):
+            QGraphicsRectItem.setRect(self, rect)
+        else:
+            QGraphicsEllipseItem.setRect(self, rect)
         new = self.rect()
         self.onGeometryChanged()
-        if hasattr(self, "properties"):
+        if isinstance(self, PropertiesMixin):
             names : list[str] = []
             if old.width() != new.width():
                 names.append("Width")
@@ -123,20 +144,28 @@ class BaseRectangleMixin(
             if names:
                 self.properties.signalChanges(names)
 
-    def width(self : Self | QGraphicsRectItem) -> float:
+    def width(self : Self) -> float:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         return self.rect().width()
 
     @checked
-    def setWidth(self : Self | QGraphicsRectItem, width : float | int) -> None:
+    def setWidth(self : Self, width : float | int) -> None:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         rect = self.rect()
         rect.setWidth(width)
         self.setRect(rect)
 
-    def height(self : Self | QGraphicsRectItem) -> float:
+    def height(self : Self) -> float:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         return self.rect().height()
 
     @checked
-    def setHeight(self : Self | QGraphicsRectItem, height : float | int) -> None:
+    def setHeight(self : Self, height : float | int) -> None:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         rect = self.rect()
         rect.setHeight(height)
         self.setRect(rect)
@@ -160,21 +189,32 @@ class BaseRectangleMixin(
         ...
 
     @checked
-    def setPoints(
-        self : Self | QGraphicsRectItem,
+    def setPoints(  # pyright: ignore[reportInconsistentOverload]
+        self : Self,
         p1_x1 : QPointF | float | int,
         p2_y1 : QPointF | float | int,
         x2    : float | int | None = None,
         y2    : float | int | None = None
     ) -> None:
-        if x2 is None or y2 is None:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
+        if isinstance(p1_x1, QPointF) \
+        and isinstance(p2_y1, QPointF) \
+        and x2 is None and y2 is None:
             x1 = p1_x1.x()
             y1 = p1_x1.y()
             x2 = p2_y1.x()
             y2 = p2_y1.y()
-        else:
+        elif isinstance(p1_x1, float | int) \
+        and isinstance(p2_y1, float | int) \
+        and isinstance(x2, float | int) \
+        and isinstance(y2, float | int):
             x1 = p1_x1
             y1 = p2_y1
+            x2 = x2
+            y2 = y2
+        else:
+            raise TypeError("bad arguments")
         w = max(abs(x2-x1), PITCH)
         h = max(abs(y2-y1), PITCH)
         rect = self.rect()
@@ -184,15 +224,18 @@ class BaseRectangleMixin(
         target_pos = QPointF(min(x1, x2), min(y1, y2)) + origin_offset
         self.setPos(target_pos)
 
-    def handleRect(self : Self | QGraphicsRectItem | QGraphicsEllipseItem) -> QRectF:
+    def handleRect(self : Self) -> QRectF:
+        if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
+            raise TypeError("Bad host")
         return self.rect()
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DrawingView,
-        _spos : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
+        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         return [
             view.action("Appearance...", lambda: view.editAppearance(self)),
             view.action("Properties...", lambda: view.editItemProperties(self))

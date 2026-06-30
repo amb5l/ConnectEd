@@ -2,8 +2,7 @@
 
 import pytest
 
-from ConnectEd.widgets.graphics.items import (
-    _item_classes,
+from ConnectEd.widgets.graphics.items.role import (
     DecorativeItem,
     DocumentItem,
     FunctionalItem,

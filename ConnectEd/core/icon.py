@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, ClassVar
 
 from PyQt6.QtCore    import Qt, QSize, QRectF
 from PyQt6.QtWidgets import QApplication, QStyle
@@ -14,7 +14,11 @@ from .check import checked
 @checked
 def getDefaultIconSize() -> int:
     app = QApplication.instance()
+    if not isinstance(app, QApplication):
+        return 0
     style = app.style()
+    if not isinstance(style, QStyle):
+        return 0
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 
 
@@ -62,8 +66,8 @@ class SvgIconSingleton:
     PATH : str
     SIZE : QSize
 
-    _instance = None
-    _icon     = None
+    _instance : ClassVar[Self | None]  = None
+    _icon     : QIcon | None = None
 
     def __new__(cls : type[Self]) -> Self:
         if cls._instance is None:
@@ -120,8 +124,8 @@ class CharIconSingleton:
     SIZE        : QSize
     MARGIN      : int
 
-    _instance = None
-    _icon     = None
+    _instance : ClassVar[Self | None] = None
+    _icon     : QIcon | None = None
 
     MARGIN = 1
 

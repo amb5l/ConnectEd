@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Self, Protocol, TYPE_CHECKING
+from typing import Self, TYPE_CHECKING
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QColor, QPen, QBrush
+from PyQt6.QtGui     import QColor
 
 from ......core.check import checked
 from ......core.types import DataKind
@@ -13,36 +13,16 @@ from ....properties import InherentProperty
 
 from ....scenes import withScene
 
-from ....quill  import Quill
+from ...protocols import OnSceneChangedProtocol
 
 from .line   import ItemPresentationLineMixin  # noqa: E402
 from .fill   import ItemPresentationFillMixin  # noqa: E402
 from .text   import ItemPresentationTextMixin  # noqa: E402
 
 
-class PenItemProtocol(Protocol):
-    def setPen(self, pen: QPen) -> None: ...
-
-
-class BrushItemProtocol(Protocol):
-    def setBrush(self, brush: QBrush) -> None: ...
-
-
-class TextItemProtocol(Protocol):
-    def setQuill(self, quill: Quill) -> None: ...
-
-
 if TYPE_CHECKING:
-    from ....views.drawing  import DrawingView
-    from ....scenes.drawing import DrawingScene
-    from .. import ItemNamesMixin
-    ItemType = (
-        ItemNamesMixin    |
-        PenItemProtocol   |
-        BrushItemProtocol |
-        TextItemProtocol  |
-        QGraphicsItem
-    )
+    from ....views.diagram  import DiagramView
+    from ....scenes.diagram import DiagramScene
 
 
 class ItemPresentationMixin(
@@ -151,7 +131,7 @@ class ItemPresentationMixin(
     _text_underline : bool          | None
 
     @checked
-    def initPresentation(self : Self | ItemType) -> None:
+    def initPresentation(self : Self) -> None:
         from ..select import ItemSelectMixin
         if not isinstance(self, ItemSelectMixin):
             raise TypeError("This item does not support the ItemSelectionMixin")
@@ -177,19 +157,24 @@ class ItemPresentationMixin(
             or hasattr(self, "_text_underline"):
                 self._updateQuill = self._updateQuillSlow
 
-    def _resourceKey(self : Self | ItemType) -> bool | tuple:
+    def _resourceKey(self : Self) -> bool | tuple:
         """Theme lookup key for pen, brush and quill. Override in subclass."""
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
         return self.isSelected()
 
-    def _resourceKeyDefault(self : Self | ItemType) -> bool | tuple:
+    def _resourceKeyDefault(self : Self) -> bool | tuple:
         """Default theme lookup key (non-selected, normal state)."""
         return False
 
-    def onSettingsChanged(self : Self | ItemType) -> None:
-        self.onSceneChanged(self.scene())
+    def onSettingsChanged(self : Self) -> None:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
+        if isinstance(self, OnSceneChangedProtocol):
+            self.onSceneChanged(self.scene())
 
     @withScene
-    def onSceneChanged(self : Self | ItemType, scene : DrawingScene) -> None:
+    def onSceneChanged(self : Self, scene : DiagramScene) -> None:
         if hasattr(self, "setPen"):
             self._updatePen(scene)
         if hasattr(self, "setBrush"):
@@ -199,11 +184,18 @@ class ItemPresentationMixin(
         if hasattr(self, "_updateGraphics"):
             self._updateGraphics(scene)
 
+    def _updateGraphics(self : Self, _scene : DiagramScene) -> None:
+        """Optional hook; subclasses (pins, nodes, …) override when needed."""
+        pass
+
     def _defaultScene(
-        self   : Self | ItemType,
-        widget : DrawingView | None = None
-    ) -> DrawingScene | None:
-        scene : DrawingScene | None = self.scene()
-        if scene is None:
-            scene : DrawingScene | None = widget.scene()
-        return scene
+        self : Self,
+        view : DiagramView | None = None
+    ) -> DiagramScene | None:
+        from ....scenes.diagram import DiagramScene
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
+        scene = self.scene()
+        if scene is None and view is not None:
+            scene = view.scene()
+        return scene if isinstance(scene, DiagramScene) else None

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, TypeVar, Generic
 
 from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ....core.check import checked
-from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, RectHandleId
+from ....core.types import NoChange, AlignH, AlignV, RectHandleId
 
-from ...graphics.items.text import TextItem
+from ...graphics.items.text import BaseTextItem, TextItem
 
 from ..components.layout.text_value          import TextValueLayout
 from ..components.group_box.text_orientation import TextOrientationGroupBox
@@ -21,10 +21,13 @@ from ..components.layout.ok_cancel           import OkCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...graphics.views.drawing import DrawingView
+    from ...graphics.views.diagram import DiagramView
 
 
-class BaseTextItemDialog(QDialog):
+T = TypeVar("T", bound=BaseTextItem)
+
+
+class BaseTextItemDialog(QDialog, Generic[T]):
     _TITLE : str
 
     # instance variables
@@ -42,8 +45,8 @@ class BaseTextItemDialog(QDialog):
     @checked
     def __init__(
         self   : Self,
-        item   : TextItem,
-        parent : DrawingView | None
+        item   : T,
+        parent : DiagramView | None
     ):
         super().__init__(parent)
         self.setWindowTitle(self._TITLE)
@@ -59,7 +62,10 @@ class BaseTextItemDialog(QDialog):
         self._left_layout.addWidget(self._orientation_group_box)
         self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
         self._left_layout.addWidget(self._align_group_box)
-        self._origin_group_box = OriginGroupBox(item.origin())
+        origin = item.origin()
+        if not isinstance(origin, RectHandleId):
+            raise TypeError("Bad origin")
+        self._origin_group_box = OriginGroupBox(origin)
         self._left_layout.addWidget(self._origin_group_box)
         # middle right — padding and appearance
         self._right_layout = QVBoxLayout()
@@ -67,6 +73,24 @@ class BaseTextItemDialog(QDialog):
             item.padTop(), item.padBottom(), item.padLeft(), item.padRight()
         )
         self._right_layout.addWidget(self._padding_group_box)
+        default_color = item.defaultTextColor(parent)
+        if not isinstance(default_color, QColor):
+            raise TypeError("Bad default color")
+        default_font = item.defaultTextFont(parent)
+        if not isinstance(default_font, str):
+            raise TypeError("Bad default font")
+        default_size = item.defaultTextSize(parent)
+        if not isinstance(default_size, float):
+            raise TypeError("Bad default size")
+        default_bold = item.defaultTextBold(parent)
+        if not isinstance(default_bold, bool):
+            raise TypeError("Bad default bold")
+        default_italic = item.defaultTextItalic(parent)
+        if not isinstance(default_italic, bool):
+            raise TypeError("Bad default italic")
+        default_underline = item.defaultTextUnderline(parent)
+        if not isinstance(default_underline, bool):
+            raise TypeError("Bad default underline")
         self._appearance_group_box = TextAppearancePreviewGroupBox(
             item.textColor(),
             item.textFont(),
@@ -74,12 +98,12 @@ class BaseTextItemDialog(QDialog):
             item.textBold(),
             item.textItalic(),
             item.textUnderline(),
-            item.defaultTextColor(parent),
-            item.defaultTextFont(parent),
-            item.defaultTextSize(parent),
-            item.defaultTextBold(parent),
-            item.defaultTextItalic(parent),
-            item.defaultTextUnderline(parent)
+            default_color,
+            default_font,
+            default_size,
+            default_bold,
+            default_italic,
+            default_underline
         )
         self._right_layout.addWidget(self._appearance_group_box)
         # middle left and right combined
@@ -93,13 +117,13 @@ class BaseTextItemDialog(QDialog):
         # finalise
         self.setLayout(self._layout)
 
-    def initTopSection(self : Self, _item : TextItem) -> None:
+    def initTopSection(self : Self, item) -> None:
         raise NotImplementedError("subclass must implement initTopSection()")
 
     @checked
-    def showEvent(self : Self, event : QShowEvent) -> None:
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
         """Override showEvent to focus and select all text."""
-        super().showEvent(event)
+        super().showEvent(a0)
         QTimer.singleShot(0, self._focusEditor)
 
     @checked
@@ -147,31 +171,35 @@ class BaseTextItemDialog(QDialog):
         return self._padding_group_box.getPadBottom()
 
     @checked
-    def getColor(self : Self) -> QColor | None |NoChange:
+    def getColor(self : Self) -> QColor | NoChange:
         return self._appearance_group_box.getColor()
 
     @checked
-    def getFont(self : Self) -> str | None | NoChange:
+    def getFont(self : Self) -> str | NoChange:
         return self._appearance_group_box.getFont()
 
     @checked
-    def getSize(self : Self) -> float | None | NoChange:
+    def getSize(self : Self) -> float | NoChange:
         return self._appearance_group_box.getSize()
 
     @checked
-    def getBold(self : Self) -> bool | None | NoChange:
+    def getBold(self : Self) -> bool | NoChange:
         return self._appearance_group_box.getBold()
 
     @checked
-    def getItalic(self : Self) -> bool | None | NoChange:
+    def getItalic(self : Self) -> bool | NoChange:
         return self._appearance_group_box.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> bool | None | NoChange:
+    def getUnderline(self : Self) -> bool | NoChange:
         return self._appearance_group_box.getUnderline()
 
+    @checked
+    def _focusEditor(self : Self) -> None:
+        raise NotImplementedError("subclass must implement _focusEditor()")
 
-class TextItemDialog(BaseTextItemDialog):
+
+class TextItemDialog(BaseTextItemDialog[TextItem]):
     _TITLE = "Text"
 
     _top_section : TextValueLayout

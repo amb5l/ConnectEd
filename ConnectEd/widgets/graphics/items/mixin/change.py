@@ -1,6 +1,17 @@
-from typing import Self, Any
+from typing import Self, Any, cast
 
 from PyQt6.QtWidgets import QGraphicsItem
+
+from .....core.utils import qtItemClass
+
+from ..protocols import (
+    OnSceneChangedProtocol,
+    OnParentChangedProtocol,
+    OnScenePositionChangedProtocol,
+    OnPositionChangedProtocol,
+    OnRotationChangedProtocol,
+    OnSelectionChangedProtocol,
+)
 
 
 class ItemChangeMixin:
@@ -8,28 +19,30 @@ class ItemChangeMixin:
         pass
 
     def itemChange(
-        self   : QGraphicsItem,
+        self   : Self,
         change : QGraphicsItem.GraphicsItemChange,
         value  : Any
     ) -> Any:
         match change:
-            case self.GraphicsItemChange.ItemSceneHasChanged:
-                if hasattr(self, "onSceneChanged"):
+            case QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
+                if isinstance(self, OnSceneChangedProtocol):
                     self.onSceneChanged(value)
-            case self.GraphicsItemChange.ItemParentHasChanged:
-                if hasattr(self, "onParentChanged"):
+            case QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
+                if isinstance(self, OnParentChangedProtocol):
                     self.onParentChanged(value)
-            case self.GraphicsItemChange.ItemScenePositionHasChanged:
-                if hasattr(self, "onScenePositionChanged"):
+            case QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+                if isinstance(self, OnScenePositionChangedProtocol):
                     self.onScenePositionChanged(value)
-            case self.GraphicsItemChange.ItemPositionHasChanged:
-                if hasattr(self, "onPositionChanged"):
+            case QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
+                if isinstance(self, OnPositionChangedProtocol):
                     self.onPositionChanged(value)
-            case self.GraphicsItemChange.ItemRotationHasChanged:
-                if hasattr(self, "onRotationChanged"):
+            case QGraphicsItem.GraphicsItemChange.ItemRotationHasChanged:
+                if isinstance(self, OnRotationChangedProtocol):
                     self.onRotationChanged(value)
-            case self.GraphicsItemChange.ItemSelectedHasChanged:
+            case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
                 value = bool(value)
-                if hasattr(self, "onSelectionChanged"):
+                if isinstance(self, OnSelectionChangedProtocol):
                     self.onSelectionChanged(value)
-        return super().itemChange(change, value)
+        return qtItemClass(self).itemChange(
+            cast(QGraphicsItem, self), change, value
+        )

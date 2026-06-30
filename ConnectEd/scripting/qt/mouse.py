@@ -6,13 +6,10 @@ from PyQt6.QtCore import QPoint, QPointF, Qt
 from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QGraphicsView, QWidget
 
+from .core import CoreMixin
+
 
 class MouseMixin:
-    def _mouseWidget(self : Self, widget : QWidget) -> QWidget:
-        if isinstance(widget, QGraphicsView):
-            return widget.viewport()
-        return widget
-
     def mousePress(
         self       : Self,
         widget     : QWidget,
@@ -20,8 +17,10 @@ class MouseMixin:
         button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
         modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
+        if not isinstance(self, CoreMixin):
+            raise TypeError("Bad host")
         target = self._mouseWidget(widget)
-        QTest.mousePress(target, button, modifiers, pos)
+        QTest.mousePress(target, button, modifiers, pos)  # pyright: ignore[reportCallIssue, reportArgumentType]
         self.processEvents()
 
     def mouseMove(
@@ -31,8 +30,10 @@ class MouseMixin:
         button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
         modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
+        if not isinstance(self, CoreMixin):
+            raise TypeError("Bad host")
         target = self._mouseWidget(widget)
-        QTest.mouseMove(target, pos)
+        QTest.mouseMove(target, pos)  # pyright: ignore[reportCallIssue, reportArgumentType]
         self.processEvents()
 
     def mouseRelease(
@@ -42,8 +43,10 @@ class MouseMixin:
         button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
         modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
+        if not isinstance(self, CoreMixin):
+            raise TypeError("Bad host")
         target = self._mouseWidget(widget)
-        QTest.mouseRelease(target, button, modifiers, pos)
+        QTest.mouseRelease(target, button, modifiers, pos)  # pyright: ignore[reportCallIssue, reportArgumentType]
         self.processEvents()
 
     def mouseClick(
@@ -53,8 +56,10 @@ class MouseMixin:
         button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
         modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
+        if not isinstance(self, CoreMixin):
+            raise TypeError("Bad host")
         target = self._mouseWidget(widget)
-        QTest.mouseClick(target, button, modifiers, pos)
+        QTest.mouseClick(target, button, modifiers, pos)  # pyright: ignore[reportCallIssue, reportArgumentType]
         self.processEvents()
 
     def mouseDrag(
@@ -76,3 +81,8 @@ class MouseMixin:
 
     def scenePos(self : Self, view : QGraphicsView, view_pt : QPoint) -> QPointF:
         return view.mapToScene(view_pt)
+
+    def _mouseWidget(self : Self, widget : QWidget) -> QWidget | None:
+        if isinstance(widget, QGraphicsView):
+            return widget.viewport()
+        return widget

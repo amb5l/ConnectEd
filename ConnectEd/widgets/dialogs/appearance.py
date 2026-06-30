@@ -30,10 +30,11 @@ class AppearanceDialog(QDialog):
     @checked
     def __init__(
         self   : Self,
-        items  : list[ItemPresentationMixin],
+        items  : ItemPresentationMixin | list[ItemPresentationMixin],
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        if not isinstance(items, list): items = [items]
         line_count = sum(1 for i in items if i.hasLine())
         fill_count = sum(1 for i in items if i.hasFill())
         text_count = sum(1 for i in items if i.hasText())
@@ -50,6 +51,8 @@ class AppearanceDialog(QDialog):
                 _combinedValue(items, "defaultLineStyle")
             )
             if category_count > 1:
+                if self._line_group_box is None:
+                    raise ValueError("line_group_box is None")
                 self._line_group_box.setLayout(self._line_layout)
                 self._dialog_layout.addWidget(self._line_group_box)
             else:
@@ -66,6 +69,8 @@ class AppearanceDialog(QDialog):
                 _combinedValue(items, "defaultFillStyle")
             )
             if category_count > 1:
+                if self._fill_group_box is None:
+                    raise ValueError("fill_group_box is None")
                 self._fill_group_box.setLayout(self._fill_layout)
                 self._dialog_layout.addWidget(self._fill_group_box)
             else:
@@ -90,6 +95,8 @@ class AppearanceDialog(QDialog):
                 _combinedValue(items, "defaultTextUnderline")
             )
             if category_count > 1:
+                if self._text_group_box is None:
+                    raise ValueError("text_group_box is None")
                 self._text_group_box.setLayout(self._text_layout)
                 self._dialog_layout.addWidget(self._text_group_box)
             else:
@@ -138,9 +145,9 @@ class AppearanceDialog(QDialog):
         for combo in combo_boxes:
             combo.setMinimumWidth(max_width)
 
-    def showEvent(self : Self, event : QShowEvent):
+    def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
         """Override showEvent to adjust combo box widths after layout is complete."""
-        super().showEvent(event)
+        super().showEvent(a0)
         # Use QTimer.singleShot to defer the width adjustment until after the event loop
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, self._adjustComboBoxWidths)

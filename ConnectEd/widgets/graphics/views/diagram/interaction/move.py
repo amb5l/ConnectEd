@@ -10,9 +10,7 @@ from ......core.check import checked
 from ......core.defs  import PITCH
 from ......core.types import Axis, Polarity, EdgeLoc
 
-from ....views.drawing.interaction import PreviewStateMixin
-
-from ....items import ItemType
+from ....views.diagram.interaction import PreviewStateMixin
 
 from ....items.port_pin  import PortPinMixin
 from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
@@ -24,6 +22,8 @@ from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 from ....items.symbol    import SymbolInstanceItem
 from ....items.rubber    import RubberItem, RubberJogItem
+
+from ....scenes.diagram import DiagramScene
 
 from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
 from ....scenes.diagram.cmd.rubber import (
@@ -109,12 +109,15 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     def __init__(
         self  : Self,
         view  : DiagramView,
-        items : ItemType | list[ItemType],
+        items : QGraphicsItem | list[QGraphicsItem],
         pos   : QPointF,                    # movement origin
         slide : bool = False
     ) -> None:
+        scene = view.scene()
+        if not isinstance(scene, DiagramScene):
+            raise TypeError("Bad scene")
         self._view          = view
-        self._scene         = view.scene()
+        self._scene         = scene
         self._ipos          = pos
         self._pos           = pos
         self._slide         = slide
@@ -153,7 +156,11 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             # TODO: include net labels
             elif isinstance(item, SegmentItem):
                 node1 = item.node1()
+                if node1 is None:
+                    raise TypeError("node1 is None")
                 node2 = item.node2()
+                if node2 is None:
+                    raise TypeError("node2 is None")
                 mobile1 = _mobile(node1)
                 mobile2 = _mobile(node2)
                 if mobile1 and mobile2:
@@ -182,7 +189,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 else:
                     # mobile segment, 2 static nodes
                     filtered_items.append(item)
-                    for node in (item.node1(), item.node2()):
+                    for node in (node1, node2):
                         if isinstance(node, FreeNodeItem) and node.degree() == 1:
                             filtered_items.append(node)
                         else:
@@ -227,8 +234,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 else:
                     filtered_items.append(item)
         # deduplicate items
-        seen : set[ItemType] = set()
-        unique_items : list[ItemType] = []
+        seen : set[QGraphicsItem] = set()
+        unique_items : list[QGraphicsItem] = []
         for item in filtered_items:
             if item not in seen:
                 seen.add(item)
@@ -243,9 +250,10 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     def update(self : Self, pos : QPointF) -> None:
         if pos == self._pos:
             return  # filter redundant updates#
-        self._moveBy(pos - self._pos)
+        if isinstance(self._pos, QPointF):
+            self._moveBy(pos - self._pos)
+            self._updateJogs()
         self._pos = pos
-        self._updateJogs()
 
     @checked
     def _cancel(self : Self) -> None:
@@ -340,13 +348,13 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             if not isinstance(item, SegmentItem)
         ]
 
-    def _previewSaveTarget(self : Self, target : ItemType) -> QPointF:
+    def _previewSaveTarget(self : Self, target : QGraphicsItem) -> QPointF:
         return target.pos()
 
     @checked
     def _previewRestoreTarget(
         self   : Self,
-        target : ItemType,
+        target : QGraphicsItem,
         state  : QPointF
     ) -> None:
         target.setPos(state)
@@ -459,8 +467,10 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     continue
                 if jog2.axis() != jog1.axis():
                     continue
-                if _jogsShareStaircase(jog1, jog2) or \
-                   _conflict(rect1, jog_rects[jog2], jog1.axis()):
+                if (axis1 := jog1.axis()) is None:
+                    continue
+                if _jogsShareStaircase(jog1, jog2) \
+                or _conflict(rect1, jog_rects[jog2], axis1):
                     group.append(jog2)
                     processed.add(jog2)
             groups.append(group)
@@ -507,7 +517,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 if n <= 1:
                     continue
 
-                reverse = _staircaseReverse(group_axis, q[0], q[1])
+                reverse = _staircaseReverse(group_axis or Axis.H, q[0], q[1])
                 prefs = [j.prefLane() for j in jogs]
                 base = sum(prefs) / n
                 total_grid_span = (n - 1) * PITCH
@@ -567,7 +577,7 @@ class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
             len(self._pins) > 0
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
-        pos_snap = self._scene._snap(pos, snap) if snap else pos
+        pos_snap = self._scene._snap(pos, snap) if snap is not None else pos
         primary = self._pins[0]
         loc_old = primary.loc()
         loc_new = self._block.pos2loc(pos)

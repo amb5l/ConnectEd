@@ -10,10 +10,6 @@ from ..core.types import MenuAction, MenuSub, MenuSeparator, MenuEntry
 
 from .action import Action
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .window.sub_window import DocSubWindow
-
 
 class Menu(QMenu):
 
@@ -33,7 +29,7 @@ class Menu(QMenu):
         ...
 
     @checked
-    def __init__(
+    def __init__(  # pyright: ignore[reportInconsistentOverload]
         self            : Self,
         title_or_parent : str | QWidget | None = None,
         parent_or_none  : QWidget | None = None
@@ -64,12 +60,20 @@ class Menu(QMenu):
                 self.addSeparator()
 
     def getSubMenus(self : Self) -> dict[str, Menu]:
-        return {a.menu().title().replace("&", "") : a.menu() \
-            for a in self.actions() if a.menu() is not None}
+        submenus = {}
+        for a in self.actions():
+            if (menu := a.menu()) is None:
+                raise RuntimeError("No menu")
+            submenus[menu.title().replace("&", "")] = a.menu()
+        return submenus
 
     def getActions(self : Self) -> dict[str, Action]:
-        return {a.text().replace("&", "").replace("...", "") : a \
-            for a in self.actions() if a.menu() is None}
+        actions = {}
+        for a in self.actions():
+            if not isinstance(a, Action):
+                raise RuntimeError("Bad action")
+            actions[a.text().replace("&", "").replace("...", "")] = a
+        return actions
 
     def getAction(self : Self, name : str) -> Action | None:
         actions = self.getActions()
@@ -77,4 +81,4 @@ class Menu(QMenu):
 
 
 class PlaceMenu(Menu):
-    subwindow_class : type[DocSubWindow] | None = None
+    subwindow_cls : type | None = None

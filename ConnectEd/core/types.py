@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing          import Self
+from typing          import Self, cast
 from types           import NoneType
 from dataclasses     import dataclass
-from enum            import Enum, StrEnum
+from enum            import Enum
 from collections.abc import Callable
 
 from PyQt6.QtCore    import Qt
@@ -40,28 +40,32 @@ class EnDis(Enum):
     ENABLE  = True
 
 
-class Axis(StrEnum):
+class Axis(Enum):
     H = "H"
     V = "V"
 
-    def __invert__(self : Self) -> Self:
+    def __invert__(self : Self) -> Axis:
         return Axis.H if self == Axis.V else Axis.V
 
-class Polarity(StrEnum):
+class Polarity(Enum):
     POS = "Positive"
     NEG = "Negative"
 
-    def __invert__(self : Self) -> Self:
+    def __invert__(self : Self) -> Polarity:
         return Polarity.POS if self == Polarity.NEG else Polarity.NEG
 
 
 class AlignMixin:
     def toStr(self : Self) -> str:
+        if not isinstance(self, Enum):
+            raise ValueError("Not an Enum")
         return self.name
 
     @classmethod
-    def fromStr(cls, s : str) -> Self:
-        return cls[s]
+    def fromStr(cls : type[Self], s : str) -> Self:
+        if not issubclass(cls, Enum):
+            raise TypeError(f"{cls.__name__} is not an Enum subclass")
+        return cast(Self, cls[s])
 
 
 class AlignH(AlignMixin, Enum):
@@ -70,7 +74,7 @@ class AlignH(AlignMixin, Enum):
     RIGHT  = Qt.AlignmentFlag.AlignRight
 
 
-class AlignV(AlignMixin,Enum):
+class AlignV(AlignMixin, Enum):
     TOP    = Qt.AlignmentFlag.AlignTop
     MIDDLE = Qt.AlignmentFlag.AlignVCenter
     BOTTOM = Qt.AlignmentFlag.AlignBottom
@@ -112,7 +116,7 @@ class NetKind(Enum):
     VECTOR     = "vector"
 
 
-class HandleId(StrEnum):
+class HandleId(Enum):
     pass
 
 
@@ -240,7 +244,7 @@ def _populate_data_kind_maps() -> None:
     })
 
 
-class DataKind(StrEnum):
+class DataKind(Enum):
     KIND              = "Kind"
     STR               = "String"
     TEXT              = "Text"
@@ -253,6 +257,7 @@ class DataKind(StrEnum):
     RECT_HANDLE       = "Rectangle Handle"
     LINE_HANDLE       = "Line Handle"
     PORT_HANDLE       = "Port Handle"
+    GATE_PIN_HANDLE   = "Gate Pin Handle"
     BLOCK_PIN_HANDLE  = "Block Pin Handle"
     SYMBOL_PIN_HANDLE = "Symbol Pin Handle"
     TAP_HANDLE        = "Tap Handle"

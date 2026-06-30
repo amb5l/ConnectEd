@@ -21,7 +21,7 @@ from .slots   import Slots
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...graphics.views.drawing import DrawingView
+    from ...graphics.views.diagram import DiagramView
     from .. import Window
 
 
@@ -124,7 +124,7 @@ class MenuBar(QMenuBar):
         window().mdiArea().subWindowActivated.connect(self.updateWindowMenu)
         window().mdiArea().subWindowActivated.connect(self.updatePlaceMenu)
 
-    def addMenu(self : Self, menu : Menu) -> None:
+    def addMenu(self : Self, menu : Menu) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         super().addMenu(menu)
         self._menus[menu.title().replace("&", "")] = menu
 
@@ -152,40 +152,41 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(a.fileExit)
 
     def updateViewMenu(self : Self) -> None:
-        mdi_area = window().mdiArea()
-        if mdi_area is None:
-            return
-        subwindow = mdi_area.activeSubWindow()
-        view : DrawingView | None = None if subwindow is None else subwindow.widget()
-        ok = subwindow is not None and view is not None
+        en = False
+        en_zoom_in = False
+        en_zoom_out = False
+        subwindow = window().mdiArea().activeSubWindow()
+        if subwindow is not None:
+            widget = subwindow.widget()
+            if isinstance(widget, DiagramView):
+                en = True
+                zoom = widget.zoom
+                en_zoom_in = zoom < settings().get("display/zoom/max")
+                en_zoom_out = zoom > settings().get("display/zoom/min")
         a = self._actions
-        a.viewZoomAll.setEnabled(ok)
-        a.viewZoomSheet.setEnabled(ok and isinstance(subwindow, DiagramSubWindow))
-        a.viewZoomArea.setEnabled(ok)
-        a.viewZoomIn.setEnabled(ok and view.zoom < settings().get("display/zoom/max"))
-        a.viewZoomOut.setEnabled(ok and view.zoom > settings().get("display/zoom/min"))
-        a.viewPan.setEnabled(ok)
-        a.viewPanUp.setEnabled(ok)
-        a.viewPanDown.setEnabled(ok)
-        a.viewPanLeft.setEnabled(ok)
-        a.viewPanRight.setEnabled(ok)
-        a.viewGridDisplay.setEnabled(ok)
-        a.viewGridSnap.setEnabled(ok)
+        a.viewZoomAll.setEnabled(en)
+        a.viewZoomSheet.setEnabled(en and isinstance(subwindow, DiagramSubWindow))
+        a.viewZoomArea.setEnabled(en)
+        a.viewZoomIn.setEnabled(en and en_zoom_in)
+        a.viewZoomOut.setEnabled(en and en_zoom_out)
+        a.viewPan.setEnabled(en)
+        a.viewPanUp.setEnabled(en)
+        a.viewPanDown.setEnabled(en)
+        a.viewPanLeft.setEnabled(en)
+        a.viewPanRight.setEnabled(en)
+        a.viewGridDisplay.setEnabled(en)
+        a.viewGridSnap.setEnabled(en)
 
     def updatePlaceMenu(self : Self) -> None:
         from ...graphics.views.diagram import DiagramSubWindow
         from ...graphics.views.symbol  import SymbolSubWindow
         from ..spreadsheet import SpreadsheetSubWindow
-        window : Window = self.parent()
-        a = self._actions
-        mdi_area = window.mdiArea()
-        if mdi_area is None:
-            return
-        subwindow = mdi_area.activeSubWindow()
-        if subwindow.__class__ == self.place_menu.subwindow_class:
+        subwindow = window().mdiArea().activeSubWindow()
+        if subwindow.__class__ == self.place_menu.subwindow_cls:
             return  # no change
         self.place_menu.clear()
-        if isinstance(mdi_area.activeSubWindow(), DiagramSubWindow):
+        a = self._actions
+        if isinstance(subwindow, DiagramSubWindow):
             # Diagram window - show diagram-appropriate actions
             self.place_menu.addAction(a.placePort)
             self.place_menu.addAction(a.placeGate)
@@ -219,14 +220,13 @@ class MenuBar(QMenuBar):
             # No active window or unknown type - disable the menu
             self.place_menu.setEnabled(False)
         # Remember the current subwindow class
-        self.place_menu.subwindow_class = subwindow.__class__
+        self.place_menu.subwindow_cls = subwindow.__class__
 
     def updateAiMenu(self : Self) -> None:
-        window : Window = self.parent()
         a = self._actions
         self.ai_menu.clear()
         self.ai_new_chat_menu.clear()
-        manager = window.aiChatManager()
+        manager = window().aiChatManager()
         profiles = loadProfiles()
         if profiles:
             for profile in profiles:
@@ -236,7 +236,7 @@ class MenuBar(QMenuBar):
                 if models:
                     for model in models:
                         action = Action(
-                            window,
+                            window(),
                             model,
                             f"New chat using {label} with {model}",
                             data = (profile.id, model),
@@ -253,7 +253,7 @@ class MenuBar(QMenuBar):
                         models_menu.addAction(action)
                 else:
                     action = Action(
-                        window,
+                        window(),
                         "(no models)",
                         f"No models cached for {label}",
                     )
@@ -262,7 +262,7 @@ class MenuBar(QMenuBar):
                 self.ai_new_chat_menu.addMenu(models_menu)
         else:
             action = Action(
-                window,
+                window(),
                 "(add an AI profile)",
                 "Add an AI profile in AI → Settings…",
             )
@@ -276,7 +276,7 @@ class MenuBar(QMenuBar):
                 for dock in chats:
                     title = dock.windowTitle()
                     action = Action(
-                        window,
+                        window(),
                         title,
                         f"Show {title}",
                     )
@@ -288,7 +288,6 @@ class MenuBar(QMenuBar):
         self.ai_menu.addAction(a.aiSettings)
 
     def updateWindowMenu(self : Self) -> None:
-        window : Window = self.parent()
         a = self._actions
         self.window_menu.clear()
         self.window_menu.addAction(a.windowNext)
@@ -298,10 +297,7 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(a.windowMessages)
         self.window_menu.addAction(a.windowTranscript)
         self.window_menu.addAction(a.windowLog)
-        mdi_area = window.mdiArea()
-        if mdi_area is None:
-            return
-        for subjects in mdi_area.subWindowActions().values():
+        for subjects in window().mdiArea().subWindowActions().values():
             self.window_menu.addSeparator()
             for actions in subjects.values():
                 for action in actions:

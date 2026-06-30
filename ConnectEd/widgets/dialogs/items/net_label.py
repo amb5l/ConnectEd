@@ -12,7 +12,7 @@ from ..components.group_box.net_label import NetLabelItemGroupBox
 from .text import BaseTextItemDialog
 
 
-class NetLabelItemDialog(BaseTextItemDialog):
+class NetLabelItemDialog(BaseTextItemDialog[NetLabelItem]):
     _TITLE = "Net Label"
 
     _top_section : NetLabelItemGroupBox

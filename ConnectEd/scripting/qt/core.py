@@ -23,7 +23,7 @@ class CoreMixin:
         QTimer.singleShot(0, callback)
 
     def click(self : Self, widget : QWidget) -> None:
-        QTest.mouseClick(widget, Qt.MouseButton.LeftButton)
+        QTest.mouseClick(widget, Qt.MouseButton.LeftButton)  # pyright: ignore[reportCallIssue]
 
     def expectVisible(self : Self, widget : QWidget | None, visible : bool = True) -> None:
         assert widget is not None

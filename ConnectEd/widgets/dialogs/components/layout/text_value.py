@@ -12,13 +12,9 @@ from ..edit import StrEditor, TextEditor
 
 from ..combo.text_format import TextFormatComboBox
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...items.text import TextItemDialog
-
 
 class TextValueLayout(QVBoxLayout):
-    _dialog             : TextItemDialog
+    _dialog             : QDialog
     _text_format_layout : QHBoxLayout
     _text_format_label  : QLabel
     _text_format_combo  : TextFormatComboBox

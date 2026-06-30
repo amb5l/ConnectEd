@@ -14,34 +14,33 @@ from .types import NavItem, NavDummyItem, NavModel
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..sub_window import DocSubWindow
-    from . import Navigator
-    MixinSelf: TypeAlias = Self | Navigator
-else:
-    MixinSelf = Self
+
 
 class NavigatorPrivateMixin:
 
     def _forEachNavItem(
-        self : MixinSelf,
+        self : Self,
         fn   : Callable[[NavItem], None],
     ) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         for row in range(self._model.rowCount()):
             item = self._model.item(row)
-            if item is not None:
+            if isinstance(item, NavItem):
                 self._forEachNavItemFrom(item, fn)
 
     def _forEachNavItemFrom(
-        self : MixinSelf,
+        self : Self,
         item : NavItem,
         fn   : Callable[[NavItem], None],
     ) -> None:
         fn(item)
         for row in range(item.rowCount()):
             child = item.child(row)
-            if child is not None:
+            if isinstance(child, NavItem):
                 self._forEachNavItemFrom(child, fn)
 
-    def _refreshDocNav(self : MixinSelf, doc : Doc) -> None:
+    def _refreshDocNav(self : Self, doc : Doc) -> None:
         def refresh(item : NavItem) -> None:
             binding : DocBinding | None = \
                 item.data(Qt.ItemDataRole.UserRole)
@@ -57,19 +56,22 @@ class NavigatorPrivateMixin:
                 item.setToolTip(tip)
         self._forEachNavItem(refresh)
 
-    def _docNavItem(self : MixinSelf, doc : Doc) -> NavItem | None:
+    def _docNavItem(self : Self, doc : Doc) -> NavItem | None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         for group_item in self._group_items.values():
             for row in range(group_item.rowCount()):
                 child = group_item.child(row)
                 if isinstance(child, NavDummyItem):
                     continue
-                binding : DocBinding | None = \
-                    child.data(Qt.ItemDataRole.UserRole)
-                if binding is not None and binding.doc is doc:
+                if not isinstance(child, NavItem):
+                    raise ValueError("Bad child")
+                binding = child.data(Qt.ItemDataRole.UserRole)
+                if isinstance(binding, DocBinding) and binding.doc is doc:
                     return child
         return None
 
-    def _removeDocFromTree(self : MixinSelf, doc : Doc) -> None:
+    def _removeDocFromTree(self : Self, doc : Doc) -> None:
         doc_item = self._docNavItem(doc)
         if doc_item is None:
             return
@@ -79,7 +81,7 @@ class NavigatorPrivateMixin:
         parent.removeRow(doc_item.row())
         self._updateGroups()
 
-    def _closeSubwindowsForDoc(self : MixinSelf, doc : Doc) -> None:
+    def _closeSubwindowsForDoc(self : Self, doc : Doc) -> None:
         from ....app import window
         from ..sub_window import DocSubWindow
         mdi_area = window().mdiArea()
@@ -92,7 +94,7 @@ class NavigatorPrivateMixin:
             subwindow.close()
 
     def _subwindowsForDoc(
-        self    : MixinSelf,
+        self    : Self,
         doc     : Doc,
         exclude : DocSubWindow | None = None,
     ) -> list[DocSubWindow]:
@@ -109,7 +111,9 @@ class NavigatorPrivateMixin:
                 subwindows.append(subwindow)
         return subwindows
 
-    def _initGroups(self : MixinSelf) -> None:
+    def _initGroups(self : Self) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         for doc_type in session().docTypes():
             # row item
             group_name = doc_type.group
@@ -121,7 +125,9 @@ class NavigatorPrivateMixin:
             self._model.appendRow(group_item)
             self._group_items[group_name] = group_item
 
-    def _updateGroups(self : MixinSelf) -> None:
+    def _updateGroups(self : Self) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         for group_item in self._group_items.values():
             if group_item.rowCount() == 0:
                 group_item.appendRow(NavDummyItem("<none loaded>"))
@@ -135,11 +141,13 @@ class NavigatorPrivateMixin:
                         break
 
     def _addDoc(
-        self   : MixinSelf,
+        self   : Self,
         parent : NavItem | NavModel,
         doc    : Doc,
         path   : str = ""
     ) -> None:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         def _addRows(
             parent : NavItem | NavModel,
             specs  : NavItemSpec | list[NavItemSpec],
@@ -162,10 +170,10 @@ class NavigatorPrivateMixin:
                         tip = spec.tip
                     if tip is not None:
                         item.setToolTip(tip)
-                item.setData(
-                    DocBinding(doc, spec.subject),
-                    Qt.ItemDataRole.UserRole,
-                )
+                    item.setData(
+                        DocBinding(doc, spec.subject),
+                        Qt.ItemDataRole.UserRole,
+                    )
                 parent.appendRow(item)
                 if root_item is None:
                     root_item = item
@@ -177,7 +185,9 @@ class NavigatorPrivateMixin:
             self._openRow(doc_item)
         self._updateGroups()
 
-    def _openRow(self : MixinSelf, item : NavItem) -> bool:
+    def _openRow(self : Self, item : NavItem) -> bool:
+        from . import Navigator
+        if not isinstance(self, Navigator): raise TypeError("Bad host")
         binding : DocBinding | None = \
             item.data(Qt.ItemDataRole.UserRole)
         if binding is not None:

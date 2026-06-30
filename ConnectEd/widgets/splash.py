@@ -5,7 +5,7 @@ import time
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QRectF, QTimer
-from PyQt6.QtWidgets import QSplashScreen, QApplication
+from PyQt6.QtWidgets import QSplashScreen, QApplication, QWidget
 from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
 from ..app import app
@@ -30,6 +30,8 @@ class Splash(QSplashScreen):
 
     def __init__(self : Self, light : bool, parent=None):
         screen = QApplication.primaryScreen()
+        if screen is None:
+            raise RuntimeError("No screen")
         screen_geometry = screen.geometry()
         splash_width = int(screen_geometry.width() * self._SIZE)
         splash_height = int(screen_geometry.height() * self._SIZE)
@@ -51,6 +53,8 @@ class Splash(QSplashScreen):
         light         : bool
     ) -> QPixmap:
         screen = QApplication.primaryScreen()
+        if screen is None:
+            raise RuntimeError("No screen")
         screen_geometry = screen.geometry()
         bitmap = QPixmap(getIconPath("ConnectEd.png"))
         pixmap = QPixmap(splash_width, splash_height)
@@ -93,14 +97,17 @@ class Splash(QSplashScreen):
         super().show()
         self._start_time = time.time()
 
-    def finish(self : Self, window : Window):
+    def finish(self : Self, w : QWidget | None):
+        from .window import Window
+        if not isinstance(w, Window):
+            raise TypeError("Bad widget")
         if self._start_time is not None:
             elapsed = (time.time() - self._start_time) * 1000
             if elapsed < self._MIN_DISPLAY_TIME:
                 remaining_time = int(self._MIN_DISPLAY_TIME - elapsed)
-                QTimer.singleShot(remaining_time, lambda: self._actually_finish(window))
+                QTimer.singleShot(remaining_time, lambda: self._actually_finish(w))
                 return
-        self._actually_finish(window)
+        self._actually_finish(w)
 
     def _actually_finish(self : Self, window : Window):
         super().finish(window)

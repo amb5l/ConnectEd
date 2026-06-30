@@ -4,16 +4,14 @@ from typing import Self
 
 from PyQt6.QtWidgets import QDockWidget
 
+from .core import CoreMixin
+
 
 class ShellMixin:
     def dock(self : Self, title : str) -> QDockWidget | None:
+        if not isinstance(self, CoreMixin):
+            raise TypeError("Bad host")
         for dock in self._window.findChildren(QDockWidget):
             if dock.windowTitle() == title:
-                return dock
+                    return dock
         return None
-
-    def expectDock(self : Self, title : str, visible : bool = True) -> QDockWidget:
-        dock = self.dock(title)
-        assert dock is not None, f"dock {title!r} not found"
-        self.expectVisible(dock, visible)
-        return dock
