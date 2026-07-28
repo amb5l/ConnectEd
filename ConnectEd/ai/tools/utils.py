@@ -4,7 +4,7 @@ import json
 import sys
 
 from functools       import wraps
-from typing          import TYPE_CHECKING, Any
+from typing          import TYPE_CHECKING, Any, cast
 from collections.abc import Callable
 from types           import ModuleType
 
@@ -21,8 +21,8 @@ def _toolsForModule(module : ModuleType) -> list[ToolEntry]:
     tools = getattr(module, "_TOOLS", None)
     if tools is None:
         tools = []
-        module._TOOLS = tools
-    return tools
+        setattr(module, "_TOOLS", tools)
+    return cast(list[ToolEntry], tools)
 
 
 def parseToolArgs(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
-import anthropic
+from anthropic import Anthropic
 
 from ..types import ChatEvent, ChatEventType, ChatMessage, ToolCall, ToolSpec
 
@@ -16,7 +16,7 @@ DEFAULT_API_KEY_NAME = "$ANTHROPIC_API_KEY"
 def listModels(api_key : str, _base_url : str = "") -> list[str]:
     if not api_key:
         return []
-    client = anthropic.Anthropic(api_key=api_key)
+    client = Anthropic(api_key=api_key)
     response = client.models.list()
     models = [model for model in response.data if model.id]
     models.sort(
@@ -103,7 +103,7 @@ class AnthropicProvider:
         client_kwargs : dict[str, Any] = {"api_key" : self._api_key}
         if self._base_url:
             client_kwargs["base_url"] = self._base_url
-        client = anthropic.Anthropic(**client_kwargs)
+        client = Anthropic(**client_kwargs)
 
         system, anthropic_messages = _toAnthropicMessages(messages)
         request_kwargs : dict[str, Any] = {
@@ -123,16 +123,18 @@ class AnthropicProvider:
                     if event.type == "content_block_delta":
                         delta = event.delta
                         if getattr(delta, "type", None) == "text_delta":
-                            yield ChatEvent(ChatEventType.TOKEN, delta.text)
+                            text = getattr(delta, "text", None)
+                            if isinstance(text, str):
+                                yield ChatEvent(ChatEventType.TOKEN, text)
                     elif event.type == "content_block_start":
                         block = event.content_block
                         if getattr(block, "type", None) == "tool_use":
                             yield ChatEvent(
                                 ChatEventType.TOOL_CALL,
                                 tool_call = ToolCall(
-                                    id        = block.id,
-                                    name      = block.name,
-                                    arguments = block.input or {},
+                                    id        = str(getattr(block, "id", "")),
+                                    name      = str(getattr(block, "name", "")),
+                                    arguments = getattr(block, "input", None) or {},
                                 ),
                             )
         except Exception as exc:

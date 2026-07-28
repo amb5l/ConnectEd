@@ -6,6 +6,7 @@ from ...core.check import checked
 from ...core.types import Direction, Edge
 
 from ..refs   import RefRegistry
+from ..types  import ToolEntry
 from .utils   import aitool, toolError, toolOk
 from .private import _drawingSceneFromViewRef
 
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
     from ...widgets.window import Window
 
 ################################################################################
+
+_TOOLS : list[ToolEntry] = []
 
 _PIN_SPEC_PROPS = {
     "name"      : {
@@ -68,11 +71,11 @@ def add_block_pin(
     arguments : dict[str, Any],
 ) -> str:
     spec, err = _parsePinSpec(arguments)
-    if err is not None:
-        return err
+    if err is not None or spec is None:
+        return err or toolError("Invalid pin")
     block, err = _resolveBlock(registry, arguments["item"])
-    if err is not None:
-        return err
+    if err is not None or block is None:
+        return err or toolError("Invalid block")
     scene, err = _drawingSceneFromViewRef(registry, arguments["view"])
     if scene is None:
         return toolError(err or "Invalid view")
@@ -102,11 +105,11 @@ def edit_block_pin(
     arguments : dict[str, Any]
 ):
     spec, err = _parsePinSpec(arguments)
-    if err is not None:
-        return err
+    if err is not None or spec is None:
+        return err or toolError("Invalid pin")
     block, err = _resolveBlock(registry, arguments["item"])
-    if err is not None:
-        return err
+    if err is not None or block is None:
+        return err or toolError("Invalid block")
     scene, err = _drawingSceneFromViewRef(registry, arguments["view"])
     if scene is None:
         return toolError(err or "Invalid view")
@@ -151,12 +154,12 @@ def add_block_pins(
     parsed : list[dict[str, Any]] = []
     for spec_in in pins_in:
         spec, err = _parsePinSpec(spec_in)
-        if err is not None:
-            return err
+        if err is not None or spec is None:
+            return err or toolError("Invalid pin")
         parsed.append(spec)
     block, err = _resolveBlock(registry, arguments["item"])
-    if err is not None:
-        return err
+    if err is not None or block is None:
+        return err or toolError("Invalid block")
     scene, err = _drawingSceneFromViewRef(registry, arguments["view"])
     if scene is None:
         return toolError(err or "Invalid view")

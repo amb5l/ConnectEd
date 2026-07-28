@@ -8,7 +8,8 @@ from PyQt6.QtCore import QPointF
 
 from ...core.check import checked
 
-from ..refs import RefRegistry
+from ..refs  import RefRegistry
+from ..types import ToolEntry
 
 from .params import _VIEW_PARAM
 from .utils  import aitool, toolError, toolOk
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
     from ...widgets.window import Window
 
 ################################################################################
+
+_TOOLS : list[ToolEntry] = []
 
 _OFFSET_PROPS = {
     "axis"  : {
@@ -92,13 +95,13 @@ def add_connection(
     legs : list[tuple[str, float]] = []
     for index, leg_in in enumerate(offsets_in):
         leg, err = _parseOffsetLeg(leg_in, index)
-        if err is not None:
-            return err
+        if err is not None or leg is None:
+            return err or toolError("Invalid offset")
         legs.append(leg)
 
     start, err = _resolveStart(registry, arguments)
-    if err is not None:
-        return err
+    if err is not None or start is None:
+        return err or toolError("Invalid start")
 
     scene, err = _drawingSceneFromViewRef(registry, arguments["view"])
     if scene is None:
@@ -145,9 +148,9 @@ def _resolveStart(
     has_start = isinstance(start, dict)
     if has_ref and has_start:
         return None, toolError("Provide start or start_ref, not both")
-    if has_ref:
+    if isinstance(start_ref, str) and start_ref.strip():
         return _startFromItemRef(registry, start_ref.strip())
-    if has_start:
+    if isinstance(start, dict):
         x = start.get("x")
         y = start.get("y")
         if not isinstance(x, (int, float)) or isinstance(x, bool):

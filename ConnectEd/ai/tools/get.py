@@ -7,6 +7,7 @@ from typing import Any
 from ...core.check import checked
 
 from ..refs  import RefRegistry
+from ..types import ToolEntry
 
 from .params import _VIEW_PARAM
 from .utils  import aitool, toolOk, toolError
@@ -17,6 +18,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.graphics.properties import PropertiesMixin
     from ...widgets.window import Window
+
+
+_TOOLS : list[ToolEntry] = []
 
 
 @aitool(
@@ -44,15 +48,15 @@ def get_active_view(
     view = active_subwindow.widget()
     if view is None:
         return toolError("No view in subwindow")
-    from ...widgets.graphics.views.drawing import DrawingView
-    if not isinstance(view, DrawingView):
-        return toolError("Not a drawing view")
+    from ...widgets.graphics.views.diagram import DiagramView
+    if not isinstance(view, DiagramView):
+        return toolError("Not a diagram view")
     scene = view.scene()
     if scene is None:
         return toolError("No scene in view")
-    from ...widgets.graphics.scenes.drawing import DrawingScene
-    if not isinstance(scene, DrawingScene):
-        return toolError("Not a drawing scene")
+    from ...widgets.graphics.scenes.diagram import DiagramScene
+    if not isinstance(scene, DiagramScene):
+        return toolError("Not a diagram scene")
     return toolOk(
         ref  = registry.issue("view", view),
         kind = view.__class__.__name__.replace("View", ""),
@@ -141,7 +145,7 @@ def get_items(
     if err is not None:
         return err
 
-    from ...widgets.graphics.items        import ItemMixin
+    from ...widgets.graphics.items.mixin   import ItemMixin
     from ...widgets.graphics.items.node    import NodeItem
     from ...widgets.graphics.items.segment import SegmentItem
     from ...widgets.graphics.properties    import PropertiesMixin

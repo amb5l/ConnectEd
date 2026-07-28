@@ -128,12 +128,15 @@ class OpenAiCompatibleProvider:
         )
 
         try:
-            stream = client.chat.completions.create(
-                model    = self._model,
-                messages = _toOpenaiMessages(messages),
-                tools    = _toolDefinitions(tools),
-                stream   = True,
-            )
+            create_kwargs : dict[str, Any] = {
+                "model"    : self._model,
+                "messages" : _toOpenaiMessages(messages),
+                "stream"   : True,
+            }
+            tool_defs = _toolDefinitions(tools)
+            if tool_defs:
+                create_kwargs["tools"] = tool_defs
+            stream = client.chat.completions.create(**create_kwargs)
         except Exception as exc:
             yield ChatEvent(ChatEventType.ERROR, error=str(exc))
             yield ChatEvent(ChatEventType.DONE)

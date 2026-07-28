@@ -1,12 +1,14 @@
-MixinSelf is still shite
+walrus usage
 
-error vs fatal; error handling
+raise/logger error handling review
 
-_XML_CHILDREN frozenset
+_XML_CHILDREN frozenset - why?
 
 theme palette defined in both python and yaml
 
 FSM => State
+
+================================================================================
 
 move PropertiesMixin from DrawingScene to DiagramScene
 
