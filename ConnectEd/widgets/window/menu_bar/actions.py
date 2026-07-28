@@ -24,7 +24,7 @@ class Actions:
     @checked
     def __init__(self : Self, slots : Slots) -> None:
         self._scene = None
-        SK = QKeySequence.StandardKey
+        SK = QKeySequence.StandardKey  # noqa E806
 
         # actions for main menus
         self.fileNew            = Action( window(), "New..."        , "Create a new document"               , "Ctrl+N"                     )  # noqa E501
@@ -224,14 +224,14 @@ class Actions:
         self.placeBlock      .setEnabled(en)
         self.placeRectangle  .setEnabled(en)
         self.placeText       .setEnabled(en)
-        if self._scene:
+        if scene is not None:
             # connect signals
-            self._scene.selectionChanged.connect(self.onSelectionChanged)
-            self._scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
-            self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
+            scene.selectionChanged.connect(self.onSelectionChanged)
+            scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
+            scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
             self.onClipboardDataChanged()
             self.onSelectionChanged()
-        self
+        self._scene = scene
 
     def onSelectionChanged(self : Self) -> None:
         try:
@@ -254,10 +254,10 @@ class Actions:
             mime_data is not None and mime_data.hasFormat(MIME_TYPE)
         )
 
-    def onCanUndoChanged(self : Self, canUndo : bool) -> None:
+    def onCanUndoChanged(self : Self, canUndo : bool) -> None:  # noqa E803
         self.editUndo.setEnabled(canUndo)
 
-    def onCanRedoChanged(self : Self, canRedo : bool) -> None:
+    def onCanRedoChanged(self : Self, canRedo : bool) -> None:  # noqa E803
         self.editRedo.setEnabled(canRedo)
 
 # TODO control status of edit cancel/complete
