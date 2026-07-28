@@ -28,7 +28,7 @@ class StartMixin:
         from .base import DiagramViewState
         if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
         self.interact(
-            self._INTERACTION_CLS(self.view),
+            self._INTERACTION_CLS(self.view, spos),
             self._nextState()
         )
 

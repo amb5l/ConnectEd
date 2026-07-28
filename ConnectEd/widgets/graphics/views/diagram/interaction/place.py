@@ -116,7 +116,7 @@ class DiagramPlaceBase2PosInteraction(DiagramPlaceBase1PosInteraction[TItem]):
         self : Self,
         view : DiagramView,
         pos  : QPointF,
-        item : TItem
+        item : TItem | None = None
     ) -> None:
         super().__init__(view, pos, item)
         self._p1 = pos
