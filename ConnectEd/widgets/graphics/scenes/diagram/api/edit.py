@@ -16,7 +16,7 @@ from ......core.xml   import XmlProtocol
 
 from ....items.polyline      import PolylineItem, PolySegItem
 from ....items.text          import TextItem
-from ....items.port_pin      import PortPinMixin
+from ....items.port_pin      import PortPinMixin, PortPinPathItem
 from ....items.block_pin     import BlockPinItem
 from ....items.symbol_pin    import SymbolPinItem
 from ....items.block         import BlockItem
@@ -29,7 +29,7 @@ from ....items.mixin.transform import ItemTransformMixin
 from ..cmd import cmdExec, CmdMove, CmdRotateCW, CmdRotateCCW, CmdDelete
 
 from ..cmd.edit.pin        import CmdEditPortPin, \
-                                  CmdEditSymbolPinDot, CmdEditSymbolPinClock
+                                  CmdEditPinDot, CmdEditPinClk
 from ..cmd.edit.origin     import CmdEditOrigin
 from ..cmd.edit.polyline   import CmdEditPolylineClosed, CmdEditPolySeg
 from ..cmd.edit.text       import CmdEditText
@@ -38,10 +38,6 @@ from ..cmd.edit.appearance import CmdEditAppearance
 from ..cmd.block_pin import CmdMoveBlockPins
 
 from ..xml import diagram_scene_xml_items
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DiagramScene
 
 
 class DiagramSceneApiEditMixin:
@@ -228,19 +224,19 @@ class DiagramSceneApiEditMixin:
         cmdExec(self, cmd, undoable)
 
     @checked
-    def editSymbolPinDot(
+    def editPinDot(
         self     : Self,
-        item     : SymbolPinItem,
+        item     : PortPinPathItem,
         enable   : bool,
         undoable : bool = False
     ) -> None:
         from .. import DiagramScene
         if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditSymbolPinDot(self, item, enable)
+        cmd = CmdEditPinDot(self, item, enable)
         cmdExec(self, cmd, undoable)
 
     @checked
-    def editSymbolPinClock(
+    def editPinClk(
         self     : Self,
         item     : SymbolPinItem,
         enable   : bool,
@@ -248,7 +244,7 @@ class DiagramSceneApiEditMixin:
     ) -> None:
         from .. import DiagramScene
         if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditSymbolPinClock(self, item, enable)
+        cmd = CmdEditPinClk(self, item, enable)
         cmdExec(self, cmd, undoable)
 
     @checked

@@ -73,12 +73,16 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
             return [
                 view.action(
                     "Dot",
-                    lambda: view.editSymbolPinDot(self, not self._dot),
+                    lambda: view.editPinDot(
+                        item=self, enable=not self._dot
+                    ),
                     checked=self._dot
                 ),
                 view.action(
                     "Clock",
-                    lambda: view.editSymbolPinClock(self, not self._clock),
+                    lambda: view.editPinClk(
+                        item=self, enable=not self._clock
+                    ),
                     checked=self._clock
                 )
             ]

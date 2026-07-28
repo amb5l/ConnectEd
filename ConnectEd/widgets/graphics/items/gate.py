@@ -27,7 +27,6 @@ from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.diagram import DiagramScene
     from ..views.diagram  import DiagramView
 
 
@@ -99,13 +98,17 @@ class GateItem(
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def ctxMenuItems(self : Self, view : DiagramView, spos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
+    ) -> list[QAction | QMenu]:
         return [
             view.action(
-                "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
+                "Rotate CW", lambda: view.editRotateCW(items=[self]), shortcut="]"
             ),
             view.action(
-                "Rotate CCW", lambda: view.editRotateCCW([self]), shortcut="["
+                "Rotate CCW", lambda: view.editRotateCCW(items=[self]), shortcut="["
             ),
             view.separator(),
             view.action("Appearance...", lambda: view.editAppearance(self)),
@@ -327,7 +330,7 @@ class LogicGateItem(GateItem):
                 logger().error("No input net")
                 return ""
             net_name = input_net.name
-            s += f" and " if n > 0 else ""
+            s += " and " if n > 0 else ""
             s += f"{('not ' if input_pin.inverted() else '')}{net_name}"
         # semicolon
         s += " ;"

@@ -12,10 +12,9 @@ from ....core.types import GatePinHandleId, HandleId, DataKind
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
-from .grip     import GripItem, MoveGripItem, ResizeGripItem
+from .grip     import GripItem, MoveGripItem
 
 from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -42,7 +41,7 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
 
     @classmethod
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
-        return MoveGripItem if id == GatePinHandleId.ORIGIN else ResizeGripItem
+        return MoveGripItem
 
     def settingsName(self : Self) -> str:
         return "GatePin"
@@ -88,7 +87,9 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
         return [
             view.action(
                 "Active Low",
-                lambda: view.editSymbolPinDot(self, not self._dot),
+                lambda: view.editPinDot(
+                    item=self, enable=not self._dot
+                ),
                 checked=self._dot
             )
         ]

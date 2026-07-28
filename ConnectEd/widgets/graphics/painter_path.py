@@ -1,5 +1,5 @@
 from ...core.check import checked
-from typing import Self, overload
+from typing import Self, TypeGuard, overload
 from math import copysign, sqrt, degrees, radians, sin, cos, asin, atan2
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF
@@ -8,7 +8,7 @@ from PyQt6.QtGui  import QPainterPath
 from ...core.utils import sign
 
 
-def _isNum(value : object) -> bool:
+def _isNum(value : object) -> TypeGuard[int | float]:
     """True for int/float, excluding bool (bool is a subclass of int)."""
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 

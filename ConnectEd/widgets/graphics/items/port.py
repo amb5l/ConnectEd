@@ -65,10 +65,10 @@ class PortItem(ItemTransformMixin, PortPinLineItem):
     ) -> list[QAction | QMenu]:
         return [
             view.action(
-                "Rotate CW", lambda: view.editRotateCW([self]), shortcut="]"
+                "Rotate CW", lambda: view.editRotateCW(items=[self]), shortcut="]"
             ),
             view.action(
-                "Rotate CCW", lambda: view.editRotateCCW([self]), shortcut="["
+                "Rotate CCW", lambda: view.editRotateCCW(items=[self]), shortcut="["
             ),
             view.action("Edit...", view.editPort),
             view.separator(),

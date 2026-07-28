@@ -199,7 +199,7 @@ class MoveGripItem(OriginGripShapeMixin, HandleGripItem):
                     view.separator(),
                     view.action(
                         "Assign Origin",
-                        lambda: view.editAssignOrigin(item, h.id())
+                        lambda: view.editAssignOrigin(item=item, handle=h.id())
                     )
                 ])
         return entries

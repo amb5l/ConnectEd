@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from .......core.check import checked
 
-from .....items.port_pin   import PortPinMixin
+from .....items.port_pin   import PortPinMixin, PortPinPathItem
 from .....items.symbol_pin import SymbolPinItem
 
 from .. import CmdSceneItem
@@ -48,7 +48,7 @@ class CmdEditPortPin(CmdSceneItem[PortPinMixin]):
         self._item.setDirection(self._before.direction)
 
 
-class CmdEditSymbolPinDot(CmdSceneItem[SymbolPinItem]):
+class CmdEditPinDot(CmdSceneItem[PortPinPathItem]):
     _before : bool
     _after  : bool
 
@@ -56,7 +56,7 @@ class CmdEditSymbolPinDot(CmdSceneItem[SymbolPinItem]):
     def __init__(
         self   : Self,
         scene  : DiagramScene,
-        item   : SymbolPinItem,
+        item   : PortPinPathItem,
         enable : bool
     ) -> None:
         super().__init__(scene, item)
@@ -74,7 +74,7 @@ class CmdEditSymbolPinDot(CmdSceneItem[SymbolPinItem]):
         self._item.update()
 
 
-class CmdEditSymbolPinClock(CmdSceneItem):
+class CmdEditPinClk(CmdSceneItem):
     _item   : SymbolPinItem
     _before : bool
     _after  : bool

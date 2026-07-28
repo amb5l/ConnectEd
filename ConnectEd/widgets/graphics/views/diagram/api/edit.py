@@ -28,8 +28,8 @@ if TYPE_CHECKING:
     from ....scenes.diagram   import DiagramScene
     from ....items.text       import TextItem
     from ....items.grip       import ResizeGripItem
+    from ....items.port_pin   import PortPinPathItem
     from ....items.symbol_pin import SymbolPinItem
-    from ..                   import DiagramView
 
 
 class DiagramViewApiEditMixin:
@@ -288,19 +288,19 @@ class DiagramViewApiEditMixin:
 
     @withScene
     @checked
-    def editSymbolPinDot(
+    def editPinDot(
         self   : Self,
         scene  : DiagramScene,
-        item   : SymbolPinItem,
+        item   : PortPinPathItem,
         enable : bool
     ) -> None:
         if enable == item.dot():
             return
-        scene.editSymbolPinDot(item, enable, undoable=True)
+        scene.editPinDot(item, enable, undoable=True)
 
     @withScene
     @checked
-    def editSymbolPinClock(
+    def editPinClk(
         self   : Self,
         scene  : DiagramScene,
         item   : SymbolPinItem,
@@ -308,7 +308,7 @@ class DiagramViewApiEditMixin:
     ) -> None:
         if enable == item.clock():
             return
-        scene.editSymbolPinClock(item, enable, undoable=True)
+        scene.editPinClk(item, enable, undoable=True)
 
     @checked
     def editTextDialog(self : Self) -> None:
