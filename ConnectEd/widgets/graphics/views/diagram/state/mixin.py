@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self, TYPE_CHECKING
+from typing          import Self, TYPE_CHECKING
+from collections.abc import Callable
 
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QMenu
@@ -9,6 +10,7 @@ from PyQt6.QtGui     import QAction
 from ..mouse import MouseModifier
 
 if TYPE_CHECKING:
+    from ..            import DiagramView
     from ..interaction import DiagramInteraction
     from .base         import DiagramViewState
 
@@ -19,7 +21,8 @@ class StartMixin:
     interaction and advance to the next state.
     """
 
-    _INTERACTION_CLS : type[DiagramInteraction]
+    # Constructors take (view, first snap point); item is created inside.
+    _INTERACTION_CLS : Callable[[DiagramView, QPointF], DiagramInteraction]
 
     def _nextState(self : Self) -> DiagramViewState:
         raise NotImplementedError
