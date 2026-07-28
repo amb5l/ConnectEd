@@ -117,8 +117,7 @@ class MoveHandleByProtocol(Protocol):
     def moveHandleBy(
         self : Self,
         id   : HandleId,
-        dx   : float,
-        dy   : float
+        d    : QPointF
     ) -> None: ...
 
 
@@ -128,8 +127,7 @@ class ResizeHandleByProtocol(Protocol):
     def resizeHandleBy(
         self : Self,
         id   : HandleId,
-        dx   : float,
-        dy   : float
+        d    : QPointF
     ) -> None: ...
 
 

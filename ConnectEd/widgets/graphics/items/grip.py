@@ -124,7 +124,7 @@ class HandleGripItem(GripItem):
             handle = self.handle()
             if handle is None:
                 raise TypeError("No handle")
-            item.moveHandleBy(handle.id(), dx, dy)
+            item.moveHandleBy(handle.id(), QPointF(dx, dy))
         else:
             raise TypeError("Bad item")
 
