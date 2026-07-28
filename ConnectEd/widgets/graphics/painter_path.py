@@ -8,6 +8,11 @@ from PyQt6.QtGui  import QPainterPath
 from ...core.utils import sign
 
 
+def _isNum(value : object) -> bool:
+    """True for int/float, excluding bool (bool is a subclass of int)."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
 class PainterPath(QPainterPath):
     """QPainterPath with enhanced arc and grip support."""
 
@@ -36,8 +41,8 @@ class PainterPath(QPainterPath):
         """Override to store midpoint. Accepts QPointF or (x, y) coordinates."""
         if isinstance(p_or_x, QPointF):
             pos = p_or_x
-        elif isinstance(p_or_x, float) and isinstance(y, float):
-            pos = QPointF(p_or_x, y)
+        elif _isNum(p_or_x) and _isNum(y):
+            pos = QPointF(float(p_or_x), float(y))
         else:
             raise TypeError("lineTo() takes either QPointF or (x, y) coordinates")
         p0 = self.currentPosition()
@@ -77,15 +82,15 @@ class PainterPath(QPainterPath):
         a5   : float | None = None   # None or span angle
     ) -> None:
         """Draw arc. Accepts QRectF or (x, y, width, height) coordinates."""
-        if isinstance(a0, QRectF) and isinstance(a1, float) and isinstance(a2, float):
+        if isinstance(a0, QRectF) and _isNum(a1) and _isNum(a2):
             rect = a0
-            start_angle = a1
-            span_angle = a2
-        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float) \
-         and isinstance(a3, float) and isinstance(a4, float) and isinstance(a5, float):
-            rect = QRectF(a0, a1, a2, a3)
-            start_angle = a4
-            span_angle = a5
+            start_angle = float(a1)
+            span_angle = float(a2)
+        elif _isNum(a0) and _isNum(a1) and _isNum(a2) \
+         and _isNum(a3) and _isNum(a4) and _isNum(a5):
+            rect = QRectF(float(a0), float(a1), float(a2), float(a3))
+            start_angle = float(a4)
+            span_angle = float(a5)
         else:
             raise TypeError(
                 "arcTo() takes (QRectF, startAngle, spanAngle) or "
@@ -122,18 +127,18 @@ class PainterPath(QPainterPath):
         a2   : float | None = None  # None or span angle
     ) -> None:
         """Draw arc by span angle. Accepts QPointF or (x, y) coordinates."""
-        if isinstance(a0, QPointF) and isinstance(a1, float):
+        if isinstance(a0, QPointF) and _isNum(a1):
             pos = a0
-            span_angle = a1
-        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float):
-            pos = QPointF(a0, a1)
-            span_angle = a2
+            span_angle = float(a1)
+        elif _isNum(a0) and _isNum(a1) and _isNum(a2):
+            pos = QPointF(float(a0), float(a1))
+            span_angle = float(a2)
         else:
             raise TypeError(
                 "arcSpanTo() takes (QPointF, spanAngle) or (x, y, spanAngle)"
             )
         p0 = self.currentPosition()
-        span_angle = max(-180, min(180, span_angle))
+        span_angle = max(-180.0, min(180.0, span_angle))
         # chord
         x1 = p0.x()
         y1 = p0.y()
@@ -144,6 +149,7 @@ class PainterPath(QPainterPath):
         d = sqrt(dx**2 + dy**2)  # length
         if d < 0.001:  # degenerate case
             self.lineTo(pos)
+            return
         mx = (x1 + x2) / 2  # midpoint x
         my = (y1 + y2) / 2  # midpoint y
         # arc circle radius
@@ -193,12 +199,12 @@ class PainterPath(QPainterPath):
         a2   : float | None = None  # None or sagitta
     ) -> None:
         """Draw arc by sagitta. Accepts QPointF or (x, y) coordinates."""
-        if isinstance(a0, QPointF) and isinstance(a1, float):
+        if isinstance(a0, QPointF) and _isNum(a1):
             pos = a0
-            sagitta = a1
-        elif isinstance(a0, float) and isinstance(a1, float) and isinstance(a2, float):
-            pos = QPointF(a0, a1)
-            sagitta = a2
+            sagitta = float(a1)
+        elif _isNum(a0) and _isNum(a1) and _isNum(a2):
+            pos = QPointF(float(a0), float(a1))
+            sagitta = float(a2)
         else:
             raise TypeError(
                 "arcSagittaTo() takes (QPointF, sagitta) or (x, y, sagitta)"
@@ -212,6 +218,7 @@ class PainterPath(QPainterPath):
         abs_sagitta = abs(sagitta)
         if abs_sagitta < 1e-6:
             self.lineTo(pos)
+            return
         # arc circle radius
         r = (abs_sagitta ** 2 + (d / 2) ** 2) / (2 * abs_sagitta)
         # central angle in degrees (always the *smaller* angle, 0°-180°)

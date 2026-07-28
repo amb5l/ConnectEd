@@ -3,24 +3,26 @@ from __future__ import annotations
 from typing import Self
 from enum import Enum
 
-from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
 from ....core.check import checked
-from ....core.types import Direction, DataKind
+from ....core.types import Direction, DataKind, RectHandleId, HandleId
 
-from ..properties import InherentProperty
+from ..properties import InherentProperty, PropertyTextSpec
 
 from ..painter_path import PainterPath
 
 from .role import FunctionalItem
 
 from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
+from .grip     import GripItem, MoveGripItem
 
 from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
 from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
@@ -39,6 +41,7 @@ class GateFunc(Enum):
 class GateItem(
     FunctionalItem,
     ItemTransformMixin,
+    ItemRectHandlesMixin,
     PrimaryItemMixin,
     QGraphicsPathItem
 ):
@@ -51,8 +54,17 @@ class GateItem(
             setter = lambda self, value: self.setLabel(value)
         )
     }
+    _PROPERTY_TEXTS = {
+        "Label" : PropertyTextSpec(
+            cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
+        )
+    }
     _PIN_CLS : type[GatePinItem]
     _XML_CHILDREN = frozenset({"PropertyText"})
+
+    @classmethod
+    def handleGripType(cls, id : HandleId) -> type[GripItem]:
+        return MoveGripItem
 
     # instance attributes
     _label : str = ""
@@ -62,6 +74,14 @@ class GateItem(
         super().__init__()
         self.initItem(fresh)
         self.initPath()
+        self.updateHandlePositions()
+
+    def handleRect(self : Self) -> QRectF:
+        return self.path().controlPointRect()
+
+    @checked
+    def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
+        self.moveBy(d.x(), d.y())
 
     def settingsName(self : Self) -> str:
         return "Gate"

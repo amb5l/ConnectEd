@@ -7,14 +7,14 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.defs  import PITCH
-from ....core.types import RectHandleId, SymbolPinHandleId, DataKind
+from ....core.types import RectHandleId, SymbolPinHandleId, HandleId, DataKind
 from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
-from .grip     import MoveGripItem
+from .grip     import GripItem, MoveGripItem
 
 from .mixin.edge_loc import ItemEdgeLocMixin
 
@@ -48,6 +48,10 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     @classmethod
     def handleIdKind(cls) -> DataKind:
         return DataKind.SYMBOL_PIN_HANDLE
+
+    @classmethod
+    def handleGripType(cls, id : HandleId) -> type[GripItem]:
+        return MoveGripItem
 
     @checked
     def initHandles(self : Self) -> None:

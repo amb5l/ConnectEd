@@ -8,11 +8,11 @@ from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
 from ....core.defs  import PITCH
-from ....core.types import GatePinHandleId, DataKind
+from ....core.types import GatePinHandleId, HandleId, DataKind
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
-from .grip     import MoveGripItem
+from .grip     import GripItem, MoveGripItem, ResizeGripItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
@@ -39,6 +39,10 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
     @classmethod
     def handleIdKind(cls) -> DataKind:
         return DataKind.GATE_PIN_HANDLE
+
+    @classmethod
+    def handleGripType(cls, id : HandleId) -> type[GripItem]:
+        return MoveGripItem if id == GatePinHandleId.ORIGIN else ResizeGripItem
 
     def settingsName(self : Self) -> str:
         return "GatePin"
