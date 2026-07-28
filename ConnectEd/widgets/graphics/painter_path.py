@@ -1,10 +1,10 @@
-from ...core.check import checked
 from typing import Self, TypeGuard, overload
-from math import copysign, sqrt, degrees, radians, sin, cos, asin, atan2
+from math   import copysign, sqrt, degrees, radians, sin, cos, asin, atan2
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF
 from PyQt6.QtGui  import QPainterPath
 
+from ...core.check import checked
 from ...core.utils import sign
 
 
