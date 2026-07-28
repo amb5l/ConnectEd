@@ -14,7 +14,7 @@ from .....core.xml   import toXmlStartElement, toXmlEndElement, \
 
 from ...xml import toXmlProperties, fromXmlProperties
 
-from ...items.role    import DocumentItem
+from ...items.role      import DocumentItem
 
 # decorative items
 from ...items.line      import LineItem
@@ -38,9 +38,7 @@ from ...items.mixin.xml import ItemXmlMixin
 
 from .netlist import _netNameAndSuffix
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import DiagramScene
+from .host import asDiagramScene
 
 
 class DiagramSceneXmlMixin:
@@ -54,11 +52,10 @@ class DiagramSceneXmlMixin:
         xw    : QXmlStreamWriter,
         items : QGraphicsItem | list[QGraphicsItem] | None = None,
     ) -> None:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         full_scene = items is None
         if full_scene:
-            items = self.items()
+            items = host.items()
         elif not isinstance(items, list):
             items = [items]
         # filter out unparented items
@@ -68,10 +65,10 @@ class DiagramSceneXmlMixin:
         # output
         if full_scene:
             # start scene element
-            toXmlStartElement(xw, self._XML_TAG)
-            toXmlProperties(self, xw)
+            toXmlStartElement(xw, host._XML_TAG)
+            toXmlProperties(host, xw)
         # symbol definitions
-        self._toXmlSymbolDefinitions(xw, items)
+        host._toXmlSymbolDefinitions(xw, items)
         # non-connectivity items
         for item in items:
             if not isinstance(item, DocumentItem) \
@@ -84,7 +81,7 @@ class DiagramSceneXmlMixin:
         for item in items:
             if isinstance(item, SegmentItem):
                 item.toXml(xw)
-        self._toXmlNetlist(xw)
+        host._toXmlNetlist(xw)
         if full_scene:
             # end scene element
             toXmlEndElement(xw)
@@ -95,9 +92,8 @@ class DiagramSceneXmlMixin:
         items : QGraphicsItem | list[QGraphicsItem],
         pos   : QPointF | None = None
     ) -> None:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        items = self._topItems(items)
+        host = asDiagramScene(self)
+        items = host._topItems(items)
         metadata = None
         if pos is not None:
             metadata = {"X" : val2str(pos.x()), "Y" : val2str(pos.y())}
@@ -110,9 +106,8 @@ class DiagramSceneXmlMixin:
         items : list[QGraphicsItem]
     ) -> None:
         """Serialise symbols that are used in the scene."""
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        definitions = self.symbolDefinitions()
+        host = asDiagramScene(self)
+        definitions = host.symbolDefinitions()
         instances = [
             item for item in items if isinstance(item, SymbolInstanceItem)
         ]
@@ -136,11 +131,10 @@ class DiagramSceneXmlMixin:
 
     @checked
     def _toXmlNetlist(self : Self, xw : QXmlStreamWriter) -> None:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         toXmlStartElement(xw, "Netlist")
         id_by_node = {
-            node: node_id for node_id, node in enumerate(self.netlist.nodes())
+            node: node_id for node_id, node in enumerate(host.netlist.nodes())
         }
         for node in sorted(id_by_node, key=lambda n : id_by_node[n]):
             if isinstance(node, FixedNodeItem):
@@ -149,7 +143,7 @@ class DiagramSceneXmlMixin:
             and node.parentItem() is None:
                 node.toXml(xw, id_by_node[node])
         for subnet in sorted(
-            self.netlist.subnets().values(),
+            host.netlist.subnets().values(),
             key=lambda s : -1 if s.id is None else s.id,
         ):
             xw.writeStartElement("Subnet")
@@ -165,7 +159,7 @@ class DiagramSceneXmlMixin:
                 ),
             )
             xw.writeEndElement()
-        for net in self.netlist.nets().values():
+        for net in host.netlist.nets().values():
             if net.name is None:
                 continue
             xw.writeStartElement("Net")
@@ -197,8 +191,7 @@ class DiagramSceneXmlMixin:
         self : Self,
         xr   : QXmlStreamReader
     ) -> None:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         node_by_id : dict[int, NodeItem] = {}
         id_by_node : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
@@ -206,7 +199,7 @@ class DiagramSceneXmlMixin:
         def fromXmlFixedNode(xr : QXmlStreamReader) -> None:
             node_id, pos = NodeItem.fromXml(xr)
             node : FixedNodeItem | None = None
-            for item in self.items(pos):
+            for item in host.items(pos):
                 if isinstance(item, FixedNodeItem):
                     node = item
                     break
@@ -222,7 +215,7 @@ class DiagramSceneXmlMixin:
         def fromXmlFreeNode(xr : QXmlStreamReader) -> None:
             node_id, pos = NodeItem.fromXml(xr)
             node : FreeNodeItem | None = None
-            for item in self.items(pos):
+            for item in host.items(pos):
                 if isinstance(item, FreeNodeItem) \
                 and item.parentItem() is None:
                     node = item
@@ -244,7 +237,7 @@ class DiagramSceneXmlMixin:
                 if part
             }
             matched : int | None = None
-            for subnet in self.netlist.subnets().values():
+            for subnet in host.netlist.subnets().values():
                 node_ids = {
                     id_by_node[node]
                     for node in subnet.nodes
@@ -273,7 +266,7 @@ class DiagramSceneXmlMixin:
                 if part
             }
             if xml_net_base_name:
-                net = self.netlist.nets().get(xml_net_base_name, None)
+                net = host.netlist.nets().get(xml_net_base_name, None)
             elif len(xml_subnet_ids) == 1:
                 xml_subnet_id = next(iter(xml_subnet_ids))
                 internal_id = next(
@@ -283,7 +276,7 @@ class DiagramSceneXmlMixin:
                     ),
                     xml_subnet_id,
                 )
-                net = self.netlist.nets().get(internal_id, None)
+                net = host.netlist.nets().get(internal_id, None)
             else:
                 net = None
             if net is None:
@@ -319,7 +312,7 @@ class DiagramSceneXmlMixin:
                 { "Symbol" : SymbolDefinitionItem },
                 ptag="Symbols"
             )
-            self._symbols |= {symbol.name(): symbol for symbol in symbols}
+            host._symbols |= {symbol.name(): symbol for symbol in symbols}
 
         def fromXmlItem(
             xr       : QXmlStreamReader,
@@ -331,27 +324,27 @@ class DiagramSceneXmlMixin:
                 if x1:
                     p1 = QPointF(float(x1), float(attrs.value("Y1")))
                     p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
-                    self.addSegment(p1, p2, undoable=False)
+                    host.addSegment(p1, p2, undoable=False)
                 else:
                     logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
             else:
                 if not isinstance(item := item_cls.fromXml(xr), QGraphicsItem):
                     raise TypeError("Bad item")
-                self.addItem(item)
+                host.addItem(item)
                 if isinstance(item, SymbolInstanceItem):
                     name = item.name()
-                    definition = self._symbols.get(name, None)
+                    definition = host._symbols.get(name, None)
                     if definition:
                         item.syncFromDefinition(definition)
                     else:
                         logger().warning(f"Symbol {name} not found")
 
-        top_element_name = self._XML_TAG
+        top_element_name = host._XML_TAG
         if xr.name() != top_element_name:
             raise ValueError(
                 f"Expected {top_element_name} element, got {xr.name()}"
             )
-        fromXmlProperties(self, xr)
+        fromXmlProperties(host, xr)
 
         xref = {
             "Symbols" : fromXmlSymbolDefinitions,
@@ -362,7 +355,7 @@ class DiagramSceneXmlMixin:
                 lambda xr, cls=item_cls: (fromXmlItem(xr, cls), None)[1]
 
         fromXml(xr, xref, ptag=top_element_name)
-        self.setLive(True)
+        host.setLive(True)
 
     @checked
     def paste(self : Self) -> tuple[list[QGraphicsItem], QPointF | None]:

@@ -8,11 +8,11 @@ from PyQt6.QtWidgets import QGraphicsItem
 from ...items.role import ChromeItem
 
 
+from .host import asDiagramScene
 class DiagramScenePrivateMixin:
     def _itemTypes(self : Self, pos : QPointF) -> list[type]:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        items = self.items(pos)
+        host = asDiagramScene(self)
+        items = host.items(pos)
         types = {item.__class__ for item in items}  # use a set to avoid duplicates
         return list(types)
 
@@ -36,10 +36,9 @@ class DiagramScenePrivateMixin:
 
     def _selectedItems(self : Self) -> list[QGraphicsItem]:
         """Returns selected items that are Items (includes children)."""
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         return [
-            item for item in self.selectedItems()
+            item for item in host.selectedItems()
             if not isinstance(item, ChromeItem)
         ]
 

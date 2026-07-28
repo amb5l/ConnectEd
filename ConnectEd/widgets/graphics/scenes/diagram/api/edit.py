@@ -39,6 +39,8 @@ from ..cmd.block_pin import CmdMoveBlockPins
 
 from ..xml import diagram_scene_xml_items
 
+from ..host import asDiagramScene
+
 
 class DiagramSceneApiEditMixin:
 
@@ -58,12 +60,11 @@ class DiagramSceneApiEditMixin:
         slide    : bool = False,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if not isinstance(items, list):
             items = [items]
-        cmd = CmdMove(self, items, offset)
-        cmdExec(self, cmd, undoable)
+        cmd = CmdMove(host, items, offset)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editRotateCW(
@@ -72,12 +73,11 @@ class DiagramSceneApiEditMixin:
         pos      : QPointF | None = None,  # individual if None, group otherwise
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if not isinstance(items, list):
             items = [items]
-        cmd = CmdRotateCW(self, items, pos)
-        cmdExec(self, cmd, undoable)
+        cmd = CmdRotateCW(host, items, pos)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editRotateCCW(
@@ -86,12 +86,11 @@ class DiagramSceneApiEditMixin:
         pos      : QPointF | None = None,  # individual if None, group otherwise
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if not isinstance(items, list):
             items = [items]
-        cmd = CmdRotateCCW(self, items, pos)
-        cmdExec(self, cmd, undoable)
+        cmd = CmdRotateCCW(host, items, pos)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editCut(
@@ -99,14 +98,13 @@ class DiagramSceneApiEditMixin:
         pos      : QPointF | None = None,  # None => QPointF(0, 0)
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         pos = pos or QPointF(0, 0)
-        items = self._selectedTopItems()
+        items = host._selectedTopItems()
         if items:
-            self.copy(items, pos)
-            cmd = CmdDelete(self, cast(list[QGraphicsItem], items))
-            cmdExec(self, cmd, undoable)
+            host.copy(items, pos)
+            cmd = CmdDelete(host, cast(list[QGraphicsItem], items))
+            cmdExec(host, cmd, undoable)
         else:
             logger().warning("No items selected to cut")
 
@@ -115,12 +113,11 @@ class DiagramSceneApiEditMixin:
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         pos = pos or QPointF(0, 0)
-        items = self._selectedTopItems()
+        items = host._selectedTopItems()
         if items:
-            self.copy(items, pos)
+            host.copy(items, pos)
         else:
             logger().warning("No items selected to copy")
 
@@ -130,8 +127,7 @@ class DiagramSceneApiEditMixin:
         pos      : QPointF | None = None,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         pos = pos or QPointF(0, 0)
 
         def fromXmlItem(
@@ -145,16 +141,16 @@ class DiagramSceneApiEditMixin:
                 if x1:
                     p1 = QPointF(float(x1), float(attrs.value("Y1")))
                     p2 = QPointF(float(attrs.value("X2")), float(attrs.value("Y2")))
-                    self.addSegment(p1, p2, undoable=undoable)
+                    host.addSegment(p1, p2, undoable=undoable)
                 else:
                     logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
             else:
                 if not isinstance(item := item_cls.fromXml(xr), QGraphicsItem):
                     raise TypeError("Bad item")
-                self.addItems(item, undoable)
+                host.addItems(item, undoable)
                 if isinstance(item, SymbolInstanceItem):
                     name = item.name()
-                    definition = self._symbols.get(name, None)
+                    definition = host._symbols.get(name, None)
                     if definition:
                         item.syncFromDefinition(definition)
                     else:
@@ -165,7 +161,7 @@ class DiagramSceneApiEditMixin:
             xref[item_name] = \
                 lambda xr, undoable, cls=item_cls: \
                     (fromXmlItem(xr, undoable, cls), None)[1]
-        items, src_pos = self.paste()
+        items, src_pos = host.paste()
         src_pos = src_pos or QPointF(0, 0)
 
     @checked
@@ -175,10 +171,9 @@ class DiagramSceneApiEditMixin:
         undoable : bool = False
     ) -> None:
         """Delete selected items from the scene; netlist aware."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if items is None:
-            items = self._selectedTopItems()
+            items = host._selectedTopItems()
         elif isinstance(items, QGraphicsItem):
             items = [items]
         else:
@@ -195,19 +190,19 @@ class DiagramSceneApiEditMixin:
             return
         # start macro
         if undoable:
-            self.undo_stack.beginMacro("editDelete")
+            host.undo_stack.beginMacro("editDelete")
         # remove segments (netlist aware)
         for item in items[:]:
             if isinstance(item, SegmentItem):
-                self.removeSegment(item, undoable)
+                host.removeSegment(item, undoable)
                 items.remove(item)
         # delete remaining items
         if items:
-            cmd = CmdDelete(self, items)
-            cmdExec(self, cmd, undoable)
+            cmd = CmdDelete(host, items)
+            cmdExec(host, cmd, undoable)
         # end macro
         if undoable:
-            self.undo_stack.endMacro()
+            host.undo_stack.endMacro()
 
     @checked
     def editPortPin(
@@ -217,10 +212,9 @@ class DiagramSceneApiEditMixin:
         direction : Direction,
         undoable  : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditPortPin(self, item, name, direction)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdEditPortPin(host, item, name, direction)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editPinDot(
@@ -229,10 +223,9 @@ class DiagramSceneApiEditMixin:
         enable   : bool,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditPinDot(self, item, enable)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdEditPinDot(host, item, enable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editPinClk(
@@ -241,10 +234,9 @@ class DiagramSceneApiEditMixin:
         enable   : bool,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditPinClk(self, item, enable)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdEditPinClk(host, item, enable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editAssignOrigin(
@@ -253,12 +245,11 @@ class DiagramSceneApiEditMixin:
         handle   : HandleId,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if not isinstance(item, ItemTransformMixin):
             raise TypeError("Bad item")
-        cmd = CmdEditOrigin(self, item, handle)
-        cmdExec(self, cmd, undoable)
+        cmd = CmdEditOrigin(host, item, handle)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editPolylineClosed(
@@ -268,10 +259,9 @@ class DiagramSceneApiEditMixin:
         sweep    : float | None,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditPolylineClosed(self, polyline, closed, sweep)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdEditPolylineClosed(host, polyline, closed, sweep)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editPolySeg(
@@ -280,10 +270,9 @@ class DiagramSceneApiEditMixin:
         sweep    : float | None,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdEditPolySeg(self, seg, sweep)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdEditPolySeg(host, seg, sweep)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editText(
@@ -312,16 +301,15 @@ class DiagramSceneApiEditMixin:
         underline  : bool         | None | NoChange = NO_CHANGE,
         undoable   : bool                    = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdEditText(
-            self, item, text, block,
+            host, item, text, block,
             rotation, mirror_h, mirror_v, autoflip,
             origin, align_h, align_v, width, height,
             pad_left, pad_right, pad_top, pad_bottom,
             color, font, size, bold, italic, underline
         )
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editAppearance(
@@ -340,10 +328,9 @@ class DiagramSceneApiEditMixin:
         text_underline : bool          | None | NoChange = NO_CHANGE,
         undoable       : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdEditAppearance(
-            self,
+            host,
             items,
             line_color,
             line_width,
@@ -357,7 +344,7 @@ class DiagramSceneApiEditMixin:
             text_italic,
             text_underline
         )
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editMoveBlockPins(
@@ -368,7 +355,6 @@ class DiagramSceneApiEditMixin:
         before   : dict[BlockPinItem, EdgeLoc],
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdMoveBlockPins(parent, pins, after, before)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)

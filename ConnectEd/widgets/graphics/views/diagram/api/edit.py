@@ -23,6 +23,8 @@ from ....items.mixin     import ItemMixin
 from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
 
+from ..host import asDiagramView
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram   import DiagramScene
@@ -33,79 +35,65 @@ if TYPE_CHECKING:
 
 
 class DiagramViewApiEditMixin:
+    _query_windows : list[QueryWindow]
+
     @withScene
     @checked
     def editUndo(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
         scene.undo()
 
     @withScene
     @checked
     def editRedo(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
         scene.redo()
 
     @withScene
     @checked
     def editRepeat(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
         raise NotImplementedError("editRepeat not implemented")
 
     @withScene
     @checked
     def editCancel(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         scene.clearSelection()
-        self.state.go(self.stateIdle)
+        host.state.go(host.stateIdle)
 
     @withScene
     @checked
     def editCut(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene.editCut(self._snap(self._mouse_spos), undoable=True)
+        host = asDiagramView(self)
+        scene.editCut(host._snap(host._mouse_spos), undoable=True)
 
     @withScene
     @checked
     def editCopy(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene.editCopy(self._snap(self._mouse_spos))
+        host = asDiagramView(self)
+        scene.editCopy(host._snap(host._mouse_spos))
 
     @checked
     def editPaste(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditPaste)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditPaste)
 
     @withScene
     @checked
     def editDelete(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
         scene.editDelete(undoable=True)
 
     @checked
     def editDuplicate(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditDuplicate)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditDuplicate)
 
     @checked
     def editSelectArea(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditSelectArea1)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditSelectArea1)
 
     @withScene
     @checked
     def editSelectAll(self : Self, scene : DiagramScene) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
         scene.editSelectAll()
 
     @checked
@@ -114,9 +102,8 @@ class DiagramViewApiEditMixin:
         items : Sequence[QGraphicsItem],
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self._editMove(items, pos, True)
+        host = asDiagramView(self)
+        host._editMove(items, pos, True)
 
     @checked
     def editMove(
@@ -124,9 +111,8 @@ class DiagramViewApiEditMixin:
         items : Sequence[QGraphicsItem],
         pos   : QPointF
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self._editMove(items, pos, False)
+        host = asDiagramView(self)
+        host._editMove(items, pos, False)
 
     @checked
     def editResize(
@@ -134,11 +120,10 @@ class DiagramViewApiEditMixin:
         grip : ResizeGripItem,
         pos  : QPointF
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
-        self.state.interact(
-            EditMoveInteraction(self, [grip], pos), self.stateEditResize
+        host = asDiagramView(self)
+        pos = host.mapToScene(pos) if isinstance(pos, QPoint) else pos
+        host.state.interact(
+            EditMoveInteraction(host, [grip], pos), host.stateEditResize
         )
 
     @withScene
@@ -149,17 +134,16 @@ class DiagramViewApiEditMixin:
         items : QGraphicsItem | list[QGraphicsItem] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if self.interaction:  # interaction in progress
-            if isinstance(self.interaction, RotateItemMixin):
-                self.interaction.rotateCW()
+        host = asDiagramView(self)
+        if host.interaction:  # interaction in progress
+            if isinstance(host.interaction, RotateItemMixin):
+                host.interaction.rotateCW()
         else:
             if items is None:
                 items = scene.selectedItems()
             elif not isinstance(items, list):
                 items = [items]
-            pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            pos = host.mapToScene(pos) if isinstance(pos, QPoint) else pos
             scene.editRotateCW(items, pos, undoable=True)
 
     @withScene
@@ -170,17 +154,16 @@ class DiagramViewApiEditMixin:
         items : QGraphicsItem | list[QGraphicsItem] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if self.interaction:  # interaction in progress
-            if isinstance(self.interaction, RotateItemMixin):
-                self.interaction.rotateCCW()
+        host = asDiagramView(self)
+        if host.interaction:  # interaction in progress
+            if isinstance(host.interaction, RotateItemMixin):
+                host.interaction.rotateCCW()
         else:
             if items is None:
                 items = scene.selectedItems()
             elif not isinstance(items, list):
                 items = [items]
-            pos = self.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            pos = host.mapToScene(pos) if isinstance(pos, QPoint) else pos
             scene.editRotateCCW(items, pos, undoable=True)
 
     @withScene
@@ -198,24 +181,21 @@ class DiagramViewApiEditMixin:
         self  : Self,
         items : QGraphicsItem | Sequence[QGraphicsItem] | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditAppearance, items)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditAppearance, items)
 
     @checked
     def editItemProperties(
         self  : Self,
         items : QGraphicsItem | Sequence[QGraphicsItem] | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditItemProperties, items)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditItemProperties, items)
 
     @checked
     def editDiagramProperties(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditDiagramProperties)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditDiagramProperties)
 
     @withScene
     @checked
@@ -224,8 +204,7 @@ class DiagramViewApiEditMixin:
         scene : DiagramScene,
         vpos  : QPoint | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if vpos is None:
             initial_items = scene.selectedItems()
             items = []
@@ -239,11 +218,11 @@ class DiagramViewApiEditMixin:
             for item in initial_items:
                 _addChildren(item)
         else:
-            items = self._itemsAt(vpos)
+            items = host._itemsAt(vpos)
         query_window = QueryWindow(items)
-        if not hasattr(self, '_query_windows'):
-            self._query_windows = []
-        self._query_windows.append(query_window)
+        if not hasattr(host, '_query_windows'):
+            host._query_windows = []
+        host._query_windows.append(query_window)
         query_window.adjustSize()
         mouse_pos = QCursor.pos()
         window_size = query_window.size()
@@ -263,8 +242,8 @@ class DiagramViewApiEditMixin:
         query_window.raise_()
         query_window.activateWindow()
         def cleanup():
-            if query_window in self._query_windows:
-                self._query_windows.remove(query_window)
+            if query_window in host._query_windows:
+                host._query_windows.remove(query_window)
         query_window.destroyed.connect(cleanup)
 
     @checked
@@ -272,18 +251,16 @@ class DiagramViewApiEditMixin:
         self : Self,
         item : PortItem
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditPort, [item])
+        host = asDiagramView(self)
+        host.state.go(host.stateEditPort, [item])
 
     @checked
     def editBlockPin(
         self : Self,
         item : BlockPinItem
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditBlockPin, [item])
+        host = asDiagramView(self)
+        host.state.go(host.stateEditBlockPin, [item])
 
     @withScene
     @checked
@@ -311,9 +288,8 @@ class DiagramViewApiEditMixin:
 
     @checked
     def editTextDialog(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditText)
+        host = asDiagramView(self)
+        host.state.go(host.stateEditText)
 
     @withScene
     @checked
@@ -346,9 +322,8 @@ class DiagramViewApiEditMixin:
         self : Self,
         item : QGraphicsItem
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.stateEditPropertyText, [item])
+        host = asDiagramView(self)
+        host.state.go(host.stateEditPropertyText, [item])
 
     @withScene
     @checked
@@ -359,15 +334,14 @@ class DiagramViewApiEditMixin:
         pos   : QPointF,
         slide : bool = False
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if not isinstance(items, list):
             items = [items]
         for item in items:
             if isinstance(item, ItemMixin) and item.topParentItem() in items:
                 items.remove(item)
         # slide/move
-        self.state.interact(
-            EditMoveInteraction(self, items, pos, slide),
-            self.stateEditSlide if slide else self.stateEditMove
+        host.state.interact(
+            EditMoveInteraction(host, items, pos, slide),
+            host.stateEditSlide if slide else host.stateEditMove
         )

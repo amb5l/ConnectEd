@@ -11,6 +11,7 @@ from PyQt6.QtGui     import QPen
 from .....app import settings
 
 
+from .host import asDiagramScene
 class DiagramSceneGuidesMixin:
     """Shared guides."""
 
@@ -25,12 +26,11 @@ class DiagramSceneGuidesMixin:
         return self._guides[index]
 
     def _newGuide(self : Self) -> QGraphicsLineItem:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         guide = QGraphicsLineItem()
         spec = settings().get("theme/selected/line")
         color = spec.color if hasattr(spec, "color") else spec
         pen = QPen(color, 0, Qt.PenStyle.DotLine)
         guide.setPen(pen)
-        self.addItem(guide)
+        host.addItem(guide)
         return guide

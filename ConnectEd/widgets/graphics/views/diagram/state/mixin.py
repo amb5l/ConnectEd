@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QAction
 
 from ..mouse import MouseModifier
 
+from .host import asDiagramViewState
 if TYPE_CHECKING:
     from ..            import DiagramView
     from ..interaction import DiagramInteraction
@@ -28,20 +29,18 @@ class StartMixin:
         raise NotImplementedError
 
     def _start(self : Self, spos : QPointF) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        self.interact(
-            self._INTERACTION_CLS(self.view, spos),
+        host = asDiagramViewState(self)
+        host.interact(
+            self._INTERACTION_CLS(host.view, spos),
             self._nextState()
         )
 
     def ctxMenuItems(self : Self, spos : QPointF) -> list[QAction | QMenu]:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        spos = self.view._snap(spos)
+        host = asDiagramViewState(self)
+        spos = host.view._snap(spos)
         return [
-            self.view.action("Start", lambda: self._start(spos)),
-            self.view.action("Cancel", lambda: self.view.state.go(self.view.stateIdle)),
+            host.view.action("Start", lambda: self._start(spos)),
+            host.view.action("Cancel", lambda: host.view.state.go(host.view.stateIdle)),
         ]
 
 
@@ -52,10 +51,9 @@ class ClickMixin:
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        if self._commit(spos):
-            self.view.state.go(self.view.stateIdle)
+        host = asDiagramViewState(self)
+        if host._commit(spos):
+            host.view.state.go(host.view.stateIdle)
 
     def mouseLeftDoubleClick(
         self      : Self,
@@ -63,10 +61,9 @@ class ClickMixin:
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        if self._complete(spos):
-            self.view.state.go(self.view.stateIdle)
+        host = asDiagramViewState(self)
+        if host._complete(spos):
+            host.view.state.go(host.view.stateIdle)
 
     def mouseMove(
         self      : Self,
@@ -74,9 +71,8 @@ class ClickMixin:
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        self._update(spos)
+        host = asDiagramViewState(self)
+        host._update(spos)
 
 
 class DragMixin:
@@ -85,9 +81,8 @@ class DragMixin:
         vpos      : QPoint,
         spos      : QPointF,
         modifiers : MouseModifier) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        self._update(spos)
+        host = asDiagramViewState(self)
+        host._update(spos)
 
     def mouseLeftDragEnd(
         self      : Self,
@@ -95,7 +90,6 @@ class DragMixin:
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        from .base import DiagramViewState
-        if not isinstance(self, DiagramViewState): raise TypeError("Bad host")
-        if self._commit(spos):
-            self.view.state.go(self.view.stateIdle)
+        host = asDiagramViewState(self)
+        if host._commit(spos):
+            host.view.state.go(host.view.stateIdle)

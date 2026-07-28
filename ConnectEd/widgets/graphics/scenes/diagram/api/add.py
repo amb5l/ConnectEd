@@ -16,8 +16,10 @@ from ..cmd import cmdExec, CmdAdd
 from ..cmd.polyline  import CmdAddPolyVtx
 from ..cmd.block_pin import CmdAddBlockPin
 
-class DiagramSceneApiAddMixin:
+from ..host import asDiagramScene
 
+
+class DiagramSceneApiAddMixin:
     @checked
     def addItems(
         self     : Self,
@@ -25,10 +27,9 @@ class DiagramSceneApiAddMixin:
         undoable : bool = False
     ) -> None:
         """Add an item to the scene."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdAdd(self, items)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdAdd(host, items)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def addPolyVtx(
@@ -39,10 +40,9 @@ class DiagramSceneApiAddMixin:
         undoable : bool = False
     ) -> PolyVtxItem:
         """Add a vertex to a polyline."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdAddPolyVtx(polyline, pos, sweep)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
         if (vtx := cmd.vtx()) is None:
             raise RuntimeError("Failed to add vertex")
         return vtx
@@ -55,8 +55,7 @@ class DiagramSceneApiAddMixin:
         undoable : bool = False
     ) -> BlockPinItem:
         """Add a block pin to the scene."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdAddBlockPin(parent, pin)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
         return cmd.pin()

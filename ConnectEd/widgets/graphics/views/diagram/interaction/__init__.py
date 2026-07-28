@@ -13,6 +13,8 @@ from ....items.block_pin import BlockPinItem
 
 from ....items.mixin import ItemMoveMixin
 
+from .host import asDiagramInteraction, asDiagramItemInteraction
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
@@ -146,23 +148,20 @@ class RotateItemMixin:
     """Mixin for interactions that rotate items."""
 
     def rotateCW(self : Self) -> None:
-        if not isinstance(self, DiagramItemInteraction):
-            raise TypeError("Bad host")
-        self._item.setRotation((self._item.rotation() + 90) % 360)
+        host = asDiagramItemInteraction(self)
+        host._item.setRotation((host._item.rotation() + 90) % 360)
 
     def rotateCCW(self : Self) -> None:
-        if not isinstance(self, DiagramItemInteraction):
-            raise TypeError("Bad host")
-        self._item.setRotation((self._item.rotation() - 90) % 360)
+        host = asDiagramItemInteraction(self)
+        host._item.setRotation((host._item.rotation() - 90) % 360)
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        if not isinstance(self, DiagramInteraction):
-            raise TypeError("Bad host")
+        host = asDiagramInteraction(self)
         mro_next = cast(CtxMenuHost, super())
         return [
-            self._view.action("Rotate CW",  self.rotateCW,  shortcut="]"),
-            self._view.action("Rotate CCW", self.rotateCCW, shortcut="["),
-            self._view.separator(),
+            host._view.action("Rotate CW",  self.rotateCW,  shortcut="]"),
+            host._view.action("Rotate CCW", self.rotateCCW, shortcut="["),
+            host._view.separator(),
         ] + mro_next.ctxMenuItems(pos)
 
 

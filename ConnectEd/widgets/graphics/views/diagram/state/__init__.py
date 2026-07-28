@@ -4,6 +4,8 @@ from typing import Self
 
 from .idle  import DiagramViewStateIdle
 
+from ..host import asDiagramView
+
 from .view  import (
     DiagramViewStateViewPan1,
     DiagramViewStateViewPan2,
@@ -69,13 +71,15 @@ class DiagramViewStateMixin:
     stateEditAdjustPolySeg      : DiagramViewStateEditAdjustPolySeg       # noqa N815
     stateEditAppearance         : DiagramViewStateEditAppearance          # noqa N815
     stateEditItemProperties     : DiagramViewStateEditItemProperties      # noqa N815
-    stateEditDrawingProperties  : DiagramViewStateEditDiagramProperties   # noqa N815
+    stateEditDiagramProperties  : DiagramViewStateEditDiagramProperties   # noqa N815
     stateEditQuery              : DiagramViewStateEditQuery               # noqa N815
     stateEditText               : DiagramViewStateEditText                # noqa N815
     stateEditPort               : DiagramViewStateEditPort                # noqa N815
     stateEditBlockPin           : DiagramViewStateEditBlockPin            # noqa N815
     stateEditPropertyText       : DiagramViewStateEditPropertyText        # noqa N815
     statePlaceSymbolPin         : DiagramViewStatePlaceSymbolPin          # noqa N815
+    statePlaceLine1             : DiagramViewStatePlaceLine1             # noqa N815
+    statePlaceLine2             : DiagramViewStatePlaceLine2             # noqa N815
     statePlaceRectangle1        : DiagramViewStatePlaceRectangle1         # noqa N815
     statePlaceRectangle2        : DiagramViewStatePlaceRectangle2         # noqa N815
     statePlaceEllipse1          : DiagramViewStatePlaceEllipse1           # noqa N815
@@ -95,47 +99,46 @@ class DiagramViewStateMixin:
     statePlaceBlockPin          : DiagramViewStatePlaceBlockPin           # noqa N815
 
     def initStates(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.stateIdle                   = DiagramViewStateIdle                   (self)
-        self.stateViewPan1               = DiagramViewStateViewPan1               (self)
-        self.stateViewPan2               = DiagramViewStateViewPan2               (self)
-        self.stateViewZoomArea1          = DiagramViewStateViewZoomArea1          (self)
-        self.stateViewZoomArea2          = DiagramViewStateViewZoomArea2          (self)
-        self.stateEditSelectArea1        = DiagramViewStateEditSelectArea1        (self)
-        self.stateEditSelectArea2        = DiagramViewStateEditSelectArea2        (self)
-        self.stateEditPaste              = DiagramViewStateEditPaste              (self)
-        self.stateEditDuplicate          = DiagramViewStateEditDuplicate          (self)
-        self.stateEditSlide              = DiagramViewStateEditSlide              (self)
-        self.stateEditMove               = DiagramViewStateEditMove               (self)
-        self.stateEditResize             = DiagramViewStateEditResize             (self)
-        self.stateEditMovePins           = DiagramViewStateEditMovePins           (self)
-        self.stateEditAdjustPolySeg      = DiagramViewStateEditAdjustPolySeg      (self)
-        self.stateEditAppearance         = DiagramViewStateEditAppearance         (self)
-        self.stateEditItemProperties     = DiagramViewStateEditItemProperties     (self)
-        self.stateEditDiagramProperties  = DiagramViewStateEditDiagramProperties  (self)
-        self.stateEditQuery              = DiagramViewStateEditQuery              (self)
-        self.stateEditText               = DiagramViewStateEditText               (self)
-        self.stateEditPort               = DiagramViewStateEditPort               (self)
-        self.stateEditBlockPin           = DiagramViewStateEditBlockPin           (self)
-        self.stateEditPropertyText       = DiagramViewStateEditPropertyText       (self)
-        self.statePlaceSymbolPin         = DiagramViewStatePlaceSymbolPin         (self)
-        self.statePlaceLine1             = DiagramViewStatePlaceLine1             (self)
-        self.statePlaceLine2             = DiagramViewStatePlaceLine2             (self)
-        self.statePlaceRectangle1        = DiagramViewStatePlaceRectangle1        (self)
-        self.statePlaceRectangle2        = DiagramViewStatePlaceRectangle2        (self)
-        self.statePlaceEllipse1          = DiagramViewStatePlaceEllipse1          (self)
-        self.statePlaceEllipse2          = DiagramViewStatePlaceEllipse2          (self)
-        self.statePlacePolyline1         = DiagramViewStatePlacePolyline1         (self)
-        self.statePlacePolyline2         = DiagramViewStatePlacePolyline2         (self)
-        self.statePlaceText              = DiagramViewStatePlaceText              (self)
-        self.statePlacePort              = DiagramViewStatePlacePort              (self)
-        self.statePlaceGate              = DiagramViewStatePlaceGate              (self)
-        self.statePlaceBlock1            = DiagramViewStatePlaceBlock1            (self)
-        self.statePlaceBlock2            = DiagramViewStatePlaceBlock2            (self)
-        self.statePlaceBlockPin          = DiagramViewStatePlaceBlockPin          (self)
-        self.statePlaceConn1             = DiagramViewStatePlaceConn1             (self)
-        self.statePlaceConn2             = DiagramViewStatePlaceConn2             (self)
-        self.statePlaceTap               = DiagramViewStatePlaceTap               (self)
-        self.statePlaceNetLabel          = DiagramViewStatePlaceNetLabel          (self)
-        self.statePlaceNetLabelOnSegment = DiagramViewStatePlaceNetLabelOnSegment (self)
+        host = asDiagramView(self)
+        host.stateIdle                   = DiagramViewStateIdle                   (host)
+        host.stateViewPan1               = DiagramViewStateViewPan1               (host)
+        host.stateViewPan2               = DiagramViewStateViewPan2               (host)
+        host.stateViewZoomArea1          = DiagramViewStateViewZoomArea1          (host)
+        host.stateViewZoomArea2          = DiagramViewStateViewZoomArea2          (host)
+        host.stateEditSelectArea1        = DiagramViewStateEditSelectArea1        (host)
+        host.stateEditSelectArea2        = DiagramViewStateEditSelectArea2        (host)
+        host.stateEditPaste              = DiagramViewStateEditPaste              (host)
+        host.stateEditDuplicate          = DiagramViewStateEditDuplicate          (host)
+        host.stateEditSlide              = DiagramViewStateEditSlide              (host)
+        host.stateEditMove               = DiagramViewStateEditMove               (host)
+        host.stateEditResize             = DiagramViewStateEditResize             (host)
+        host.stateEditMovePins           = DiagramViewStateEditMovePins           (host)
+        host.stateEditAdjustPolySeg      = DiagramViewStateEditAdjustPolySeg      (host)
+        host.stateEditAppearance         = DiagramViewStateEditAppearance         (host)
+        host.stateEditItemProperties     = DiagramViewStateEditItemProperties     (host)
+        host.stateEditDiagramProperties  = DiagramViewStateEditDiagramProperties  (host)
+        host.stateEditQuery              = DiagramViewStateEditQuery              (host)
+        host.stateEditText               = DiagramViewStateEditText               (host)
+        host.stateEditPort               = DiagramViewStateEditPort               (host)
+        host.stateEditBlockPin           = DiagramViewStateEditBlockPin           (host)
+        host.stateEditPropertyText       = DiagramViewStateEditPropertyText       (host)
+        host.statePlaceSymbolPin         = DiagramViewStatePlaceSymbolPin         (host)
+        host.statePlaceLine1             = DiagramViewStatePlaceLine1             (host)
+        host.statePlaceLine2             = DiagramViewStatePlaceLine2             (host)
+        host.statePlaceRectangle1        = DiagramViewStatePlaceRectangle1        (host)
+        host.statePlaceRectangle2        = DiagramViewStatePlaceRectangle2        (host)
+        host.statePlaceEllipse1          = DiagramViewStatePlaceEllipse1          (host)
+        host.statePlaceEllipse2          = DiagramViewStatePlaceEllipse2          (host)
+        host.statePlacePolyline1         = DiagramViewStatePlacePolyline1         (host)
+        host.statePlacePolyline2         = DiagramViewStatePlacePolyline2         (host)
+        host.statePlaceText              = DiagramViewStatePlaceText              (host)
+        host.statePlacePort              = DiagramViewStatePlacePort              (host)
+        host.statePlaceGate              = DiagramViewStatePlaceGate              (host)
+        host.statePlaceBlock1            = DiagramViewStatePlaceBlock1            (host)
+        host.statePlaceBlock2            = DiagramViewStatePlaceBlock2            (host)
+        host.statePlaceBlockPin          = DiagramViewStatePlaceBlockPin          (host)
+        host.statePlaceConn1             = DiagramViewStatePlaceConn1             (host)
+        host.statePlaceConn2             = DiagramViewStatePlaceConn2             (host)
+        host.statePlaceTap               = DiagramViewStatePlaceTap               (host)
+        host.statePlaceNetLabel          = DiagramViewStatePlaceNetLabel          (host)
+        host.statePlaceNetLabelOnSegment = DiagramViewStatePlaceNetLabelOnSegment (host)

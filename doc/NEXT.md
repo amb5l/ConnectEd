@@ -1,3 +1,5 @@
+_isNum typeguard approach to mixin self
+
 walrus usage
 
 raise/logger error handling review

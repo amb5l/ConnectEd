@@ -6,6 +6,8 @@ from PyQt6.QtCore import QPointF
 
 from ......core.check import checked
 
+from ..host import asDiagramView
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items.segment import SegmentItem
@@ -14,81 +16,68 @@ if TYPE_CHECKING:
 class DiagramViewApiPlaceMixin:
     @checked
     def placeLine(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceLine1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceLine1)
 
     @checked
     def placeRectangle(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceRectangle1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceRectangle1)
 
     @checked
     def placeEllipse(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceEllipse1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceEllipse1)
 
     @checked
     def placePolyline(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlacePolyline1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlacePolyline1)
 
     @checked
     def placeText(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceText)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceText)
 
     @checked
     def placePort(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlacePort)
+        host = asDiagramView(self)
+        host.state.go(host.statePlacePort)
 
     @checked
     def placeGate(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceGate)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceGate)
 
     @checked
     def placeBlock(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceBlock1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceBlock1)
 
     @checked
     def placeBlockPin(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceBlockPin)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceBlockPin)
 
     @checked
     def placeSymbolPin(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceSymbolPin)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceSymbolPin)
 
     @checked
     def placeConnection(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceConn1)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceConn1)
 
     @checked
     def placeTap(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceTap)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceTap)
 
     @checked
     def placeNetLabel(self : Self) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.state.go(self.statePlaceNetLabel)
+        host = asDiagramView(self)
+        host.state.go(host.statePlaceNetLabel)
 
     @checked
     def placeNetLabelOnSegment(
@@ -96,12 +85,11 @@ class DiagramViewApiPlaceMixin:
         segment  : SegmentItem,
         spos     : QPointF | None = None
     ) -> None:
-        from .. import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if spos is None:
             spos = segment.sceneMidpoint()
-        self.state.go(
-            self.statePlaceNetLabelOnSegment,
+        host.state.go(
+            host.statePlaceNetLabelOnSegment,
             [segment],
             spos=spos
         )

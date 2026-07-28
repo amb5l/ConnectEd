@@ -7,6 +7,8 @@ from PyQt6.QtGui  import QImage, QPainter
 
 from ......core.check import checked
 
+from ..host import asDiagramScene
+
 
 _BITMAP_MAX_PX = 2048
 
@@ -15,9 +17,8 @@ class DiagramSceneApiUtilMixin:
     """Utility methods for diagram scenes."""
 
     def allRect(self : Self) -> QRectF:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        return self.itemsBoundingRect().united(self._sheet_rect)
+        host = asDiagramScene(self)
+        return host.itemsBoundingRect().united(host._sheet_rect)
 
     @checked
     def bitmap(self : Self) -> QImage:
@@ -28,9 +29,8 @@ class DiagramSceneApiUtilMixin:
         item bounds when empty. Pixel size matches scene
         units up to ``_BITMAP_MAX_PX`` on the longest side.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        source = self.allRect()
+        host = asDiagramScene(self)
+        source = host.allRect()
         width  = max(1.0, source.width())
         height = max(1.0, source.height())
         scale  = min(
@@ -47,10 +47,10 @@ class DiagramSceneApiUtilMixin:
         painter = QPainter(image)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         target = QRectF(0.0, 0.0, px_w, px_h)
-        self.hideGrips()
+        host.hideGrips()
         try:
-            self.render(painter, target, source)
+            host.render(painter, target, source)
         finally:
-            self.updateGrips()
+            host.updateGrips()
         painter.end()
         return image

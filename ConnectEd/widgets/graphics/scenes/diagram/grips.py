@@ -5,6 +5,7 @@ from typing import Self
 from .....app import settings
 
 from typing import TYPE_CHECKING
+from .host import asDiagramScene
 if TYPE_CHECKING:
     from ...items.mixin.handle import ItemHandlesMixin
 
@@ -20,13 +21,12 @@ class DiagramSceneGripsMixin:
         settings().changed.connect(self.updateGrips)
 
     def updateGrips(self : Self) -> None:
-        from . import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         from ...items.mixin.handle import ItemHandlesMixin
-        self.hideGrips()
-        self._grip_items = [i for i in self.selectedItems() \
+        host.hideGrips()
+        host._grip_items = [i for i in host.selectedItems() \
                 if isinstance(i, ItemHandlesMixin)]
-        for item in self._grip_items:
+        for item in host._grip_items:
             item.setGripsVisible(True)
 
     def hideGrips(self : Self) -> None:

@@ -16,17 +16,19 @@ from ....menu import Menu
 from ...items.grip import GripItem
 
 
+from .host import asDiagramView
+
+
 class DiagramViewMenuMixin:
 
     def contextMenuEvent(self : Self, event : QContextMenuEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
         from ...items.mixin.menu import ItemMenuMixin
         vpos = event.pos()
-        spos = self.mapToScene(vpos)
+        spos = host.mapToScene(vpos)
         menu = Menu()
         def _extendMenu(menu_items : list[QAction | QMenu]) -> None:
             if menu_items:
@@ -36,20 +38,20 @@ class DiagramViewMenuMixin:
                     elif isinstance(menu_item, QMenu):
                         menu.addMenu(menu_item)
                 menu.addSeparator()
-        if self.interaction is not None:
-            _extendMenu(self.interaction.ctxMenuItems(spos))
-        elif (state_items := self.state.ctxMenuItems(spos)):
+        if host.interaction is not None:
+            _extendMenu(host.interaction.ctxMenuItems(spos))
+        elif (state_items := host.state.ctxMenuItems(spos)):
             _extendMenu(state_items)
         else:
             # menu for item/items
-            items_at = self._itemsAt(vpos)
+            items_at = host._itemsAt(vpos)
             if items_at:
                 # preference: top grip, selection set, top menu-capable item
                 grips = [item for item in items_at if isinstance(item, GripItem)]
                 if grips:
                     items = [grips[0]] # top grip
                 elif any(item.isSelected() for item in items_at):
-                    scene = self.scene()
+                    scene = host.scene()
                     if scene is None:
                         raise TypeError("No scene")
                     items = scene.selectedItems()  # selection set
@@ -64,17 +66,17 @@ class DiagramViewMenuMixin:
                     return
                 if len(items) == 1:
                     # item specific actions/submenus
-                    _extendMenu(items[0].ctxMenuItems(self, spos))
+                    _extendMenu(items[0].ctxMenuItems(host, spos))
                 else:
                     # multiple items
                     _extendMenu([
-                        self.action(
-                            "Appearance...", lambda: self.editAppearance(items)
+                        host.action(
+                            "Appearance...", lambda: host.editAppearance(items)
                         ),
-                        self.action(
-                            "Properties...", lambda: self.editItemProperties(items)
+                        host.action(
+                            "Properties...", lambda: host.editItemProperties(items)
                         ),
-                        self.separator()
+                        host.separator()
                     ])
                 # get top items (items with no parent)
                 top_items = [item for item in items if item.parentItem() is None]
@@ -82,51 +84,51 @@ class DiagramViewMenuMixin:
                     if len(top_items) != len(items) else ""
                 if top_items:
                     # common actions: slide/move/rotate
-                    menu.addAction(f"Slide{f}", lambda: self.editSlide(top_items, spos))
-                    menu.addAction(f"Move{f}", lambda: self.editMove(top_items, spos))
+                    menu.addAction(f"Slide{f}", lambda: host.editSlide(top_items, spos))
+                    menu.addAction(f"Move{f}", lambda: host.editMove(top_items, spos))
                     rpos = None if len(top_items) == 1 else spos
                     menu.addAction(
-                        "Rotate CW", lambda: self.editRotateCW(items, rpos)
+                        "Rotate CW", lambda: host.editRotateCW(items, rpos)
                     )
                     menu.addAction(
-                        "Rotate CCW", lambda: self.editRotateCCW(items, rpos)
+                        "Rotate CCW", lambda: host.editRotateCCW(items, rpos)
                     )
                     menu.addSeparator()
                     # common actions: clipboard/delete/duplicate
-                    menu.addAction(f"Cut{f}", lambda: self.editCut())
-                    menu.addAction(f"Copy{f}", lambda: self.editCopy())
+                    menu.addAction(f"Cut{f}", lambda: host.editCut())
+                    menu.addAction(f"Copy{f}", lambda: host.editCopy())
                     if clipboardHasData():
-                        menu.addAction(f"Paste{f}", lambda: self.editPaste())
-                    menu.addAction(f"Delete{f}", lambda: self.editDelete())
-                    menu.addAction(f"Duplicate{f}", lambda: self.editDuplicate())
+                        menu.addAction(f"Paste{f}", lambda: host.editPaste())
+                    menu.addAction(f"Delete{f}", lambda: host.editDelete())
+                    menu.addAction(f"Duplicate{f}", lambda: host.editDuplicate())
                     menu.addSeparator()
         # scene properties
         menu.addAction(
-            f"{self.__class__.__name__.replace('View', '')} Properties...",
-            lambda: self.editDiagramProperties()
+            f"{host.__class__.__name__.replace('View', '')} Properties...",
+            lambda: host.editDiagramProperties()
         )
         menu.addSeparator()
         # grid
         grid_show_action = menu.addAction(
-            "Grid Display", lambda: self.viewGridDisplay(not self.grid.display)
+            "Grid Display", lambda: host.viewGridDisplay(not host.grid.display)
         )
         if grid_show_action is None:
             raise RuntimeError("No grid show action")
         grid_show_action.setCheckable(True)
-        grid_show_action.setChecked(self.grid.display)
+        grid_show_action.setChecked(host.grid.display)
         menu.addAction(grid_show_action)
         grid_snap_action = menu.addAction(
-            "Grid Snap", lambda: self.viewGridSnap(not self.grid.snap)
+            "Grid Snap", lambda: host.viewGridSnap(not host.grid.snap)
         )
         if grid_snap_action is None:
             raise RuntimeError("No grid snap action")
         grid_snap_action.setCheckable(True)
-        grid_snap_action.setChecked(self.grid.snap)
+        grid_snap_action.setChecked(host.grid.snap)
         menu.addAction(grid_snap_action)
         grid_pitch_menu = Menu("Grid Pitch")
-        grid_pitch_menu.addAction("(10,10)", lambda: self.viewGridPitch(10,10))
-        grid_pitch_menu.addAction("(5,5)", lambda: self.viewGridPitch(5,5))
-        grid_pitch_menu.addAction("(1,1)", lambda: self.viewGridPitch(1,1))
+        grid_pitch_menu.addAction("(10,10)", lambda: host.viewGridPitch(10,10))
+        grid_pitch_menu.addAction("(5,5)", lambda: host.viewGridPitch(5,5))
+        grid_pitch_menu.addAction("(1,1)", lambda: host.viewGridPitch(1,1))
         menu.addMenu(grid_pitch_menu)
         # display menu
         menu.exec(event.globalPos())
@@ -140,9 +142,8 @@ class DiagramViewMenuMixin:
         icon     : QIcon              | None = None,
         enabled  : bool                      = True
     ):
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        action = QAction(text, self)
+        host = asDiagramView(self)
+        action = QAction(text, host)
         action.triggered.connect(slot)
         if checked is not None:
             action.setCheckable(True)
@@ -155,8 +156,7 @@ class DiagramViewMenuMixin:
         return action
 
     def separator(self : Self) -> QAction:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        action = QAction(self)
+        host = asDiagramView(self)
+        action = QAction(host)
         action.setSeparator(True)
         return action

@@ -24,13 +24,15 @@ from .defs import DiagramViewLayer
 
 from .mouse import MouseModifier
 
+from .host import asDiagramView
+
+
 
 class DiagramViewPrivateMixin:
     @checked
     def _allItemsRect(self : Self) -> QRectF | None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             return None
         items_rect = None
         for item in scene.items():
@@ -41,9 +43,8 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _selectedItemsRect(self : Self) -> QRectF | None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             return None
         items_rect = None
         for item in scene.selectedItems():
@@ -54,57 +55,55 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _pan(self : Self, delta : QPointF) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (viewport := self.viewport()) is None:
+        host = asDiagramView(self)
+        if (viewport := host.viewport()) is None:
             raise TypeError("No viewport")
-        lrect = self.mapToScene(viewport.rect()).boundingRect()  # Scene coords
+        lrect = host.mapToScene(viewport.rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
-        transform = self.transform()
+        transform = host.transform()
         pdelta = QPointF(transform.m11() * pan.x(), transform.m22() * pan.y())
-        if (horizontal_scroll_bar := self.horizontalScrollBar()) is None:
+        if (horizontal_scroll_bar := host.horizontalScrollBar()) is None:
             raise TypeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() - int(pdelta.x())
         )
-        if (vertical_scroll_bar := self.verticalScrollBar()) is None:
+        if (vertical_scroll_bar := host.verticalScrollBar()) is None:
             raise TypeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() - int(pdelta.y())
         )
-        self._mouse_vpos = self.mapFromGlobal(QCursor.pos())
-        self._mouse_spos = self.mapToScene(self._mouse_vpos)
+        host._mouse_vpos = host.mapFromGlobal(QCursor.pos())
+        host._mouse_spos = host.mapToScene(host._mouse_vpos)
 
     @checked
     def _zoomAbs(self : Self, abs : int | float) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         abs = max(abs, settings().get("display/zoom/min"))
         abs = min(abs, settings().get("display/zoom/max"))
-        self.zoom = abs
-        self.resetTransform()
-        self.scale(self.zoom, self.zoom)
-        window().statusBar().zoom.setText(f"{self.zoom * 100:.2f}%")
+        host._zoom = abs
+        host.resetTransform()
+        host.scale(host._zoom, host._zoom)
+        window().statusBar().zoom.setText(f"{host._zoom * 100:.2f}%")
 
     @checked
     def _zoomRel(self : Self, rel : int | float) -> None:
-        self._zoomAbs(self.zoom * rel)
+        host = asDiagramView(self)
+        host._zoomAbs(host._zoom * rel)
 
     @checked
     def _zoomRelMouse(self : Self, rel : int | float) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        vpos_old = self._mouse_vpos
-        spos_old = self._mouse_spos
-        self._zoomRel(rel)
-        vpos_new = self.mapFromScene(spos_old)
+        host = asDiagramView(self)
+        vpos_old = host._mouse_vpos
+        spos_old = host._mouse_spos
+        host._zoomRel(rel)
+        vpos_new = host.mapFromScene(spos_old)
         delta = vpos_new - vpos_old
-        if (horizontal_scroll_bar := self.horizontalScrollBar()) is None:
+        if (horizontal_scroll_bar := host.horizontalScrollBar()) is None:
             raise TypeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() + delta.x()
         )
-        if (vertical_scroll_bar := self.verticalScrollBar()) is None:
+        if (vertical_scroll_bar := host.verticalScrollBar()) is None:
             raise TypeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() + delta.y()
@@ -112,16 +111,15 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _zoomRect(self : Self, rect : QRectF) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (viewport := self.viewport()) is None:
+        host = asDiagramView(self)
+        if (viewport := host.viewport()) is None:
             raise TypeError("No viewport")
         factor = min(
             viewport.width()  / rect.width(),
             viewport.height() / rect.height()
         ) * (1 - settings().get("display/zoom/padding"))
-        self._zoomAbs(factor)
-        self.centerOn(rect.center())
+        host._zoomAbs(factor)
+        host.centerOn(rect.center())
 
     @checked
     def _round2nearest(self : Self, x : float, n : float) -> float:
@@ -129,12 +127,11 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _snap(self : Self, pos : QPointF) -> QPointF:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         return QPointF(
-            self._round2nearest(pos.x(), self.grid.pitch.x()),
-            self._round2nearest(pos.y(), self.grid.pitch.y())
-        ) if self.grid.snap else pos
+            host._round2nearest(pos.x(), host.grid.pitch.x()),
+            host._round2nearest(pos.y(), host.grid.pitch.y())
+        ) if host.grid.snap else pos
 
     @checked
     def _distance(self : Self, cp1 : QPoint, cp2 : QPoint) -> int:
@@ -142,10 +139,9 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _setLayer(self : Self, layer : DiagramViewLayer) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self.layer = layer
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        host.layer = layer
+        if (scene := host.scene()) is None:
             return
         for item in scene.items():
             item.setFlag(
@@ -156,16 +152,15 @@ class DiagramViewPrivateMixin:
 
     @checked
     def _itemsAt(self : Self, pos : QPoint | QPointF) -> list[QGraphicsItem]:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if self.scene() is None:
+        host = asDiagramView(self)
+        if host.scene() is None:
             raise RuntimeError("No scene")
         if isinstance(pos, QPointF):
-            pos = self.mapFromScene(pos)
-        items = self.items(pos)
+            pos = host.mapFromScene(pos)
+        items = host.items(pos)
         return [
             i for i in items
-            if i.zValue() in self.layer.value \
+            if i.zValue() in host.layer.value \
                 and i.acceptedMouseButtons() != Qt.MouseButton.NoButton
         ]
 
@@ -197,9 +192,8 @@ class DiagramViewPrivateMixin:
         rect      : QRectF,
         modifiers : MouseModifier
     ) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             raise RuntimeError("No scene")
         toggle = modifiers & (MouseModifier.CTRL | MouseModifier.SHIFT) \
             == MouseModifier.CTRL
@@ -211,7 +205,7 @@ class DiagramViewPrivateMixin:
                 path,
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 Qt.SortOrder.AscendingOrder,
-                self.viewportTransform()
+                host.viewportTransform()
             )
             for item in items:
                 item.setSelected(not item.isSelected())
@@ -220,7 +214,7 @@ class DiagramViewPrivateMixin:
                 path,
                 Qt.ItemSelectionOperation.AddToSelection,
                 Qt.ItemSelectionMode.IntersectsItemShape,
-                self.transform()
+                host.transform()
             )
         scene.blockSignals(False)
         scene.selectionChanged.emit()
@@ -231,12 +225,11 @@ class DiagramViewPrivateMixin:
         pos       : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             raise RuntimeError("No scene")
         items = [
-            i for i in self._itemsAt(pos) if i.flags()
+            i for i in host._itemsAt(pos) if i.flags()
                 & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         ]
         selected_items = scene.selectedItems()
@@ -265,7 +258,7 @@ class DiagramViewPrivateMixin:
             # record initial selection state
             init_sel = {item: item.isSelected() for item in items}
             # build and display selection choices menu (top down item order)
-            menu = Menu(self)
+            menu = Menu(host)
             menu.setStyleSheet("""
                 QMenu::item {
                     padding-left: 8px;
@@ -286,7 +279,7 @@ class DiagramViewPrivateMixin:
                     _selectItem(item, init_sel[item])
             for item in items:
                 text = f"{item.__class__.__name__.replace('Item', '')}"
-                action = QAction(text, self)
+                action = QAction(text, host)
                 action.setData(item)
                 action.triggered.connect(
                     lambda checked, item, prev=init_sel[item]:
@@ -296,7 +289,7 @@ class DiagramViewPrivateMixin:
             menu.hovered.connect(_onHover)
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
-            menu.exec(self.mapToGlobal(self.mapFromScene(pos)))
+            menu.exec(host.mapToGlobal(host.mapFromScene(pos)))
         elif items: # single or top item case
             _selectItem(items[0])
         elif fresh:
@@ -312,12 +305,11 @@ class DiagramViewPrivateMixin:
         Should only be called when there is an item at the given position.
         Otherwise a marquee selection is happening.
         """
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             raise RuntimeError("No scene")
         items = [
-            i for i in self._itemsAt(pos) if i.flags()
+            i for i in host._itemsAt(pos) if i.flags()
                 & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         ]
         # shift = add (top) item to selection set
@@ -339,9 +331,8 @@ class DiagramViewPrivateMixin:
         self       : Self,
         item_types : type | tuple[type, ...] | None = None
     ) -> list[QGraphicsItem]:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        if (scene := self.scene()) is None:
+        host = asDiagramView(self)
+        if (scene := host.scene()) is None:
             return []
         return [
             i for i in scene.selectedItems()
@@ -353,6 +344,6 @@ class DiagramViewPrivateMixin:
         self       : Self,
         item_types : type | tuple[type, ...] | None
     ) -> QGraphicsItem | None:
-        items = self._selectedItems(item_types)
-
+        host = asDiagramView(self)
+        items = host._selectedItems(item_types)
         return items[0] if items else None

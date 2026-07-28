@@ -42,6 +42,7 @@ class DiagramView(
 ):
     _shown      : bool
     _zoomed     : bool
+    _zoom       : float
     _pan_pos    : QPoint | None
     marquee     : Marquee
     layer       : DiagramViewLayer
@@ -60,6 +61,7 @@ class DiagramView(
         )
         self._shown      = False
         self._zoomed     = False
+        self._zoom       = 1.0
         self._pan_pos    = None
         self.marquee     = Marquee(self)
         self.layer       = DiagramViewLayer.Drawing

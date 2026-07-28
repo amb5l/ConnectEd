@@ -9,6 +9,9 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 from .....app import app, logger, settings, window
 
 
+from .host import asDiagramView
+
+
 class MouseState(Enum):
     IDLE          = auto()
     LEFT_PRESS    = auto()
@@ -44,18 +47,17 @@ class DiagramViewMouseMixin:
     _mouse_wheel_step      : float          # from settings
 
     def initMouse(self : Self) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if app().mouseButtons() == Qt.MouseButton.NoButton:
-            self._mouse_state = MouseState.IDLE
+            host._mouse_state = MouseState.IDLE
         else:
-            self._mouse_state = MouseState.BAD_PRESS
-        self._mouse_press_modifiers = MouseModifier.NONE
-        self._mouse_press_vpos = QPoint()
-        self._mouse_vpos = self.mapFromGlobal(QCursor.pos())
-        self._mouse_spos = self.mapToScene(self._mouse_vpos)
-        self.mouseSettingsChange()
-        settings().changed.connect(self.mouseSettingsChange)
+            host._mouse_state = MouseState.BAD_PRESS
+        host._mouse_press_modifiers = MouseModifier.NONE
+        host._mouse_press_vpos = QPoint()
+        host._mouse_vpos = host.mapFromGlobal(QCursor.pos())
+        host._mouse_spos = host.mapToScene(host._mouse_vpos)
+        host.mouseSettingsChange()
+        settings().changed.connect(host.mouseSettingsChange)
 
     def mouseSettingsChange(self : Self) -> None:
         self._mouse_drag_distance = settings().get("prefs/mouse/drag")
@@ -63,122 +65,115 @@ class DiagramViewMouseMixin:
 
     def enterEvent(self : Self, event : QEnterEvent | None) -> None:
         """Handle mouse pointer entering the viewport."""
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        vpos = self.mapFromGlobal(QCursor.pos())
-        spos = self.mapToScene(vpos)
-        self._mouse_vpos, self._mouse_spos = vpos, spos
+        host = asDiagramView(self)
+        vpos = host.mapFromGlobal(QCursor.pos())
+        spos = host.mapToScene(vpos)
+        host._mouse_vpos, host._mouse_spos = vpos, spos
         window().statusBar().xy.setText(
             str(int(round(spos.x()))) + "," + str(int(round(spos.y())))
         )
 
     def leaveEvent(self : Self, a0 : QEvent | None) -> None:
         """Handle mouse pointer leaving the viewport."""
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if a0 is None:
             logger().warning("No event")
             return
-        if (viewport := self.viewport()) is None:
+        if (viewport := host.viewport()) is None:
             raise TypeError("No viewport")
         # simulate central mouse position
         rect = viewport.rect()
         vpos = QPoint(rect.width() // 2, rect.height() // 2)
-        spos = self.mapToScene(vpos)
-        self._mouse_vpos, self._mouse_spos = vpos, spos
+        spos = host.mapToScene(vpos)
+        host._mouse_vpos, host._mouse_spos = vpos, spos
         window().statusBar().xy.setText("-,-")
 
     def mouseMoveEvent(self : Self, event : QMouseEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
-        self._updateMousePos(event)
-        match self._mouse_state:
+        host._updateMousePos(event)
+        match host._mouse_state:
             case MouseState.LEFT_PRESS | MouseState.MIDDLE_PRESS:
-                drag_line = QLine(self._mouse_press_vpos, self._mouse_vpos)
+                drag_line = QLine(host._mouse_press_vpos, host._mouse_vpos)
                 drag_distance = drag_line.toLineF().length()
-                if drag_distance >= self._mouse_drag_distance:
-                    if self._mouse_state == MouseState.LEFT_PRESS:
-                        self._mouse_state = MouseState.LEFT_DRAG
-                        self.state.mouseLeftDragBegin(*self._mouseArgs())
-                    elif self._mouse_state == MouseState.MIDDLE_PRESS:
-                        self._mouse_state = MouseState.MIDDLE_DRAG
-                        self.state.mouseMiddleDragBegin(*self._mouseArgs())
+                if drag_distance >= host._mouse_drag_distance:
+                    if host._mouse_state == MouseState.LEFT_PRESS:
+                        host._mouse_state = MouseState.LEFT_DRAG
+                        host.state.mouseLeftDragBegin(*host._mouseArgs())
+                    elif host._mouse_state == MouseState.MIDDLE_PRESS:
+                        host._mouse_state = MouseState.MIDDLE_DRAG
+                        host.state.mouseMiddleDragBegin(*host._mouseArgs())
             case MouseState.LEFT_DRAG:
-                self.state.mouseLeftDragCont(*self._mouseArgs())
+                host.state.mouseLeftDragCont(*host._mouseArgs())
             case MouseState.MIDDLE_DRAG:
-                self.state.mouseMiddleDragCont(*self._mouseArgs())
+                host.state.mouseMiddleDragCont(*host._mouseArgs())
             case _:
-                self.state.mouseMove(*self._mouseArgs())
+                host.state.mouseMove(*host._mouseArgs())
 
     def mousePressEvent(self : Self, event : QMouseEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
-        self._updateMousePos(event)
-        if self._mouse_state == MouseState.IDLE:
-            self._mouse_press_vpos = self._mouse_vpos
-            self._mouse_press_modifiers = MouseModifier(
+        host._updateMousePos(event)
+        if host._mouse_state == MouseState.IDLE:
+            host._mouse_press_vpos = host._mouse_vpos
+            host._mouse_press_modifiers = MouseModifier(
                 event.modifiers().value & MouseModifier.MASK.value
             )
             if event.button() & Qt.MouseButton.LeftButton:
-                self._mouse_state = MouseState.LEFT_PRESS
+                host._mouse_state = MouseState.LEFT_PRESS
             elif event.button() & Qt.MouseButton.MiddleButton:
-                self._mouse_state = MouseState.MIDDLE_PRESS
+                host._mouse_state = MouseState.MIDDLE_PRESS
             else:
-                self._mouse_state = MouseState.BAD_PRESS
+                host._mouse_state = MouseState.BAD_PRESS
 
     def mouseReleaseEvent(self : Self, event : QMouseEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
-        self._updateMousePos(event)
-        match self._mouse_state:
+        host._updateMousePos(event)
+        match host._mouse_state:
             case MouseState.BAD_PRESS:
                 if app().mouseButtons() == Qt.MouseButton.NoButton:
-                    self._mouse_state = MouseState.IDLE
+                    host._mouse_state = MouseState.IDLE
             case MouseState.LEFT_PRESS:
-                self._mouse_state = MouseState.IDLE
-                self.state.mouseLeftClick(*self._mouseArgs())
+                host._mouse_state = MouseState.IDLE
+                host.state.mouseLeftClick(*host._mouseArgs())
             case MouseState.LEFT_DRAG:
-                self._mouse_state = MouseState.IDLE
-                self.state.mouseLeftDragEnd(*self._mouseArgs())
+                host._mouse_state = MouseState.IDLE
+                host.state.mouseLeftDragEnd(*host._mouseArgs())
             case MouseState.LEFT_PRESS2:
-                self._mouse_state = MouseState.IDLE
+                host._mouse_state = MouseState.IDLE
             case MouseState.MIDDLE_PRESS:
-                self._mouse_state = MouseState.IDLE
-                self.state.mouseMiddleClick(*self._mouseArgs())
+                host._mouse_state = MouseState.IDLE
+                host.state.mouseMiddleClick(*host._mouseArgs())
             case MouseState.MIDDLE_DRAG:
-                self._mouse_state = MouseState.IDLE
-                self.state.mouseMiddleDragEnd(*self._mouseArgs())
+                host._mouse_state = MouseState.IDLE
+                host.state.mouseMiddleDragEnd(*host._mouseArgs())
             case MouseState.MIDDLE_PRESS2:
-                self._mouse_state = MouseState.IDLE
+                host._mouse_state = MouseState.IDLE
 
     def mouseDoubleClickEvent(self : Self, event : QMouseEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
-        self._updateMousePos(event)
+        host._updateMousePos(event)
         if event.button() & Qt.MouseButton.LeftButton:
-            self._mouse_state = MouseState.LEFT_PRESS2
-            self.state.mouseLeftDoubleClick(*self._mouseArgs())
+            host._mouse_state = MouseState.LEFT_PRESS2
+            host.state.mouseLeftDoubleClick(*host._mouseArgs())
         elif event.button() & Qt.MouseButton.MiddleButton:
-            self._mouse_state = MouseState.MIDDLE_PRESS2
-            self.state.mouseMiddleDoubleClick(*self._mouseArgs())
+            host._mouse_state = MouseState.MIDDLE_PRESS2
+            host.state.mouseMiddleDoubleClick(*host._mouseArgs())
         else:
-            self._mouse_state = MouseState.BAD_PRESS
+            host._mouse_state = MouseState.BAD_PRESS
 
     def wheelEvent(self : Self, event : QWheelEvent | None) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
+        host = asDiagramView(self)
         if event is None:
             logger().warning("No event")
             return
@@ -186,23 +181,22 @@ class DiagramViewMouseMixin:
         modifiers = MouseModifier(
             event.modifiers().value & MouseModifier.MASK.value
         )
-        steps = event.angleDelta().y() / self._mouse_wheel_step
+        steps = event.angleDelta().y() / host._mouse_wheel_step
         match modifiers:
             case MouseModifier.NONE:      # pan up/down
-                self.viewPanUp(steps) if steps >= 0 else self.viewPanDown(-steps)
+                host.viewPanUp(steps) if steps >= 0 else host.viewPanDown(-steps)
             case MouseModifier.SHIFT:   # pan left/right
-                self.viewPanLeft(steps) if steps >= 0 else self.viewPanRight(-steps)
+                host.viewPanLeft(steps) if steps >= 0 else host.viewPanRight(-steps)
             case MouseModifier.CTRL: # zoom in/out
-                self.viewZoomIn(steps) if steps >= 0 else self.viewZoomOut(-steps)
+                host.viewZoomIn(steps) if steps >= 0 else host.viewZoomOut(-steps)
 
     def _updateMousePos(
         self  : Self,
         event : QMouseEvent
     ) -> None:
-        from . import DiagramView
-        if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        self._mouse_vpos = event.pos()
-        self._mouse_spos = self.mapToScene(self._mouse_vpos)
+        host = asDiagramView(self)
+        host._mouse_vpos = event.pos()
+        host._mouse_spos = host.mapToScene(host._mouse_vpos)
 
     def _mouseArgs(self : Self) -> tuple[QPoint, QPointF, MouseModifier]:
         return self._mouse_vpos, self._mouse_spos, self._mouse_press_modifiers

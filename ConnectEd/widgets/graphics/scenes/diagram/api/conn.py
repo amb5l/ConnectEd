@@ -21,9 +21,7 @@ from ..cmd.conn import (
     CmdSplitSegment, CmdUnsplitSegment
 )
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DiagramScene
+from ..host import asDiagramScene
 
 
 class DiagramSceneApiConnMixin:
@@ -40,15 +38,14 @@ class DiagramSceneApiConnMixin:
         Split any crossing segment(s) and merge their net(s).
         """
         # create free node
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdAddFreeNode(self, pos)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdAddFreeNode(host, pos)
+        cmdExec(host, cmd, undoable)
         node = cmd.node()
         # split crossing segments at new node, joining nets as required
-        items = self.items(pos)
+        items = host.items(pos)
         for seg in [item for item in items if isinstance(item, SegmentItem)]:
-            cmdExec(self, CmdSplitSegment(self, seg, node), undoable)
+            cmdExec(host, CmdSplitSegment(host, seg, node), undoable)
         # done
         return node
 
@@ -59,10 +56,9 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> None:
         """Remove an orphan free node from the scene (graphics only)."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdRemoveFreeNode(self, node)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdRemoveFreeNode(host, node)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def replaceSegmentNode(
@@ -75,10 +71,9 @@ class DiagramSceneApiConnMixin:
         """
         Replace one node with another. Typically used for free/non swaps.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdReplaceSegmentNode(self, segment, node_old, node_new)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdReplaceSegmentNode(host, segment, node_old, node_new)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def detachSegmentNode(
@@ -88,10 +83,9 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> FreeNodeItem:
         """Detach segment from fixed node, connect to new free node."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmd = CmdDetachSegmentNode(self, segment, node)
-        cmdExec(self, cmd, undoable)
+        host = asDiagramScene(self)
+        cmd = CmdDetachSegmentNode(host, segment, node)
+        cmdExec(host, cmd, undoable)
         return cmd.freeNode()
 
     @checked
@@ -101,12 +95,11 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> list[FreeNodeItem]:
         """Detach every segment from a fixed node."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         free_nodes : list[FreeNodeItem] = []
         for segment in list(node.segments()):
             free_nodes.append(
-                self.detachSegmentNode(segment, node, undoable)
+                host.detachSegmentNode(segment, node, undoable)
             )
         return free_nodes
 
@@ -120,13 +113,12 @@ class DiagramSceneApiConnMixin:
         Get a node if present, add a free node if necessary.
         Useful for adding segments.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        items = self.items(pos)
+        host = asDiagramScene(self)
+        items = host.items(pos)
         for item in items:
             if isinstance(item, NodeItem):
                 return item
-        return self.addFreeNode(pos, undoable)
+        return host.addFreeNode(pos, undoable)
 
     @checked
     def isRedundantNode(self : Self, node : NodeItem) -> bool:
@@ -136,8 +128,6 @@ class DiagramSceneApiConnMixin:
         - parentless (should always be true for free nodes)
         - breaks up a straight line.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         if not isinstance(node, FreeNodeItem) \
         or node.parentItem() is not None \
         or node.degree() != 2:
@@ -164,20 +154,19 @@ class DiagramSceneApiConnMixin:
         """
         Connect a (unconnected) fixed node, e.g. after place/paste/clone/move.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if node.degree() > 0:
             return
         # get items at node position
-        items = self.items(node.scenePos())
+        items = host.items(node.scenePos())
         nodes = [item for item in items if isinstance(item, NodeItem)]
         # merge coincident free nodes into this fixed node
         free_nodes = [n for n in nodes if isinstance(n, FreeNodeItem)]
         for free_node in free_nodes:
             for free_segment in list(free_node.segments()):
-                self.replaceSegmentNode(free_segment, free_node, node, undoable)
+                host.replaceSegmentNode(free_segment, free_node, node, undoable)
             if free_node.scene() is not None and free_node.degree() == 0:
-                self.removeFreeNode(free_node, undoable)
+                host.removeFreeNode(free_node, undoable)
         # add zero length segments between this and other fixed nodes if required
         fixed_nodes = [
             fixed_node for fixed_node in nodes
@@ -185,8 +174,8 @@ class DiagramSceneApiConnMixin:
             and fixed_node != node
         ]
         for fixed_node in fixed_nodes:
-            if not self.netlist.hasSegment(node, fixed_node):
-                self.addSegment(node.scenePos(), fixed_node.scenePos(), undoable)
+            if not host.netlist.hasSegment(node, fixed_node):
+                host.addSegment(node.scenePos(), fixed_node.scenePos(), undoable)
         # split crossing segments
         crossing_segments = [
             item for item in items
@@ -195,7 +184,7 @@ class DiagramSceneApiConnMixin:
             and item.node2() not in nodes
         ]
         for segment in crossing_segments:
-            cmdExec(self, CmdSplitSegment(self, segment, node), undoable)
+            cmdExec(host, CmdSplitSegment(host, segment, node), undoable)
 
     @checked
     def connectFixedNodes(
@@ -204,10 +193,9 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> None:
         """Connect a list of fixed nodes."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         for node in nodes:
-            self.connectFixedNode(node, undoable)
+            host.connectFixedNode(node, undoable)
 
     @checked
     def addSegment(
@@ -219,28 +207,27 @@ class DiagramSceneApiConnMixin:
         """
         Create or find node at each endpoint.
         """
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         # get/create endpoint vertices/entries
         if isinstance(p1_or_node1, QPointF):
             p1 = p1_or_node1
-            node1 = self.getNode(p1_or_node1, undoable)
+            node1 = host.getNode(p1_or_node1, undoable)
         else:
             node1 = p1_or_node1
             p1 = node1.scenePos()
         if isinstance(p2_or_node2, QPointF):
             p2 = p2_or_node2
-            node2 = self.getNode(p2_or_node2, undoable)
+            node2 = host.getNode(p2_or_node2, undoable)
         else:
             node2 = p2_or_node2
             p2 = node2.scenePos()
         # special case: zero length segment
         if p1 == p2 and node1 != node2:
-            cmdExec(self, CmdAddSegment(self, node1, node2), undoable)
+            cmdExec(host, CmdAddSegment(host, node1, node2), undoable)
             return
         # begin macro
         if undoable:
-            self.undo_stack.beginMacro("addSegment")
+            host.undo_stack.beginMacro("addSegment")
         # get vertices items along line from p1 to p2
         line_path = QPainterPath()
         line_path.moveTo(p1)
@@ -250,25 +237,25 @@ class DiagramSceneApiConnMixin:
         stroker.setCapStyle(Qt.PenCapStyle.FlatCap)  # don't extend beyond endpoints
         stroker_path = stroker.createStroke(line_path)
         nodes = [
-            item for item in self.items(stroker_path) \
+            item for item in host.items(stroker_path) \
                 if isinstance(item, NodeItem)
         ]
         # sort by distance from p1
         nodes.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
         # add segments between all consecutive pairs of vertices
         for node1, node2 in zip(nodes[:-1], nodes[1:], strict=True):
-            if self.netlist.hasSegment(node1, node2):
+            if host.netlist.hasSegment(node1, node2):
                 continue
-            cmdExec(self, CmdAddSegment(self, node1, node2), undoable)
+            cmdExec(host, CmdAddSegment(host, node1, node2), undoable)
         # cull redundant nodes (free, childless, degree 2, colinear neighbours).
         # Sweeping post-add catches both endpoints and any intermediate vertex
         # picked up by the stroker hit-test.
         for node in nodes:
-            if isinstance(node, FreeNodeItem) and self.isRedundantNode(node):
-                cmdExec(self, CmdUnsplitSegment(self, node), undoable)
+            if isinstance(node, FreeNodeItem) and host.isRedundantNode(node):
+                cmdExec(host, CmdUnsplitSegment(host, node), undoable)
         # end macro
         if undoable:
-            self.undo_stack.endMacro()
+            host.undo_stack.endMacro()
 
     @checked
     def removeSegment(
@@ -277,6 +264,5 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False,
     ) -> None:
         """Remove a segment, cull orphan free nodes."""
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
-        cmdExec(self, CmdRemoveSegment(self, seg), undoable)
+        host = asDiagramScene(self)
+        cmdExec(host, CmdRemoveSegment(host, seg), undoable)

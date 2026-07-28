@@ -22,10 +22,11 @@ from ..cmd.edit.properties import (
     CmdAddPropertyText, CmdEditPropertyText, CmdDelPropertyText
 )
 
+from ..host import asDiagramScene
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....properties import PropertiesMixin
-    from .. import DiagramScene
 
 
 class DiagramSceneApiPropertiesMixin:
@@ -38,10 +39,9 @@ class DiagramSceneApiPropertiesMixin:
         value    : Any,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdAddProperty(object, name, kind, value)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editProperty(
@@ -52,10 +52,9 @@ class DiagramSceneApiPropertiesMixin:
         value    : Any      | NoChange = NO_CHANGE,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdEditProperty(object, name, kind, value)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def delProperty(
@@ -64,10 +63,9 @@ class DiagramSceneApiPropertiesMixin:
         name     : str,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdDelProperty(object, name)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def addPropertyText(
@@ -99,8 +97,7 @@ class DiagramSceneApiPropertiesMixin:
         underline  : bool,
         undoable   : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdAddPropertyText(
             object, name, visible, cleat, x, y,
             rotation, mirror_h, mirror_v, autoflip,
@@ -108,7 +105,7 @@ class DiagramSceneApiPropertiesMixin:
             pad_left, pad_right, pad_top, pad_bottom,
             color, font, size, bold, italic, underline
         )
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editPropertyText(
@@ -140,8 +137,7 @@ class DiagramSceneApiPropertiesMixin:
         underline  : bool         | NoChange = NO_CHANGE,
         undoable   : bool                    = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdEditPropertyText(
             object     = object,
             name       = name,
@@ -169,7 +165,7 @@ class DiagramSceneApiPropertiesMixin:
             italic     = italic,
             underline  = underline
         )
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def delPropertyText(
@@ -178,10 +174,9 @@ class DiagramSceneApiPropertiesMixin:
         name     : str,
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         cmd = CmdDelPropertyText(object, name)
-        cmdExec(self, cmd, undoable)
+        cmdExec(host, cmd, undoable)
 
     @checked
     def editProperties(
@@ -190,25 +185,24 @@ class DiagramSceneApiPropertiesMixin:
         changes  : Sequence[PropertyChangeBase],
         undoable : bool = False
     ) -> None:
-        from .. import DiagramScene
-        if not isinstance(self, DiagramScene): raise TypeError("Bad host")
+        host = asDiagramScene(self)
         if len(changes) == 0:
             return
         if undoable:
-            self.undo_stack.beginMacro("editProperties")
+            host.undo_stack.beginMacro("editProperties")
         for change in changes:
             args = vars(change)
             if isinstance(change, PropertyChangeDelete):
-                self.delProperty(object, **args, undoable=undoable)
+                host.delProperty(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeAdd):
-                self.addProperty(object, **args, undoable=undoable)
+                host.addProperty(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeModify):
-                self.editProperty(object, **args, undoable=undoable)
+                host.editProperty(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeTextDelete):
-                self.delPropertyText(object, **args, undoable=undoable)
+                host.delPropertyText(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeTextAdd):
-                self.addPropertyText(object, **args, undoable=undoable)
+                host.addPropertyText(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeTextModify):
-                self.editPropertyText(object, **args, undoable=undoable)
+                host.editPropertyText(object, **args, undoable=undoable)
         if undoable:
-            self.undo_stack.endMacro()
+            host.undo_stack.endMacro()
