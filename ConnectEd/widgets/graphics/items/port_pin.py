@@ -90,9 +90,12 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         parent : QGraphicsItem | None = None,
         fresh  : bool = True
     ) -> None:
-        if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
-        if not isinstance(parent, QGraphicsItem): raise TypeError("Bad parent")
-        qtItemClass(self).__init__(parent)
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
+        if parent is not None and not isinstance(parent, QGraphicsItem):
+            raise TypeError(f"Bad parent: {type(parent)!r}")
+        # Unbound Qt __init__; parent may be None and set later (XML load).
+        qtItemClass(self).__init__(self, parent)
         # node
         self._node = FixedNodeItem(parent=self)
         self._node.setPos(self._NODE_POS, 0)

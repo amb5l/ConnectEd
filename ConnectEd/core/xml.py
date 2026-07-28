@@ -174,8 +174,8 @@ def loadXml(
                 return None
             try:
                 doc = cast(FileXmlProtocol, doc_cls.fromXml(xr))
-            except Exception as e:
-                logger().error(f"Failed to load {path}: {e}")
+            except Exception:
+                logger().exception(f"Failed to load {path}")
                 return None
             doc.setPath(path)
             return doc
