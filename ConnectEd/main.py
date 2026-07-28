@@ -43,11 +43,9 @@ def main(func : Callable | None = None) -> int:
             app.ready.splash.connect(_func)
     splash = None
     if not (known_args.cli or known_args.nosplash):
-        style_hints = app.styleHints()
-        if style_hints is None:
+        if (style_hints := app.styleHints()) is None:
             raise RuntimeError("No style hints")
-        scheme = style_hints.colorScheme()
-        if scheme is None:
+        if (scheme := style_hints.colorScheme()) is None:
             raise RuntimeError("No color scheme")
         splash = Splash(scheme == Qt.ColorScheme.Light)
         splash.show()

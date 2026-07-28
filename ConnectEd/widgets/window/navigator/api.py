@@ -30,8 +30,7 @@ class NavigatorApiMixin:
         dialog = FileNewDialog(self)
         if not dialog.exec():
             return
-        doc_type = dialog.docType()
-        if doc_type is None:
+        if (doc_type := dialog.docType()) is None:
             return
         self.docNew(doc_type)
 
@@ -40,12 +39,10 @@ class NavigatorApiMixin:
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
         path = cleanPath(path)
-        doc = session().load(path)
-        if doc is None:
+        if (doc := session().load(path)) is None:
             return
         settings().addMRU(path)
-        doc_type = session().docTypeForDoc(doc)
-        if doc_type is None:
+        if (doc_type := session().docTypeForDoc(doc)) is None:
             return
         group_item = self._group_items.get(doc_type.group, None)
         parent = self._model if group_item is None else group_item
@@ -63,8 +60,7 @@ class NavigatorApiMixin:
         """Save a document as."""
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
-        doc_type = session().docTypeForDoc(doc)
-        if doc_type is None:
+        if (doc_type := session().docTypeForDoc(doc)) is None:
             return
         dialog = FileSaveAsDialog(doc_type, self)
         if not dialog.exec():
@@ -101,8 +97,7 @@ class NavigatorApiMixin:
         """Save a document."""
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
-        doc = self._docFromSubWindow(subwindow)
-        if doc is None:
+        if (doc := self._docFromSubWindow(subwindow)) is None:
             return
         if doc.path():
             self.docSave(doc)
@@ -114,8 +109,7 @@ class NavigatorApiMixin:
         subwindow : DocSubWindow
     ) -> None:
         """Save a document as."""
-        doc = self._docFromSubWindow(subwindow)
-        if doc is None:
+        if (doc := self._docFromSubWindow(subwindow)) is None:
             logger().error("Subwindow has no document")
             return
         self.docSaveAsPrompt(doc)
@@ -124,12 +118,10 @@ class NavigatorApiMixin:
         """Close an editor, or the whole document when appropriate."""
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
-        doc = self._docFromSubWindow(subwindow)
-        if doc is None:
+        if (doc := self._docFromSubWindow(subwindow)) is None:
             subwindow.close()
             return
-        binding = subwindow.docBinding()
-        if binding is None:
+        if (binding := subwindow.docBinding()) is None:
             subwindow.close()
             return
         if doc.isPrimarySubject(binding.subject) \
@@ -148,8 +140,7 @@ class NavigatorApiMixin:
         self      : Self,
         subwindow : DocSubWindow
     ) -> Doc | None:
-        doc_binding = subwindow.docBinding()
-        if doc_binding is None:
+        if (doc_binding := subwindow.docBinding()) is None:
             logger().warning("Subwindow has no document binding")
             return None
         return doc_binding.doc

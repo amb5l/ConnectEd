@@ -139,8 +139,7 @@ def loadTheme(
             f"Theme file {yaml_path}: meta.id {tid!r} != expected {theme_id!r}"
         )
 
-    palette = doc.pop("palette", None)
-    if palette is None:
+    if (palette := doc.pop("palette", None)) is None:
         palette_str : dict[str, str] = {}
     elif not isinstance(palette, dict):
         raise ValueError(f"Theme {tid!r} palette block must be a mapping")
@@ -148,8 +147,7 @@ def loadTheme(
         palette_str = {str(k): str(v) for k, v in palette.items()}
         validatePalette(tid, palette_str)
 
-    presets = doc.pop("presets", None)
-    if not isinstance(presets, dict):
+    if not isinstance(presets := doc.pop("presets", None), dict):
         raise ValueError(f"Theme {tid!r} missing presets block")
     presets_str = {str(k): str(v) for k, v in presets.items()}
     validatePresetSources(tid, presets_str, frozenset(palette_str))

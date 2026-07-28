@@ -165,8 +165,7 @@ class Actions:
         # finish up
         self.onSubWindowActivated(None)
         window().mdiArea().subWindowActivated.connect(self.onSubWindowActivated)
-        clipboard = QApplication.clipboard()
-        if clipboard is None:
+        if (clipboard := QApplication.clipboard()) is None:
             raise RuntimeError("No clipboard")
         clipboard.dataChanged.connect(self.onClipboardDataChanged)
 
@@ -179,8 +178,7 @@ class Actions:
         subwindow : DocSubWindow | None
     ) -> None:
         # disconnect previous signals
-        s = self._scene
-        if s is not None:
+        if (s := self._scene) is not None:
             try:
                 s.selectionChanged.disconnect(self.onSelectionChanged)
                 s.undo_stack.canUndoChanged.disconnect(self.onCanUndoChanged)
@@ -189,8 +187,7 @@ class Actions:
                 pass
         scene = None
         if isinstance(subwindow, DocSubWindow):
-            widget = subwindow.widget()
-            if isinstance(widget, DiagramView):
+            if isinstance(widget := subwindow.widget(), DiagramView):
                 scene = widget.scene()
                 if isinstance(scene, DiagramScene):
                     self._scene = scene
@@ -246,8 +243,7 @@ class Actions:
             pass
 
     def onClipboardDataChanged(self : Self) -> None:
-        clipboard = QApplication.clipboard()
-        if clipboard is None:
+        if (clipboard := QApplication.clipboard()) is None:
             raise RuntimeError("No clipboard")
         mime_data = clipboard.mimeData()
         self.editPaste.setEnabled(

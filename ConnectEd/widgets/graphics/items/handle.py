@@ -52,8 +52,7 @@ class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
                 child.onSceneOrientationChanged()
 
     def isOrigin(self : Self) -> bool:
-        parent = self.parentItem()
-        if isinstance(parent, ItemTransformMixin):
+        if isinstance(parent := self.parentItem(), ItemTransformMixin):
             return parent.hasOrigin() and parent.origin() == self.id()
         return False
 

@@ -57,8 +57,7 @@ def trace(
         if not full:
             mod_name = mod_name.split(".")[-1]
 
-        self_obj = frame.frame.f_locals.get("self")
-        if self_obj is not None:
+        if (self_obj := frame.frame.f_locals.get("self")) is not None:
             cls_name = self_obj.__class__.__name__
             func_part = f"{cls_name}.{func_name}"
         # e.g. Processor.run

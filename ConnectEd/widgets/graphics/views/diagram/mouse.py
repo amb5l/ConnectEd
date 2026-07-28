@@ -79,8 +79,7 @@ class DiagramViewMouseMixin:
         if a0 is None:
             logger().warning("No event")
             return
-        viewport = self.viewport()
-        if viewport is None:
+        if (viewport := self.viewport()) is None:
             raise TypeError("No viewport")
         # simulate central mouse position
         rect = viewport.rect()

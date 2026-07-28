@@ -78,8 +78,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
     def setEditorData(self : Self, editor : QWidget | None, index : QModelIndex):
         if not isinstance(editor, QComboBox):
             raise ValueError("Editor is not a QComboBox")
-        model = index.model()
-        if model is None:
+        if (model := index.model()) is None:
             raise RuntimeError("No model")
         value = model.data(index, Qt.ItemDataRole.EditRole)
         value_str = str(value) if value is not None else ""
@@ -460,8 +459,7 @@ class SpreadsheetWidget(QWidget):
     def _updateHeaderText(self : Self) -> None:
         """Update header text to include sort indicators."""
         for i in range(self._model.columnCount()):
-            horizontal_header_item = self._model.horizontalHeaderItem(i)
-            if horizontal_header_item is None:
+            if (horizontal_header_item := self._model.horizontalHeaderItem(i)) is None:
                 raise RuntimeError("No horizontal header item")
             name = horizontal_header_item.text()
             if i in self._sorting:
@@ -779,8 +777,7 @@ class SpreadsheetSubWindow(DocSubWindow):
         if closeEvent is None:
             logger().warning("No close event")
             return
-        menu_bar = window().menuBar()
-        if menu_bar is None:
+        if (menu_bar := window().menuBar()) is None:
             raise RuntimeError("No menu bar")
         menu_bar.updateWindowMenu()
         super().closeEvent(closeEvent)

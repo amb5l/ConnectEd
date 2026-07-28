@@ -204,8 +204,7 @@ def copyXml(
     toXmlEndElement(xw)
     mime_data = QMimeData()
     mime_data.setData(MIME_TYPE, buffer)
-    clipboard = QApplication.clipboard()
-    if clipboard is not None:
+    if (clipboard := QApplication.clipboard()) is not None:
         clipboard.setMimeData(mime_data)
 
 
@@ -216,8 +215,7 @@ def pasteXml(
     """
     Builds objects from clipboard XML; returns them and envelope metadata.
     """
-    clipboard = QApplication.clipboard()
-    if clipboard is None:
+    if (clipboard := QApplication.clipboard()) is None:
         return [], {}
     buffer = clipboard.text()
     xr = QXmlStreamReader(buffer)
@@ -230,8 +228,7 @@ def clipboardHasData() -> bool:
     Checks if the clipboard has data in the expected format.
     """
 
-    clipboard = QApplication.clipboard()
-    if clipboard is None:
+    if (clipboard := QApplication.clipboard()) is None:
         return False
     mime_data = clipboard.mimeData()
     return mime_data is not None and mime_data.hasFormat(MIME_TYPE)

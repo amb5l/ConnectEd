@@ -20,8 +20,7 @@ class NavItemDelegate(QStyledItemDelegate):
         if not isinstance(model, NavModel):
             super().setModelData(editor, model, index)
             return
-        item = model.itemFromIndex(index)
-        if not isinstance(item, NavItem):
+        if not isinstance(item := model.itemFromIndex(index), NavItem):
             super().setModelData(editor, model, index)
             return
         binding : DocBinding | None = item.data(Qt.ItemDataRole.UserRole)

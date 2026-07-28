@@ -31,15 +31,13 @@ class ItemSubscribeMixin:
     @checked
     def unsubscribe(self : Self, change : str, obj : object) -> None:
         """Remove an object previously subscribed to a change."""
-        change_subs = self._subs.get(change)
-        if change_subs is not None:
+        if (change_subs := self._subs.get(change)) is not None:
             change_subs.pop(obj, None)
 
     @checked
     def callSubscribers(self : Self, change : str) -> None:
         """Invoke all methods registered for change."""
-        change_subs = self._subs.get(change)
-        if change_subs is None:
+        if (change_subs := self._subs.get(change)) is None:
             return
         for obj, method in list(change_subs.items()):
             getattr(obj, method)()

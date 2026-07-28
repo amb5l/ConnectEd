@@ -251,8 +251,7 @@ class DiagramViewApiEditMixin:
         window_height = window_size.height()
         final_x = mouse_pos.x() - window_width // 2
         final_y = mouse_pos.y() - window_height // 2
-        primary_screen = QApplication.primaryScreen()
-        if primary_screen is None:
+        if (primary_screen := QApplication.primaryScreen()) is None:
             raise ValueError("Primary screen is None")
         screen = primary_screen.availableGeometry()
         screen_width = screen.width()

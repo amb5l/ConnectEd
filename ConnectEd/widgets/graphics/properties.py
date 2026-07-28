@@ -257,8 +257,7 @@ class PropertiesManager:
             logger().warning(f"Property '{name}' not found")
             return False
         # get validity
-        property = self._dict[name]
-        if isinstance(property, InherentProperty):
+        if isinstance(property := self._dict[name], InherentProperty):
             return property.worthy is True or \
                 (callable(property.worthy) and property.worthy(self._owner))
         elif isinstance(property, CustomProperty):
@@ -372,8 +371,7 @@ class PropertiesManager:
             return False
         property = self._dict[name]
         # get kind
-        kind = self.kind(name)
-        if not isinstance(kind, DataKind):
+        if not isinstance(kind := self.kind(name), DataKind):
             raise TypeError("Bad kind")
         # inherent properties
         if isinstance(property, InherentProperty):
@@ -512,8 +510,7 @@ class PropertiesManager:
         # remove text
         if property.text is not None:
             property.text.setParentItem(None)
-            scene = property.text.scene()
-            if scene is not None:
+            if (scene := property.text.scene()) is not None:
                 scene.removeItem(property.text)
             property.text = None
         # notify property receivers
@@ -768,8 +765,7 @@ class PropertiesManager:
         # unparent PropertyTextItem
         property.text.setParentItem(None)
         # remove from scene
-        scene = property.text.scene()
-        if scene is None:
+        if (scene := property.text.scene()) is None:
             raise RuntimeError("No scene")
         scene.removeItem(property.text)
         # remove reference
@@ -779,8 +775,7 @@ class PropertiesManager:
     @checked
     def addMissingTextsFrom(self : Self, other : PropertiesManager) -> None:
         for pt in other.texts():
-            name = pt.name()
-            if name is None:
+            if (name := pt.name()) is None:
                 continue
             if not self.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
@@ -792,8 +787,7 @@ class PropertiesManager:
     @checked
     def removeTextsNotIn(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
-            name = pt.name()
-            if name is None:
+            if (name := pt.name()) is None:
                 continue
             if not other.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
@@ -804,14 +798,12 @@ class PropertiesManager:
     @checked
     def syncTextFrom(self : Self, other : PropertiesManager) -> None:
         for pt in self.texts():
-            name = pt.name()
-            if name is None:
+            if (name := pt.name()) is None:
                 continue
             if not other.has(name):
                 logger().warning(f"Property '{pt.name()}' not found")
                 continue
-            other_pt = other.text(name)
-            if other_pt is None:
+            if (other_pt := other.text(name)) is None:
                 continue
             pt.setCleat(other_pt.cleat())
             pt.setPos(other_pt.pos())

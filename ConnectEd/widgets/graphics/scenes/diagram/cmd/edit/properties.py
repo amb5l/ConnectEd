@@ -91,8 +91,7 @@ class CmdEditProperty(CmdBase):
             self.setObsolete(True)
             return
         # build old state
-        old_kind = object.properties.kind(old_name)
-        if old_kind is None:
+        if (old_kind := object.properties.kind(old_name)) is None:
             logger().error(f"Property '{old_name}' has no kind")
             self.setObsolete(True)
             return
@@ -138,8 +137,7 @@ class CmdDelProperty(CmdPropertyBase):
         name : str
     ) -> None:
         super().__init__(obj, name)
-        kind = obj.properties.kind(name)
-        if kind is None:
+        if (kind := obj.properties.kind(name)) is None:
             logger().error(f"Property '{name}' has no kind")
             self.setObsolete(True)
             return
@@ -314,20 +312,17 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         underline  : bool         | NoChange = NO_CHANGE,
     ) -> None:
         super().__init__(object, name)
-        pt = object.properties.text(name)
-        if pt is None:
+        if (pt := object.properties.text(name)) is None:
             self._before = None
             self._after = None
             logger().error(f"Property '{name}' does not have a text item")
             self.setObsolete(True)
             return
-        old_cleat = pt.cleat()
-        if not isinstance(old_cleat, HandleId):
+        if not isinstance(old_cleat := pt.cleat(), HandleId):
             logger().error(f"Property text '{name}' has no cleat")
             self.setObsolete(True)
             return
-        old_origin = pt.origin()
-        if not isinstance(old_origin, RectHandleId):
+        if not isinstance(old_origin := pt.origin(), RectHandleId):
             logger().error(f"Property text '{name}' has no origin")
             self.setObsolete(True)
             return

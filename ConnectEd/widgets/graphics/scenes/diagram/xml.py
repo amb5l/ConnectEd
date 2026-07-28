@@ -335,8 +335,7 @@ class DiagramSceneXmlMixin:
                 else:
                     logger().warning("Segment missing X1/Y1/X2/Y2 attributes")
             else:
-                item = item_cls.fromXml(xr)
-                if not isinstance(item, QGraphicsItem):
+                if not isinstance(item := item_cls.fromXml(xr), QGraphicsItem):
                     raise TypeError("Bad item")
                 self.addItem(item)
                 if isinstance(item, SymbolInstanceItem):

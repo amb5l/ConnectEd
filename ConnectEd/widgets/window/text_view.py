@@ -39,8 +39,7 @@ class TextView(QPlainTextEdit):
                 if content.endswith("\n"):
                     content = content[:-1]
             self.setPlainText(content)
-        vertical_scroll_bar = self.verticalScrollBar()
-        if vertical_scroll_bar is None:
+        if (vertical_scroll_bar := self.verticalScrollBar()) is None:
             raise RuntimeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(vertical_scroll_bar.maximum())
         self._find_bar = None
@@ -77,8 +76,7 @@ class TextView(QPlainTextEdit):
         if e is None:
             logger().warning("No event")
             return
-        menu = self.createStandardContextMenu()
-        if menu is None:
+        if (menu := self.createStandardContextMenu()) is None:
             raise RuntimeError("No menu")
         menu.addSeparator()
         menu.addAction(self._actions["showFindBar"])

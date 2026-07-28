@@ -38,8 +38,7 @@ def withFocusWidget(
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : Slots) -> None:
-            current_widget = window().focusWidget()
-            if current_widget is None:
+            if (current_widget := window().focusWidget()) is None:
                 return
             if isinstance(current_widget, widget_type):
                 func(self, cast(T, current_widget))
@@ -58,8 +57,7 @@ def withMdiSubWindow(
     """
     @functools.wraps(func)
     def wrapper(self : Slots) -> None:
-        current_subwindow = window().mdiArea().activeSubWindow()
-        if current_subwindow is None:
+        if (current_subwindow := window().mdiArea().activeSubWindow()) is None:
             return
         if not isinstance(current_subwindow, DocSubWindow):
             logger().error("Current subwindow is not a DocSubWindow")
@@ -82,11 +80,9 @@ def withMdiWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : Slots) -> None:
-            current_subwindow = window().mdiArea().currentSubWindow()
-            if current_subwindow is None:
+            if (current_subwindow := window().mdiArea().currentSubWindow()) is None:
                 return
-            current_widget = current_subwindow.widget()
-            if isinstance(current_widget, widget_type):
+            if isinstance(current_widget := current_subwindow.widget(), widget_type):
                 # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget))
             else:
@@ -114,11 +110,9 @@ def withMdiWidgetCheckable(
     def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : Slots) -> None:
-            current_subwindow = window().mdiArea().currentSubWindow()
-            if current_subwindow is None:
+            if (current_subwindow := window().mdiArea().currentSubWindow()) is None:
                 return
-            current_widget = current_subwindow.widget()
-            if isinstance(current_widget, widget_type):
+            if isinstance(current_widget := current_subwindow.widget(), widget_type):
                 checked = getattr(window().actions, action_name).isChecked()
                 # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget), checked)
@@ -133,21 +127,18 @@ class Slots:
         pass
 
     def fileNew(self : Self) -> None:
-        navigator = window().navigator()
-        if navigator is None:
+        if (navigator := window().navigator()) is None:
             return
         navigator.fileNew()
 
     def fileOpen(self : Self) -> None:
-        navigator = window().navigator()
-        if navigator is None:
+        if (navigator := window().navigator()) is None:
             return
         navigator.fileOpen()
 
     @withMdiSubWindow
     def fileSave(self : Self, subwindow : QMdiSubWindow) -> None:
-        navigator = window().navigator()
-        if navigator is None:
+        if (navigator := window().navigator()) is None:
             return
         if isinstance(subwindow, DocSubWindow):
             navigator.fileSave(subwindow)
@@ -156,8 +147,7 @@ class Slots:
 
     @withMdiSubWindow
     def fileSaveAs(self : Self, subwindow : QMdiSubWindow) -> None:
-        navigator = window().navigator()
-        if navigator is None:
+        if (navigator := window().navigator()) is None:
             return
         if isinstance(subwindow, DocSubWindow):
             navigator.fileSaveAs(subwindow)
@@ -407,8 +397,7 @@ class Slots:
         dialog = AiProfilesDialog(window())
         if not dialog.exec():
             return
-        manager = window().aiChatManager()
-        if manager is not None:
+        if (manager := window().aiChatManager()) is not None:
             manager.refreshChatTitles()
             manager.refreshChatWidgets()
         if (menu_bar := window().menuBar()) is not None:

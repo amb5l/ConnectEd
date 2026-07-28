@@ -37,8 +37,7 @@ class DiagramViewState:
     @checked
     def __init__(self : Self, view : DiagramView) -> None:
         self.view = view
-        scene = view.scene()
-        if scene is None:
+        if (scene := view.scene()) is None:
             raise TypeError("Bad scene")
         self.scene = scene
 
@@ -198,8 +197,7 @@ class DiagramViewState:
         self.view.interaction = interaction
 
     def _interaction(self : Self) -> DiagramInteraction:
-        interaction = self.view.interaction
-        if interaction is None:
+        if (interaction := self.view.interaction) is None:
             raise RuntimeError("No interaction")
         return interaction
 

@@ -33,14 +33,12 @@ class DiagramViewStateViewPan2(DiagramViewState):
         if self.view._pan_pos is None:
             raise RuntimeError("No pan position")
         delta = vpos - self.view._pan_pos
-        horizontal_scroll_bar = self.view.horizontalScrollBar()
-        if horizontal_scroll_bar is None:
+        if (horizontal_scroll_bar := self.view.horizontalScrollBar()) is None:
             raise RuntimeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() - delta.x()
         )
-        vertical_scroll_bar = self.view.verticalScrollBar()
-        if vertical_scroll_bar is None:
+        if (vertical_scroll_bar := self.view.verticalScrollBar()) is None:
             raise RuntimeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() - delta.y()
@@ -58,14 +56,12 @@ class DiagramViewStateViewPan2(DiagramViewState):
         if self.view._pan_pos is None:
             raise RuntimeError("No pan position")
         delta = vpos - self.view._pan_pos
-        horizontal_scroll_bar = self.view.horizontalScrollBar()
-        if horizontal_scroll_bar is None:
+        if (horizontal_scroll_bar := self.view.horizontalScrollBar()) is None:
             raise RuntimeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() - delta.x()
         )
-        vertical_scroll_bar = self.view.verticalScrollBar()
-        if vertical_scroll_bar is None:
+        if (vertical_scroll_bar := self.view.verticalScrollBar()) is None:
             raise RuntimeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() - delta.y()

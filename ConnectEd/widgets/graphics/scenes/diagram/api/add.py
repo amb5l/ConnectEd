@@ -43,8 +43,7 @@ class DiagramSceneApiAddMixin:
         if not isinstance(self, DiagramScene): raise TypeError("Bad host")
         cmd = CmdAddPolyVtx(polyline, pos, sweep)
         cmdExec(self, cmd, undoable)
-        vtx = cmd.vtx()
-        if vtx is None:
+        if (vtx := cmd.vtx()) is None:
             raise RuntimeError("Failed to add vertex")
         return vtx
 

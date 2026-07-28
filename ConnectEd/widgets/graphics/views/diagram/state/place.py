@@ -465,8 +465,7 @@ class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DiagramViewState):
         items : Sequence[QGraphicsItem],
         spos  : QPointF | None = None
     ) -> None:
-        segment = self._requireOneItem(items)
-        if isinstance(segment, SegmentItem):
+        if isinstance(segment := self._requireOneItem(items), SegmentItem):
             snap   = segment.sceneMidpoint() if spos is None \
                      else self.view._snap(spos)
             item   = NetLabelItem(name="Name")

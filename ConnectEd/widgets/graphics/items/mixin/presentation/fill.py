@@ -52,8 +52,7 @@ class ItemPresentationFillMixin:
         if not isinstance(self, ItemPresentationMixin) \
         or not isinstance(self, ItemNamesMixin):
             raise TypeError("Bad host")
-        scene = self._defaultScene(view)
-        if scene is None:
+        if (scene := self._defaultScene(view)) is None:
             return None
         key = self._resourceKeyDefault()
         brush = scene.resources.brush(self.resourcesName(), key)
@@ -86,8 +85,7 @@ class ItemPresentationFillMixin:
         if not isinstance(self, ItemPresentationMixin) \
         or not isinstance(self, ItemNamesMixin):
             raise TypeError("Bad host")
-        scene = self._defaultScene(view)
-        if scene is None:
+        if (scene := self._defaultScene(view)) is None:
             return None
         key = self._resourceKeyDefault()
         brush = scene.resources.brush(self.resourcesName(), key)

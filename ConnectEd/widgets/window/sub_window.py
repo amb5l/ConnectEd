@@ -27,8 +27,7 @@ class DocSubWindow(QMdiSubWindow):
             logger().warning("No event")
             return
         # ensure binding is valid
-        binding = self.docBinding()
-        if binding is None:
+        if (binding := self.docBinding()) is None:
             closeEvent.accept()
             return
         # get doc

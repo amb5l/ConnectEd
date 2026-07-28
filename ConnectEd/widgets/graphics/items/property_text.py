@@ -76,8 +76,7 @@ class PropertyTextItem(TextItem):
     _tether : PropertyTextTetherItem | None
 
     def settingsName(self : Self) -> str:
-        item = self.item()
-        if isinstance(item, ItemNamesMixin):
+        if isinstance(item := self.item(), ItemNamesMixin):
             settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
             if hasattr(settings_items, settings_name):
@@ -154,26 +153,22 @@ class PropertyTextItem(TextItem):
             self._tether.onPositionChanged(pos)
 
     def onSelectionChanged(self : Self, selected : bool) -> None:
-        tether = self._tether
-        if tether is None:
+        if (tether := self._tether) is None:
             return
         cleat = self._cleat
         if cleat is None or cleat == "":
             return
         cleat_valid = cleat is not None and cleat != ""
         tether.setVisible(selected and cleat_valid)
-        anchor = tether.anchor()
-        if isinstance(anchor, HandleItem):
+        if isinstance(anchor := tether.anchor(), HandleItem):
             grip = anchor.grip()
             grip.setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
-        owner = self.owner()
-        if not isinstance(owner, PropertiesMixin):
+        if not isinstance(owner := self.owner(), PropertiesMixin):
             text = f"<{self._name} - unbound>"
         else:
-            name = self.name()
-            if isinstance(name, str):
+            if isinstance(name := self.name(), str):
                 if owner.properties.has(name):
                     kind = owner.properties.kind(name)
                     if kind in (DataKind.STR, DataKind.TEXT):
@@ -206,8 +201,7 @@ class PropertyTextItem(TextItem):
         self._cleat = id
         ok = False
         if id is not None:
-            item = parent or self.item()
-            if item is not None:
+            if (item := parent or self.item()) is not None:
                 for child in item.childItems():
                     if isinstance(child, HandleItem) and child.id() == id:
                         self.setParentItem(child)
@@ -242,8 +236,7 @@ class PropertyTextItem(TextItem):
         raise NotImplementedError("setBlock() is not implemented")
 
     def item(self : Self) -> QGraphicsItem | None:
-        parent = self.parentItem()
-        if isinstance(parent, HandleItem):
+        if isinstance(parent := self.parentItem(), HandleItem):
             return parent.parentItem()
         elif parent is None:
             return None
@@ -271,12 +264,10 @@ class PropertyTextItem(TextItem):
     def value(self : Self) -> Any:
         if not self.name():  # name is None or ""
             return None
-        owner = self.owner()
-        if owner is None:
+        if (owner := self.owner()) is None:
             return f"<{self.name()}>"
         if isinstance(owner, PropertiesMixin):
-            name = self.name()
-            if isinstance(name, str):
+            if isinstance(name := self.name(), str):
                 return owner.properties.value(name, self.onTextChanged)
         return None
 
@@ -286,12 +277,10 @@ class PropertyTextItem(TextItem):
             return
         if isinstance(value, NoChange):
             return
-        owner = self.owner()
-        if owner is None:
+        if (owner := self.owner()) is None:
             return
         if isinstance(owner, PropertiesMixin):
-            name = self.name()
-            if isinstance(name, str):
+            if isinstance(name := self.name(), str):
                 owner.properties.setValue(name, value)
 
     @checked
@@ -301,8 +290,7 @@ class PropertyTextItem(TextItem):
         kind  = dialog.getKind()
         value = dialog.getValue()
         cleat = dialog.getCleat()
-        owner = self.owner()
-        if not isinstance(owner, PropertiesMixin):
+        if not isinstance(owner := self.owner(), PropertiesMixin):
             return
         old_name = self.name()
         if not isinstance(name, NoChange) and name != old_name:

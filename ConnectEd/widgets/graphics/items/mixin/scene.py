@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 
 class ItemSceneMixin:
     def scene(self : Self) -> DiagramScene | None:
-        scene = qtItemClass(self).scene(cast(QGraphicsItem, self))
-        if scene is None:
+        if (scene := qtItemClass(self).scene(cast(QGraphicsItem, self))) is None:
             return None
         from ...scenes.diagram import DiagramScene
         if not isinstance(scene, DiagramScene):

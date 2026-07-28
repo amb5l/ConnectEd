@@ -80,8 +80,7 @@ class ConnectEdApp(QApplication):
 
 @checked
 def app() -> ConnectEdApp:
-    instance = ConnectEdApp.instance()
-    if not isinstance(instance, ConnectEdApp):
+    if not isinstance(instance := ConnectEdApp.instance(), ConnectEdApp):
         raise RuntimeError("Bad instance")
     return instance
 
@@ -104,7 +103,6 @@ def session() -> Session:
 @checked
 def window() -> Window:
     from .widgets.window import Window
-    w = app().window()
-    if not isinstance(w, Window):
+    if not isinstance(w := app().window(), Window):
         raise TypeError("Bad window")
     return w

@@ -26,8 +26,7 @@ class CustomSpinBox(QSpinBox):
 
     @checked
     def setEnabled(self : Self, a0 : bool) -> None:
-        line_edit = self.lineEdit()
-        if line_edit is None:
+        if (line_edit := self.lineEdit()) is None:
             return
         if a0 and not self.isEnabled():
             super().setEnabled(a0)

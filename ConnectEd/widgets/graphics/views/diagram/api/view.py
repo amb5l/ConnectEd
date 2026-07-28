@@ -95,8 +95,7 @@ class DiagramViewApiViewMixin:
         from .. import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
         self.grid.display = checked
-        viewport = self.viewport()
-        if viewport is not None:
+        if (viewport := self.viewport()) is not None:
             viewport.update()
 
     @checked
@@ -110,8 +109,7 @@ class DiagramViewApiViewMixin:
         from .. import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
         self.grid.pitch = QPointF(x, y)
-        viewport = self.viewport()
-        if viewport is not None:
+        if (viewport := self.viewport()) is not None:
             viewport.update()
 
     @checked

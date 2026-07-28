@@ -42,8 +42,7 @@ class DiagramInteraction:
     @checked
     def __init__(self : Self, view : DiagramView) -> None:
         self._view = view
-        scene = view.scene()
-        if scene is None:
+        if (scene := view.scene()) is None:
             raise TypeError("Bad scene")
         self._scene = scene
         self._done = False

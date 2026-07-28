@@ -64,8 +64,7 @@ class PolyVtxItem(GripShapeMixin, GripItem):
     ) -> None:
         delta = dx if isinstance(dx, QPointF) \
             else QPointF(dx, dy if dy is not None else 0.0)
-        parent = self.parentItem()
-        if not isinstance(parent, PolylineItem):
+        if not isinstance(parent := self.parentItem(), PolylineItem):
             raise TypeError("Bad parent")
         if self.index() == 0 and parent.selectMode() == 0:
             parent.setPos(parent.pos() + delta)
@@ -155,20 +154,17 @@ class PolySegItem(GripShapeMixin, GripItem):
     def _toLine(self : Self) -> None:
         if self.sweep() is None:
             return
-        scene= self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             raise TypeError("No scene")
         scene.editPolySeg(self, None, undoable=True)
 
     @checked
     def _toArc(self : Self, view : DiagramView) -> None:
-        sweep = self.sweep()
-        if sweep is None:
+        if (sweep := self.sweep()) is None:
             sweep = 0.0
         dialog = ArcDialog(sweep, view)
         if dialog.exec():
-            scene = self.scene()
-            if scene is None:
+            if (scene := self.scene()) is None:
                 raise TypeError("No scene")
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
 
@@ -184,15 +180,13 @@ class PolylineResizeGripItem(ResizeGripItem):
 
     @checked
     def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:  # pyright: ignore[reportIncompatibleMethodOverride]
-        item = self.item()
-        if not isinstance(item, PolylineItem):
+        if not isinstance(item := self.item(), PolylineItem):
             raise TypeError("Bad item")
         return self.scenePos(), [v.pos() for v in item.vertices()]
 
     @checked
     def moveRestore(self : Self, state : tuple[QPointF, list[QPointF]]) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
-        item = self.item()
-        if not isinstance(item, PolylineItem):
+        if not isinstance(item := self.item(), PolylineItem):
             raise TypeError("Bad item")
         pos, vertices = state
         self.moveBy(
@@ -513,8 +507,7 @@ class PolylineItem(
                 v_prev = v.pos()
         # handle closed case
         if self._closed:
-            sweep = self._segments[-1].sweep()
-            if sweep is None:
+            if (sweep := self._segments[-1].sweep()) is None:
                 path.lineTo(self._vertices[0].pos())
             else:
                 path.arcSpanTo(self._vertices[0].pos(), sweep)

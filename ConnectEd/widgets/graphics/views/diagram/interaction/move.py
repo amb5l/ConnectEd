@@ -113,8 +113,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         pos   : QPointF,                    # movement origin
         slide : bool = False
     ) -> None:
-        scene = view.scene()
-        if not isinstance(scene, DiagramScene):
+        if not isinstance(scene := view.scene(), DiagramScene):
             raise TypeError("Bad scene")
         self._view          = view
         self._scene         = scene
@@ -380,8 +379,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
 
         if isinstance(segment_or_static, SegmentItem):
             segment = segment_or_static
-            static  = segment.otherNode(mobile)
-            if isinstance(static, FreeNodeItem):
+            if isinstance(static := segment.otherNode(mobile), FreeNodeItem):
                 # TODO: should never get here with degree == 1, but handle it anyway
                 if static.degree() == 2:
                     s1, s2 = static.segments()

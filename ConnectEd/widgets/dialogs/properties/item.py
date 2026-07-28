@@ -97,8 +97,7 @@ class PropertiesItem(QStandardItem):
 
     @checked
     def types(self : Self) -> tuple[type, ...]:
-        kind = self.kind()
-        if kind is None:
+        if (kind := self.kind()) is None:
             return ()
         return kind.types()
 
@@ -131,11 +130,9 @@ class PropertiesItem(QStandardItem):
         # special case: value of "Type" column => kind of "Value" column
         from . import _COLS
         if self.column() == _COLS.index("Type"):
-            model = self.model()
-            if model is None:
+            if (model := self.model()) is None:
                 return
-            value_item = model.item(self.row(), _COLS.index("Value"))
-            if isinstance(value_item, PropertiesItem):
+            if isinstance(value_item := model.item(self.row(), _COLS.index("Value")), PropertiesItem):
                 if not isinstance(value, DataKind):
                     logger().error(f"Value {value} is not a DataKind")
                 else:

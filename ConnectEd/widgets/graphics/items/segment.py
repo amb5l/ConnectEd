@@ -218,8 +218,7 @@ class SegmentItem(
 
     @checked
     def _setEndpoint(self : Self, which : int, node : NodeItem | None) -> None:
-        old = self._node1 if which == 1 else self._node2
-        if old is not None:
+        if (old := self._node1 if which == 1 else self._node2) is not None:
             self._unsubscribeNode(old)
         if which == 1:
             self._node1 = node

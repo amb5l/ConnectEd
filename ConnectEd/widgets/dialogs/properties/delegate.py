@@ -64,16 +64,13 @@ class PropertiesDelegate(QStyledItemDelegate):
         option : QStyleOptionViewItem,
         index  : QModelIndex
     ) -> QWidget | None:
-        model = index.model()
-        if not isinstance(model, QStandardItemModel):
+        if not isinstance(model := index.model(), QStandardItemModel):
             return None
-        item = model.itemFromIndex(index)
-        if not isinstance(item, PropertiesItem):
+        if not isinstance(item := model.itemFromIndex(index), PropertiesItem):
             return None
         if item.value() is None:
             return None
-        kind = item.kind()
-        if kind is None:
+        if (kind := item.kind()) is None:
             return None
         editor = kind.editor()
         args = {
@@ -105,11 +102,9 @@ class PropertiesDelegate(QStyledItemDelegate):
     ) -> None:
         if not isinstance(editor, EditorType):
             return
-        model = index.model()
-        if not isinstance(model, QStandardItemModel):
+        if not isinstance(model := index.model(), QStandardItemModel):
             return
-        item = model.itemFromIndex(index)
-        if isinstance(item, PropertiesItem):
+        if isinstance(item := model.itemFromIndex(index), PropertiesItem):
             if item.initial() is not None:
                 editor.setValue(item.initial())
 
@@ -126,10 +121,8 @@ class PropertiesDelegate(QStyledItemDelegate):
             return
         if not isinstance(model, QStandardItemModel):
             return
-        value = editor.value()
-        if value is None:
+        if (value := editor.value()) is None:
             return
-        item = model.itemFromIndex(index)
-        if not isinstance(item, PropertiesItem):
+        if not isinstance(item := model.itemFromIndex(index), PropertiesItem):
             return
         item.setValue(value)

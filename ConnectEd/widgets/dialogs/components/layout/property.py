@@ -61,8 +61,7 @@ class PropertyLayout(QGridLayout):
         self._cleat_label = QLabel("Cleat:")
         self.addWidget(self._cleat_label, row, 0)
         self._cleat_value_layout = QHBoxLayout()
-        cleat = object.cleat()
-        if not isinstance(cleat, HandleId):
+        if not isinstance(cleat := object.cleat(), HandleId):
             raise TypeError("Bad cleat")
         self._cleat_value = EnumComboBox(cleat)
         self._cleat_value_layout.addWidget(self._cleat_value)

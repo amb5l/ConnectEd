@@ -30,8 +30,7 @@ class ItemCloneMixin:
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
         constructor = cast(FreshItemConstructor[Self], self.__class__)
-        clone_item = constructor(fresh=False)
-        if not isinstance(clone_item, QGraphicsItem):
+        if not isinstance(clone_item := constructor(fresh=False), QGraphicsItem):
             raise TypeError("Bad clone")
         # clone properties
         if hasattr(self, "properties"):

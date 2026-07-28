@@ -29,8 +29,7 @@ class Splash(QSplashScreen):
     _start_time : float | None = None
 
     def __init__(self : Self, light : bool, parent=None):
-        screen = QApplication.primaryScreen()
-        if screen is None:
+        if (screen := QApplication.primaryScreen()) is None:
             raise RuntimeError("No screen")
         screen_geometry = screen.geometry()
         splash_width = int(screen_geometry.width() * self._SIZE)
@@ -52,8 +51,7 @@ class Splash(QSplashScreen):
         screen_width  : int,
         light         : bool
     ) -> QPixmap:
-        screen = QApplication.primaryScreen()
-        if screen is None:
+        if (screen := QApplication.primaryScreen()) is None:
             raise RuntimeError("No screen")
         screen_geometry = screen.geometry()
         bitmap = QPixmap(getIconPath("ConnectEd.png"))

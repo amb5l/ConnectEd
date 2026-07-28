@@ -98,8 +98,7 @@ class Doc(ABC):
     def save(self : Self, path : str | None = None) -> bool:
         if not isinstance(self, FileXmlProtocol):
             return False
-        save_path = saveXml(self, path)
-        if save_path is None:
+        if (save_path := saveXml(self, path)) is None:
             return False
         if path is not None and self.path() != save_path:
             self.setPath(save_path)

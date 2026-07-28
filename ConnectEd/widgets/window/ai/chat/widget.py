@@ -75,8 +75,7 @@ class _AiChatFontZoomHost:
     def _applyChatFontSize(self : Self) -> None:
         font = self._chatFont()
         self._history.setFont(font)
-        document = self._history.document()
-        if document is None:
+        if (document := self._history.document()) is None:
             raise RuntimeError("No history document")
         document.setDefaultFont(font)
         self._input.setFont(font)
@@ -88,8 +87,7 @@ class _AiChatFontZoomHost:
         self._input.setMaximumHeight(fm.lineSpacing() * _INPUT_MAX_LINES + 12)
 
     def _rescaleHistoryDocumentFont(self : Self) -> None:
-        document = self._history.document()
-        if document is None:
+        if (document := self._history.document()) is None:
             raise RuntimeError("No history document")
         cursor = QTextCursor(document)
         cursor.beginEditBlock()
@@ -231,8 +229,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._font_size = int(settings().get("display/font_size"))
 
         ai_manager = window.aiManager()
-        edit_lock = ai_manager.editLock() if ai_manager is not None else None
-        if edit_lock is not None:
+        if (edit_lock := ai_manager.editLock() if ai_manager is not None else None) is not None:
             edit_lock.lockChanged.connect(self.refreshSendState)
 
         self._history = AiChatHistoryBrowser(self, self)
@@ -328,8 +325,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
             self._send.setToolTip("")
 
     def _editLock(self : Self):
-        ai_manager = self._window.aiManager()
-        if ai_manager is None:
+        if (ai_manager := self._window.aiManager()) is None:
             return None
         return ai_manager.editLock()
 
@@ -368,8 +364,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         recordChatConnection(profile_id, model)
         self.refreshSendState()
         self._session.runHandshake()
-        manager = self._window.aiChatManager()
-        if manager is not None:
+        if (manager := self._window.aiChatManager()) is not None:
             manager.refreshChatTitles()
         self.refreshInputState()
         self._input.setFocus(Qt.FocusReason.OtherFocusReason)
@@ -378,8 +373,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         if top:
             self._scheduleScrollToTop()
             return
-        bar = self._history.verticalScrollBar()
-        if bar is None:
+        if (bar := self._history.verticalScrollBar()) is None:
             raise RuntimeError("No vertical scroll bar")
         bar.setValue(bar.maximum())
 
@@ -387,8 +381,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         cursor = self._history.textCursor()
         cursor.movePosition(cursor.MoveOperation.Start)
         self._history.setTextCursor(cursor)
-        bar = self._history.verticalScrollBar()
-        if bar is None:
+        if (bar := self._history.verticalScrollBar()) is None:
             raise RuntimeError("No vertical scroll bar")
         bar.setValue(0)
 
@@ -409,8 +402,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         profiles = loadProfiles()
         if not profiles or not anyProfileMissingModels(profiles):
             return
-        ai_manager = self._window.aiManager()
-        if ai_manager is not None:
+        if (ai_manager := self._window.aiManager()) is not None:
             ai_manager.refreshProfilesIfNeeded()
 
     def _appendHtmlAtEnd(self : Self, html : str) -> None:
@@ -423,8 +415,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._scrollHistory()
 
     def _refreshHistoryStyle(self : Self) -> None:
-        document = self._history.document()
-        if document is None:
+        if (document := self._history.document()) is None:
             raise RuntimeError("No history document")
         document.setDefaultStyleSheet(historyStyleSheet())
 
@@ -455,8 +446,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
             if url.host() == "ai" and url.path() in ("/settings", "settings"):
                 self._openAiSettings()
                 return
-            link = parseChatLink(url.toString())
-            if link is not None:
+            if (link := parseChatLink(url.toString())) is not None:
                 profile_id, model = link
                 self.bindChat(profile_id, model)
             return
@@ -467,8 +457,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         dialog = AiProfilesDialog(self._window)
         if not dialog.exec():
             return
-        manager = self._window.aiChatManager()
-        if manager is None:
+        if (manager := self._window.aiChatManager()) is None:
             return
         manager.refreshChatTitles()
         manager.refreshChatWidgets()

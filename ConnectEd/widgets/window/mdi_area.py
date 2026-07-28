@@ -33,8 +33,7 @@ class MdiArea(QMdiArea):
         for subwindow in self.subWindowList():
             if not isinstance(subwindow, DocSubWindow):
                 continue
-            binding = subwindow.docBinding()
-            if binding is None:
+            if (binding := subwindow.docBinding()) is None:
                 continue
             doc = binding.doc
             subject = binding.subject
@@ -73,8 +72,7 @@ class MdiArea(QMdiArea):
                     actions[doc].setdefault(subject, []).append(action)
         self._actions = actions
         # propagate changes to menu bar
-        menu_bar = window().menuBar()
-        if menu_bar is None:
+        if (menu_bar := window().menuBar()) is None:
             raise RuntimeError("No menu bar")
         menu_bar.updateWindowMenu()
 
@@ -84,8 +82,7 @@ class MdiArea(QMdiArea):
     def docSubWindows(self : Self, doc : Doc) -> list[DocSubWindow]:
         subwindows = []
         for subwindow in self.mruSubWindows():
-            doc_binding = subwindow.docBinding()
-            if doc_binding is None:
+            if (doc_binding := subwindow.docBinding()) is None:
                 continue
             if doc_binding.doc is doc:
                 subwindows.append(subwindow)
@@ -98,8 +95,7 @@ class MdiArea(QMdiArea):
     ) -> list[DocSubWindow]:
         subwindows = []
         for subwindow in self.mruSubWindows():
-            doc_binding = subwindow.docBinding()
-            if doc_binding is None:
+            if (doc_binding := subwindow.docBinding()) is None:
                 continue
             if doc_binding.doc is doc and doc_binding.subject is subject:
                 subwindows.append(subwindow)
@@ -145,8 +141,7 @@ class MdiArea(QMdiArea):
             return
         current_index = windows.index(current_window)
         next_index = (current_index + offset) % len(windows)
-        next_window = windows[next_index]
-        if isinstance(next_window, DocSubWindow):
+        if isinstance(next_window := windows[next_index], DocSubWindow):
             self.activateSubWindow(next_window)
 
     def _onSubWindowActivated(

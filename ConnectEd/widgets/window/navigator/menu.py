@@ -67,8 +67,7 @@ class NavigatorMenuMixin:
         if not index.isValid():
             self._menu.exec(global_pos)
             return
-        item = self._model.itemFromIndex(index)
-        if item is None:
+        if (item := self._model.itemFromIndex(index)) is None:
             self._menu.exec(global_pos)
             return
         binding : DocBinding | None = item.data(Qt.ItemDataRole.UserRole)
@@ -78,8 +77,7 @@ class NavigatorMenuMixin:
             menu.exec(global_pos)
             return
         group_name = item.text()
-        group_menu = self._group_menus.get(group_name)
-        if group_menu is not None:
+        if (group_menu := self._group_menus.get(group_name)) is not None:
             group_menu.exec(global_pos)
             return
         self._menu.exec(global_pos)

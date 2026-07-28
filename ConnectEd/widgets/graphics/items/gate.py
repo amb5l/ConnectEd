@@ -166,8 +166,7 @@ class BufGateItem(GateItem):
         Build concurrent assignment VHDL code:
         label: o <= not i1
         """
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             logger().error("No scene")
             return ""
         output_net = scene.netlist.nodeNet(self._output.node())
@@ -197,8 +196,7 @@ class BufGateItem(GateItem):
             o = ~i
         end
         """
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             logger().error("No scene")
             return ""
         output_net = scene.netlist.nodeNet(self._output.node())
@@ -301,8 +299,7 @@ class LogicGateItem(GateItem):
         Build concurrent assignment VHDL code:
         label: o <= i1 and not i2 and i3 ...
         """
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             logger().error("No scene")
             return ""
         output_net = scene.netlist.nodeNet(self._output.node())
@@ -325,8 +322,7 @@ class LogicGateItem(GateItem):
             s += "not ("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
-            input_net = input_nets[n]
-            if input_net is None:
+            if (input_net := input_nets[n]) is None:
                 logger().error("No input net")
                 return ""
             net_name = input_net.name
@@ -346,8 +342,7 @@ class LogicGateItem(GateItem):
             o = i1 & ~i2 & i3 ...
         end
         """
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             logger().error("No scene")
             return ""
         output_net = scene.netlist.nodeNet(self._output.node())
@@ -372,8 +367,7 @@ class LogicGateItem(GateItem):
             s += "~("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
-            input_net = input_nets[n]
-            if input_net is None:
+            if (input_net := input_nets[n]) is None:
                 logger().error("No input net")
                 return ""
             net_name = input_net.name

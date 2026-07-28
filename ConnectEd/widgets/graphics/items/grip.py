@@ -102,27 +102,23 @@ class HandleGripItem(GripItem):
     @checked
     def handle(self : Self) -> HandleItem | None:
         from .handle import HandleItem
-        parent = self.parentItem()
-        if isinstance(parent, HandleItem | None):
+        if isinstance(parent := self.parentItem(), HandleItem | None):
             return parent
         else:
             raise TypeError("Bad parent")
 
     @checked
     def item(self : Self) -> QGraphicsItem | None:
-        handle = self.handle()
-        if handle is None:
+        if (handle := self.handle()) is None:
             raise TypeError("No handle")
         return handle.parentItem()
 
     @checked
     def moveBy(self : Self, dx : float, dy : float) -> None:
-        item = self.item()
-        if item is None:
+        if (item := self.item()) is None:
             raise TypeError("No item")
         if isinstance(item, MoveHandleByProtocol):
-            handle = self.handle()
-            if handle is None:
+            if (handle := self.handle()) is None:
                 raise TypeError("No handle")
             item.moveHandleBy(handle.id(), QPointF(dx, dy))
         else:
@@ -158,8 +154,7 @@ class OriginGripShapeMixin:
         item = self.item()
         normal_shape = getattr(item, "_NORMAL_GRIP_SHAPE", self._NORMAL_SHAPE)
         origin_shape = getattr(item, "_ORIGIN_GRIP_SHAPE", self._ORIGIN_SHAPE)
-        handle = self.handle()
-        if handle is None:
+        if (handle := self.handle()) is None:
             raise TypeError("No handle")
         shape = origin_shape if handle.isOrigin() else normal_shape
         if scene is None:
@@ -180,8 +175,7 @@ class MoveGripItem(OriginGripShapeMixin, HandleGripItem):
         view : DiagramView,
         spos : QPointF
     ) -> list[QAction | QMenu]:
-        item = self.item()
-        if item is None:
+        if (item := self.item()) is None:
             raise TypeError("No item")
         entries : list[QAction | QMenu] = [
             view.action(
@@ -193,8 +187,7 @@ class MoveGripItem(OriginGripShapeMixin, HandleGripItem):
         ]
         item = self.item()
         if isinstance(item, ItemTransformMixin) and item.hasOrigin():
-            h = self.handle()
-            if h is not None:
+            if (h := self.handle()) is not None:
                 entries.extend([
                     view.separator(),
                     view.action(

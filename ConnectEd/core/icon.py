@@ -13,11 +13,9 @@ from .check import checked
 
 @checked
 def getDefaultIconSize() -> int:
-    app = QApplication.instance()
-    if not isinstance(app, QApplication):
+    if not isinstance(app := QApplication.instance(), QApplication):
         return 0
-    style = app.style()
-    if not isinstance(style, QStyle):
+    if not isinstance(style := app.style(), QStyle):
         return 0
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 

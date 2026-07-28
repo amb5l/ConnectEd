@@ -231,8 +231,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         ]
 
     def _notifyNetlist(self : Self) -> None:
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             return
         from ..scenes.diagram import DiagramScene
         if not isinstance(scene, DiagramScene):

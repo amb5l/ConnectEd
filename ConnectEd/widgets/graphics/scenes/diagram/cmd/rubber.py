@@ -46,8 +46,7 @@ class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase[RubberTeeItem]):
     @checked(always=True)
     def __init__(self : Self, segment : SegmentItem, node : NodeItem) -> None:
         from .. import DiagramScene
-        scene = segment.scene()
-        if not isinstance(scene, DiagramScene):
+        if not isinstance(scene := segment.scene(), DiagramScene):
             logger().error("Bad scene")
             self.setObsolete(True)
             return
@@ -86,16 +85,14 @@ class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase[RubberCornerItem]):
             node:     Mobile node.
         """
         from .. import DiagramScene
-        scene = segment1.scene()
-        if not isinstance(scene, DiagramScene):
+        if not isinstance(scene := segment1.scene(), DiagramScene):
             logger().error("Bad scene")
             self.setObsolete(True)
             return
         super().__init__(scene, RubberCornerItem(segment1, segment2, node))
         self._segment1 = segment1
         self._segment2 = segment2
-        corner = segment1.otherNode(node)
-        if not isinstance(corner, FreeNodeItem):
+        if not isinstance(corner := segment1.otherNode(node), FreeNodeItem):
             logger().error("Bad corner")
             self.setObsolete(True)
             return
@@ -136,8 +133,7 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase[RubberJogItem]):
             axis: Jog inline axis (optional).
         """
         from .. import DiagramScene
-        scene = mobile.scene()
-        if not isinstance(scene, DiagramScene):
+        if not isinstance(scene := mobile.scene(), DiagramScene):
             logger().error("Bad scene")
             self.setObsolete(True)
             return

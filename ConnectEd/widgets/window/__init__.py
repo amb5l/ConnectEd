@@ -55,8 +55,7 @@ class Window(QMainWindow):
         super().__init__()
         app().setWindow(self)
         # default position
-        screen = self.screen()
-        if screen is None:
+        if (screen := self.screen()) is None:
             raise RuntimeError("No screen")
         screen_size = screen.size()
         self.resize(screen_size.width() // 2, screen_size.height() // 2)
@@ -185,11 +184,9 @@ class Window(QMainWindow):
 
     @checked
     def navigator(self : Self) -> Navigator:
-        dock = self.navigatorDock()
-        if dock is None:
+        if (dock := self.navigatorDock()) is None:
             raise RuntimeError("Navigator dock not initialized")
-        widget = dock.widget()
-        if widget is None:
+        if (widget := dock.widget()) is None:
             raise RuntimeError("Navigator widget not initialized")
         if not isinstance(widget, Navigator):
             raise RuntimeError("Navigator widget is not a Navigator")
@@ -203,8 +200,7 @@ class Window(QMainWindow):
 
     @checked
     def netlist(self : Self) -> NetlistBrowser | None:
-        dock = self.netlistDock()
-        if dock is None:
+        if (dock := self.netlistDock()) is None:
             return None
         widget = dock.widget()
         return widget if isinstance(widget, NetlistBrowser) else None
@@ -217,8 +213,7 @@ class Window(QMainWindow):
 
     @checked
     def messages(self : Self) -> TextView | None:
-        dock = self.messagesDock()
-        if dock is None:
+        if (dock := self.messagesDock()) is None:
             return None
         return dock._text_view
 
@@ -230,8 +225,7 @@ class Window(QMainWindow):
 
     @checked
     def transcript(self : Self) -> TextView | None:
-        dock = self.transcriptDock()
-        if dock is None:
+        if (dock := self.transcriptDock()) is None:
             return None
         return dock._text_view
 
@@ -243,8 +237,7 @@ class Window(QMainWindow):
 
     @checked
     def log(self : Self) -> TextView | None:
-        dock = self.logDock()
-        if dock is None:
+        if (dock := self.logDock()) is None:
             return None
         return dock._text_view
 
@@ -256,22 +249,19 @@ class Window(QMainWindow):
 
     @checked
     def aiEditLock(self : Self) -> AiEditLock | None:
-        manager = self.aiManager()
-        if manager is None:
+        if (manager := self.aiManager()) is None:
             return None
         return manager.editLock()
 
     @checked
     def aiChatManager(self : Self) -> AiChatManager | None:
-        manager = self.aiManager()
-        if manager is None:
+        if (manager := self.aiManager()) is None:
             return None
         return manager.chatManager()
 
     @checked
     def aiChatDock(self : Self) -> AiChatDock | None:
-        manager = self.aiChatManager()
-        if manager is None:
+        if (manager := self.aiChatManager()) is None:
             return None
         chats = manager.chats()
         if not chats:

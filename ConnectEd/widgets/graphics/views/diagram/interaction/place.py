@@ -125,8 +125,7 @@ class DiagramPlaceBase2PosInteraction(DiagramPlaceBase1PosInteraction[TItem]):
         if pos == self._pos:
             return  # filter redundant updates
         self._pos = pos
-        item = self._item
-        if isinstance(item, SetPointsProtocol):
+        if isinstance(item := self._item, SetPointsProtocol):
             item.setPoints(self._p1, pos)
 
 

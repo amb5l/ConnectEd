@@ -318,8 +318,7 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
         items : Sequence[QGraphicsItem],
         spos  : QPointF | None = None
     ) -> None:
-        item = self._requireOneItemNoSpos(items, spos)
-        if isinstance(item, PropertyTextItem):
+        if isinstance(item := self._requireOneItemNoSpos(items, spos), PropertyTextItem):
             dialog = PropertyTextItemDialog(item, self.view)
             if dialog.exec():
                 owner = item.owner()
@@ -373,8 +372,7 @@ class DiagramViewStateEditPort(DiagramViewState):
         items : Sequence[QGraphicsItem],
         spos  : QPointF | None = None
     ) -> None:
-        item = self._requireOneItemNoSpos(items, spos)
-        if isinstance(item, PortItem):
+        if isinstance(item := self._requireOneItemNoSpos(items, spos), PortItem):
             dialog = PortPinItemDialog("Port", item, self.view)
             if dialog.exec():
                 name = dialog.getName()
@@ -394,8 +392,7 @@ class DiagramViewStateEditBlockPin(DiagramViewState):
         items : Sequence[QGraphicsItem],
         spos  : QPointF | None = None
     ) -> None:
-        item = self._requireOneItemNoSpos(items, spos)
-        if isinstance(item, BlockPinItem):
+        if isinstance(item := self._requireOneItemNoSpos(items, spos), BlockPinItem):
             dialog = PortPinItemDialog("Block Pin", item, self.view)
             if dialog.exec():
                 name = dialog.getName()

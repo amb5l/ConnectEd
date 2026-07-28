@@ -108,11 +108,9 @@ class Netlist:
 
     @checked
     def netKindForSegment(self : Self, seg : SegmentItem) -> NetKind:
-        node = seg.node1() or seg.node2()
-        if node is None:
+        if (node := seg.node1() or seg.node2()) is None:
             return NetKind.UNRESOLVED
-        subnet = self.nodeSubnet(node)
-        if subnet is None:
+        if (subnet := self.nodeSubnet(node)) is None:
             return NetKind.UNRESOLVED
         net = subnet.net
         if net is not None and net.suffix is not None:
@@ -214,8 +212,7 @@ class Netlist:
             if node not in self._graph:
                 continue
             self._graph.remove_node(node)
-            subnet = self.nodeSubnet(node)
-            if subnet is not None:
+            if (subnet := self.nodeSubnet(node)) is not None:
                 self._node2subnet.pop(node, None)
                 subnet.nodes.discard(node)
                 if not subnet.nodes:
@@ -282,8 +279,7 @@ class Netlist:
                 raise ValueError("Subnet ID is None")
             self._subnets.pop(subnet2.id, None)
             self._resolveSubnet(subnet1)
-        subnet = self.nodeSubnet(node1)
-        if subnet is not None:
+        if (subnet := self.nodeSubnet(node1)) is not None:
             self._refreshSegments([subnet])
 
     @checked
@@ -332,8 +328,7 @@ class Netlist:
         node_old : NodeItem,
         node_new : NodeItem
     ) -> None:
-        node_other = segment.otherNode(node_old)
-        if node_other is None:
+        if (node_other := segment.otherNode(node_old)) is None:
             return
         self.removeSegment(node_old, node_other)
         segment.changeNode(node_old, node_new)
@@ -348,8 +343,7 @@ class Netlist:
         and not self._subnetsContainingNode(node):
             return
         affected_subnets : set[Subnet] = set()
-        subnet = self.nodeSubnet(node)
-        if subnet is not None:
+        if (subnet := self.nodeSubnet(node)) is not None:
             self._node2subnet.pop(node, None)
             subnet.nodes.discard(node)
             if not subnet.nodes:
@@ -716,8 +710,7 @@ class Netlist:
         if subnet.id is None:
             raise ValueError("Subnet ID is None")
         self._subnet2net.pop(subnet.id)
-        net = subnet.net
-        if net is None:
+        if (net := subnet.net) is None:
             raise ValueError("Subnet net is None")
         net.subnets.discard(subnet.id)
         if not net.subnets:
@@ -737,8 +730,7 @@ class Netlist:
         if not suffixes or any(s is None for s in suffixes):
             net.suffix = None
             return
-        vec = next((s for s in suffixes if s and ":" in s), None)
-        if vec is not None:
+        if (vec := next((s for s in suffixes if s and ":" in s), None)) is not None:
             net.suffix = vec
         elif all(s == "" for s in suffixes):
             net.suffix = ""

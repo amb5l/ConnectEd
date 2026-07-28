@@ -79,8 +79,7 @@ class DiagramView(
         self.state.go(self.stateIdle)
 
     def scene(self : Self) -> DiagramScene | None:
-        scene = super().scene()
-        if scene is None:
+        if (scene := super().scene()) is None:
             return None
         if not isinstance(scene, DiagramScene):
             raise TypeError("Bad scene")
@@ -155,11 +154,9 @@ class DiagramView(
         if event.key() in (
             Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down
         ):
-            scene = self.scene()
-            if scene is None:
+            if (scene := self.scene()) is None:
                 return
-            focus_item = scene.focusItem()
-            if focus_item is None:
+            if (focus_item := scene.focusItem()) is None:
                 return
             if isinstance(focus_item, QGraphicsTextItem):
                 text_editable = focus_item.textInteractionFlags() & \
@@ -188,8 +185,7 @@ class DiagramSubWindow(DocSubWindow):
             logger().warning("No close event")
             return
         super().closeEvent(closeEvent)
-        widget = self.widget()
-        if isinstance(widget, DiagramView):
+        if isinstance(widget := self.widget(), DiagramView):
             scene = widget.scene()
             if scene and scene.undo_stack:
                 try:

@@ -89,11 +89,9 @@ class RubberTeeItem(ChromeItem, RubberItem):
         # initialise superclass
         super().__init__()
         # sanity
-        other_node = segment.otherNode(node)
-        if other_node is None:
+        if (other_node := segment.otherNode(node)) is None:
             raise ValueError("other node is None")
-        axis = segment.axis()
-        if axis is None:
+        if (axis := segment.axis()) is None:
             raise ValueError("axis is None")
         # set instance attributes
         self._static = other_node
@@ -113,8 +111,7 @@ class RubberTeeItem(ChromeItem, RubberItem):
             junc_seg_axis = junc_seg.axis()
             if junc_seg_axis is None or junc_seg_axis == axis:
                 continue
-            junc_seg_other_node = junc_seg.otherNode(junc_node)
-            if junc_seg_other_node is None:
+            if (junc_seg_other_node := junc_seg.otherNode(junc_node)) is None:
                 raise ValueError("junc_seg_other_node is None")
             new_p = junc_seg_other_node.scenePos()
             # update perp_p1 or perp_p2
@@ -185,20 +182,17 @@ class RubberCornerItem(ChromeItem, RubberItem):
         super().__init__()
         # positioning
         node_spos = node.scenePos()
-        corner_node = segment1.otherNode(node)
-        if corner_node is None:
+        if (corner_node := segment1.otherNode(node)) is None:
             raise ValueError("corner node is None")
         corner_spos = corner_node.scenePos()
-        origin_node = segment2.otherNode(corner_node)
-        if origin_node is None:
+        if (origin_node := segment2.otherNode(corner_node)) is None:
             raise ValueError("origin node is None")
         origin_spos = origin_node.scenePos()
         self.setPos(origin_spos)
         # set instance attributes
         self._static = origin_node
         self._mobile = node
-        axis = segment1.axis()
-        if axis is None:
+        if (axis := segment1.axis()) is None:
             raise ValueError("axis is None")
         self._axis = axis
         # initialise path
@@ -275,8 +269,7 @@ class RubberJogItem(ChromeItem, RubberItem):
         # get coordinates
         if isinstance(segment_or_static, SegmentItem):
             segment = segment_or_static
-            static = segment.otherNode(mobile)
-            if static is None:
+            if (static := segment.otherNode(mobile)) is None:
                 raise ValueError("static node is None")
             axis = segment.axis()  # override arg if supplied
             if axis is None:

@@ -65,15 +65,13 @@ class CmdEditPolySeg(CmdSceneItem[PolySegItem]):
     @checked
     def redo(self : Self) -> None:
         self._item.setSweep(self._after)
-        parent = self._item.parentItem()
-        if not isinstance(parent, PolylineItem):
+        if not isinstance(parent := self._item.parentItem(), PolylineItem):
             raise TypeError("Bad parent")
         parent.updatePath()
 
     @checked
     def undo(self : Self) -> None:
         self._item.setSweep(self._before)
-        parent = self._item.parentItem()
-        if not isinstance(parent, PolylineItem):
+        if not isinstance(parent := self._item.parentItem(), PolylineItem):
             raise TypeError("Bad parent")
         parent.updatePath()

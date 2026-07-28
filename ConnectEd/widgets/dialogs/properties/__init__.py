@@ -103,8 +103,7 @@ class PropertiesDialog(QDialog):
         self._table_model.setHorizontalHeaderLabels(_COLS)
         # add rows
         for name in item.properties.names():
-            kind = item.properties.kind(name)
-            if kind is None:
+            if (kind := item.properties.kind(name)) is None:
                 continue
             self._table_model.appendRow(self._buildRow(
                 name, kind, item.properties.value(name)
@@ -170,8 +169,7 @@ class PropertiesDialog(QDialog):
                 continue
             if name_item.deleted():
                 continue
-            name = name_item.value()
-            if not isinstance(name, str):
+            if not isinstance(name := name_item.value(), str):
                 logger().error(f"Name is not a string: {name}")
                 return
             if name == "" or name in names:
@@ -190,8 +188,7 @@ class PropertiesDialog(QDialog):
                 continue
             if not kind_item.isEditable():
                 continue
-            kind = kind_item.value()
-            if not isinstance(kind, DataKind):
+            if not isinstance(kind := kind_item.value(), DataKind):
                 logger().error(f"Kind is not a DataKind: {kind}")
                 return
             if (value_item := self._getItem(row, value_col)) is None:
@@ -200,8 +197,7 @@ class PropertiesDialog(QDialog):
             if kind != value_item.kind():
                 logger().warning(f"Type/value mismatch for property '{name}'")
                 value_item.setKind(kind)
-            value = value_item.value()
-            if not isinstance(value, kind.types()):
+            if not isinstance(value := value_item.value(), kind.types()):
                 QMessageBox.warning(
                     self, "Invalid Property",
                     f"Value of property '{name}' does not match type '{kind}'."
@@ -302,8 +298,7 @@ class PropertiesDialog(QDialog):
         row_idx : int
     ) -> None:
         value_col = _COLS.index("Value")
-        value_item = self._getItem(row_idx, value_col)
-        if value_item is None:
+        if (value_item := self._getItem(row_idx, value_col)) is None:
             logger().error(f"Bad value item for row {row_idx}")
             return
         value_item.setKind(kind)
@@ -317,8 +312,7 @@ class PropertiesDialog(QDialog):
         pt_new = False
         for col_name, (kind, value, _) in _PT_COLS.items():
             col_idx = _COLS.index(col_name)
-            pt_item = self._getItem(row_idx, col_idx)
-            if pt_item is None:
+            if (pt_item := self._getItem(row_idx, col_idx)) is None:
                 logger().error(f"Bad PT item for row {row_idx}")
                 continue
             if pt_item is not None and col_name == "Cleat":
@@ -342,12 +336,10 @@ class PropertiesDialog(QDialog):
     def _refreshDisplay(self : Self, row_idx : int) -> None:
         """Refresh PT columns from the model's Display value."""
         display_col = _COLS.index("Display")
-        display_item = self._table_model.item(row_idx, display_col)
-        if not isinstance(display_item, PropertiesItem):
+        if not isinstance(display_item := self._table_model.item(row_idx, display_col), PropertiesItem):
             logger().error(f"Bad display item for row {row_idx}")
             return
-        display_value = display_item.value()
-        if not isinstance(display_value, Display):
+        if not isinstance(display_value := display_item.value(), Display):
             logger().error(f"Bad display value for row {row_idx}")
             return
         self._onDisplayChanged(display_value, row_idx)
@@ -379,8 +371,7 @@ class PropertiesDialog(QDialog):
         item = self._item
         new = not item.properties.has(name)
         custom = new or not item.properties.inherent(name)
-        value_kind = kind if new else item.properties.kind(name)
-        if not isinstance(value_kind, DataKind):
+        if not isinstance(value_kind := kind if new else item.properties.kind(name), DataKind):
             logger().error(f"Bad value kind ({value_kind})")
             value_kind = DataKind.STR
         value_value = value if new else item.properties.value(name)
@@ -450,12 +441,10 @@ class PropertiesDialog(QDialog):
         # delete rows
         failures = []
         for row in rows:
-            name_item = self._getItem(row, 0)
-            if name_item is None:
+            if (name_item := self._getItem(row, 0)) is None:
                 logger().error(f"Bad name item for row {row}")
                 continue
-            name = name_item.value()
-            if not isinstance(name, str):
+            if not isinstance(name := name_item.value(), str):
                 logger().error(f"Name is not a string: {name}")
                 continue
             if not self._item.properties.has(name) \
@@ -500,8 +489,7 @@ class PropertiesDialog(QDialog):
 
     def _selectedRows(self : Self) -> list[int]:
         # get all selected row indices
-        selection_model = self._table_view.selectionModel()
-        if not isinstance(selection_model, QItemSelectionModel):
+        if not isinstance(selection_model := self._table_view.selectionModel(), QItemSelectionModel):
             logger().error("Bad selection model")
             return []
         indices = selection_model.selectedRows()
@@ -726,8 +714,7 @@ class PropertiesDialog(QDialog):
         NoChange | bool,          # Underline
     ]:
         # get items
-        items = self._getRowPropertyTextItems(row_idx)
-        if items is None:
+        if (items := self._getRowPropertyTextItems(row_idx)) is None:
             return None
         cleat_item     , \
         x_item         , \
@@ -748,8 +735,7 @@ class PropertiesDialog(QDialog):
         italic_item    , \
         underline_item = items
         # get values
-        values = self._getRowPropertyTextItemValues(row_idx, items)
-        if values is None:
+        if (values := self._getRowPropertyTextItemValues(row_idx, items)) is None:
             return None
         cleat     , \
         x         , \

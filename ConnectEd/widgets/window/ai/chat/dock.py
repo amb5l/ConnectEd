@@ -38,8 +38,7 @@ class AiChatDock(QDockWidget):
     def providerLabel(self : Self) -> str:
         if not self._profile_id:
             return providerPresetLabel(self._provider)
-        profile = getProfile(self._profile_id)
-        if profile is not None:
+        if (profile := getProfile(self._profile_id)) is not None:
             label = profileMenuLabel(profile)
             if self._model:
                 return f"{label}/{self._model}"

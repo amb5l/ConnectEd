@@ -62,8 +62,7 @@ class BaseTextItemDialog(QDialog, Generic[T]):
         self._left_layout.addWidget(self._orientation_group_box)
         self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
         self._left_layout.addWidget(self._align_group_box)
-        origin = item.origin()
-        if not isinstance(origin, RectHandleId):
+        if not isinstance(origin := item.origin(), RectHandleId):
             raise TypeError("Bad origin")
         self._origin_group_box = OriginGroupBox(origin)
         self._left_layout.addWidget(self._origin_group_box)
@@ -73,23 +72,17 @@ class BaseTextItemDialog(QDialog, Generic[T]):
             item.padTop(), item.padBottom(), item.padLeft(), item.padRight()
         )
         self._right_layout.addWidget(self._padding_group_box)
-        default_color = item.defaultTextColor(parent)
-        if not isinstance(default_color, QColor):
+        if not isinstance(default_color := item.defaultTextColor(parent), QColor):
             raise TypeError("Bad default color")
-        default_font = item.defaultTextFont(parent)
-        if not isinstance(default_font, str):
+        if not isinstance(default_font := item.defaultTextFont(parent), str):
             raise TypeError("Bad default font")
-        default_size = item.defaultTextSize(parent)
-        if not isinstance(default_size, float):
+        if not isinstance(default_size := item.defaultTextSize(parent), float):
             raise TypeError("Bad default size")
-        default_bold = item.defaultTextBold(parent)
-        if not isinstance(default_bold, bool):
+        if not isinstance(default_bold := item.defaultTextBold(parent), bool):
             raise TypeError("Bad default bold")
-        default_italic = item.defaultTextItalic(parent)
-        if not isinstance(default_italic, bool):
+        if not isinstance(default_italic := item.defaultTextItalic(parent), bool):
             raise TypeError("Bad default italic")
-        default_underline = item.defaultTextUnderline(parent)
-        if not isinstance(default_underline, bool):
+        if not isinstance(default_underline := item.defaultTextUnderline(parent), bool):
             raise TypeError("Bad default underline")
         self._appearance_group_box = TextAppearancePreviewGroupBox(
             item.textColor(),

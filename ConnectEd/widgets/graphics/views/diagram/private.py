@@ -30,8 +30,7 @@ class DiagramViewPrivateMixin:
     def _allItemsRect(self : Self) -> QRectF | None:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             return None
         items_rect = None
         for item in scene.items():
@@ -44,8 +43,7 @@ class DiagramViewPrivateMixin:
     def _selectedItemsRect(self : Self) -> QRectF | None:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             return None
         items_rect = None
         for item in scene.selectedItems():
@@ -58,21 +56,18 @@ class DiagramViewPrivateMixin:
     def _pan(self : Self, delta : QPointF) -> None:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        viewport = self.viewport()
-        if viewport is None:
+        if (viewport := self.viewport()) is None:
             raise TypeError("No viewport")
         lrect = self.mapToScene(viewport.rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
         transform = self.transform()
         pdelta = QPointF(transform.m11() * pan.x(), transform.m22() * pan.y())
-        horizontal_scroll_bar = self.horizontalScrollBar()
-        if horizontal_scroll_bar is None:
+        if (horizontal_scroll_bar := self.horizontalScrollBar()) is None:
             raise TypeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() - int(pdelta.x())
         )
-        vertical_scroll_bar = self.verticalScrollBar()
-        if vertical_scroll_bar is None:
+        if (vertical_scroll_bar := self.verticalScrollBar()) is None:
             raise TypeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() - int(pdelta.y())
@@ -104,14 +99,12 @@ class DiagramViewPrivateMixin:
         self._zoomRel(rel)
         vpos_new = self.mapFromScene(spos_old)
         delta = vpos_new - vpos_old
-        horizontal_scroll_bar = self.horizontalScrollBar()
-        if horizontal_scroll_bar is None:
+        if (horizontal_scroll_bar := self.horizontalScrollBar()) is None:
             raise TypeError("No horizontal scroll bar")
         horizontal_scroll_bar.setValue(
             horizontal_scroll_bar.value() + delta.x()
         )
-        vertical_scroll_bar = self.verticalScrollBar()
-        if vertical_scroll_bar is None:
+        if (vertical_scroll_bar := self.verticalScrollBar()) is None:
             raise TypeError("No vertical scroll bar")
         vertical_scroll_bar.setValue(
             vertical_scroll_bar.value() + delta.y()
@@ -121,8 +114,7 @@ class DiagramViewPrivateMixin:
     def _zoomRect(self : Self, rect : QRectF) -> None:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        viewport = self.viewport()
-        if viewport is None:
+        if (viewport := self.viewport()) is None:
             raise TypeError("No viewport")
         factor = min(
             viewport.width()  / rect.width(),
@@ -207,8 +199,7 @@ class DiagramViewPrivateMixin:
     ) -> None:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             raise RuntimeError("No scene")
         toggle = modifiers & (MouseModifier.CTRL | MouseModifier.SHIFT) \
             == MouseModifier.CTRL
@@ -350,8 +341,7 @@ class DiagramViewPrivateMixin:
     ) -> list[QGraphicsItem]:
         from . import DiagramView
         if not isinstance(self, DiagramView): raise TypeError("Bad host")
-        scene = self.scene()
-        if scene is None:
+        if (scene := self.scene()) is None:
             return []
         return [
             i for i in scene.selectedItems()

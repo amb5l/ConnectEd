@@ -232,15 +232,13 @@ class DiagramSceneResources:
         self._pens["GateRound"] = {}
         self._brushes["GateRound"] = {}
         for selected in [False, True]:
-            gate_pens = self._pens["Gate"]
-            if not isinstance(gate_pens, dict):
+            if not isinstance(gate_pens := self._pens["Gate"], dict):
                 raise TypeError("Bad gate pens")
             gate_pen = QPen(gate_pens[selected])
             gate_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             gate_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
             self._pens["GateRound"][selected] = gate_pen
-            gate_brushes = self._brushes["Gate"]
-            if not isinstance(gate_brushes, dict):
+            if not isinstance(gate_brushes := self._brushes["Gate"], dict):
                 raise TypeError("Bad gate brushes")
             gate_brush = QBrush(gate_brushes[selected])
             self._brushes["GateRound"][selected] = gate_brush
@@ -259,8 +257,7 @@ class DiagramSceneResources:
                         raise TypeError("Bad buf or gate pins")
                     buf_or_gate_pins[(bus, selected)] = gate_pin
             self._paths[item_name] = {}
-            gate_pin_paths = self._paths["GatePin"]
-            if not isinstance(gate_pin_paths, dict):
+            if not isinstance(gate_pin_paths := self._paths["GatePin"], dict):
                 raise TypeError("Bad gate pin paths")
             for key, path in gate_pin_paths.items():
                 path = QPainterPath(path)  # copy before modifying
@@ -422,8 +419,7 @@ class DiagramSceneResources:
             pen_sel.setWidthF(float(spec.width))
         if hasattr(spec, "style"):
             pen_sel.setStyle(spec.style)
-        override = self._selectedItemPart(item_name, "line")
-        if override is not None:
+        if (override := self._selectedItemPart(item_name, "line")) is not None:
             if hasattr(override, "color"):
                 pen_sel.setColor(override.color)
             if hasattr(override, "width"):
@@ -445,8 +441,7 @@ class DiagramSceneResources:
             brush_sel.setColor(spec)
         if hasattr(spec, "style"):
             brush_sel.setStyle(spec.style)
-        override = self._selectedItemPart(item_name, "fill")
-        if override is not None:
+        if (override := self._selectedItemPart(item_name, "fill")) is not None:
             if hasattr(override, "color"):
                 brush_sel.setColor(override.color)
             if hasattr(override, "style"):
@@ -468,8 +463,7 @@ class DiagramSceneResources:
             if hasattr(spec, attr):
                 setter = getattr(quill_sel, f"set{attr.capitalize()}")
                 setter(getattr(spec, attr))
-        override = self._selectedItemPart(item_name, "text")
-        if override is not None:
+        if (override := self._selectedItemPart(item_name, "text")) is not None:
             if hasattr(override, "color"):
                 quill_sel.setColor(override.color)
             for attr in ("font", "size", "bold", "italic", "underline"):

@@ -37,8 +37,7 @@ class AiManager(QObject):
             messages_dock,
             self._edit_lock,
         )
-        menu_bar = window.menuBar()
-        if menu_bar is not None:
+        if (menu_bar := window.menuBar()) is not None:
             self._chat_manager.chatsChanged.connect(menu_bar.updateAiMenu)
         self._refresh_worker = None
 
@@ -69,8 +68,7 @@ class AiManager(QObject):
 
     def _onProfilesRefreshed(self : Self, profiles : list) -> None:
         saveProfiles(profiles)
-        menu_bar = self._window.menuBar()
-        if menu_bar is not None:
+        if (menu_bar := self._window.menuBar()) is not None:
             menu_bar.updateAiMenu()
         self._chat_manager.refreshChatTitles()
         self._chat_manager.refreshChatWidgets()

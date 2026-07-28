@@ -291,8 +291,7 @@ class HdlSchematicDiagramDoc(Doc):
 
     @checked
     def newWindow(self : Self, subject : DocSubjectProtocol) -> bool:
-        subwindow = self._createSubWindow(subject)
-        if subwindow is None:
+        if (subwindow := self._createSubWindow(subject)) is None:
             return False
         subwindow.showMaximized()
         window().mdiArea().activateSubWindow(subwindow)
@@ -517,8 +516,7 @@ class HdlSchematicDiagramDoc(Doc):
         self      : Self,
         subwindow : DocSubWindow
     ) -> DocSubjectProtocol | None:
-        binding = subwindow.docBinding()
-        if binding is None:
+        if (binding := subwindow.docBinding()) is None:
             logger().error("Subwindow has no binding")
             return None
         if binding.doc is not self:

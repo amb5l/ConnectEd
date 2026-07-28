@@ -62,8 +62,7 @@ class FindBar(QWidget):
         self.setLayout(layout)
 
         # connect signals
-        line_edit = self.find_combo.lineEdit()
-        if line_edit is None:
+        if (line_edit := self.find_combo.lineEdit()) is None:
             raise RuntimeError("No line edit")
         line_edit.returnPressed.connect(lambda: self.slotFind(forward=True))
         self.find_next.clicked.connect(lambda: self.slotFind(forward=True))

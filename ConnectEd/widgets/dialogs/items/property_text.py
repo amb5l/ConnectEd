@@ -20,8 +20,7 @@ class PropertyTextItemDialog(BaseTextItemDialog):
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
-        name = item.name()
-        if not isinstance(name, str):
+        if not isinstance(name := item.name(), str):
             raise TypeError("Bad name")
         self._top_section = PropertyGroupBox(item, name)
         self._layout.addWidget(self._top_section)
@@ -44,8 +43,7 @@ class PropertyTextItemDialog(BaseTextItemDialog):
 
     @checked
     def _focusEditor(self : Self) -> None:
-        value = self._top_section._layout._value_value
-        if isinstance(value, QLabel):
+        if isinstance(value := self._top_section._layout._value_value, QLabel):
             return
         elif isinstance(value, QLineEdit | QTextEdit):
             value.setFocus(Qt.FocusReason.OtherFocusReason)

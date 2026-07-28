@@ -25,8 +25,7 @@ class NavigatorPrivateMixin:
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
         for row in range(self._model.rowCount()):
-            item = self._model.item(row)
-            if isinstance(item, NavItem):
+            if isinstance(item := self._model.item(row), NavItem):
                 self._forEachNavItemFrom(item, fn)
 
     def _forEachNavItemFrom(
@@ -36,8 +35,7 @@ class NavigatorPrivateMixin:
     ) -> None:
         fn(item)
         for row in range(item.rowCount()):
-            child = item.child(row)
-            if isinstance(child, NavItem):
+            if isinstance(child := item.child(row), NavItem):
                 self._forEachNavItemFrom(child, fn)
 
     def _refreshDocNav(self : Self, doc : Doc) -> None:
@@ -72,11 +70,9 @@ class NavigatorPrivateMixin:
         return None
 
     def _removeDocFromTree(self : Self, doc : Doc) -> None:
-        doc_item = self._docNavItem(doc)
-        if doc_item is None:
+        if (doc_item := self._docNavItem(doc)) is None:
             return
-        parent = doc_item.parent()
-        if parent is None:
+        if (parent := doc_item.parent()) is None:
             return
         parent.removeRow(doc_item.row())
         self._updateGroups()
@@ -180,8 +176,7 @@ class NavigatorPrivateMixin:
                 if spec.children is not None:
                     _addRows(item, spec.children)
             return root_item
-        doc_item = _addRows(parent, doc.navItemSpec())
-        if doc_item is not None:
+        if (doc_item := _addRows(parent, doc.navItemSpec())) is not None:
             self._openRow(doc_item)
         self._updateGroups()
 

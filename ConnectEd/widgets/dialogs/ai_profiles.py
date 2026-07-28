@@ -181,8 +181,7 @@ def _refreshEnvKeyValueTableCells(table : QTableWidget, profiles : list[AiProfil
     for row, profile in enumerate(profiles):
         if not isEnvKeyName(profile.api_key_name):
             continue
-        item = table.item(row, _COL_KEY_VALUE)
-        if item is None:
+        if (item := table.item(row, _COL_KEY_VALUE)) is None:
             continue
         full = item.data(Qt.ItemDataRole.UserRole)
         if not full:
@@ -233,8 +232,7 @@ def _applyKeyValueTableItem(
 
 def _titleBarMinWidth(dialog : QDialog) -> int:
     """Minimum client width so the native caption is not clipped."""
-    style = dialog.style()
-    if style is None:
+    if (style := dialog.style()) is None:
         return 0
     fm = QFontMetrics(QApplication.font())
     title_w = fm.horizontalAdvance(dialog.windowTitle())
@@ -397,8 +395,7 @@ class AiProfilesDialog(QDialog):
         self._table.setSelectionMode(
             QTableWidget.SelectionMode.SingleSelection
         )
-        horizontal_header = self._table.horizontalHeader()
-        if horizontal_header is not None:
+        if (horizontal_header := self._table.horizontalHeader()) is not None:
             horizontal_header.setStretchLastSection(True)
             horizontal_header.setSectionResizeMode(
                 _COL_PROVIDER,
@@ -489,8 +486,7 @@ class AiProfilesDialog(QDialog):
         profile = self._profiles[row]
         if column == _COL_KEY_NAME:
             profile.api_key_name = self._cellText(row, _COL_KEY_NAME)
-            value_item = self._table.item(row, _COL_KEY_VALUE)
-            if value_item is None:
+            if (value_item := self._table.item(row, _COL_KEY_VALUE)) is None:
                 value_item = QTableWidgetItem()
                 self._table.setItem(row, _COL_KEY_VALUE, value_item)
             if isEnvKeyName(profile.api_key_name):
@@ -510,8 +506,7 @@ class AiProfilesDialog(QDialog):
         return item.text().strip() if item is not None else ""
 
     def _selectedRow(self : Self) -> int:
-        selection_model = self._table.selectionModel()
-        if selection_model is None:
+        if (selection_model := self._table.selectionModel()) is None:
             return -1
         rows = selection_model.selectedRows()
         return rows[0].row() if rows else -1

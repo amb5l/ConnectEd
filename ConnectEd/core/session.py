@@ -72,16 +72,14 @@ class Session(QObject):
 
     @checked
     def load(self, path : str) -> Doc | None:
-        existing_doc = self.openDocForPath(path)
-        if existing_doc is not None:
+        if (existing_doc := self.openDocForPath(path)) is not None:
             return existing_doc
         path = cleanPath(path)
         elements = {
             doc_type.tag : doc_type.cls
             for doc_type in self._doc_types.values()
         }
-        doc = loadXml(path, elements)
-        if doc is None:
+        if (doc := loadXml(path, elements)) is None:
             return None
         self._open_docs.append(cast(Doc, doc))
         return cast(Doc, doc)

@@ -121,8 +121,7 @@ def _applyRuntimeDefaults(settings : dict[str, Any]) -> None:
     sheet_name = settings["defaults"]["sheet"]["name"]
     settings["defaults"]["sheet"]["size"] = DEFS["sheets"][sheet_name]
 
-    pitch = settings["defaults"]["grid"]["pitch"]
-    if isinstance(pitch, list):
+    if isinstance(pitch := settings["defaults"]["grid"]["pitch"], list):
         settings["defaults"]["grid"]["pitch"] = QPointF(
             float(pitch[0]), float(pitch[1])
         )
@@ -294,8 +293,7 @@ class Settings(QObject):
             self._load(settings[group], qsettings, f"{path}/{group}")
             qsettings.endGroup()
         for key in qsettings.childKeys():
-            value = qsettings.value(key)
-            if value is not None:
+            if (value := qsettings.value(key)) is not None:
                 full_path = f"{path}/{key}"
                 kind = self._getSettingKind(full_path)
                 if kind is not None:

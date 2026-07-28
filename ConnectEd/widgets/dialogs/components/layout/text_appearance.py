@@ -168,23 +168,19 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        font = self._font_combo.value()
-        if isinstance(font, NoChange):
+        if isinstance(font := self._font_combo.value(), NoChange):
             font = self._initial_font
         if font is None:
             font = self._default_font
-        bold = self._bold_combo.value()
-        if isinstance(bold, NoChange):
+        if isinstance(bold := self._bold_combo.value(), NoChange):
             bold = self._initial_bold
         if bold is None:
             bold = self._default_bold
-        italic = self._italic_combo.value()
-        if isinstance(italic, NoChange):
+        if isinstance(italic := self._italic_combo.value(), NoChange):
             italic = self._initial_italic
         if italic is None:
             italic = self._default_italic
-        underline = self._underline_combo.value()
-        if isinstance(underline, NoChange):
+        if isinstance(underline := self._underline_combo.value(), NoChange):
             underline = self._initial_underline
         if underline is None:
             underline = self._default_underline

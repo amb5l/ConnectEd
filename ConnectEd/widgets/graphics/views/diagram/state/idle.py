@@ -82,8 +82,7 @@ class DiagramViewStateIdle(DiagramViewState):
         # grips
         if len(grips_at) == 1 and not (modifiers & MouseModifier.ALT):
             # at least one grip
-            grip = grips_at[0]
-            if isinstance(grip, PolySegItem):
+            if isinstance(grip := grips_at[0], PolySegItem):
                 # adjust polyline segment/arc
                 polyline = grip.parentItem()
                 if not isinstance(polyline, PolylineItem):

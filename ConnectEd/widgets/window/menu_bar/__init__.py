@@ -155,10 +155,8 @@ class MenuBar(QMenuBar):
         en = False
         en_zoom_in = False
         en_zoom_out = False
-        subwindow = window().mdiArea().activeSubWindow()
-        if subwindow is not None:
-            widget = subwindow.widget()
-            if isinstance(widget, DiagramView):
+        if (subwindow := window().mdiArea().activeSubWindow()) is not None:
+            if isinstance(widget := subwindow.widget(), DiagramView):
                 en = True
                 zoom = widget.zoom
                 en_zoom_in = zoom < settings().get("display/zoom/max")

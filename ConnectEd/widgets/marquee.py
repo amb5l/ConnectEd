@@ -84,8 +84,7 @@ class Marquee:
         self.rubber_band.show()
 
     def resize(self : Self, pos : QPoint) -> None:
-        point1 = self.point1
-        if point1 is None:
+        if (point1 := self.point1) is None:
             raise RuntimeError("No point1")
         self.rubber_band.setGeometry(
             QRect(
@@ -95,8 +94,7 @@ class Marquee:
         )
 
     def end(self : Self, pos : QPoint) -> None:
-        point1 = self.point1
-        if point1 is None:
+        if (point1 := self.point1) is None:
             raise RuntimeError("No point1")
         self.rubber_band.setGeometry(
             QRect(
