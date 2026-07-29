@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ......core.check import checked
 
-from ....items.grip          import GripItem, ResizeGripItem
+from ....items.grip          import GripItem, MoveGripItem, ResizeGripItem
 from ....items.polyline      import PolySegItem, PolylineItem
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
@@ -17,13 +17,13 @@ from ....items.mixin         import ItemMixin
 from ..mouse import MouseModifier
 
 from ..interaction.edit import (
-    EditMoveInteraction,
     EditAdjustPolySegInteraction,
     EditDuplicateInteraction
 )
 from ..interaction.move import (
-    DiagramMoveInteraction,
-    DiagramMoveBlockPinsInteraction
+    MoveInteraction,
+    MoveBlockPinsInteraction,
+    MoveGripInteraction
 )
 
 from .base import DiagramViewState
@@ -72,7 +72,7 @@ class DiagramViewStateIdle(DiagramViewState):
         modifiers : MouseModifier
     ) -> None:
         raw_items_at = self.view._itemsAt(spos)
-        grips_at = []
+        grips_at : list[GripItem] = []
         top_items_at = []
         for item in raw_items_at:
             if item.parentItem() is None:
@@ -81,27 +81,25 @@ class DiagramViewStateIdle(DiagramViewState):
                 grips_at.append(item)
         # grips
         if len(grips_at) == 1 and not (modifiers & MouseModifier.ALT):
-            # at least one grip
-            if isinstance(grip := grips_at[0], PolySegItem):
-                # adjust polyline segment/arc
-                polyline = grip.parentItem()
-                if not isinstance(polyline, PolylineItem):
-                    raise RuntimeError("Expected polyline")
-                self.interact(
-                    EditAdjustPolySegInteraction(
-                        self.view, polyline, grip, grip.scenePos()
-                    ),
-                    self.view.stateEditAdjustPolySeg
-                )
-                return
-            else:
-                # resize/move
-                self.interact(
-                    EditMoveInteraction(self.view, grip, grip.scenePos()),
-                    self.view.stateEditResize if isinstance(grip, ResizeGripItem) \
-                        else self.view.stateEditMove
-                )
-                return
+            # single grip
+            grip = grips_at[0]
+            if grip.movable():
+                if isinstance(grip, PolySegItem):
+                    # adjust polyline segment/arc
+                    polyline = grip.parentItem()
+                    if not isinstance(polyline, PolylineItem):
+                        raise RuntimeError("Expected polyline")
+                    self.interact(
+                        EditAdjustPolySegInteraction(
+                            self.view, polyline, grip, grip.scenePos()
+                        ),
+                        self.view.stateEditAdjustPolySeg
+                    )
+                elif isinstance(grip, MoveGripItem | ResizeGripItem):
+                    self.interact(MoveGripInteraction(
+                        self.view, grip, grip.scenePos()
+                    ))
+            return
         # Check for CTRL+drag duplication when starting on an item
         if (modifiers & MouseModifier.CTRL) and raw_items_at:
             # Add item under cursor to selection if not already selected
@@ -116,7 +114,9 @@ class DiagramViewStateIdle(DiagramViewState):
                 if items:
                     # Pass the press position for CTRL+drag duplication
                     self.interact(
-                        EditDuplicateInteraction(self.view, items, self.view._snap(spos)),
+                        EditDuplicateInteraction(
+                            self.view, items, self.view._snap(spos)
+                        ),
                         self.view.stateEditDuplicate
                     )
                     return
@@ -134,7 +134,7 @@ class DiagramViewStateIdle(DiagramViewState):
                 if not isinstance(block, BlockItem):
                     raise RuntimeError("Expected block parent")
                 self.interact(
-                    DiagramMoveBlockPinsInteraction(self.view, block, pins),
+                    MoveBlockPinsInteraction(self.view, block, pins),
                     self.view.stateEditMovePins
                 )
             else:
@@ -142,7 +142,7 @@ class DiagramViewStateIdle(DiagramViewState):
                 if items:
                     slide = not(modifiers & MouseModifier.ALT)
                     self.interact(
-                        DiagramMoveInteraction(
+                        MoveInteraction(
                             self.view, items, self.view._snap(spos), slide
                         ),
                         self.view.stateEditSlide if slide else \

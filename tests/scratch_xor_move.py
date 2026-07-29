@@ -19,14 +19,14 @@ def lanes_for(offset_y: float) -> list[tuple[float, float | None]]:
     from ConnectEd.core.types import Axis
     from ConnectEd.widgets.graphics.items.gate import XorGateItem
     from ConnectEd.widgets.graphics.views.diagram import DiagramView
-    from ConnectEd.widgets.graphics.views.diagram.interaction.move import DiagramMoveInteraction
+    from ConnectEd.widgets.graphics.views.diagram.interaction.move import MoveInteraction
 
     path = Path(__file__).resolve().parents[1] / "examples" / "test.dsn"
     db = DesignDbNode.load(str(path))
     view = DiagramView(db.scene())
     xor = next(i for i in db.scene().items() if isinstance(i, XorGateItem))
     pos = xor.scenePos()
-    move = DiagramMoveInteraction(view, [xor], pos, slide=True)
+    move = MoveInteraction(view, [xor], pos, slide=True)
     move.update(pos + QPointF(0, offset_y))
     rows = []
     for jog in move._rubber_jogs:

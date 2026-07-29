@@ -8,9 +8,10 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
 from ......core.check import checked
 
-from ....items.polyline  import PolylineItem, PolySegItem
+from ....items.polyline import PolylineItem, PolySegItem
 
 from ....items.mixin.clone import ItemCloneMixin
+
 
 from . import (
     MoveItemsMixin,
@@ -80,53 +81,6 @@ class EditDuplicateInteraction(EditPasteInteraction):
             self._addToScene(select=True)
         else:
             self._items = []
-
-
-class EditMoveInteraction(
-    MoveItemsMixin,    # update, _moveBy, _previewSave, _previewRestore
-    DiagramItemsInteraction,  # _view, _scene, _items, valid
-):
-    # instance attributes
-    _slide  : bool  # true => retain connections, false => break connections
-
-    @checked
-    def __init__(
-        self  : Self,
-        view  : DiagramView,
-        items : QGraphicsItem | list[QGraphicsItem],
-        pos   : QPointF,
-        slide : bool = False
-    ) -> None:
-        if not isinstance(items, list):
-            items = [items]
-        # Filter: keep only items that have no ancestor in the items list
-        orphan_items = []
-        item_set = set(items)
-        for item in items:
-            parent = item.parentItem()
-            has_ancestor = False
-            while parent is not None:
-                if parent in item_set:
-                    has_ancestor = True
-                    break
-                parent = parent.parentItem()
-            if not has_ancestor:
-                orphan_items.append(item)
-        # Start interaction
-        super().__init__(view, orphan_items)
-        self._cpos  = self._ipos = pos
-        self._slide = slide
-        self._previewSave()  # record initial positions
-
-    @checked
-    def _commit(self : Self, pos : QPointF) -> bool:
-        self._previewRestore()  # restore initial positions
-        # apply final offset
-        self._scene.editMove(self._items, pos - self._ipos, self._slide, undoable=True)
-        return True
-
-    def _cancel(self : Self) -> None:
-        self._previewRestore()  # restore initial positions
 
 
 class EditAdjustPolySegInteraction(PreviewStateMixin, DiagramInteraction):

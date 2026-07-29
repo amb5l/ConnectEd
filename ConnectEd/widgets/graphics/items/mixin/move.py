@@ -8,6 +8,10 @@ from .....core.check import checked
 class ItemMoveMixin:
     """Methods to support moving items."""
 
+    def movable(self : Self) -> bool:
+        """Whether the item is movable."""
+        return True
+
     @checked
     def moveSave(self : Self) -> QPointF:
         if not isinstance(self, QGraphicsItem):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self
+from typing          import Self
+from collections.abc import Sequence
 
 from math  import sqrt
 
@@ -52,6 +53,23 @@ class DiagramViewPrivateMixin:
             items_rect = item_rect if items_rect is None else \
                 items_rect.united(item_rect)
         return items_rect
+
+    @checked
+    def _itemsCenter(
+        self  : Self,
+        items : QGraphicsItem | Sequence[QGraphicsItem]
+    ) -> QPointF:
+        """Return scene center of the item set."""
+        if isinstance(items, QGraphicsItem):
+            items = [items]
+        items_rect : QRectF | None = None
+        for item in items:
+            item_rect = item.mapToScene(item.boundingRect()).boundingRect()
+            items_rect = item_rect if items_rect is None else \
+                items_rect.united(item_rect)
+        if items_rect is None:
+            raise ValueError("No items")
+        return items_rect.center()
 
     @checked
     def _pan(self : Self, delta : QPointF) -> None:

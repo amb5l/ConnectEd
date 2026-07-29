@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QUndoCommand
 from ......core.check import checked
 from ......core.utils import camel2proper
 
+from ....items.grip    import GripItem
 from ....items.segment import SegmentItem
 
 from ....items.mixin import ItemMoveMixin
@@ -219,6 +220,35 @@ class CmdMove(CmdSceneItems):
             if not isinstance(item, ItemMoveMixin):
                 raise TypeError("Bad item")
             item.moveRestore(self._states[item])
+
+
+class CmdMoveGrip(CmdSceneItem[GripItem]):
+    """Command to move a grip (handle edit via grip.moveBy → moveHandleBy)."""
+
+    # instance attributes
+    _offset : QPointF
+    _state  : QPointF  # pre-move state from moveSave
+
+    @checked
+    def __init__(
+        self   : Self,
+        scene  : DiagramScene,
+        grip   : GripItem,
+        offset : QPointF
+    ) -> None:
+        if not grip.movable():
+            raise TypeError("Grip is not movable")
+        super().__init__(scene, grip)
+        self._offset = offset
+        self._state  = grip.moveSave()
+
+    @checked
+    def redo(self : Self) -> None:
+        self._item.moveBy(self._offset.x(), self._offset.y())
+
+    @checked
+    def undo(self : Self) -> None:
+        self._item.moveRestore(self._state)
 
 
 class CmdRotateBase(CmdSceneItems):

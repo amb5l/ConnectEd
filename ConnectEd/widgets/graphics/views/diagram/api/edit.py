@@ -18,18 +18,16 @@ from ....scenes import withScene
 from ....items.port      import PortItem
 from ....items.block_pin import BlockPinItem
 
-from ....items.mixin     import ItemMixin
-
 from ..interaction      import RotateItemMixin
-from ..interaction.edit import EditMoveInteraction
+from ..interaction.move import MoveInteraction, MoveGripInteraction
 
 from ..host import asDiagramView
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram   import DiagramScene
+    from ....items.grip       import GripItem
     from ....items.text       import TextItem
-    from ....items.grip       import ResizeGripItem
     from ....items.port_pin   import PortPinPathItem
     from ....items.symbol_pin import SymbolPinItem
 
@@ -99,31 +97,36 @@ class DiagramViewApiEditMixin:
     @checked
     def editSlide(
         self  : Self,
-        items : Sequence[QGraphicsItem],
-        pos   : QPoint | QPointF | None = None
+        items : QGraphicsItem | Sequence[QGraphicsItem],
+        pos   : QPointF | None = None
     ) -> None:
         host = asDiagramView(self)
-        host._editMove(items, pos, True)
+        pos = pos or host._snap(host._itemsCenter(items))
+        host.state.interact(
+            MoveInteraction(host, items, pos, True), host.stateEditSlide
+        )
 
     @checked
     def editMove(
         self  : Self,
-        items : Sequence[QGraphicsItem],
-        pos   : QPointF
+        items : QGraphicsItem | Sequence[QGraphicsItem],
+        pos   : QPointF | None = None
     ) -> None:
         host = asDiagramView(self)
-        host._editMove(items, pos, False)
+        pos = pos or host._snap(host._itemsCenter(items))
+        host.state.interact(
+            MoveInteraction(host, items, pos, False), host.stateEditMove
+        )
 
     @checked
-    def editResize(
+    def editMoveGrip(
         self : Self,
-        grip : ResizeGripItem,
+        grip : GripItem,
         pos  : QPointF
     ) -> None:
         host = asDiagramView(self)
-        pos = host.mapToScene(pos) if isinstance(pos, QPoint) else pos
         host.state.interact(
-            EditMoveInteraction(host, [grip], pos), host.stateEditResize
+            MoveGripInteraction(host, grip, pos), host.stateEditMoveGrip
         )
 
     @withScene
@@ -324,24 +327,3 @@ class DiagramViewApiEditMixin:
     ) -> None:
         host = asDiagramView(self)
         host.state.go(host.stateEditPropertyText, [item])
-
-    @withScene
-    @checked
-    def _editMove(
-        self  : Self,
-        scene : DiagramScene,
-        items : QGraphicsItem | list[QGraphicsItem],
-        pos   : QPointF,
-        slide : bool = False
-    ) -> None:
-        host = asDiagramView(self)
-        if not isinstance(items, list):
-            items = [items]
-        for item in items:
-            if isinstance(item, ItemMixin) and item.topParentItem() in items:
-                items.remove(item)
-        # slide/move
-        host.state.interact(
-            EditMoveInteraction(host, items, pos, slide),
-            host.stateEditSlide if slide else host.stateEditMove
-        )

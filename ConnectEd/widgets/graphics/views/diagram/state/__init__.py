@@ -19,7 +19,7 @@ from .edit  import (
     DiagramViewStateEditDuplicate,
     DiagramViewStateEditSlide,
     DiagramViewStateEditMove,
-    DiagramViewStateEditResize,
+    DiagramViewStateEditMoveGrip,
     DiagramViewStateEditMovePins,
     DiagramViewStateEditAdjustPolySeg,
     DiagramViewStateEditAppearance,
@@ -66,7 +66,7 @@ class DiagramViewStateMixin:
     stateEditDuplicate          : DiagramViewStateEditDuplicate           # noqa N815
     stateEditSlide              : DiagramViewStateEditSlide               # noqa N815
     stateEditMove               : DiagramViewStateEditMove                # noqa N815
-    stateEditResize             : DiagramViewStateEditResize              # noqa N815
+    stateEditMoveGrip           : DiagramViewStateEditMoveGrip            # noqa N815
     stateEditMovePins           : DiagramViewStateEditMovePins            # noqa N815
     stateEditAdjustPolySeg      : DiagramViewStateEditAdjustPolySeg       # noqa N815
     stateEditAppearance         : DiagramViewStateEditAppearance          # noqa N815
@@ -78,8 +78,8 @@ class DiagramViewStateMixin:
     stateEditBlockPin           : DiagramViewStateEditBlockPin            # noqa N815
     stateEditPropertyText       : DiagramViewStateEditPropertyText        # noqa N815
     statePlaceSymbolPin         : DiagramViewStatePlaceSymbolPin          # noqa N815
-    statePlaceLine1             : DiagramViewStatePlaceLine1             # noqa N815
-    statePlaceLine2             : DiagramViewStatePlaceLine2             # noqa N815
+    statePlaceLine1             : DiagramViewStatePlaceLine1              # noqa N815
+    statePlaceLine2             : DiagramViewStatePlaceLine2              # noqa N815
     statePlaceRectangle1        : DiagramViewStatePlaceRectangle1         # noqa N815
     statePlaceRectangle2        : DiagramViewStatePlaceRectangle2         # noqa N815
     statePlaceEllipse1          : DiagramViewStatePlaceEllipse1           # noqa N815
@@ -111,7 +111,7 @@ class DiagramViewStateMixin:
         host.stateEditDuplicate          = DiagramViewStateEditDuplicate          (host)
         host.stateEditSlide              = DiagramViewStateEditSlide              (host)
         host.stateEditMove               = DiagramViewStateEditMove               (host)
-        host.stateEditResize             = DiagramViewStateEditResize             (host)
+        host.stateEditMoveGrip           = DiagramViewStateEditMoveGrip           (host)
         host.stateEditMovePins           = DiagramViewStateEditMovePins           (host)
         host.stateEditAdjustPolySeg      = DiagramViewStateEditAdjustPolySeg      (host)
         host.stateEditAppearance         = DiagramViewStateEditAppearance         (host)

@@ -14,6 +14,7 @@ from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              EdgeLoc, Direction, HandleId, RectHandleId
 from ......core.xml   import XmlProtocol
 
+from ....items.grip          import GripItem
 from ....items.polyline      import PolylineItem, PolySegItem
 from ....items.text          import TextItem
 from ....items.port_pin      import PortPinMixin, PortPinPathItem
@@ -24,9 +25,13 @@ from ....items.symbol        import SymbolInstanceItem
 from ....items.property_text import PropertyTextItem
 from ....items.segment       import SegmentItem
 
+from ....items.mixin import ItemMixin
+
+from ....items.mixin.move      import ItemMoveMixin
 from ....items.mixin.transform import ItemTransformMixin
 
-from ..cmd import cmdExec, CmdMove, CmdRotateCW, CmdRotateCCW, CmdDelete
+from ..cmd import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
+                  CmdDelete
 
 from ..cmd.edit.pin        import CmdEditPortPin, \
                                   CmdEditPinDot, CmdEditPinClk
@@ -63,7 +68,27 @@ class DiagramSceneApiEditMixin:
         host = asDiagramScene(self)
         if not isinstance(items, list):
             items = [items]
-        cmd = CmdMove(host, items, offset)
+        filtered_items : list[QGraphicsItem] = [
+            item for item in items
+            if isinstance(item, ItemMixin)
+            and isinstance(item, ItemMoveMixin)
+            and item.movable()
+            and item.topParentItem() not in items
+        ]
+        cmd = CmdMove(host, filtered_items, offset)
+        cmdExec(host, cmd, undoable)
+
+    @checked
+    def editMoveGrip(
+        self     : Self,
+        grip     : GripItem,
+        offset   : QPointF,
+        undoable : bool = False
+    ) -> None:
+        host = asDiagramScene(self)
+        if not grip.movable() or offset == QPointF(0, 0):
+            return
+        cmd = CmdMoveGrip(host, grip, offset)
         cmdExec(host, cmd, undoable)
 
     @checked

@@ -12,7 +12,7 @@ from ....core.types import GatePinHandleId, HandleId, DataKind
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
-from .grip     import GripItem, MoveGripItem
+from .grip     import GripItem, FixedGripItem
 
 from .mixin.transform import ItemTransformMixin
 
@@ -41,7 +41,7 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
 
     @classmethod
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
-        return MoveGripItem
+        return FixedGripItem
 
     def settingsName(self : Self) -> str:
         return "GatePin"
@@ -62,13 +62,16 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
         self._handles[GatePinHandleId.ORIGIN] = HandleItem(
             id       = GatePinHandleId.ORIGIN,
             pos      = QPointF(0, 0),
-            grip_cls = MoveGripItem,
+            grip_cls = FixedGripItem,
             parent   = self
         )
 
+    def movable(self : Self) -> bool:
+        return False
+
     @checked
     def moveHandleBy(self : Self, _ : GatePinHandleId, d : QPointF) -> None:
-        self.setPos(self.pos() + d)
+        raise RuntimeError("Gate pin is not movable")
 
     def inverted(self : Self) -> bool:
         return self._dot

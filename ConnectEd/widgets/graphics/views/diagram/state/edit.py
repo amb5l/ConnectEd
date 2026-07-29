@@ -120,7 +120,7 @@ class DiagramViewStateEditMove(DiagramViewStateEditSlide):
     SLIDE = False
 
 
-class DiagramViewStateEditResize(ClickMixin, DragMixin, DiagramViewState):
+class DiagramViewStateEditMoveGrip(ClickMixin, DragMixin, DiagramViewState):
     STATUS = "Resize: position the selected handle as required"
 
 

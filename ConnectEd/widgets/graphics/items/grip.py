@@ -208,7 +208,22 @@ class ResizeGripItem(MoveGripItem):
         spos : QPointF
     ) -> list[QAction | QMenu]:
         entries : list[QAction | QMenu] = [
-            view.action("Resize", lambda: view.editResize(self, self.scenePos())),
+            view.action("Resize", lambda: view.editMoveGrip(self, self.scenePos())),
         ]
         entries.extend(super().ctxMenuItems(view, spos))
         return entries
+
+
+class FixedGripItem(MoveGripItem):
+    """No-move grip e.g. for gate pins."""
+
+    def movable(self : Self) -> bool:
+        return False
+
+    @checked
+    def ctxMenuItems(
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
+    ) -> list[QAction | QMenu]:
+        return []

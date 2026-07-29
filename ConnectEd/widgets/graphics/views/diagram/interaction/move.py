@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing          import Self, Any
+from collections.abc import Sequence
 
 from PyQt6.QtCore    import QPointF, QLineF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -12,6 +13,7 @@ from ......core.types import Axis, Polarity, EdgeLoc
 
 from ....views.diagram.interaction import PreviewStateMixin
 
+from ....items.grip      import GripItem
 from ....items.port_pin  import PortPinMixin
 from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
 from ....items.segment   import SegmentItem
@@ -23,6 +25,8 @@ from ....items.block_pin import BlockPinItem
 from ....items.symbol    import SymbolInstanceItem
 from ....items.rubber    import RubberItem, RubberJogItem
 
+from ....items.mixin.move import ItemMoveMixin
+
 from ....scenes.diagram import DiagramScene
 
 from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
@@ -32,7 +36,8 @@ from ....scenes.diagram.cmd.rubber import (
     CmdMovePreviewRubberJog
 )
 
-from . import DiagramInteraction, DiagramItemsInteraction
+from . import DiagramInteraction, DiagramItemInteraction, \
+              DiagramItemsInteraction, MoveItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -71,7 +76,7 @@ def _jogsShareStaircase(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
     return s1[0] < s2[1] and s2[0] < s1[1]
 
 
-class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
+class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     """
     Full-blown move with rubber band support. Uses private undo stack.
 
@@ -109,7 +114,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     def __init__(
         self  : Self,
         view  : DiagramView,
-        items : QGraphicsItem | list[QGraphicsItem],
+        items : QGraphicsItem | Sequence[QGraphicsItem],
         pos   : QPointF,                    # movement origin
         slide : bool = False
     ) -> None:
@@ -126,7 +131,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         self._rubber_segs   = []
         self._detached_segs = []
         # process items
-        if not isinstance(items, list):
+        if not isinstance(items, Sequence):
             items = [items]
         item_set = set(items)
         filtered_items = []
@@ -231,7 +236,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                         break
                     parent = parent.parentItem()
                 else:
-                    filtered_items.append(item)
+                    if isinstance(item, ItemMoveMixin) and item.movable():
+                        filtered_items.append(item)
         # deduplicate items
         seen : set[QGraphicsItem] = set()
         unique_items : list[QGraphicsItem] = []
@@ -245,13 +251,17 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # save initial positions
         self._previewSave()
 
+    def valid(self : Self) -> bool:
+        return bool(self._items)
+
     @checked
     def update(self : Self, pos : QPointF) -> None:
+        if self._pos is None:
+            raise RuntimeError("Initial position not set")
         if pos == self._pos:
             return  # filter redundant updates#
-        if isinstance(self._pos, QPointF):
-            self._moveBy(pos - self._pos)
-            self._updateJogs()
+        self._moveBy(pos - self._pos)
+        self._updateJogs()
         self._pos = pos
 
     @checked
@@ -445,11 +455,11 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 return True
             # inline edges touch (not just corner)
             if axis == Axis.H:
-                if (rect1.top() == rect2.bottom() or rect1.bottom() == rect2.top()) and \
+                if (rect1.top() == rect2.bottom() or rect1.bottom() == rect2.top()) and\
                    rect1.left() < rect2.right() and rect1.right() > rect2.left():
                     return True
             else:
-                if (rect1.left() == rect2.right() or rect1.right() == rect2.left()) and \
+                if (rect1.left() == rect2.right() or rect1.right() == rect2.left()) and\
                    rect1.top() < rect2.bottom() and rect1.bottom() > rect2.top():
                     return True
             return False
@@ -540,7 +550,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             jog.updatePath()
 
 
-class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
+class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     # instance attributes
     _undo_stack : QUndoStack          # private undo stack for preview
     _block      : BlockItem
@@ -636,3 +646,29 @@ class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     def _previewDidRestore(self : Self) -> None:
         self._loc_snap = None
         self._corner   = None
+
+
+class MoveGripInteraction(
+    MoveItemMixin[GripItem],           # update, _moveBy, _previewSave, _previewRestore
+    DiagramItemInteraction[GripItem],  # _view, _scene, _item, valid
+):
+    @checked
+    def __init__(
+        self  : Self,
+        view  : DiagramView,
+        grip  : GripItem,
+        pos   : QPointF
+    ) -> None:
+        super().__init__(view, grip)
+        self._cpos  = self._ipos = pos
+        self._previewSave()  # record initial positions
+
+    @checked
+    def _commit(self : Self, pos : QPointF) -> bool:
+        self._previewRestore()  # restore initial positions
+        # apply final offset
+        self._scene.editMoveGrip(self._item, pos - self._ipos, undoable=True)
+        return True
+
+    def _cancel(self : Self) -> None:
+        self._previewRestore()  # restore initial positions

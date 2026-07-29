@@ -198,11 +198,10 @@ class PreviewStateMixin:
         self._previewDidRestore()
 
 
-class MoveItemsMixin(PreviewStateMixin):
+class MoveBaseMixin(PreviewStateMixin):
     """Mixin for interactions that move items."""
 
     # instance attributes
-    _items : list[QGraphicsItem]
     _ipos  : QPointF                # initial position
     _cpos  : QPointF | None = None  # current position
 
@@ -214,11 +213,7 @@ class MoveItemsMixin(PreviewStateMixin):
         self._cpos = pos
 
     def _moveBy(self : Self, offset : QPointF) -> None:
-        for e in self._items:
-            e.moveBy(offset.x(), offset.y())
-
-    def _previewTargets(self : Self) -> list[QGraphicsItem]:
-        return self._items
+        raise NotImplementedError("Subclass must implement this method")
 
     def _previewSaveTarget(
         self   : Self,
@@ -239,6 +234,33 @@ class MoveItemsMixin(PreviewStateMixin):
 
     def _previewDidRestore(self : Self) -> None:
         self._cpos = self._ipos
+
+
+class MoveItemMixin(MoveBaseMixin, Generic[TItem]):
+    """Mixin for interactions that move an item."""
+
+    # instance attributes
+    _item : TItem
+
+    def _moveBy(self : Self, offset : QPointF) -> None:
+        self._item.moveBy(offset.x(), offset.y())
+
+    def _previewTargets(self : Self) -> list[QGraphicsItem]:
+        return [self._item]
+
+
+class MoveItemsMixin(MoveBaseMixin):
+    """Mixin for interactions that move items."""
+
+    # instance attributes
+    _items : list[QGraphicsItem]
+
+    def _moveBy(self : Self, offset : QPointF) -> None:
+        for e in self._items:
+            e.moveBy(offset.x(), offset.y())
+
+    def _previewTargets(self : Self) -> list[QGraphicsItem]:
+        return self._items
 
 
 class AddRemoveItemsMixin:
