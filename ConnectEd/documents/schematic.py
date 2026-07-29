@@ -52,7 +52,6 @@ class SymbolIcon(SvgIconSingleton):
 class HdlSchematicDiagramDoc(Doc):
     _XML_TAG = "HdlSchematicDiagram"
 
-    _path             : str
     _scene            : DiagramScene
     _symbol_container : str
     _symbol_scenes    : dict[SymbolDefinitionItem, SymbolScene]
@@ -527,11 +526,9 @@ class HdlSchematicDiagramDoc(Doc):
 
 # register document type with Session
 
-DOC_TYPE = DocType(
+Session.registerDocType(DocType(
     name  = "HDL Schematic Diagram",
     group = "HDL Schematic Diagrams",
     ext   = "hdl_sch",
     cls   = HdlSchematicDiagramDoc,
-)
-
-Session.registerDocType(DOC_TYPE)
+))

@@ -43,7 +43,11 @@ class Doc(ABC):
     ``ConnectEd.documents`` (e.g. ``HdlSchematicDiagramDoc``).
     """
 
+    # class attributes
     _XML_TAG : str
+
+    # instance attributes
+    _path : str
 
     @checked
     def onChanged(self : Self) -> None:
