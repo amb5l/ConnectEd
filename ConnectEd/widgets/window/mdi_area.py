@@ -4,7 +4,6 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget
-from PyQt6.QtGui     import QAction
 
 from ...app import window
 

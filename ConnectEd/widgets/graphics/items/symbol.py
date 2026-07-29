@@ -253,7 +253,7 @@ class SymbolDefinitionItem(SymbolBaseItem):
         self  : Self,
         scene : SymbolScene
     ) -> None:
-        updated = scene.symbol()
+        updated = scene.item()
         if updated is None: return
         # remove all current children
         for child in self.childItems():
@@ -262,7 +262,7 @@ class SymbolDefinitionItem(SymbolBaseItem):
         self.setRect(updated.rect())
         # copy children
         for child in updated.childItems():
-            if isinstance(child, SymbolPinItem | DecorativeItem):
+            if isinstance(child, SymbolPinItem):
                 clone = child.clone()
                 clone.setParentItem(self)
 

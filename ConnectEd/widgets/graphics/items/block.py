@@ -20,6 +20,7 @@ from .mixin.edge_loc import ItemLocParentMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.diagram import DiagramView
+    from ..scenes.block  import BlockScene
 
 
 class BlockItem(
@@ -91,3 +92,13 @@ class BlockItem(
         view    : DiagramView
     ) -> None:
         pass
+
+
+class BlockDefinitionItem(BlockItem):
+    _XML_CHILDREN = frozenset({"BlockPin", "PropertyText"})
+
+    def syncFromScene(
+        self  : Self,
+        scene : BlockScene
+    ) -> None:
+        raise NotImplementedError("Not implemented")

@@ -72,7 +72,7 @@ class HdlSchematicDiagramDoc(Doc):
             lambda clean: self._onCleanChanged(self._scene, clean)
         )
 
-    # --- clean state tracking -------------------------------------------------
+    # --- persistence (Session) ------------------------------------------------
 
     @checked
     def isClean(
@@ -102,18 +102,6 @@ class HdlSchematicDiagramDoc(Doc):
         self._scene.setName(name)
 
     @checked
-    def path(self : Self) -> str:
-        return self._path
-
-    @checked
-    def setPath(self : Self, path : str) -> None:
-        path = cleanPath(path)
-        if path == self._path:
-            return
-        self._path = path
-        self.onChanged()
-
-    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
 
@@ -130,16 +118,16 @@ class HdlSchematicDiagramDoc(Doc):
         doc._scene = scene
         return doc
 
-    @classmethod
-    @checked
-    def load(cls : type[Self], path : str) -> Self | None:
-        return cast(Self, loadXml(cleanPath(path), {cls.tag(): cls}))
-
     @checked
     def save(self : Self, path : str | None = None) -> bool:
         self._scene.undo_stack.setClean()
         self._dirty = []
         return super().save(path)
+
+    @classmethod
+    @checked
+    def load(cls : type[Self], path : str) -> Self | None:
+        return cast(Self, loadXml(cleanPath(path), {cls.tag(): cls}))
 
     # --- Navigator (tree presentation) ----------------------------------------
 
@@ -147,7 +135,7 @@ class HdlSchematicDiagramDoc(Doc):
     def navItemSpec(self : Self) -> NavItemSpec:
         return NavItemSpec(
             subject  = self._scene,
-            icon     = SchematicIcon().get(),  # TODO remove this, containers don't have icons
+            icon     = SchematicIcon().get(),  # TODO remove this
             tip      = self._path or "(not saved)",
             children = [
                 NavItemSpec(
@@ -163,20 +151,16 @@ class HdlSchematicDiagramDoc(Doc):
     @checked
     def navLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol
     ) -> str:
-        if subject is None:
-            subject = self._scene
         return subject.name()
 
     @checked
     def navSetLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None,
+        subject : DocSubjectProtocol,
         label   : str,
     ) -> bool:
-        if subject is None:
-            subject = self._scene
         if subject is self._scene:
             if label == subject.name():
                 return False
@@ -188,10 +172,8 @@ class HdlSchematicDiagramDoc(Doc):
     @checked
     def navDisplayLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol,
     ) -> str:
-        if subject is None:
-            subject = self._scene
         return subject.name() + ("" if self.isClean(subject) else "*")
 
     @checked
@@ -360,21 +342,18 @@ class HdlSchematicDiagramDoc(Doc):
     # --- editor lifecycle (close / save) --------------------------------------
 
     @checked
-    def commit(self : Self, subwindow : DocSubWindow) -> bool:
+    def commit(self : Self, subwindow : DocSubWindow) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         from ..widgets.graphics.items.symbol   import SymbolDefinitionItem
         subject = self._subjectFromSubwindow(subwindow)
-        if subject is None: return False
         if isinstance(subject, DiagramScene):
             window().navigator().fileSave(subwindow)
-            return True
         elif isinstance(subject, SymbolDefinitionItem):
             scene = self._symbol_scenes[subject]
             subject.syncFromScene(scene)
             scene.undo_stack.setClean()
-            return True
-        logger().error(f"Unsupported subject type: {type(subject)}")
-        return False
+        else:
+            logger().error(f"Unsupported subject type: {type(subject)}")
 
     @checked
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
@@ -510,18 +489,6 @@ class HdlSchematicDiagramDoc(Doc):
                 if self._dirtySymbolCount() == 0:
                     self._dirty.remove(self._symbol_container)
         self.onChanged()
-
-    def _subjectFromSubwindow(
-        self      : Self,
-        subwindow : DocSubWindow
-    ) -> DocSubjectProtocol | None:
-        if (binding := subwindow.docBinding()) is None:
-            logger().error("Subwindow has no binding")
-            return None
-        if binding.doc is not self:
-            logger().error(f"Subwindow has wrong document: {binding.doc} != {self}")
-            return None
-        return binding.subject
 
 
 # register document type with Session

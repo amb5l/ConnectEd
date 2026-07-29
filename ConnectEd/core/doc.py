@@ -10,7 +10,7 @@ from PyQt6.QtGui  import QIcon
 from ..app import session
 
 from ..core.types import MenuEntry, MenuAction
-from ..core.xml   import saveXml, FileXmlProtocol
+from ..core.xml   import cleanPath, saveXml, FileXmlProtocol
 
 from .check import checked
 
@@ -30,8 +30,8 @@ class NavItemSpec:
 
 
 class DocSubjectProtocol(Protocol):
-    def name(self : Self) -> str:
-        ...
+    def name(self : Self) -> str: ...
+    def setName(self : Self, name : str) -> None: ...
 
 
 class Doc(ABC):
@@ -58,7 +58,7 @@ class Doc(ABC):
     @abstractmethod
     def isClean(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol
     ) -> bool:
         """
         Clean state for save/close, navigator labels and window titles.
@@ -72,21 +72,24 @@ class Doc(ABC):
     def tag(cls : type[Self]) -> str:
         return cls._XML_TAG
 
+    @checked
+    def path(self : Self) -> str:
+        return self._path
+
+    @checked
+    def setPath(self : Self, path : str) -> None:
+        path = cleanPath(path)
+        if path == self._path:
+            return
+        self._path = path
+        self.onChanged()
+
     @abstractmethod
     def name(self : Self) -> str:
         ...
 
     @abstractmethod
     def setName(self : Self, name : str) -> None:
-        ...
-
-    @abstractmethod
-    def path(self : Self) -> str:
-        """Filesystem path, or ``\"\"`` if unsaved."""
-
-    @abstractmethod
-    def setPath(self : Self, path : str) -> None:
-        """Set filesystem path; call ``onChanged()`` when the path changes."""
         ...
 
     @abstractmethod
@@ -126,7 +129,7 @@ class Doc(ABC):
     @abstractmethod
     def navLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol
     ) -> str:
         """Navigator row label; ``subject=None`` → primary subject."""
         ...
@@ -134,7 +137,7 @@ class Doc(ABC):
     @abstractmethod
     def navSetLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None,
+        subject : DocSubjectProtocol,
         label   : str,
     ) -> bool:
         """Apply inline tree edit; call ``onChanged()`` on success."""
@@ -143,7 +146,7 @@ class Doc(ABC):
     @abstractmethod
     def navDisplayLabel(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol,
     ) -> str:
         """Navigator row display label; ``subject=None`` → primary subject."""
         ...
@@ -151,7 +154,7 @@ class Doc(ABC):
     @abstractmethod
     def navToolTip(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol
     ) -> str | None:
         """Row tooltip; dynamic state — not ``NavItemSpec.tip`` alone."""
         ...
@@ -159,7 +162,7 @@ class Doc(ABC):
     @abstractmethod
     def navContextMenu(
         self    : Self,
-        subject : DocSubjectProtocol | None = None,
+        subject : DocSubjectProtocol
     ) -> list[MenuEntry]:
         """Context-menu entries; Navigator builds ``QMenu``."""
         ...
@@ -210,7 +213,7 @@ class Doc(ABC):
     # --- editor lifecycle (close / save) ----------------------------------------
 
     @checked
-    def commit(self : Self, subwindow : DocSubWindow) -> bool:
+    def commit(self : Self, subwindow : DocSubWindow) -> None:
         """Persist after edits. Override when supported."""
         raise NotImplementedError(
             f"{type(self).__name__} does not support commit."
@@ -222,6 +225,17 @@ class Doc(ABC):
         raise NotImplementedError(
             f"{type(self).__name__} does not support isPrimarySubject"
         )
+
+    @checked
+    def _subjectFromSubwindow(
+        self      : Self,
+        subwindow : DocSubWindow
+    ) -> DocSubjectProtocol:
+        if (binding := subwindow.docBinding()) is None:
+            raise RuntimeError("Subwindow has no binding")
+        if binding.doc is not self:
+            raise RuntimeError(f"Subwindow has wrong document: {binding.doc} != {self}")
+        return binding.subject
 
 
 @dataclass
