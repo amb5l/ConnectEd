@@ -5,12 +5,12 @@ from ..core.doc     import Doc
 
 
 class HdlFsmDiagramDoc(Doc):
-    _XML_TAG = "HdlFsmDiagram"
+    _XML_TAG = "HdlStateDiagram"
 
 
 DOC_TYPE = DocType(
-    name  = "HDL FSM Diagram",
-    group = "HDL FSM Diagrams",
+    name  = "HDL State Diagram",
+    group = "HDL State Diagrams",
     ext   = "hdl_fsm",
     cls   = HdlFsmDiagramDoc,
 )
