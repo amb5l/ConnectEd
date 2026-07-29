@@ -1,18 +1,18 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui  import QPainter, QPen
+from PyQt6.QtCore import QRectF
+from PyQt6.QtGui  import QPainter
 
-from .....app import settings
+from ....app import settings
 
-from .....core.check import checked
-from .....core.defs  import PITCH
+from ....core.check import checked
+from ....core.defs  import PITCH
 
-from ..diagram import DiagramScene
+from .diagram import DiagramScene
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.symbol import SymbolDefinitionItem
+    from ..items.symbol import SymbolDefinitionItem
 
 
 class SymbolScene(DiagramScene):
