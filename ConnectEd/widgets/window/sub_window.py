@@ -33,7 +33,7 @@ class DocSubWindow(QMdiSubWindow):
         # get doc
         doc = binding.doc
         # allow doc to prompt for commit/discard, and veto if necessary
-        if not doc.closeSubWindow(self):
+        if not doc.mayCloseSubWindow(self):
             closeEvent.ignore()
             return
         # allow doc to clean up (after accepted, before destruction)

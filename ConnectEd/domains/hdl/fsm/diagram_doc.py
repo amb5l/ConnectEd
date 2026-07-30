@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ..core.session import DocType, Session
-from ..core.doc     import Doc
+from ....core.session import DocType, Session
+from ....core.doc     import Doc
 
 
 class HdlFsmDiagramDoc(Doc):

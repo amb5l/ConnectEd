@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing      import Self, Protocol
+from typing      import Self, Protocol, TypeVar, Generic
 from dataclasses import dataclass
 from abc         import ABC, abstractmethod
 
@@ -34,7 +34,10 @@ class DocSubjectProtocol(Protocol):
     def setName(self : Self, name : str) -> None: ...
 
 
-class Doc(ABC):
+T = TypeVar('T')
+
+
+class Doc(ABC, Generic[T]):
     """
     Session-owned document.
 
@@ -47,7 +50,8 @@ class Doc(ABC):
     _XML_TAG : str
 
     # instance attributes
-    _path : str
+    _object : T
+    _path   : str
 
     @checked
     def onChanged(self : Self) -> None:
@@ -201,7 +205,7 @@ class Doc(ABC):
         ...
 
     @abstractmethod
-    def closeSubWindow(self : Self, subwindow : DocSubWindow) -> bool:
+    def mayCloseSubWindow(self : Self, subwindow : DocSubWindow) -> bool:
         """Hook for cleanup/veto before a subwindow is closed."""
         ...
 

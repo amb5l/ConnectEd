@@ -69,7 +69,7 @@ def main(func : Callable | None = None) -> int:
                 pass
         initResources()
     app.setSession(Session())
-    import ConnectEd.documents  # noqa: F401 — register document types
+    import ConnectEd.domains  # noqa: F401 — register document types
     if not known_args.cli:
         Window() # create window
     app.processEvents()

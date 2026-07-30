@@ -175,9 +175,9 @@ class DiagramSceneApiEditMixin:
                 host.addItems(item, undoable)
                 if isinstance(item, SymbolInstanceItem):
                     name = item.name()
-                    definition = host._symbols.get(name, None)
-                    if definition:
-                        item.syncFromDefinition(definition)
+                    symbol = host.getSymbol(name)
+                    if symbol:
+                        item.syncFromDefinition(symbol)
                     else:
                         logger().warning(f"Symbol {name} not found")
 

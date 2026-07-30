@@ -107,24 +107,23 @@ class DiagramSceneXmlMixin:
     ) -> None:
         """Serialise symbols that are used in the scene."""
         host = asDiagramScene(self)
-        definitions = host.symbolDefinitions()
+        symbols = host.getSymbols().values()
         instances = [
             item for item in items if isinstance(item, SymbolInstanceItem)
         ]
         if not instances:
             return
-        definition_names = \
-            {definition.name() for definition in definitions.values()}
+        symbol_names = {symbol.name() for symbol in symbols}
         used_names = {instance.name() for instance in instances}
-        undefined_names = used_names - definition_names
+        undefined_names = used_names - symbol_names
         if undefined_names:
             logger().warning(f"Undefined symbols: {undefined_names}")
-        used_defined_names = definition_names & used_names
+        used_defined_names = symbol_names & used_names
         if not used_defined_names:
             return
         toXmlStartElement(xw, "Symbols")
-        for name, symbol in definitions.items():
-            if name not in used_defined_names:
+        for symbol in symbols:
+            if symbol.name() not in used_defined_names:
                 continue
             symbol.toXml(xw)
         toXmlEndElement(xw)
@@ -305,14 +304,12 @@ class DiagramSceneXmlMixin:
                 "Net"       : fromXmlNet,
             }, ptag="Netlist")
 
-        def fromXmlSymbolDefinitions(xr : QXmlStreamReader) -> None:
+        def fromXmlDefinitions(xr : QXmlStreamReader) -> None:
             xr.readNext()
-            symbols = fromXml(
-                xr,
-                { "Symbol" : SymbolDefinitionItem },
-                ptag="Symbols"
-            )
-            host._symbols |= {symbol.name(): symbol for symbol in symbols}
+            symbols = fromXml(xr, {
+                "Symbol" : SymbolDefinitionItem
+            }, ptag="Symbols")
+            host.addSymbols(symbols)
 
         def fromXmlItem(
             xr       : QXmlStreamReader,
@@ -333,7 +330,7 @@ class DiagramSceneXmlMixin:
                 host.addItem(item)
                 if isinstance(item, SymbolInstanceItem):
                     name = item.name()
-                    definition = host._symbols.get(name, None)
+                    definition = host.getSymbol(name)
                     if definition:
                         item.syncFromDefinition(definition)
                     else:
@@ -347,7 +344,7 @@ class DiagramSceneXmlMixin:
         fromXmlProperties(host, xr)
 
         xref = {
-            "Symbols" : fromXmlSymbolDefinitions,
+            "Symbols" : fromXmlDefinitions,
             "Netlist" : fromXmlNetlist
         }
         for item_name, item_cls in diagram_scene_xml_items.items():

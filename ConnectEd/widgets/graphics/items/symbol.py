@@ -27,10 +27,6 @@ from .mixin.clone        import ItemCloneMixin
 from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..scenes.symbol import SymbolScene
-
 
 class SymbolBaseItem(
     FunctionalItem,
@@ -51,33 +47,7 @@ class SymbolBaseItem(
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \
         {
-            "Verilog Library" : InherentProperty["SymbolDefinitionItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.verilogLibrary(),
-                setter = lambda self, value: self.setVerilogLibrary(value),
-                tip = (
-                    "Library where the module is defined (normally for "
-                    "simulation). Used for explanatory comments only."
-                )
-            ),
-            "Verilog Name" : InherentProperty["SymbolDefinitionItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.verilogName(),
-                setter = lambda self, value: self.setVerilogName(value),
-                tip = (
-                    "Name of the module (optional, overrides 'Name' if "
-                    "specified)."
-                )
-            ),
-            "VHDL Instantiation Style" : InherentProperty["SymbolDefinitionItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.vhdlInstantiationStyle(),
-                setter = lambda self, value: self.setVhdlInstantiationStyle(value),
-                tip = (
-                    "'component' (default if not specified) or 'entity'."
-                )
-            ),
-            "VHDL Library" : InherentProperty["SymbolDefinitionItem"](
+            "VHDL Library" : InherentProperty["SymbolBaseItem"](
                 kind = DataKind.STR,
                 getter = lambda self: self.vhdlLibrary(),
                 setter = lambda self, value: self.setVhdlLibrary(value),
@@ -86,40 +56,22 @@ class SymbolBaseItem(
                     "(default is 'work')."
                 )
             ),
-            "VHDL Package" : InherentProperty["SymbolDefinitionItem"](
+            "VHDL Package" : InherentProperty["SymbolBaseItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlPackage(),
                 setter = lambda self, value: self.setVhdlPackage(value),
                 tip = (
                     "Package containing the component e.g. 'vcomponents', "
-                    "'pkg.subpkg'. Use '.all' suffix here to override the item "
-                    "name in the ''use'' clause. "
+                    "'pkg.subpkg'. Leave empty for entity instantiation."
                 )
             ),
-            "VHDL Name" : InherentProperty["SymbolDefinitionItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.vhdlName(),
-                setter = lambda self, value: self.setVhdlName(value),
-                tip = (
-                    "Name of the component or entity (optional, overrides "
-                    "'Name' if specified)."
-                )
-            ),
-            "VHDL Architecture" : InherentProperty["SymbolDefinitionItem"](
+            "VHDL Architecture" : InherentProperty["SymbolBaseItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.vhdlArchitecture(),
                 setter = lambda self, value: self.setVhdlArchitecture(value),
                 tip = (
                     "Name of the architecture, required for entity "
-                    "instantiation."
-                )
-            ),
-            "VHDL Selected Name" : InherentProperty["SymbolDefinitionItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.vhdlSelectedName(),
-                tip = (
-                "Selected name e.g. 'library.package.name', "
-                "'library.entity(architecture)'"
+                    "instantiation. Leave empty for component instantiation."
                 )
             )
         }
@@ -249,25 +201,21 @@ class SymbolDefinitionItem(SymbolBaseItem):
         "Line", "Rectangle", "Ellipse", "Polyline", "Text"
     })
 
-    def syncFromScene(
-        self  : Self,
-        scene : SymbolScene
-    ) -> None:
-        updated = scene.item()
-        if updated is None: return
+    @checked
+    def syncFromDefinition(self : Self, item : SymbolDefinitionItem) -> None:
         # remove all current children
         for child in self.childItems():
             child.setParentItem(None)
         # sync shape
-        self.setRect(updated.rect())
+        self.setRect(item.rect())
         # copy children
-        for child in updated.childItems():
+        for child in item.childItems():
             if isinstance(child, SymbolPinItem):
                 clone = child.clone()
                 clone.setParentItem(self)
 
 
-class SymbolInstanceItem(ItemTransformMixin, SymbolDefinitionItem):
+class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     # class attributes
     _PROPERTIES = \
         SymbolDefinitionItem._PROPERTIES | \

@@ -3,9 +3,8 @@ from __future__ import annotations
 import uuid
 
 from typing import Self
-from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF, pyqtSignal
+from PyQt6.QtCore    import Qt, QPointF, QRectF, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack, QPainter, QPen, QBrush
 
@@ -13,6 +12,8 @@ from .....app import settings
 
 from .....core.check   import checked
 from .....core.types   import DataKind
+
+from .....domains.hdl.schematic.symbols import SymbolsMixin
 
 from ...properties import PropertiesMixin, InherentProperty
 
@@ -27,8 +28,8 @@ from .netlist import Netlist
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .....documents.schematic import HdlSchematicDiagramDoc
-    from ...items.symbol import SymbolDefinitionItem, SymbolInstanceItem
+    from .....domains.hdl.schematic.diagram_doc import HdlSchematicDiagramDoc
+    from ...items.symbol import SymbolInstanceItem
 
 
 class DiagramScene(
@@ -38,6 +39,7 @@ class DiagramScene(
     DiagramSceneXmlMixin,
     DiagramScenePrivateMixin,
     PropertiesMixin,
+    SymbolsMixin,
     QGraphicsScene
 ):
     # class attributes
@@ -84,8 +86,6 @@ class DiagramScene(
     _sheet_margin : float   # distance from paper edge to border line
     _sheet_border : float   # line width
 
-    _symbols      : dict[str, SymbolDefinitionItem]
-
     resources     : DiagramSceneResources
     undo_stack    : QUndoStack
     title_block   : SymbolInstanceItem | None
@@ -100,7 +100,6 @@ class DiagramScene(
         doc   : HdlSchematicDiagramDoc | None = None,
         fresh : bool = True
     ) -> None:
-
         super().__init__()
         self._uuid = str(uuid.uuid4())
         self._name = "Untitled"
@@ -111,7 +110,6 @@ class DiagramScene(
         self._sheet_margin = settings().get("defaults/margin")
         self._sheet_border = settings().get("defaults/border")
         self.updateSceneRect()
-
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.resources = self._RESOURCES_CLS()
         self.undo_stack = QUndoStack(self)
@@ -120,8 +118,7 @@ class DiagramScene(
         self.initGrips()
         self.selectionChanged.connect(self.onSelectionChanged)
         self.setLive(fresh)
-
-        self._symbols = {}
+        self.initSymbols()
         self.netlist = Netlist(self)
 
     def __hash__(self : Self):
@@ -193,9 +190,6 @@ class DiagramScene(
             self._sheet_margin, self._sheet_margin,
             -self._sheet_margin, -self._sheet_margin
         ))
-
-    def symbolDefinitions(self : Self) -> dict[str, SymbolDefinitionItem]:
-        return self._symbols
 
     @checked
     def getSheetName(self : Self) -> str:
