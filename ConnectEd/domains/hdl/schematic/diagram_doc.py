@@ -27,10 +27,11 @@ from ....core.utils   import cleanPath
 
 from ....widgets.dialogs.unsaved_changes import UnsavedChangesDialog
 
+from ....widgets.graphics.scenes.diagram import DiagramScene
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....widgets.window.sub_window       import DocSubWindow
-    from ....widgets.graphics.scenes.diagram import DiagramScene
     from ....widgets.graphics.scenes.symbol  import SymbolScene
 
 from ....widgets.graphics.items.symbol import SymbolDefinitionItem
@@ -220,7 +221,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
                 MenuAction(
                     "Delete",
                     lambda s=subject: self.deleteSymbolHandler(s),
-                    len(self._object.symbolInstances(subject)) == 0
+                    len(self._object.symbolDefinitionInstances(subject)) == 0
                 ),
                 MenuSeparator(),
                 MenuAction(
@@ -324,7 +325,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         elif isinstance(subject, SymbolDefinitionItem):
             scene = self._scenes[subject]
             if isinstance(scene, SymbolScene):
-                item = scene.item()
+                item = scene.symbol()
                 if item is None:
                     raise RuntimeError("Scene has no item")
                 subject.syncFromDefinition(item)

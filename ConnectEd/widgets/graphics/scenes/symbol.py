@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import weakref
+
 from typing import Self
 
 from PyQt6.QtCore    import QRectF
@@ -7,7 +11,8 @@ from ....app import settings
 
 from ....core.check import checked
 
-from ....widgets.graphics.items.symbol import SymbolDefinitionItem
+from ....widgets.graphics.items.symbol import \
+    SymbolDefinitionItem, SymbolInstanceItem
 
 from .diagram import DiagramScene
 
@@ -16,26 +21,47 @@ class SymbolScene(DiagramScene):
     """Scene for editing a single symbol definition."""
 
     # instance attributes
-    _item : SymbolDefinitionItem | None  # definition being edited
+    _definition : SymbolDefinitionItem | None
+    _instance   : weakref.ref[SymbolInstanceItem] | None
 
     @checked
     def __init__(
-        self : Self,
-        item : SymbolDefinitionItem | None = None
+        self       : Self,
+        definition : SymbolDefinitionItem | None = None,
+        instance   : SymbolInstanceItem   | None = None,
     ) -> None:
         super().__init__()
-        self._item = item
-        if item is not None:
-            self.addItem(item)
+        self._definition = None
+        self._instance = None
+        self.setSymbol(definition)
+        self.setInstance(instance)
 
-    def item(self : Self) -> SymbolDefinitionItem | None:
-        return self._item
+    @checked
+    def symbol(self : Self) -> SymbolDefinitionItem | None:
+        return self._definition
 
-    def setItem(self : Self, item : SymbolDefinitionItem | None) -> None:
-        self._item = item
+    @checked
+    def setSymbol(
+        self       : Self,
+        definition : SymbolDefinitionItem | None,
+    ) -> None:
+        self._definition = definition
         self.clear()
-        if item is not None:
-            self.addItem(item)
+        if definition is not None:
+            self.addItem(definition)
+
+    @checked
+    def instance(self : Self) -> SymbolInstanceItem | None:
+        if self._instance is None:
+            return None
+        return self._instance()
+
+    @checked
+    def setInstance(
+        self     : Self,
+        instance : SymbolInstanceItem | None,
+    ) -> None:
+        self._instance = None if instance is None else weakref.ref(instance)
 
     def drawBackground(
         self    : Self,

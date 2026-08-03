@@ -69,7 +69,13 @@ def main(func : Callable | None = None) -> int:
                 pass
         initResources()
     app.setSession(Session())
-    import ConnectEd.domains  # noqa: F401 — register document types
+
+    # side effect imports to register document types
+    import ConnectEd.domains.hdl.schematic.diagram_doc  # noqa: F401
+    import ConnectEd.domains.hdl.schematic.library_doc  # noqa: F401
+    import ConnectEd.domains.hdl.schematic.design_doc   # noqa: F401
+    import ConnectEd.domains.hdl.fsm.diagram_doc        # noqa: F401
+
     if not known_args.cli:
         Window() # create window
     app.processEvents()

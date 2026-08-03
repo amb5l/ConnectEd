@@ -117,7 +117,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
         for symbol, scene in self._scenes.items():
             if scene.undo_stack.isClean():
                 continue
-            item = scene.item()
+            item = scene.symbol()
             if item is None:
                 raise RuntimeError("Scene has no item")
             symbol.syncFromDefinition(item)
@@ -139,7 +139,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
     @checked
     def navItemSpec(self : Self) -> NavItemSpec:
         return NavItemSpec(
-            subject  = self,
+            subject  = self._object,
             icon     = LibraryIcon().get(),
             tip      = self._path or "(not saved)",
             children = [
@@ -346,7 +346,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
         if isinstance(subject, SymbolDefinitionItem):
             if not isinstance(scene, SymbolScene):
                 raise RuntimeError("Bad scene")
-            item = scene.item()
+            item = scene.symbol()
             if item is None:
                 raise RuntimeError("Scene has no item")
             subject.syncFromDefinition(item)

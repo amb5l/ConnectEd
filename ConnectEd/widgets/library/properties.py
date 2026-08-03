@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .browser import LibraryBrowser
 
 
-class LibraryDefaultsPane(QWidget):
+class LibraryPropertiesPane(QWidget):
     _library       : HdlSchematicLibrary
     _layout        : QVBoxLayout
     _model         : QStandardItemModel
@@ -37,7 +37,7 @@ class LibraryDefaultsPane(QWidget):
         self._library = library
         self._layout = QVBoxLayout()
         # title
-        self._title = QLabel("Property Defaults")
+        self._title = QLabel("Properties")
         self._layout.addWidget(self._title)
         # table
         self._model = QStandardItemModel()
@@ -59,6 +59,7 @@ class LibraryDefaultsPane(QWidget):
         self._delete_button = QPushButton("Delete")
         self._delete_button.setEnabled(False)
         self._buttons.addWidget(self._delete_button)
+        self._buttons.addStretch()
         self._layout.addLayout(self._buttons)
         # layout
         self.setLayout(self._layout)

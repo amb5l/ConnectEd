@@ -10,6 +10,7 @@ class HdlSchematicLibrary(SymbolsMixin):
 
     def __init__(self) -> None:
         self.initSymbols()
+        self._name = "Untitled"
         self._property_defaults = {}
 
     def name(self) -> str:

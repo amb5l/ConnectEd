@@ -24,7 +24,7 @@ class DiagramSceneApiMixin(
     DiagramSceneApiUtilMixin
 ):
     @checked
-    def symbolInstances(
+    def symbolDefinitionInstances(
         self       : Self,
         definition : SymbolDefinitionItem
     ) -> list[SymbolInstanceItem]:
