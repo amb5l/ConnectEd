@@ -6,18 +6,17 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.types import HandleId, LineHandleId, DataKind
-
-from ..properties import InherentProperty
+from ....core.check      import checked
+from ....core.types      import HandleId, LineHandleId, DataKind
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .role import DecorativeItem
 
 from .handle import HandleItem
 from .grip   import GripItem, ResizeGripItem
 
-from .mixin.transform import ItemTransformMixin
-from .mixin.primary   import PrimaryItemMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,30 +30,29 @@ class LineItem(
     QGraphicsLineItem
 ):
     # class attributes
-    _PROPERTIES = \
-        {
-            "X1" : InherentProperty["LineItem"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.x1(),
-                setter = lambda self, value: self.setX1(value)
-            ),
-            "Y1" : InherentProperty["LineItem"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.y1(),
-                setter = lambda self, value: self.setY1(value)
-            ),
-            "X2" : InherentProperty["LineItem"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.x2(),
-                setter = lambda self, value: self.setX2(value)
-            ),
-            "Y2" : InherentProperty["LineItem"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.y2(),
-                setter = lambda self, value: self.setY2(value)
-            )
-        } | \
-        PrimaryItemMixin._PROPERTIES_LINE
+    _PROPERTIES_XY : PropertiesDict = {
+        "X1" : InherentProperty["LineItem"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.x1(),
+            setter = lambda self, value: self.setX1(value)
+        ),
+        "Y1" : InherentProperty["LineItem"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.y1(),
+            setter = lambda self, value: self.setY1(value)
+        ),
+        "X2" : InherentProperty["LineItem"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.x2(),
+            setter = lambda self, value: self.setX2(value)
+        ),
+        "Y2" : InherentProperty["LineItem"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.y2(),
+            setter = lambda self, value: self.setY2(value)
+        )
+    }
+    _PROPERTIES = _PROPERTIES_XY | PrimaryItemMixin._PROPERTIES_LINE
 
     @classmethod
     def handleIdType(cls) -> type[LineHandleId]:
@@ -134,7 +132,7 @@ class LineItem(
     @checked
     def setX1(self : Self, value : float) -> None:
         self.setP1(QPointF(value, self.p1().y()))
-        self.properties.signalChanges("X1")
+        self.propertySignalChanges("X1")
 
     def y1(self : Self) -> float:
         return self.p1().y()
@@ -142,7 +140,7 @@ class LineItem(
     @checked
     def setY1(self : Self, value : float) -> None:
         self.setP1(QPointF(self.p1().x(), value))
-        self.properties.signalChanges("Y1")
+        self.propertySignalChanges("Y1")
 
     def p2(self : Self) -> QPointF:
         return self.pos() + self.line().p2()
@@ -157,7 +155,7 @@ class LineItem(
     @checked
     def setX2(self : Self, value : float) -> None:
         self.setP2(QPointF(value, self.p2().y()))
-        self.properties.signalChanges("X2")
+        self.propertySignalChanges("X2")
 
     def y2(self : Self) -> float:
         return self.p2().y()
@@ -165,7 +163,7 @@ class LineItem(
     @checked
     def setY2(self : Self, value : float) -> None:
         self.setP2(QPointF(self.p2().x(), value))
-        self.properties.signalChanges("Y2")
+        self.propertySignalChanges("Y2")
 
     @checked
     def setPoints(self : Self, p1 : QPointF, p2 : QPointF) -> None:

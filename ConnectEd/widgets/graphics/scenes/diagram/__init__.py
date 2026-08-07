@@ -10,12 +10,11 @@ from PyQt6.QtGui     import QUndoStack, QPainter, QPen, QBrush
 
 from .....app import settings
 
-from .....core.check   import checked
-from .....core.types   import DataKind
+from .....core.check      import checked
+from .....core.types      import DataKind
+from .....core.properties import PropertiesMixin, InherentProperty
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
-
-from ...properties import PropertiesMixin, InherentProperty
 
 from .api       import DiagramSceneApiMixin
 from .grips     import DiagramSceneGripsMixin
@@ -117,7 +116,7 @@ class DiagramScene(
         self.initProperties(fresh)
         self.initGrips()
         self.selectionChanged.connect(self.onSelectionChanged)
-        self.setLive(fresh)
+        self.setPropertiesLive(fresh)
         self.initSymbols()
         self.netlist = Netlist(self)
 
@@ -138,8 +137,8 @@ class DiagramScene(
     @checked
     def setName(self : Self, name : str, notify : bool = True) -> None:
         self._name = name
-        self.properties.signalChanges("Name")
-        if notify and self._doc is not None and self.live():
+        self.propertySignalChanges("Name")
+        if notify and self._doc is not None and self.propertiesLive():
             self._doc.onChanged()
 
     def undo(self : Self) -> None:
@@ -198,7 +197,7 @@ class DiagramScene(
     @checked
     def setSheetName(self : Self, name : str) -> None:
         self._sheet_name = name
-        self.properties.signalChanges("Sheet Name")
+        self.propertySignalChanges("Sheet Name")
 
     @checked
     def getSheetWidth(self : Self) -> float:
@@ -209,7 +208,7 @@ class DiagramScene(
         self._sheet_rect.setWidth(width)
         self.updateSceneRect()
         self.update()
-        self.properties.signalChanges("Sheet Width")
+        self.propertySignalChanges("Sheet Width")
 
     @checked
     def getSheetHeight(self : Self) -> float:
@@ -220,7 +219,7 @@ class DiagramScene(
         self._sheet_rect.setHeight(height)
         self.updateSceneRect()
         self.update()
-        self.properties.signalChanges("Sheet Height")
+        self.propertySignalChanges("Sheet Height")
 
     @checked
     def getMargin(self : Self) -> float:
@@ -230,7 +229,7 @@ class DiagramScene(
     def setMargin(self : Self, margin : float) -> None:
         self._sheet_margin = margin
         self.update()
-        self.properties.signalChanges("Margin")
+        self.propertySignalChanges("Margin")
 
     @checked
     def getBorder(self : Self) -> float:
@@ -240,4 +239,4 @@ class DiagramScene(
     def setBorder(self : Self, border : float) -> None:
         self._sheet_border = border
         self.update()
-        self.properties.signalChanges("Border")
+        self.propertySignalChanges("Border")

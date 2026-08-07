@@ -10,13 +10,12 @@ from ....core.defs  import PITCH
 from ....core.types import RectHandleId, SymbolPinHandleId, HandleId, DataKind
 from ....core.check import checked
 
-from ..properties import PropertyTextSpec
+from .handle        import HandleItem
+from .grip          import GripItem, MoveGripItem
+from .port_pin      import PortPinArrowItem, PortPinPathItem
+from .property_text import PropertyTextSpec
 
-from .port_pin import PortPinArrowItem, PortPinPathItem
-from .handle   import HandleItem
-from .grip     import GripItem, MoveGripItem
-
-from .mixin.edge_loc import ItemEdgeLocMixin
+from .mixin.edge_loc   import ItemEdgeLocMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -35,10 +34,10 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     _ARROW_POS  = 0
     _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
     _PROPERTY_TEXTS = {
-            "Name" : PropertyTextSpec(
-                cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
-            )
-        }
+        "Name" : PropertyTextSpec(
+            cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
+        )
+    }
     _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod

@@ -10,12 +10,11 @@ from ....core.defs  import PITCH
 from ....core.types import HandleId, RectHandleId, PortHandleId, DataKind
 from ....core.check import checked
 
-from ..properties import PropertyTextSpec
+from .grip          import GripItem, MoveGripItem, ResizeGripItem
+from .port_pin      import PortPinArrowItem, PortPinLineItem
+from .property_text import PropertyTextSpec
 
-from .port_pin import PortPinArrowItem, PortPinLineItem
-from .grip     import GripItem, MoveGripItem, ResizeGripItem
-
-from .mixin.transform import ItemTransformMixin
+from .mixin.transform  import ItemTransformMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,13 +31,13 @@ class PortItem(ItemTransformMixin, PortPinLineItem):
     _ARROW_CLS = PortArrowItem
     _ARROW_POS = PITCH
     _PROPERTIES = \
-        PortPinLineItem._PROPERTIES | ItemTransformMixin._PROPERTIES_NO_ORIGIN
-    _PROPERTY_TEXTS = \
-        {
-            "Name" : PropertyTextSpec(
-                cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
-            )
-        }
+        PortPinLineItem._PROPERTIES | \
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN
+    _PROPERTY_TEXTS = {
+        "Name" : PropertyTextSpec(
+            cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
+        )
+    }
     _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod

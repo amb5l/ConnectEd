@@ -6,12 +6,11 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
-from ....core.defs  import PITCH, WIDTH
-from ....core.check import checked
-from ....core.types import AlignH, AlignV, HandleId, RectHandleId, DataKind
-from ....core.utils import val2str
-
-from ..properties import InherentProperty
+from ....core.defs       import PITCH, WIDTH
+from ....core.check      import checked
+from ....core.types      import AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ....core.utils      import val2str
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .role import FunctionalItem
 
@@ -30,59 +29,59 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
     # class attributes
     _ORIGIN = RectHandleId.BOTTOM_LEFT
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
-    _PROPERTIES_ALIGN = \
-        {
-            "AlignH" : InherentProperty["NetLabelItem"](
-                kind   = DataKind.ALIGN_H,
-                worthy = lambda self: self.alignH() != AlignH.LEFT,
-                getter = lambda self: self.alignH(),
-                setter = lambda self, value: self.setAlignH(value)
-            ),
-            "AlignV" : InherentProperty["NetLabelItem"](
-                kind    = DataKind.ALIGN_V,
-                worthy  = lambda self: self.alignV() != AlignV.MIDDLE,
-                default = lambda self: AlignV.MIDDLE,
-                getter  = lambda self: self.alignV(),
-                setter  = lambda self, value: self.setAlignV(value)
-            )
-        }
-    _PROPERTIES_SIZE = \
-        {
-            "Width" : InherentProperty["NetLabelItem"](
-                kind   = DataKind.SIZE,
-                worthy = lambda self: self.width() >= 0.0,
-                getter = lambda self: self.width(),
-                setter = lambda self, value: self.setWidth(value)
-            ),
-            "Height" : InherentProperty["NetLabelItem"](
-                kind    = DataKind.SIZE,
-                worthy  = lambda self: self.height() != PITCH,
-                default = lambda self: float(PITCH),
-                getter  = lambda self: self.height(),
-                setter  = lambda self, value: self.setHeight(value)
-            )
-        }
+
+    _PROPERTIES_NAME_VALUE : PropertiesDict = {
+        "Name" : InherentProperty["NetLabelItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.name(),
+            setter = lambda self, value: self.setName(value)
+        ),
+        "Value" : InherentProperty["NetLabelItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.value(),
+            setter = lambda self, value: self.setValue(value)
+        )
+    }
+    _PROPERTIES_ALIGN : PropertiesDict = {
+        "AlignH" : InherentProperty["NetLabelItem"](
+            kind   = DataKind.ALIGN_H,
+            worthy = lambda self: self.alignH() != AlignH.LEFT,
+            getter = lambda self: self.alignH(),
+            setter = lambda self, value: self.setAlignH(value)
+        ),
+        "AlignV" : InherentProperty["NetLabelItem"](
+            kind    = DataKind.ALIGN_V,
+            worthy  = lambda self: self.alignV() != AlignV.MIDDLE,
+            default = lambda self: AlignV.MIDDLE,
+            getter  = lambda self: self.alignV(),
+            setter  = lambda self, value: self.setAlignV(value)
+        )
+    }
+    _PROPERTIES_SIZE : PropertiesDict = {
+        "Width" : InherentProperty["NetLabelItem"](
+            kind   = DataKind.SIZE,
+            worthy = lambda self: self.width() >= 0.0,
+            getter = lambda self: self.width(),
+            setter = lambda self, value: self.setWidth(value)
+        ),
+        "Height" : InherentProperty["NetLabelItem"](
+            kind    = DataKind.SIZE,
+            worthy  = lambda self: self.height() != PITCH,
+            default = lambda self: float(PITCH),
+            getter  = lambda self: self.height(),
+            setter  = lambda self, value: self.setHeight(value)
+        )
+    }
     _PROPERTIES = \
-        {
-            "Name" : InherentProperty["NetLabelItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.name(),
-                setter = lambda self, value: self.setName(value)
-            ),
-            "Value" : InherentProperty["NetLabelItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.value(),
-                setter = lambda self, value: self.setValue(value)
-            )
-        } | \
+        _PROPERTIES_NAME_VALUE               | \
         BaseTextItem._PROPERTIES_POS         | \
         BaseTextItem._PROPERTIES_ROTATE      | \
         BaseTextItem._PROPERTIES_MIRROR      | \
         BaseTextItem._PROPERTIES_RECT_ORIGIN | \
-        _PROPERTIES_ALIGN                | \
-        _PROPERTIES_SIZE                 | \
+        _PROPERTIES_ALIGN                    | \
+        _PROPERTIES_SIZE                     | \
         BaseTextItem._PROPERTIES_PADDING     | \
-        BaseTextItem._PROPERTIES_TEXT
+        BaseTextItem._PROPERTIES_APPEARANCE
 
     # instance attributes
     _name  : str
@@ -184,7 +183,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self._name = name
         self.onTextChanged()
         self._notifyNetlist()
-        self.properties.signalChanges("Name")
+        self.propertySignalChanges("Name")
 
     def value(self : Self) -> str:
         return self._value
@@ -194,7 +193,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self._value = value
         self.onTextChanged()
         self._notifyNetlist()
-        self.properties.signalChanges("Value")
+        self.propertySignalChanges("Value")
 
     @checked
     def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]

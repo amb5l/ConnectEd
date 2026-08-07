@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from typing import Self, Any, cast
+from typing      import Self, Any, cast
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem, QMenu
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
-from ....core.check import checked
-from ....core.types import NoChange, AlignH, AlignV, \
-                           HandleId, RectHandleId, DataKind
-from ....core.utils import val2str
-
-from ..properties import InherentProperty, PropertiesMixin
+from ....core.check      import checked
+from ....core.types      import NoChange, AlignH, AlignV, \
+                                HandleId, RectHandleId, DataKind
+from ....core.utils      import val2str
+from ....core.properties import InherentProperty, PropertiesMixin
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -21,8 +21,8 @@ from .tether import TextTetherItem
 
 from .mixin import ItemNamesMixin
 
-from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.handle     import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -68,7 +68,7 @@ class PropertyTextItem(TextItem):
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
-        TextItem._PROPERTIES_TEXT
+        TextItem._PROPERTIES_APPEARANCE
 
     # instance attributes
     _name   : str
@@ -165,19 +165,16 @@ class PropertyTextItem(TextItem):
             grip.setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
-        if not isinstance(owner := self.owner(), PropertiesMixin):
-            text = f"<{self._name} - unbound>"
-        else:
-            if isinstance(name := self.name(), str):
-                if owner.properties.has(name):
-                    kind = owner.properties.kind(name)
-                    if kind in (DataKind.STR, DataKind.TEXT):
-                        super().setBlock(kind == DataKind.TEXT)
-                    text = val2str(self.value())
-                else:
-                    text = f"<{self._name} - not found>"
+        if isinstance(name := self.name(), str):
+            if self.propertyExists(name):
+                kind = self.propertyKind(name)
+                if kind in (DataKind.STR, DataKind.TEXT):
+                    super().setBlock(kind == DataKind.TEXT)
+                text = val2str(self.value())
             else:
-                text = f"<{self._name}>"
+                text = f"<{self._name} - not found>"
+        else:
+            text = f"<{self._name}>"
         super().setText(text)
 
     def cleatKind(self : Self) -> DataKind:
@@ -190,7 +187,7 @@ class PropertyTextItem(TextItem):
     @checked
     def setVisible(self : Self, visible : bool) -> None:
         super().setVisible(visible)
-        self.properties.signalChanges("Visible")
+        self.propertySignalChanges("Visible")
 
     @checked
     def setCleat(
@@ -209,7 +206,7 @@ class PropertyTextItem(TextItem):
                         break
                 if not ok:
                     logger().warning("Cleat not found in parent item")
-        self.properties.signalChanges("Cleat")
+        self.propertySignalChanges("Cleat")
         if ok:
             self.onGeometryChanged()
 
@@ -243,9 +240,6 @@ class PropertyTextItem(TextItem):
         else:
             return parent
 
-    def owner(self : Self) -> QGraphicsScene | QGraphicsItem | None:
-        return self.scene() if self.parentItem() is None else self.item()
-
     @checked
     def bind(self : Self, name : str) -> None:
         """Rebind to an owner property (does not signal this item's Name)."""
@@ -259,29 +253,24 @@ class PropertyTextItem(TextItem):
     @checked
     def setName(self : Self, name : str) -> None:
         self.bind(name)
-        self.properties.signalChanges("Name")
+        self.propertySignalChanges("Name")
 
     def value(self : Self) -> Any:
-        if not self.name():  # name is None or ""
+        name = self.name()
+        if name is None or name == "":
             return None
-        if (owner := self.owner()) is None:
-            return f"<{self.name()}>"
-        if isinstance(owner, PropertiesMixin):
-            if isinstance(name := self.name(), str):
-                return owner.properties.value(name, self.onTextChanged)
-        return None
+        if not isinstance((item := self.item()), PropertiesMixin):
+            raise RuntimeError("Bad item")
+        return item.propertyValue(name, self.onTextChanged)
 
     @checked
     def setValue(self : Self, value : Any) -> None:
-        if not self.name():  # name is None or ""
-            return
+        name = self.name()
+        if name is None or name == "":
+            return None
         if isinstance(value, NoChange):
             return
-        if (owner := self.owner()) is None:
-            return
-        if isinstance(owner, PropertiesMixin):
-            if isinstance(name := self.name(), str):
-                owner.properties.setValue(name, value)
+        self.setPropertyValue(name, value)
 
     @checked
     def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -290,20 +279,20 @@ class PropertyTextItem(TextItem):
         kind  = dialog.getKind()
         value = dialog.getValue()
         cleat = dialog.getCleat()
-        if not isinstance(owner := self.owner(), PropertiesMixin):
-            return
+        item = self.item()
+        if not isinstance(item, PropertiesMixin):
+            raise RuntimeError("Bad item")
         old_name = self.name()
-        if not isinstance(name, NoChange) and name != old_name:
-            if isinstance(owner, PropertiesMixin) and old_name is not None:
-                owner.properties.rename(old_name, name)
-            else:
-                self.setName(name)
-        name = self.name()
-        if owner is not None and name:
-            if not isinstance(kind, NoChange):
-                owner.properties.setKind(name, kind)
-            if not isinstance(value, NoChange):
-                owner.properties.setValue(name, value)
+        if old_name is None:
+            raise RuntimeError("PropertyTextItem has no name")
+        if isinstance(name, NoChange):
+            name = old_name
+        elif name != old_name:
+            item.propertyRename(old_name, name)
+        if not isinstance(kind, NoChange):
+            item.setPropertyKind(name, kind)
+        if not isinstance(value, NoChange):
+            item.setPropertyValue(name, value)
         if not isinstance(cleat, NoChange):
             self.setCleat(cleat)
 
@@ -363,3 +352,39 @@ class PropertyTextItem(TextItem):
             view.action("Properties...", lambda: view.editItemProperties(self))
         ]
         return items
+
+
+@dataclass
+class PropertyTextSpec:
+    visible    : bool            = True
+    cleat      : HandleId | None = None
+    x          : float           = 0
+    y          : float           = 0
+    rotation   : float           = 0.0
+    mirror_h   : bool            = False
+    mirror_v   : bool            = False
+    autoflip   : bool            = True
+    origin     : RectHandleId    = RectHandleId.TOP_LEFT
+    align_h    : AlignH          = AlignH.LEFT
+    align_v    : AlignV          = AlignV.TOP
+    width      : float           = -1.0
+    height     : float           = -1.0
+    pad_left   : float           = 0.0
+    pad_right  : float           = 0.0
+    pad_top    : float           = 0.0
+    pad_bottom : float           = 0.0
+    color      : QColor   | None = None
+    font       : str      | None = None
+    size       : float    | None = None
+    bold       : bool     | None = None
+    italic     : bool     | None = None
+    underline  : bool     | None = None
+
+    def astuple(self : Self) -> tuple:
+        return (
+            self.visible, self.cleat, self.x, self.y,
+            self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
+            self.origin, self.align_h, self.align_v, self.width, self.height,
+            self.pad_left, self.pad_right, self.pad_top, self.pad_bottom,
+            self.color, self.font, self.size, self.bold, self.italic, self.underline
+        )

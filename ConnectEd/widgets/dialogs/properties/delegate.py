@@ -8,12 +8,10 @@ from PyQt6.QtWidgets import QWidget, QLineEdit, \
                             QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
-from ....core.check import checked
-from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
-                           RectHandleId, LineHandleId, \
-                           BlockPinHandleId, SymbolPinHandleId
+from ....core.check      import checked
+from ....core.types      import DataKind
+from ....core.properties import _CUSTOM_PROPERTY_KINDS
 
-from ...graphics.properties import _CUSTOM_PROPERTY_KINDS
 
 from ..components.edit import \
     StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor

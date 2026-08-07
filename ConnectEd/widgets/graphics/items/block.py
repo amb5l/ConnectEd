@@ -8,8 +8,7 @@ from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
-
-from ..properties import InherentProperty
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .role import FunctionalItem
 
@@ -17,7 +16,7 @@ from .base_rect import BaseRectangleItem
 
 from .part import PartItemMixin
 
-from .mixin.edge_loc import ItemLocParentMixin
+from .mixin.edge_loc   import ItemLocParentMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,15 +31,16 @@ class BlockItem(
 ):
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
+    _PROPERTIES_PATH : PropertiesDict = {
+        "Path" : InherentProperty["BlockItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.path(),
+            setter = lambda self, value: self.setPath(value)
+        )
+    }
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \
-        {
-            "Path" : InherentProperty["BlockItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.path(),
-                setter = lambda self, value: self.setPath(value)
-            )
-        } | \
+        _PROPERTIES_PATH | \
         BaseRectangleItem._PROPERTIES
     _XML_CHILDREN = frozenset({"BlockPin", "PropertyText"})
 
@@ -65,7 +65,7 @@ class BlockItem(
     @checked
     def setPath(self : Self, path : str) -> None:
         self._path = path
-        self.properties.signalChanges("Path")
+        self.propertySignalChanges("Path")
 
     def onGeometryChanged(self : Self) -> None:
         super().onGeometryChanged()

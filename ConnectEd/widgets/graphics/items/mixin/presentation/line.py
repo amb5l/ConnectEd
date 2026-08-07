@@ -13,9 +13,9 @@ from ......core.types import NoChange
 
 from ....scenes import withScene
 
-from ....properties import PropertiesManager, PropertiesMixin
-
 from ...protocols import SetPenProtocol
+
+from ..properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -29,11 +29,6 @@ class ItemPresentationLineMixin:
     _line_color : QColor      | None
     _line_width : float       | None
     _line_style : Qt.PenStyle | None
-
-    # external instance attributes
-    properties : PropertiesManager  # provided by PropertiesMixin
-
-    # API
 
     def hasLine(self : Self) -> bool:
         return self.hasLineColor() or self.hasLineWidth() or self.hasLineStyle()
@@ -68,8 +63,8 @@ class ItemPresentationLineMixin:
             return
         self._line_color = color
         self._updatePen()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Line Color")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Line Color")
 
     def hasLineWidth(self : Self) -> bool:
         return hasattr(self, "_line_width")
@@ -102,8 +97,8 @@ class ItemPresentationLineMixin:
             return
         self._line_width = width
         self._updatePen()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Line Width")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Line Width")
 
     def hasLineStyle(self : Self) -> bool:
         return hasattr(self, "_line_style")
@@ -143,8 +138,8 @@ class ItemPresentationLineMixin:
             return
         self._line_style = style
         self._updatePen()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Line Style")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Line Style")
 
     # helpers
 

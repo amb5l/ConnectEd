@@ -12,11 +12,11 @@ from ......core.types import NoChange
 
 from ....quill  import Quill
 
-from ....properties import PropertiesManager, PropertiesMixin
-
 from ....scenes import withScene
 
 from ...protocols import SetQuillProtocol
+
+from ..properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,11 +32,6 @@ class ItemPresentationTextMixin:
     _text_bold      : bool   | None
     _text_italic    : bool   | None
     _text_underline : bool   | None
-
-    # external instance attributes
-    properties : PropertiesManager  # provided by PropertiesMixin
-
-    # API
 
     def hasText(self : Self) -> bool:
         return (
@@ -82,8 +77,8 @@ class ItemPresentationTextMixin:
             return
         self._text_color = color
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Color")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Color")
 
     def hasTextFont(self : Self) -> bool:
         return hasattr(self, "_text_font")
@@ -115,8 +110,8 @@ class ItemPresentationTextMixin:
             return
         self._text_font = font
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Font")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Font")
 
     def hasTextSize(self : Self) -> bool:
         return hasattr(self, "_text_size")
@@ -148,8 +143,8 @@ class ItemPresentationTextMixin:
             return
         self._text_size = size
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Size")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Size")
 
     def hasTextBold(self : Self) -> bool:
         return hasattr(self, "_text_bold")
@@ -181,8 +176,8 @@ class ItemPresentationTextMixin:
             return
         self._text_bold = bold
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Bold")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Bold")
 
     def hasTextItalic(self : Self) -> bool:
         return hasattr(self, "_text_italic")
@@ -214,8 +209,8 @@ class ItemPresentationTextMixin:
             return
         self._text_italic = italic
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Italic")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Italic")
 
     def hasTextUnderline(self : Self) -> bool:
         return hasattr(self, "_text_underline")
@@ -247,8 +242,8 @@ class ItemPresentationTextMixin:
             return
         self._text_underline = underline
         self._updateQuill()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Text Underline")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Text Underline")
 
     # helpers
 

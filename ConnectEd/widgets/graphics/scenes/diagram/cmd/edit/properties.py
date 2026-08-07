@@ -5,13 +5,14 @@ from PyQt6.QtGui  import QColor
 
 from .......app import logger
 
-from .......core.check import checked
-from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, DataKind, \
-                              HandleId, RectHandleId
-
-from .....properties import PropertiesMixin
+from .......core.check      import checked
+from .......core.types      import NoChange, NO_CHANGE, AlignH, AlignV, \
+                                   DataKind, HandleId, RectHandleId
+from .......core.properties import PropertiesMixin
 
 from .....items.property_text import PropertyTextItem
+
+from .....items.mixin.properties import ItemPropertiesMixin
 
 from .. import CmdBase
 
@@ -50,11 +51,11 @@ class CmdAddProperty(CmdPropertyBase):
 
     @checked
     def redo(self : Self) -> None:
-        self._object.properties.add(self._name, self._kind, self._value)
+        self._object.propertyAdd(self._name, self._kind, self._value)
 
     @checked
     def undo(self : Self) -> None:
-        self._object.properties.delete(self._name)
+        self._object.propertyDelete(self._name)
 
 
 class CmdEditProperty(CmdBase):
@@ -86,16 +87,16 @@ class CmdEditProperty(CmdBase):
         old_name, new_name = \
             name if isinstance(name, tuple) else (name, NO_CHANGE)
         # detect unknown property
-        if not object.properties.has(old_name):
+        if not object.propertyExists(old_name):
             logger().warning(f"Property '{old_name}' not found")
             self.setObsolete(True)
             return
         # build old state
-        if (old_kind := object.properties.kind(old_name)) is None:
+        if (old_kind := object.propertyKind(old_name)) is None:
             logger().error(f"Property '{old_name}' has no kind")
             self.setObsolete(True)
             return
-        old_value = object.properties.value(old_name)
+        old_value = object.propertyValue(old_name)
         self._old_name  = old_name
         self._old_kind  = old_kind
         self._old_value = old_value
@@ -107,22 +108,22 @@ class CmdEditProperty(CmdBase):
     def redo(self : Self) -> None:
         name = self._old_name
         if not isinstance(self._new_name, NoChange):
-            self._object.properties.rename(name, self._new_name)
+            self._object.propertyRename(name, self._new_name)
             name = self._new_name
         if not isinstance(self._new_kind, NoChange):
-            self._object.properties.setKind(name, self._new_kind)
+            self._object.setPropertyKind(name, self._new_kind)
         if not isinstance(self._new_value, NoChange):
-            self._object.properties.setValue(name, self._new_value)
+            self._object.setPropertyValue(name, self._new_value)
 
     @checked
     def undo(self : Self) -> None:
         if not isinstance(self._new_name, NoChange):
-            self._object.properties.rename(self._new_name, self._old_name)
+            self._object.propertyRename(self._new_name, self._old_name)
         name = self._old_name
         if not isinstance(self._old_kind, NoChange):
-            self._object.properties.setKind(name, self._old_kind)
+            self._object.setPropertyKind(name, self._old_kind)
         if not isinstance(self._old_value, NoChange):
-            self._object.properties.setValue(name, self._old_value)
+            self._object.setPropertyValue(name, self._old_value)
 
 
 class CmdDelProperty(CmdPropertyBase):
@@ -137,13 +138,16 @@ class CmdDelProperty(CmdPropertyBase):
         name : str
     ) -> None:
         super().__init__(obj, name)
-        if (kind := obj.properties.kind(name)) is None:
+        if (kind := obj.propertyKind(name)) is None:
             logger().error(f"Property '{name}' has no kind")
             self.setObsolete(True)
             return
         self._kind  = kind
-        self._value = obj.properties.value(name)
-        self._pt    = obj.properties.text(name)
+        self._value = obj.propertyValue(name)
+        if isinstance(obj, ItemPropertiesMixin):
+            self._pt = obj.propertyTextItem(name)
+        else:
+            self._pt = None
 
     @checked
     def redo(self : Self) -> None:

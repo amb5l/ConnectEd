@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, cast
 
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....app import settings
 
-from ....core.check import checked
-from ....core.defs  import WIDTH
-from ....core.types import Direction, DataKind
-from ....core.utils import qtItemClass
-
-from ..properties import InherentProperty
+from ....core.check      import checked
+from ....core.defs       import WIDTH
+from ....core.types      import Direction, DataKind
+from ....core.utils      import qtItemClass
+from ....core.properties import PropertiesDict, InherentProperty, \
+                                PropertiesMixin
 
 from ..scenes import withScene
 
@@ -19,11 +19,11 @@ from .role      import FunctionalItem
 from .node      import FixedNodeItem
 from .protocols import SetPenProtocol
 
-from .mixin.names     import ItemNamesMixin
-from .mixin.primary   import PrimaryItemMixin
-from .mixin.transform import ItemTransformMixin
-from .mixin.paint     import ItemPaintMixin
-from .mixin.change    import ItemChangeMixin
+from .mixin.names      import ItemNamesMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.paint      import ItemPaintMixin
+from .mixin.change     import ItemChangeMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     _NODE_POS   : int
     _ARROW_CLS  : type[PortPinArrowItem]
     _ARROW_POS  : int
-    _PROPERTIES = \
+    _PROPERTIES : PropertiesDict = \
         {
             "Name" : InherentProperty["PortPinMixin"](
                 kind   = DataKind.STR,
@@ -147,7 +147,8 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         self._bus = ":" in value
         if scene := self.scene():
             self._updatePen(scene)  # because name => bus => pin width
-        self.properties.signalChanges("Name")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Name")
 
     def direction(self : Self) -> Direction:
         return self._direction
@@ -155,7 +156,8 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     @checked
     def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
-        self.properties.signalChanges("Dir")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Dir")
         if scene := self.scene():
             self._updateArrowPath(scene)
 
@@ -165,7 +167,8 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     @checked
     def setComment(self : Self, value : str) -> None:
         self._comment = value
-        self.properties.signalChanges("Comment")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Comment")
 
     def bus(self : Self) -> bool:
         return self._bus
@@ -228,20 +231,21 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     """
 
     # class attributes
-    _PROPERTIES = \
+    _PROPERTIES_DOT_CLK : PropertiesDict = {
+        "Dot" : InherentProperty["PortPinPathItem"](
+            kind   = DataKind.BOOL,
+            getter = lambda self: self.dot(),
+            setter = lambda self, value: self.setDot(value)
+        ),
+        "Clock" : InherentProperty["PortPinPathItem"](
+            kind   = DataKind.BOOL,
+            getter = lambda self: self.clock(),
+            setter = lambda self, value: self.setClock(value)
+        )
+    }
+    _PROPERTIES : PropertiesDict = \
         PortPinMixin._PROPERTIES | \
-        {
-            "Dot" : InherentProperty["PortPinPathItem"](
-                kind   = DataKind.BOOL,
-                getter = lambda self: self.dot(),
-                setter = lambda self, value: self.setDot(value)
-            ),
-            "Clock" : InherentProperty["PortPinPathItem"](
-                kind   = DataKind.BOOL,
-                getter = lambda self: self.clock(),
-                setter = lambda self, value: self.setClock(value)
-            )
-        } | \
+        _PROPERTIES_DOT_CLK | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
 
     # instance attributes
@@ -255,7 +259,8 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     def setDot(self : Self, value : bool) -> None:
         self._dot = value
         self._updateGraphics()
-        self.properties.signalChanges("Dot")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Dot")
 
     def clock(self : Self) -> bool:
         return self._clock
@@ -265,7 +270,8 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self._clock = value
         self._updateGraphics()
         self._updateNameHandle()
-        self.properties.signalChanges("Clock")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Clock")
 
     @withScene
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:

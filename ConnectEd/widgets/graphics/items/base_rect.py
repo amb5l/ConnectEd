@@ -7,11 +7,11 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.defs  import PITCH
-from ....core.types import RectHandleId, DataKind
-
-from ..properties import InherentProperty, PropertiesMixin
+from ....core.check      import checked
+from ....core.defs       import PITCH
+from ....core.types      import RectHandleId, DataKind
+from ....core.properties import PropertiesDict, InherentProperty, \
+                                PropertiesMixin
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
@@ -31,23 +31,24 @@ class BaseRectangleMixin(
 
     # class attributes
     _ORIGIN = RectHandleId.MIDDLE_CENTER
+    _PROPERTIES_WIDTH_HEIGHT : PropertiesDict = {
+        "Width" : InherentProperty["BaseRectangleMixin"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.width(),
+            setter = lambda self, value: self.setWidth(value)
+        ),
+        "Height" : InherentProperty["BaseRectangleMixin"](
+            kind   = DataKind.FLOAT,
+            getter = lambda self: self.height(),
+            setter = lambda self, value: self.setHeight(value)
+        )
+    }
     _PROPERTIES = \
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemTransformMixin._PROPERTIES_MIRROR | \
-        {
-            "Width" : InherentProperty["BaseRectangleMixin"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.width(),
-                setter = lambda self, value: self.setWidth(value)
-            ),
-            "Height" : InherentProperty["BaseRectangleMixin"](
-                kind   = DataKind.FLOAT,
-                getter = lambda self: self.height(),
-                setter = lambda self, value: self.setHeight(value)
-            )
-        } | \
+        _PROPERTIES_WIDTH_HEIGHT | \
         PrimaryItemMixin._PROPERTIES_LINE | \
         PrimaryItemMixin._PROPERTIES_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
@@ -142,7 +143,7 @@ class BaseRectangleMixin(
             if old.height() != new.height():
                 names.append("Height")
             if names:
-                self.properties.signalChanges(names)
+                self.propertySignalChanges(names)
 
     def width(self : Self) -> float:
         if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):

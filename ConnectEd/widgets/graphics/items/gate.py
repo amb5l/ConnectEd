@@ -9,17 +9,17 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.check import checked
-from ....core.types import Direction, DataKind, RectHandleId, HandleId
-
-from ..properties import InherentProperty, PropertyTextSpec
+from ....core.check      import checked
+from ....core.types      import Direction, DataKind, RectHandleId, HandleId
+from ....core.properties import PropertiesDict, InherentProperty
 
 from ..painter_path import PainterPath
 
 from .role import FunctionalItem
 
-from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
-from .grip     import GripItem, MoveGripItem
+from .grip          import GripItem, MoveGripItem
+from .gate_pin      import GatePinItem, BufGatePinItem, OrGatePinItem
+from .property_text import PropertyTextSpec
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -45,7 +45,7 @@ class GateItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _PROPERTIES_LABEL = {
+    _PROPERTIES_LABEL : PropertiesDict = {
         "Label" : InherentProperty["GateItem"](
             kind   = DataKind.STR,
             worthy = lambda self: self.label() != "",
@@ -91,8 +91,7 @@ class GateItem(
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
-        if hasattr(self, "properties"):
-            self.properties.signalChanges("Label")
+        self.propertySignalChanges("Label")
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -120,7 +119,7 @@ class BufGateItem(GateItem):
 
     # class attributes
     _PIN_CLS = BufGatePinItem
-    _PROPERTIES_IO = {
+    _PROPERTIES_IO : PropertiesDict = {
         "Output" : InherentProperty["BufGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
@@ -235,7 +234,7 @@ class BufGateItem(GateItem):
             self._output.setPos(QPointF(-12, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
-        self.properties.signalChanges("Output")
+        self.propertySignalChanges("Output")
 
     def input(self : Self) -> str:
         return "" if not hasattr(self, '_input') else \
@@ -249,7 +248,7 @@ class BufGateItem(GateItem):
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
         self._input.setInverted(level == "L")
-        self.properties.signalChanges("Input")
+        self.propertySignalChanges("Input")
 
 
 class LogicGateItem(GateItem):
@@ -258,7 +257,7 @@ class LogicGateItem(GateItem):
     # class attributes
     _PIN_CLS     = GatePinItem
     _MID_PIN_CLS = GatePinItem  # for extended middle input pin
-    _PROPERTIES_IO = {
+    _PROPERTIES_IO : PropertiesDict = {
         "Output" : InherentProperty["LogicGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
@@ -395,7 +394,7 @@ class LogicGateItem(GateItem):
             self._output.setPos(QPointF(-10, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
-        self.properties.signalChanges("Output")
+        self.propertySignalChanges("Output")
 
     def inputs(self : Self) -> str:
         return "" if not hasattr(self, '_inputs') else \
@@ -427,7 +426,7 @@ class LogicGateItem(GateItem):
                 path.moveTo(-30, y)
                 path.lineTo(-30, 10)
                 self.setPath(path)
-        self.properties.signalChanges("Inputs")
+        self.propertySignalChanges("Inputs")
 
 
 class AndGateItem(LogicGateItem):

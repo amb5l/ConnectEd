@@ -1,16 +1,15 @@
 ﻿from __future__ import annotations
 
-from typing import Self, Any, cast
+from typing import Self, Any
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from .....core.check import checked
-from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
-
-from ...properties import PropertiesMixin
+from .....core.check      import checked
+from .....core.xml        import toXmlStartElement, toXmlEndElement, fromXml
+from .....core.properties import PropertiesMixin
 
 from ...xml import toXmlProperties, fromXmlProperties
 
@@ -96,10 +95,9 @@ class ItemXmlMixin:
         tag = xr.name()
         if tag == "PropertyText":
             pt = PropertyTextItem.fromXml(xr, self)
-            if pt is not None:
-                prop_name = pt.name()
-                if isinstance(prop_name, str):
-                    self.properties.setText(prop_name, pt)
+            if (name := pt.name()) and self.propertyExists(name):
+                self.propertySubscribe(name, pt.onTextChanged)
+                pt.onTextChanged()  # paint current value
             return True
         elif tag in _child_items_xref:
             child_cls = _child_items_xref[tag]
@@ -128,9 +126,9 @@ class ItemXmlMixin:
             instance.onTextChanged()
         if isinstance(instance, OnSceneOrientationChangedProtocol):
             instance.onSceneOrientationChanged()
-        if isinstance(instance, PropertiesMixin):
-            for name in instance.properties.names():
-                pt = instance.properties.text(name)
+        if isinstance(instance, ItemPropertiesMixin):
+            for name in instance.propertyNames():
+                pt = instance.propertyText(name)
                 if pt is not None and isinstance(pt, OnGeometryChangedProtocol):
                     pt.onGeometryChanged()
 
@@ -146,13 +144,13 @@ class ItemXmlMixin:
         if parent is not None:
             args["parent"] = parent
         instance = cls(**args)
-        if isinstance(instance, PropertiesMixin):
+        if isinstance(instance, ItemPropertiesMixin):
             fromXmlProperties(instance, xr)
         if isinstance(instance, OnGeometryChangedProtocol):
             instance.onGeometryChanged()
         if not (xr.isEndElement() and xr.name() == tag):
             instance.fromXmlChildren(xr)
         ItemXmlMixin.fromXmlRefresh(instance)
-        if isinstance(instance, PropertiesMixin):
-            instance.setLive(True)
+        if isinstance(instance, ItemPropertiesMixin):
+            instance.setPropertiesLive(True)
         return instance

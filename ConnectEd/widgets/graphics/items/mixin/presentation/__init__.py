@@ -9,11 +9,11 @@ from PyQt6.QtGui     import QColor
 from ......core.check import checked
 from ......core.types import DataKind
 
-from ....properties import InherentProperty
-
 from ....scenes import withScene
 
 from ...protocols import OnSceneChangedProtocol
+
+from ..properties import InherentProperty, ItemPropertiesMixin
 
 from .line   import ItemPresentationLineMixin  # noqa: E402
 from .fill   import ItemPresentationFillMixin  # noqa: E402
@@ -70,7 +70,7 @@ class ItemPresentationMixin(
             default = lambda self: self.defaultFillStyle()
         )
     }
-    _PROPERTIES_TEXT = {
+    _PROPERTIES_APPEARANCE = {
         "Text Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.textColor() is not None,

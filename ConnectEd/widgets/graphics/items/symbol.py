@@ -2,19 +2,16 @@
 
 from typing import Self
 
-from PyQt6.QtCore import QXmlStreamWriter
-
-from ....core.check import checked
-from ....core.types import RectHandleId, DataKind
-
+from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsRectItem
 
-from ..properties import PropertiesMixin, InherentProperty
+from ....core.check      import checked
+from ....core.types      import RectHandleId, DataKind
+from ....core.properties import PropertiesDict, InherentProperty, \
+                                PropertiesMixin
 
-from .part import PartItemMixin
-
-from .role import DecorativeItem, FunctionalItem
-
+from .part              import PartItemMixin
+from .role              import DecorativeItem, FunctionalItem
 from .symbol_pin import SymbolPinItem
 
 from .mixin              import ItemMixin
@@ -38,43 +35,42 @@ class SymbolBaseItem(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
     PartItemMixin,
+    PropertiesMixin,
     QGraphicsRectItem
 ):
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
-    _PROPERTIES = \
-        PartItemMixin._PROPERTIES_PART | \
-        {
-            "VHDL Library" : InherentProperty["SymbolBaseItem"](
-                kind = DataKind.STR,
-                getter = lambda self: self.vhdlLibrary(),
-                setter = lambda self, value: self.setVhdlLibrary(value),
-                tip = (
-                    "Library containing the component or entity e.g. 'unisim' "
-                    "(default is 'work')."
-                )
-            ),
-            "VHDL Package" : InherentProperty["SymbolBaseItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.vhdlPackage(),
-                setter = lambda self, value: self.setVhdlPackage(value),
-                tip = (
-                    "Package containing the component e.g. 'vcomponents', "
-                    "'pkg.subpkg'. Leave empty for entity instantiation."
-                )
-            ),
-            "VHDL Architecture" : InherentProperty["SymbolBaseItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.vhdlArchitecture(),
-                setter = lambda self, value: self.setVhdlArchitecture(value),
-                tip = (
-                    "Name of the architecture, required for entity "
-                    "instantiation. Leave empty for component instantiation."
-                )
+    _PROPERTIES_VHDL : PropertiesDict = {
+        "VHDL Library" : InherentProperty["SymbolBaseItem"](
+            kind = DataKind.STR,
+            getter = lambda self: self.vhdlLibrary(),
+            setter = lambda self, value: self.setVhdlLibrary(value),
+            tip = (
+                "Library containing the component or entity e.g. 'unisim' "
+                "(default is 'work')."
             )
-        }
+        ),
+        "VHDL Package" : InherentProperty["SymbolBaseItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.vhdlPackage(),
+            setter = lambda self, value: self.setVhdlPackage(value),
+            tip = (
+                "Package containing the component e.g. 'vcomponents', "
+                "'pkg.subpkg'. Leave empty for entity instantiation."
+            )
+        ),
+        "VHDL Architecture" : InherentProperty["SymbolBaseItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.vhdlArchitecture(),
+            setter = lambda self, value: self.setVhdlArchitecture(value),
+            tip = (
+                "Name of the architecture, required for entity "
+                "instantiation. Leave empty for component instantiation."
+            )
+        )
+    }
+    _PROPERTIES = PartItemMixin._PROPERTIES_PART | _PROPERTIES_VHDL
 
 
     # instance attributes
@@ -128,7 +124,8 @@ class SymbolBaseItem(
     @checked
     def setVerilogLibrary(self : Self, verilog_library : str) -> None:
         self._verilog_library = verilog_library
-        self.properties.signalChanges("Verilog Library")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Verilog Library")
 
     def verilogName(self : Self) -> str:
         return self._verilog_name
@@ -136,7 +133,8 @@ class SymbolBaseItem(
     @checked
     def setVerilogName(self : Self, verilog_name : str) -> None:
         self._verilog_name = verilog_name
-        self.properties.signalChanges("Verilog Name")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Verilog Name")
 
     def vhdlInstantiationStyle(self : Self) -> str:
         return self._vhdl_instantiation_style
@@ -144,7 +142,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlInstantiationStyle(self : Self, vhdl_instantiation_style : str) -> None:
         self._vhdl_instantiation_style = vhdl_instantiation_style
-        self.properties.signalChanges("VHDL Instantiation Style")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("VHDL Instantiation Style")
 
     def vhdlLibrary(self : Self) -> str:
         return self._vhdl_library
@@ -152,7 +151,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlLibrary(self : Self, vhdl_library : str) -> None:
         self._vhdl_library = vhdl_library
-        self.properties.signalChanges("VHDL Library")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("VHDL Library")
 
     def vhdlPackage(self : Self) -> str:
         return self._vhdl_package
@@ -160,7 +160,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlPackage(self : Self, vhdl_package : str) -> None:
         self._vhdl_package = vhdl_package
-        self.properties.signalChanges("VHDL Package")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("VHDL Package")
 
     def vhdlName(self : Self) -> str:
         return self._vhdl_name
@@ -168,7 +169,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlName(self : Self, vhdl_name : str) -> None:
         self._vhdl_name = vhdl_name
-        self.properties.signalChanges("VHDL Name")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("VHDL Name")
 
     def vhdlArchitecture(self : Self) -> str:
         return self._vhdl_architecture
@@ -176,7 +178,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlArchitecture(self : Self, vhdl_architecture : str) -> None:
         self._vhdl_architecture = vhdl_architecture
-        self.properties.signalChanges("VHDL Architecture")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("VHDL Architecture")
 
     def vhdlSelectedName(self : Self) -> str:
         s = self.vhdlName() if self.vhdlName() else self.name()
@@ -217,7 +220,7 @@ class SymbolDefinitionItem(SymbolBaseItem):
 
 class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     # class attributes
-    _PROPERTIES = \
+    _PROPERTIIES = \
         SymbolDefinitionItem._PROPERTIES | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _XML_CHILDREN = frozenset({"PropertyText"})
@@ -277,19 +280,19 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
                     clone.setParentItem(self)
 
         self._definition = definition  # bind to definition
-        prev_live = self.live()
-        self.setLive(False)
+        prev_live = self.propertiesLive()
+        self.setPropertiesLive(False)
         try:
             if inherent:
-                self.properties.syncInherentFrom(definition.properties)
+                self.propertySyncInherentFrom(definition)
             if custom:
-                self.properties.syncCustomFrom(definition.properties)
+                self.propertySyncCustomFrom(definition)
             if text_add:
-                self.properties.addMissingTextsFrom(definition.properties)
+                self.addMissingPropertyTextsFrom(definition)
             if text_remove:
-                self.properties.removeTextsNotIn(definition.properties)
+                self.removePropertyTextsNotIn(definition)
             if text_reset:
-                self.properties.syncTextFrom(definition.properties)
+                self.syncPropertyTextFrom(definition)
             if content:
                 self.setRect(definition.rect())
                 _clearChildren(SymbolPinItem)
@@ -298,4 +301,4 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
                 _cloneChildren(DecorativeItem)
             ItemXmlMixin.fromXmlRefresh(self)
         finally:
-            self.setLive(prev_live)
+            self.setPropertiesLive(prev_live)

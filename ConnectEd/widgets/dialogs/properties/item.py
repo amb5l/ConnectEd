@@ -10,8 +10,6 @@ from ....core.check import checked
 from ....core.types import NoChange, DataKind
 from ....core.utils import val2str, trace
 
-from ...graphics.properties import PropertiesMixin
-
 
 class PropertiesItem(QStandardItem):
     _IDX_OWNER   = 0

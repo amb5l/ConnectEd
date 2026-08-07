@@ -15,8 +15,7 @@ from ....core.types import (
     NoChange, NO_CHANGE, AlignH, AlignV, HandleId, Display, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
 )
-
-from ...graphics.properties import PropertiesMixin
+from ....core.properties import PropertiesMixin
 
 from ...graphics.items.mixin.handle import ItemHandlesMixin
 
@@ -102,11 +101,11 @@ class PropertiesDialog(QDialog):
         # set headers
         self._table_model.setHorizontalHeaderLabels(_COLS)
         # add rows
-        for name in item.properties.names():
-            if (kind := item.properties.kind(name)) is None:
+        for name in item.propertyNames():
+            if (kind := item.propertyKind(name)) is None:
                 continue
             self._table_model.appendRow(self._buildRow(
-                name, kind, item.properties.value(name)
+                name, kind, item.propertyValue(name)
             ))
         # create table view
         self._table_view = TableView(self._table_model)
@@ -197,7 +196,7 @@ class PropertiesDialog(QDialog):
             if kind != value_item.kind():
                 logger().warning(f"Type/value mismatch for property '{name}'")
                 value_item.setKind(kind)
-            if not isinstance(value := value_item.value(), kind.types()):
+            if not isinstance(value_item.value(), kind.types()):
                 QMessageBox.warning(
                     self, "Invalid Property",
                     f"Value of property '{name}' does not match type '{kind}'."
@@ -369,15 +368,15 @@ class PropertiesDialog(QDialog):
         value : Any
     ) -> list[PropertiesItem | None]:
         item = self._item
-        new = not item.properties.has(name)
-        custom = new or not item.properties.inherent(name)
-        if not isinstance(value_kind := kind if new else item.properties.kind(name), DataKind):
+        new = not item.propertyExists(name)
+        custom = new or not item.propertyInherent(name)
+        if not isinstance(value_kind := kind if new else item.propertyKind(name), DataKind):
             logger().error(f"Bad value kind ({value_kind})")
             value_kind = DataKind.STR
-        value_value = value if new else item.properties.value(name)
-        value_default = None if new else item.properties.default(name)
-        value_editable = item.properties.writeable(name) is True
-        pt = None if new else item.properties.text(name)
+        value_value = value if new else item.propertyValue(name)
+        value_default = None if new else item.propertyDefaultValue(name)
+        value_editable = item.propertyWriteable(name) is True
+        pt = None if new else item.propertyText(name)
         display = \
             Display.NONE if pt is None else \
             Display.SHOW if pt.isVisible() else \
@@ -447,8 +446,8 @@ class PropertiesDialog(QDialog):
             if not isinstance(name := name_item.value(), str):
                 logger().error(f"Name is not a string: {name}")
                 continue
-            if not self._item.properties.has(name) \
-            or not self._item.properties.inherent(name):
+            if not self._item.propertyExists(name) \
+            or not self._item.propertyInherent(name):
                 for col_idx in range(self._table_model.columnCount()):
                     item = self._getItem(row, col_idx)
                     if item is not None:

@@ -5,10 +5,11 @@ from typing import Self, Any
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QTextEdit
 
-from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
+from .....core.check      import checked
+from .....core.properties import _CUSTOM_PROPERTY_KINDS
+from .....core.types      import NoChange, NO_CHANGE, DataKind, HandleId
 
-from ....graphics.properties import PropertiesMixin, _CUSTOM_PROPERTY_KINDS
+from ....graphics.items.mixin.properties import PropertiesMixin
 
 from ..edit import StrEditor
 
@@ -44,7 +45,7 @@ class PropertyLayout(QGridLayout):
         inherent    = None
         kind        = self._NOT_FOUND
         value       = self._NOT_FOUND
-        owner       = object.owner() if isinstance(object, PropertiesMixin) else None
+        owner       = object.item()
         if isinstance(owner, PropertiesMixin) and owner.properties.has(name):
             description = owner.description()
             inherent    = owner.properties.inherent(name)

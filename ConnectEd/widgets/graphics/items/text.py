@@ -11,9 +11,10 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
                             QTransform, QTextCursor
 
-from ....core.utils import qtItemClass
-from ....core.types import NoChange, NO_CHANGE, \
-                           AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ....core.utils      import qtItemClass
+from ....core.types      import NoChange, NO_CHANGE, \
+                                AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ....core.properties import PropertiesDict, InherentProperty
 
 from ....resources.icons import AnchorTopLeftIcon,      \
                                 AnchorTopCenterIcon,    \
@@ -33,17 +34,16 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 
 from ....core.check import checked
 
-from ..properties import InherentProperty
 from ..quill      import Quill
 
 from .grip import ResizeGripItem
 
 from .role import DecorativeItem
 
-from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemRectHandlesMixin
-from .mixin.shape     import ItemShapeMixin
-from .mixin.primary   import PrimaryItemMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.shape      import ItemShapeMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -167,81 +167,79 @@ class BaseTextItem(
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
     _RESIZE_GRIP_CLS = TextResizeGripItem
-    _PROPERTIES_ALIGN = \
-        {
-            "AlignH" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.ALIGN_H,
-                getter = lambda self: self.alignH(),
-                setter = lambda self, value: self.setAlignH(value)
-            ),
-            "AlignV" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.ALIGN_V,
-                getter = lambda self: self.alignV(),
-                setter = lambda self, value: self.setAlignV(value)
-            )
-        }
-    _PROPERTIES_SIZE = \
-        {
-            "Width" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.SIZE,
-                worthy = lambda self: self.width() >= 0.0,
-                getter = lambda self: self.width(),
-                setter = lambda self, value: self.setWidth(value)
-            ),
-            "Height" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.SIZE,
-                worthy = lambda self: self.height() >= 0.0,
-                getter = lambda self: self.height(),
-                setter = lambda self, value: self.setHeight(value)
-            )
-        }
-    _PROPERTIES_PADDING = \
-        {
-            "Pad Left" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.FLOAT,
-                worthy = lambda self: self.padLeft() != 0.0,
-                getter = lambda self: self.padLeft(),
-                setter = lambda self, value: self.setPadLeft(value)
-            ),
-            "Pad Right" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.FLOAT,
-                worthy = lambda self: self.padRight() != 0.0,
-                getter = lambda self: self.padRight(),
-                setter = lambda self, value: self.setPadRight(value)
-            ),
-            "Pad Top" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.FLOAT,
-                worthy = lambda self: self.padTop() != 0.0,
-                getter = lambda self: self.padTop(),
-                setter = lambda self, value: self.setPadTop(value)
-            ),
-            "Pad Bottom" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.FLOAT,
-                worthy = lambda self: self.padBottom() != 0.0,
-                getter = lambda self: self.padBottom(),
-                setter = lambda self, value: self.setPadBottom(value)
-            )
-        }
-    _PROPERTIES : dict[str, InherentProperty] = \
-        {
-            "Text" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.text(),
-                setter = lambda self, value: self.setText(value)
-            ),
-            "Block" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.BOOL,
-                worthy = lambda self: self.block(),
-                getter = lambda self: self.block(),
-                setter = lambda self, value: self.setBlock(value)
-            ),
-            "AutoFlip" : InherentProperty["BaseTextItem"](
-                kind   = DataKind.BOOL,
-                worthy = lambda self: not self.autoflip(),
-                getter = lambda self: self.autoflip(),
-                setter = lambda self, value: self.setAutoflip(value)
-            )
-        } | \
+    _PROPERTIES_BASE_TEXT : PropertiesDict = {
+        "Text" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.text(),
+            setter = lambda self, value: self.setText(value)
+        ),
+        "Block" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.BOOL,
+            worthy = lambda self: self.block(),
+            getter = lambda self: self.block(),
+            setter = lambda self, value: self.setBlock(value)
+        ),
+        "AutoFlip" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.BOOL,
+            worthy = lambda self: not self.autoflip(),
+            getter = lambda self: self.autoflip(),
+            setter = lambda self, value: self.setAutoflip(value)
+        )
+    }
+    _PROPERTIES_ALIGN : PropertiesDict = {
+        "AlignH" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.ALIGN_H,
+            getter = lambda self: self.alignH(),
+            setter = lambda self, value: self.setAlignH(value)
+        ),
+        "AlignV" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.ALIGN_V,
+            getter = lambda self: self.alignV(),
+            setter = lambda self, value: self.setAlignV(value)
+        )
+    }
+    _PROPERTIES_SIZE : PropertiesDict = {
+        "Width" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.SIZE,
+            worthy = lambda self: self.width() >= 0.0,
+            getter = lambda self: self.width(),
+            setter = lambda self, value: self.setWidth(value)
+        ),
+        "Height" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.SIZE,
+            worthy = lambda self: self.height() >= 0.0,
+            getter = lambda self: self.height(),
+            setter = lambda self, value: self.setHeight(value)
+        )
+    }
+    _PROPERTIES_PADDING : PropertiesDict = {
+        "Pad Left" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.FLOAT,
+            worthy = lambda self: self.padLeft() != 0.0,
+            getter = lambda self: self.padLeft(),
+            setter = lambda self, value: self.setPadLeft(value)
+        ),
+        "Pad Right" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.FLOAT,
+            worthy = lambda self: self.padRight() != 0.0,
+            getter = lambda self: self.padRight(),
+            setter = lambda self, value: self.setPadRight(value)
+        ),
+        "Pad Top" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.FLOAT,
+            worthy = lambda self: self.padTop() != 0.0,
+            getter = lambda self: self.padTop(),
+            setter = lambda self, value: self.setPadTop(value)
+        ),
+        "Pad Bottom" : InherentProperty["BaseTextItem"](
+            kind   = DataKind.FLOAT,
+            worthy = lambda self: self.padBottom() != 0.0,
+            getter = lambda self: self.padBottom(),
+            setter = lambda self, value: self.setPadBottom(value)
+        )
+    }
+    _PROPERTIES = \
+        _PROPERTIES_BASE_TEXT                      | \
         ItemTransformMixin._PROPERTIES_POS         | \
         ItemTransformMixin._PROPERTIES_ROTATE      | \
         ItemTransformMixin._PROPERTIES_MIRROR      | \
@@ -249,7 +247,7 @@ class BaseTextItem(
         _PROPERTIES_ALIGN                          | \
         _PROPERTIES_SIZE                           | \
         _PROPERTIES_PADDING                        | \
-        PrimaryItemMixin._PROPERTIES_TEXT
+        PrimaryItemMixin._PROPERTIES_APPEARANCE
 
     # instance attributes
     _child      : TextLineRenderer | TextBlockRenderer  # text renderer
@@ -361,8 +359,8 @@ class BaseTextItem(
             self._child.setParentItem(self)
             self.onGeometryChanged()
             # subclasses may not expose the block property:
-            if self.properties.has("Block"):
-                self.properties.signalChanges("Block")
+            if self.propertyExists("Block"):
+                self.propertySignalChanges("Block")
 
     def autoflip(self : Self) -> bool:
         return self._autoflip
@@ -371,7 +369,7 @@ class BaseTextItem(
     def setAutoflip(self : Self, autoflip : bool) -> None:
         self._autoflip = autoflip
         self._child.onSceneOrientationChanged()
-        self.properties.signalChanges("AutoFlip")
+        self.propertySignalChanges("AutoFlip")
 
     def text(self : Self) -> str:
         return self._child.text()
@@ -380,7 +378,7 @@ class BaseTextItem(
     def setText(self : Self, text : str) -> None:
         self._child._setText(text)
         self.onGeometryChanged()
-        self.properties.signalChanges("Text")
+        self.propertySignalChanges("Text")
 
     def alignH(self : Self) -> AlignH:
         return self._align_h
@@ -389,7 +387,7 @@ class BaseTextItem(
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
         self._child.onGeometryChanged()
-        self.properties.signalChanges("AlignH")
+        self.propertySignalChanges("AlignH")
 
     def alignV(self : Self) -> AlignV:
         return self._align_v
@@ -398,7 +396,7 @@ class BaseTextItem(
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
         self._child.onGeometryChanged()
-        self.properties.signalChanges("AlignV")
+        self.propertySignalChanges("AlignV")
 
     def width(self : Self) -> float:
         return self._width
@@ -407,7 +405,7 @@ class BaseTextItem(
     def setWidth(self : Self, width : float) -> None:
         self._width = width
         self.onGeometryChanged()
-        self.properties.signalChanges("Width")
+        self.propertySignalChanges("Width")
 
     def height(self : Self) -> float:
         return self._height
@@ -416,7 +414,7 @@ class BaseTextItem(
     def setHeight(self : Self, height : float) -> None:
         self._height = height
         self.onGeometryChanged()
-        self.properties.signalChanges("Height")
+        self.propertySignalChanges("Height")
 
     def padLeft(self : Self) -> float:
         return self._pad_left
@@ -425,7 +423,7 @@ class BaseTextItem(
     def setPadLeft(self : Self, pad_left : float) -> None:
         self._pad_left = max(pad_left, 0.0)
         self.onGeometryChanged()
-        self.properties.signalChanges("Pad Left")
+        self.propertySignalChanges("Pad Left")
 
     def padRight(self : Self) -> float:
         return self._pad_right
@@ -434,7 +432,7 @@ class BaseTextItem(
     def setPadRight(self : Self, pad_right : float) -> None:
         self._pad_right = max(pad_right, 0.0)
         self.onGeometryChanged()
-        self.properties.signalChanges("Pad Right")
+        self.propertySignalChanges("Pad Right")
 
     def padTop(self : Self) -> float:
         return self._pad_top
@@ -443,7 +441,7 @@ class BaseTextItem(
     def setPadTop(self : Self, pad_top : float) -> None:
         self._pad_top = max(pad_top, 0.0)
         self.onGeometryChanged()
-        self.properties.signalChanges("Pad Top")
+        self.propertySignalChanges("Pad Top")
 
     def padBottom(self : Self) -> float:
         return self._pad_bottom
@@ -452,7 +450,7 @@ class BaseTextItem(
     def setPadBottom(self : Self, pad_bottom : float) -> None:
         self._pad_bottom = max(pad_bottom, 0.0)
         self.onGeometryChanged()
-        self.properties.signalChanges("Pad Bottom")
+        self.propertySignalChanges("Pad Bottom")
 
     def color(self : Self) -> QColor:
         return self._child.color()

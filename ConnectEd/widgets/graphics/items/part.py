@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from typing import Self
 
-from ....core.check import checked
-from ....core.types import RectHandleId, DataKind
+from ....core.check      import checked
+from ....core.types      import RectHandleId, DataKind
+from ....core.properties import PropertiesDict, InherentProperty, \
+                                PropertiesMixin
 
-from ..properties import PropertyTextSpec, InherentProperty
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..properties import PropertiesManager
+from .property_text import PropertyTextSpec
 
 
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
-    _PROPERTIES_PART = {
+    _PROPERTIES_PART : PropertiesDict = {
             "Label" : InherentProperty["PartItemMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.label(),
@@ -39,9 +37,6 @@ class PartItemMixin:
     _label : str
     _name  : str
 
-    # external instance attributes
-    properties : PropertiesManager  # provided by PropertiesMixin
-
     @checked
     def initPart(self : Self) -> None:
         self._label = ""
@@ -53,7 +48,8 @@ class PartItemMixin:
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
-        self.properties.signalChanges("Label")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Label")
 
     def name(self : Self) -> str:
         return self._name
@@ -61,4 +57,5 @@ class PartItemMixin:
     @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
-        self.properties.signalChanges("Name")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Name")

@@ -5,20 +5,16 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem
 
 from .....app import logger
 
-from .....core.check import checked
-from .....core.types import DataKind, EdgeLoc, Edge
-from .....core.utils import qtItemClass
-
-from ...properties import InherentProperty, PropertiesManager
+from .....core.check      import checked
+from .....core.types      import DataKind, EdgeLoc, Edge
+from .....core.utils      import qtItemClass
+from .....core.properties import PropertiesDict, InherentProperty, \
+                                 PropertiesMixin
 
 from ..protocols import (
     OnSceneChangedProtocol,
     OnSceneOrientationChangedProtocol
 )
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...scenes.diagram import DiagramScene
 
 
 class ItemEdgeLocMixin:
@@ -27,7 +23,7 @@ class ItemEdgeLocMixin:
     """
 
     # class attributes
-    _PROPERTIES = {
+    _PROPERTIES : PropertiesDict = {
         "Edge" : InherentProperty["ItemEdgeLocMixin"](
             kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
@@ -42,9 +38,6 @@ class ItemEdgeLocMixin:
 
     # instance attributes
     _edge_loc : EdgeLoc
-
-    # external instance attributes
-    properties : PropertiesManager  # provided by PropertiesMixin
 
     @checked
     def initEdgeLoc(self : Self) -> None:
@@ -111,12 +104,14 @@ class ItemEdgeLocMixin:
     @checked
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._edge_loc.offset))
-        self.properties.signalChanges("Edge")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Edge")
 
     @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._edge_loc.edge, offset))
-        self.properties.signalChanges("Offset")
+        if isinstance(self, PropertiesMixin):
+            self.propertySignalChanges("Offset")
 
     @checked
     def locSnap(

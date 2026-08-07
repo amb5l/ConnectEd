@@ -10,13 +10,13 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.check import checked
-from ....core.defs  import PITCH
-from ....core.types import DataKind, RectHandleId
+from ....core.check      import checked
+from ....core.defs       import PITCH
+from ....core.types      import DataKind, RectHandleId
+from ....core.properties import PropertiesDict, InherentProperty
 
 from ...dialogs.arc import ArcDialog
 
-from ..properties   import InherentProperty
 from ..xml          import fromXmlProperties
 from ..painter_path import PainterPath
 
@@ -24,10 +24,10 @@ from .grip import GripShape, GripShapeMixin, GripItem, ResizeGripItem
 
 from .role import DecorativeItem
 
-from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemRectHandlesMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.primary   import PrimaryItemMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.xml        import ItemXmlMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -206,14 +206,16 @@ class PolylineItem(
     # class attributes
     _SELECT_MODES    = 2
     _RESIZE_GRIP_CLS = PolylineResizeGripItem
+
+    _PROPERTIES_CLOSED : PropertiesDict = {
+        "Closed" : InherentProperty["PolylineItem"](
+            kind   = DataKind.BOOL,
+            getter = lambda self: self.closed(),
+            setter = lambda self, value: self.setClosed(value)
+        )
+    }
     _PROPERTIES = \
-        {
-            "Closed" : InherentProperty["PolylineItem"](
-                kind   = DataKind.BOOL,
-                getter = lambda self: self.closed(),
-                setter = lambda self, value: self.setClosed(value)
-            )
-        } | \
+        _PROPERTIES_CLOSED                       | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE
 
@@ -334,7 +336,7 @@ class PolylineItem(
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
         self.updatePath()
-        self.properties.signalChanges("Closed")
+        self.propertySignalChanges("Closed")
 
     @checked
     def close(self : Self, sweep : float | None = None) -> None:
@@ -580,7 +582,7 @@ class PolylineItem(
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
         ItemXmlMixin.fromXmlRefresh(instance)
-        instance.setLive(True)  # enable property change signalling
+        instance.propertySignalChanges("Closed")
         return instance
 
     @checked

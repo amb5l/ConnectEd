@@ -4,16 +4,15 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import HandleId, RectHandleId, BlockPinHandleId, DataKind
-from ....core.check import checked
 
-from ..properties import PropertyTextSpec
+from .grip          import GripItem, ResizeGripItem
+from .port_pin      import PortPinArrowItem, PortPinLineItem
+from .property_text import PropertyTextSpec
 
-from .grip import GripItem, ResizeGripItem
-from .port_pin import PortPinArrowItem, PortPinLineItem
-
-from .mixin.edge_loc import ItemEdgeLocMixin
+from .mixin.edge_loc   import ItemEdgeLocMixin
 
 
 from typing import TYPE_CHECKING
@@ -31,12 +30,11 @@ class BlockPinItem(ItemEdgeLocMixin, PortPinLineItem):
     _ARROW_CLS  = BlockPinArrowItem
     _ARROW_POS  = 0
     _PROPERTIES = PortPinLineItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
-    _PROPERTY_TEXTS = \
-        {
-            "Name" : PropertyTextSpec(
-                cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
-            )
-        }
+    _PROPERTY_TEXTS = {
+        "Name" : PropertyTextSpec(
+            cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
+        )
+    }
     _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod

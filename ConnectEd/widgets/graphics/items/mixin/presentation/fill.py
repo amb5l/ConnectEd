@@ -11,11 +11,11 @@ from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange
 
-from ....properties import PropertiesManager, PropertiesMixin
-
 from ....scenes import withScene
 
 from ...protocols import SetBrushProtocol
+
+from ..properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,11 +28,6 @@ class ItemPresentationFillMixin:
     # instance attributes
     _fill_color : QColor        | None
     _fill_style : Qt.BrushStyle | None
-
-    # external instance attributes
-    properties : PropertiesManager  # provided by PropertiesMixin
-
-    # API
 
     def hasFill(self : Self) -> bool:
         return self.hasFillColor() or self.hasFillStyle()
@@ -67,8 +62,8 @@ class ItemPresentationFillMixin:
             return
         self._fill_color = color
         self._updateBrush()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Fill Color")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Fill Color")
 
     def hasFillStyle(self : Self) -> bool:
         return hasattr(self, "_fill_style")
@@ -103,8 +98,8 @@ class ItemPresentationFillMixin:
             return
         self._fill_style = style
         self._updateBrush()
-        if isinstance(self, PropertiesMixin):
-            self.properties.signalChanges("Fill Style")
+        if isinstance(self, ItemPropertiesMixin):
+            self.propertySignalChanges("Fill Style")
 
     # helpers
 

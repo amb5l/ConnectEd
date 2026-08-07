@@ -1,4 +1,4 @@
-from ...properties import PropertiesMixin
+from .....core.properties import PropertiesMixin
 
 from . import ItemMixin
 

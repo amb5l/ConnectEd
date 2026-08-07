@@ -6,22 +6,22 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 
-from ....core.defs  import PITCH
-from ....core.types import NetKind, DataKind, AlignH, AlignV, \
-                           RectHandleId, TapHandleId
-from ....core.check import checked
-
-from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
+from ....core.defs       import PITCH
+from ....core.types      import NetKind, DataKind, AlignH, AlignV, \
+                                RectHandleId, TapHandleId
+from ....core.check      import checked
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .role import FunctionalItem
 
-from .node   import TapMajorNodeItem, TapMinorNodeItem
-from .handle import HandleItem
-from .grip   import MoveGripItem
+from .handle        import HandleItem
+from .grip          import MoveGripItem
+from .node          import TapMajorNodeItem, TapMinorNodeItem
+from .property_text import PropertyTextSpec
 
-from .mixin.transform import ItemTransformMixin
-from .mixin.paint     import ItemPaintMixin
-from .mixin.primary   import PrimaryItemMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.paint      import ItemPaintMixin
+from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -38,16 +38,15 @@ class TapItem(
 ):
     # class attributes
     _LINE = QLineF(0, 0, PITCH, PITCH)
-    _PROPERTIES = \
-        {
-            "Suffix" : InherentProperty["TapItem"](
-                kind   = DataKind.STR,
-                worthy = lambda self: self.suffix() != "",
-                getter = lambda self: self.suffix(),
-                setter = lambda self, value: self.setSuffix(value)
-            )
-        } | \
-        ItemTransformMixin._PROPERTIES_NO_ORIGIN
+    _PROPERTIES_SUFFIX : PropertiesDict = {
+        "Suffix" : InherentProperty["TapItem"](
+            kind   = DataKind.STR,
+            worthy = lambda self: self.suffix() != "",
+            getter = lambda self: self.suffix(),
+            setter = lambda self, value: self.setSuffix(value)
+        )
+    }
+    _PROPERTIES =_PROPERTIES_SUFFIX | ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_TEXTS = {
         "Suffix" : PropertyTextSpec(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
@@ -133,7 +132,7 @@ class TapItem(
     @checked
     def setSuffix(self : Self, suffix : str) -> None:
         self._suffix = suffix
-        pt = self.properties.text("Suffix")
+        pt = self.propertyText("Suffix")
         if pt is not None:
             if ":" in suffix:
                 # range
