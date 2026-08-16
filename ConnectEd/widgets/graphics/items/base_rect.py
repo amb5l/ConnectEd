@@ -10,11 +10,11 @@ from PyQt6.QtGui     import QAction
 from ....core.check      import checked
 from ....core.defs       import PITCH
 from ....core.types      import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty, \
-                                PropertiesMixin
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.properties import ItemPropertiesMixin
 from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
@@ -136,7 +136,7 @@ class BaseRectangleMixin(
             QGraphicsEllipseItem.setRect(self, rect)
         new = self.rect()
         self.onGeometryChanged()
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             names : list[str] = []
             if old.width() != new.width():
                 names.append("Width")

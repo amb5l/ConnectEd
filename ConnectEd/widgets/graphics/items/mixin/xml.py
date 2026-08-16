@@ -19,6 +19,8 @@ from ..protocols import (
     OnSceneOrientationChangedProtocol
 )
 
+from .properties import ItemPropertiesMixin
+
 
 class ItemXmlMixin:
 
@@ -122,15 +124,15 @@ class ItemXmlMixin:
 
     @staticmethod
     def fromXmlRefresh(instance : object) -> None:
+        from ..property_text import PropertyTextItem
         if isinstance(instance, OnTextChangedProtocol):
             instance.onTextChanged()
         if isinstance(instance, OnSceneOrientationChangedProtocol):
             instance.onSceneOrientationChanged()
         if isinstance(instance, ItemPropertiesMixin):
-            for name in instance.propertyNames():
-                pt = instance.propertyText(name)
-                if pt is not None and isinstance(pt, OnGeometryChangedProtocol):
-                    pt.onGeometryChanged()
+            property_texts : list[PropertyTextItem] = instance.propertyTexts()
+            for pt in property_texts:
+                pt.onTextChanged()
 
     @classmethod
     @checked

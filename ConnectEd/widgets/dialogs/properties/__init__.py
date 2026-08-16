@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Self, Any
 
 from PyQt6.QtCore    import Qt, QModelIndex, QItemSelectionModel
-from PyQt6.QtWidgets import QDialog, QMessageBox, \
-                            QVBoxLayout, QHBoxLayout, QPushButton, \
-                            QAbstractItemView
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
+                            QMessageBox, QPushButton, QAbstractItemView
 from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
 from ....app import logger
@@ -13,13 +12,17 @@ from ....app import logger
 from ....core.check import checked
 from ....core.types import (
     NoChange, NO_CHANGE, AlignH, AlignV, HandleId, Display, DataKind,
-    RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
+    RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId
 )
+from ....core.utils import removeSuffixes
 from ....core.properties import PropertiesMixin
 
-from ...graphics.items.mixin.handle import ItemHandlesMixin
+from ...graphics.scenes.diagram.properties import DiagramScenePropertiesMixin
 
-from ..components.table_view import TableView
+from ...graphics.items.mixin.handle     import ItemHandlesMixin
+from ...graphics.items.mixin.properties import ItemPropertiesMixin
+
+from ..components.table import TableView
 
 from .item import PropertiesItem
 
@@ -34,10 +37,12 @@ from .types import (
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...graphics.views.diagram import DiagramView
+    from ...graphics.items.property_text import PropertyTextItem
 
 
 _PT_COLS = {
 #                   kind                   default value              method name
+    "Display"   : ( DataKind.DISPLAY     , Display.NAME             , "display"       ), # noqa E501
     "Cleat"     : ( None                 , None                     , "cleat"         ), # noqa E501
     "X"         : ( DataKind.FLOAT       , 0.0                      , "x"             ), # noqa E501
     "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"             ), # noqa E501
@@ -71,7 +76,8 @@ _HANDLE_KIND : dict[type, DataKind] = {
 
 
 class PropertiesDialog(QDialog):
-    _item           : PropertiesMixin
+    _obj            : PropertiesMixin
+    _property_texts : list[PropertyTextItem]
     _dialog_layout  : QVBoxLayout
     _table_model    : QStandardItemModel
     _table_view     : TableView
@@ -86,14 +92,17 @@ class PropertiesDialog(QDialog):
     @checked
     def __init__(
         self : Self,
-        item : PropertiesMixin,
+        obj  : ItemPropertiesMixin | DiagramScenePropertiesMixin,
         view : DiagramView | None = None
     ) -> None:
-        # initialise
-        self._item = item
+        # superclass init
         super().__init__(view)
-        item_name = item.__class__.__name__.removesuffix("Item")
-        self.setWindowTitle(f"{item_name} Properties")
+        # object, name, texts
+        self._obj = obj
+        self._property_texts = obj.propertyTexts()
+        obj_name = removeSuffixes(obj.__class__.__name__, "Item", "Scene")
+        # basic dialog setup
+        self.setWindowTitle(f"{obj_name} Properties")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
         # create model
@@ -101,11 +110,12 @@ class PropertiesDialog(QDialog):
         # set headers
         self._table_model.setHorizontalHeaderLabels(_COLS)
         # add rows
-        for name in item.propertyNames():
-            if (kind := item.propertyKind(name)) is None:
+        for name in obj.propertyNames():
+            if (kind := obj.propertyKind(name)) is None:
+                logger().error(f"No kind for property {name}")
                 continue
             self._table_model.appendRow(self._buildRow(
-                name, kind, item.propertyValue(name)
+                name, kind, obj.propertyValue(name)
             ))
         # create table view
         self._table_view = TableView(self._table_model)
@@ -307,7 +317,7 @@ class PropertiesDialog(QDialog):
         display : Display,
         row_idx : int
     ) -> None:
-        item = self._item
+        item = self._obj
         pt_new = False
         for col_name, (kind, value, _) in _PT_COLS.items():
             col_idx = _COLS.index(col_name)
@@ -367,7 +377,7 @@ class PropertiesDialog(QDialog):
         kind  : DataKind,
         value : Any
     ) -> list[PropertiesItem | None]:
-        item = self._item
+        item = self._obj
         new = not item.propertyExists(name)
         custom = new or not item.propertyInherent(name)
         if not isinstance(value_kind := kind if new else item.propertyKind(name), DataKind):
@@ -446,8 +456,8 @@ class PropertiesDialog(QDialog):
             if not isinstance(name := name_item.value(), str):
                 logger().error(f"Name is not a string: {name}")
                 continue
-            if not self._item.propertyExists(name) \
-            or not self._item.propertyInherent(name):
+            if not self._obj.propertyExists(name) \
+            or not self._obj.propertyInherent(name):
                 for col_idx in range(self._table_model.columnCount()):
                     item = self._getItem(row, col_idx)
                     if item is not None:

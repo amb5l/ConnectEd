@@ -7,17 +7,17 @@ from .....core.types import NoChange, DataKind
 
 from ....graphics.items.property_text import PropertyTextItem
 
-from ..layout.property import PropertyLayout
+from ..layout.property_text import PropertyTextLayout
 
 
-class PropertyGroupBox(QGroupBox):
-    _layout : PropertyLayout
+class PropertyTextGroupBox(QGroupBox):
+    _layout : PropertyTextLayout
 
     @checked
     def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
         super().__init__()
         self.setTitle("Property")
-        self._layout = PropertyLayout(object, name)
+        self._layout = PropertyTextLayout(object, name)
         self.setLayout(self._layout)
 
     @checked

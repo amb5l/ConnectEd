@@ -12,16 +12,17 @@ from .....app import settings
 
 from .....core.check      import checked
 from .....core.types      import DataKind
-from .....core.properties import PropertiesMixin, InherentProperty
+from .....core.properties import InherentProperty
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
 
-from .api       import DiagramSceneApiMixin
-from .grips     import DiagramSceneGripsMixin
-from .guides    import DiagramSceneGuidesMixin
-from .xml       import DiagramSceneXmlMixin
-from .private   import DiagramScenePrivateMixin
-from .resources import DiagramSceneResources
+from .api        import DiagramSceneApiMixin
+from .grips      import DiagramSceneGripsMixin
+from .guides     import DiagramSceneGuidesMixin
+from .xml        import DiagramSceneXmlMixin
+from .private    import DiagramScenePrivateMixin
+from .resources  import DiagramSceneResources
+from .properties import DiagramScenePropertiesMixin
 
 from .netlist import Netlist
 
@@ -37,7 +38,7 @@ class DiagramScene(
     DiagramSceneGuidesMixin,
     DiagramSceneXmlMixin,
     DiagramScenePrivateMixin,
-    PropertiesMixin,
+    DiagramScenePropertiesMixin,
     SymbolsMixin,
     QGraphicsScene
 ):

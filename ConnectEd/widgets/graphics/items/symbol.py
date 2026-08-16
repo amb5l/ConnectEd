@@ -7,8 +7,7 @@ from PyQt6.QtWidgets import QGraphicsRectItem
 
 from ....core.check      import checked
 from ....core.types      import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty, \
-                                PropertiesMixin
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .part              import PartItemMixin
 from .role              import DecorativeItem, FunctionalItem
@@ -23,6 +22,7 @@ from .mixin.change       import ItemChangeMixin
 from .mixin.clone        import ItemCloneMixin
 from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
+from .mixin.properties   import ItemPropertiesMixin
 
 
 class SymbolBaseItem(
@@ -35,8 +35,8 @@ class SymbolBaseItem(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
+    ItemPropertiesMixin,
     PartItemMixin,
-    PropertiesMixin,
     QGraphicsRectItem
 ):
     # class attributes
@@ -74,13 +74,9 @@ class SymbolBaseItem(
 
 
     # instance attributes
-    _verilog_library          : str
-    _verilog_name             : str
-    _vhdl_instantiation_style : str
-    _vhdl_library             : str
-    _vhdl_package             : str
-    _vhdl_name                : str
-    _vhdl_architecture        : str
+    _vhdl_library      : str
+    _vhdl_package      : str
+    _vhdl_architecture : str
 
     def resourcesName(self : Self) -> str:
         return "Symbol"
@@ -118,40 +114,13 @@ class SymbolBaseItem(
 
     # HDL properties
 
-    def verilogLibrary(self : Self) -> str:
-        return self._verilog_library
-
-    @checked
-    def setVerilogLibrary(self : Self, verilog_library : str) -> None:
-        self._verilog_library = verilog_library
-        if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Verilog Library")
-
-    def verilogName(self : Self) -> str:
-        return self._verilog_name
-
-    @checked
-    def setVerilogName(self : Self, verilog_name : str) -> None:
-        self._verilog_name = verilog_name
-        if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Verilog Name")
-
-    def vhdlInstantiationStyle(self : Self) -> str:
-        return self._vhdl_instantiation_style
-
-    @checked
-    def setVhdlInstantiationStyle(self : Self, vhdl_instantiation_style : str) -> None:
-        self._vhdl_instantiation_style = vhdl_instantiation_style
-        if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("VHDL Instantiation Style")
-
     def vhdlLibrary(self : Self) -> str:
         return self._vhdl_library
 
     @checked
     def setVhdlLibrary(self : Self, vhdl_library : str) -> None:
         self._vhdl_library = vhdl_library
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("VHDL Library")
 
     def vhdlPackage(self : Self) -> str:
@@ -160,17 +129,8 @@ class SymbolBaseItem(
     @checked
     def setVhdlPackage(self : Self, vhdl_package : str) -> None:
         self._vhdl_package = vhdl_package
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("VHDL Package")
-
-    def vhdlName(self : Self) -> str:
-        return self._vhdl_name
-
-    @checked
-    def setVhdlName(self : Self, vhdl_name : str) -> None:
-        self._vhdl_name = vhdl_name
-        if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("VHDL Name")
 
     def vhdlArchitecture(self : Self) -> str:
         return self._vhdl_architecture
@@ -178,15 +138,14 @@ class SymbolBaseItem(
     @checked
     def setVhdlArchitecture(self : Self, vhdl_architecture : str) -> None:
         self._vhdl_architecture = vhdl_architecture
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("VHDL Architecture")
 
     def vhdlSelectedName(self : Self) -> str:
-        s = self.vhdlName() if self.vhdlName() else self.name()
         if self._vhdl_package:
-            s = self._vhdl_package + "." + s
+            s = self._vhdl_package + "." + self.name()
         if self._vhdl_library:
-            s = self._vhdl_library + "." + s
+            s = self._vhdl_library + "." + self.name()
         return s
 
     def _resourceKey(self : Self) -> tuple[bool, bool]:

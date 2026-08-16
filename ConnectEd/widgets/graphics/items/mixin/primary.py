@@ -1,5 +1,3 @@
-from .....core.properties import PropertiesMixin
-
 from . import ItemMixin
 
 from .scene        import ItemSceneMixin
@@ -10,6 +8,7 @@ from .change       import ItemChangeMixin
 from .clone        import ItemCloneMixin
 from .xml          import ItemXmlMixin
 from .menu         import ItemMenuMixin
+from .properties   import ItemPropertiesMixin
 
 
 class PrimaryItemMixin(
@@ -22,6 +21,6 @@ class PrimaryItemMixin(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin
+    ItemPropertiesMixin
 ):
     pass

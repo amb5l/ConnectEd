@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QLabel, QLineEdit, QTextEdit
 from ....core.check import checked
 from ....core.types import NoChange, HandleId, DataKind
 
-from ..components.group_box.property import PropertyGroupBox
+from ..components.group_box.property_text import PropertyTextGroupBox
 
 from ...graphics.items.property_text import PropertyTextItem
 
@@ -16,13 +16,13 @@ from .text import BaseTextItemDialog
 class PropertyTextItemDialog(BaseTextItemDialog):
     _TITLE = "Property Text"
 
-    _top_section : PropertyGroupBox
+    _top_section : PropertyTextGroupBox
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
         if not isinstance(name := item.name(), str):
             raise TypeError("Bad name")
-        self._top_section = PropertyGroupBox(item, name)
+        self._top_section = PropertyTextGroupBox(item, name)
         self._layout.addWidget(self._top_section)
 
     @checked

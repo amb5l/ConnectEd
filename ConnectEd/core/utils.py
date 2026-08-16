@@ -191,6 +191,13 @@ def getDefaultPath() -> str:
 
 
 @checked
+def removeSuffixes(s : str, *suffixes: str) -> str:
+    for suffix in suffixes:
+        s = s.removesuffix(suffix)
+    return s
+
+
+@checked
 def val2str(v : Any) -> str:
     """Convert a value to its XML / settings text form."""
     t = type(v).__name__

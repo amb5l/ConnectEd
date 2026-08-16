@@ -7,9 +7,11 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ...items.role import ChromeItem
 
-
 from .host import asDiagramScene
+
+
 class DiagramScenePrivateMixin:
+
     def _itemTypes(self : Self, pos : QPointF) -> list[type]:
         host = asDiagramScene(self)
         items = host.items(pos)

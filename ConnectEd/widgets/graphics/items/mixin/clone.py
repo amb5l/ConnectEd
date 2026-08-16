@@ -50,9 +50,11 @@ class ItemCloneMixin:
                         clone_pt.setParentItem(
                             clone_item.handles().get(source_child.id())
                         )
-                        name = source_h_child.name()
+                        name = clone_pt.name()
                         if name is not None:
-                            clone_item.setPropertyTextItem(name, clone_pt)
+                            clone_item.propertySubscribe(
+                                name, clone_pt.onTextChanged
+                            )
         self._cloneAfter(cast(Self, clone_item))
         clone_item.setPropertiesLive(True)  # enable property change signalling
         return cast(Self, clone_item)

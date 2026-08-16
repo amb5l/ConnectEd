@@ -6,19 +6,17 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from ......core.check import checked
-from ......core.types import DataKind
+from ......core.check      import checked
+from ......core.types      import DataKind
+from ......core.properties import PropertiesDict, InherentProperty
 
 from ....scenes import withScene
 
 from ...protocols import OnSceneChangedProtocol
 
-from ..properties import InherentProperty, ItemPropertiesMixin
-
 from .line   import ItemPresentationLineMixin  # noqa: E402
 from .fill   import ItemPresentationFillMixin  # noqa: E402
 from .text   import ItemPresentationTextMixin  # noqa: E402
-
 
 if TYPE_CHECKING:
     from ....views.diagram  import DiagramView
@@ -31,7 +29,7 @@ class ItemPresentationMixin(
     ItemPresentationTextMixin
 ):
     # class attributes
-    _PROPERTIES_LINE = {
+    _PROPERTIES_LINE : PropertiesDict = {
         "Line Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.lineColor() is not None,
@@ -54,7 +52,7 @@ class ItemPresentationMixin(
             default = lambda self: self.defaultLineStyle()
         )
     }
-    _PROPERTIES_FILL = {
+    _PROPERTIES_FILL : PropertiesDict = {
         "Fill Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.fillColor() is not None,
@@ -70,7 +68,7 @@ class ItemPresentationMixin(
             default = lambda self: self.defaultFillStyle()
         )
     }
-    _PROPERTIES_APPEARANCE = {
+    _PROPERTIES_APPEARANCE : PropertiesDict = {
         "Text Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.textColor() is not None,

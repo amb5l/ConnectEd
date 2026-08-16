@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from typing          import Self, Any, Literal, TypeVar, Generic, TypeAlias
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses     import dataclass
 
 from PyQt6.QtCore import QObject, pyqtSignal

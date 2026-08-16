@@ -4,10 +4,11 @@ from typing import Self
 
 from ....core.check      import checked
 from ....core.types      import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty, \
-                                PropertiesMixin
+from ....core.properties import PropertiesDict, InherentProperty
 
 from .property_text import PropertyTextSpec
+
+from .mixin.properties import ItemPropertiesMixin
 
 
 class PartItemMixin:
@@ -48,7 +49,7 @@ class PartItemMixin:
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Label")
 
     def name(self : Self) -> str:
@@ -57,5 +58,5 @@ class PartItemMixin:
     @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Name")

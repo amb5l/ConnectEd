@@ -1,13 +1,46 @@
-from typing import Self
-from types  import SimpleNamespace
+from typing          import Self, NamedTuple
+from collections.abc import Iterable
+from types           import SimpleNamespace
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QTableView
+from PyQt6.QtCore    import Qt, QObject
+from PyQt6.QtWidgets import QWidget, QHeaderView, QTableView
 from PyQt6.QtGui     import QStandardItemModel, QAction, QWheelEvent, QFont
 
 from ....app import settings
 
 from ....core.check import checked
+
+
+class TableModel(QStandardItemModel):
+    _hgroups : list[str] | None
+
+    def __init__(self : Self, parent : QObject | None = None) -> None:
+        self._hgroups = None
+        super().__init__(parent)
+
+    @checked
+    def setHorizontalHeaderLabels(
+        self   : Self,
+        labels : Iterable[str | None]
+    ) -> None:
+        super().setHorizontalHeaderLabels(labels)
+        self._hgroups = None
+
+    @checked
+    def setHorizontalHeaderGroupLabels(
+        self   : Self,
+        labels : Iterable[tuple[str, str]]
+    ) -> None:
+        self._hgroups = [group for group, _label in labels]
+        super().setHorizontalHeaderLabels([label for _group, label in labels])
+
+    def horizontalHeaderGroupLabels(self : Self) -> list[str] | None:
+        return self._hgroups
+
+
+class TableHeaderView(QHeaderView):
+    # TODO: implement
+    pass
 
 
 class TableView(QTableView):

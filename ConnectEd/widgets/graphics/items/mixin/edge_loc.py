@@ -8,13 +8,14 @@ from .....app import logger
 from .....core.check      import checked
 from .....core.types      import DataKind, EdgeLoc, Edge
 from .....core.utils      import qtItemClass
-from .....core.properties import PropertiesDict, InherentProperty, \
-                                 PropertiesMixin
+from .....core.properties import PropertiesDict, InherentProperty
 
 from ..protocols import (
     OnSceneChangedProtocol,
     OnSceneOrientationChangedProtocol
 )
+
+from .properties import ItemPropertiesMixin
 
 
 class ItemEdgeLocMixin:
@@ -104,13 +105,13 @@ class ItemEdgeLocMixin:
     @checked
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._edge_loc.offset))
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Edge")
 
     @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._edge_loc.edge, offset))
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Offset")
 
     @checked

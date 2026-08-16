@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import functools
 
-from types import UnionType
-
 from typing          import Self, TypeVar, cast
 from collections.abc import Callable
 
-from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox
+from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox, QWidget
 
 from ....app import logger, settings, window
 
@@ -26,26 +24,15 @@ T = TypeVar("T")
 
 
 def withFocusWidget(
-    widget_type : type[T] | UnionType,
-) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
-    """
-    Decorator that gets the current widget from the focus widget and checks if it's
-    of the specified type or a subclass of it before calling the decorated method.
-
-    ``widget_type`` may be a single class or a PEP 604 union (e.g.
-    ``DiagramView | Navigator``).
-    """
-    def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
-        @functools.wraps(func)
-        def wrapper(self : Slots) -> None:
-            if (current_widget := window().focusWidget()) is None:
-                return
-            if isinstance(current_widget, widget_type):
-                func(self, cast(T, current_widget))
-            else:
-                raise ValueError(f"{current_widget} is not a {widget_type} or subclass")
-        return wrapper
-    return decorator
+    func : Callable[["Slots", QWidget], None],
+) -> Callable[["Slots"], None]:
+    """Pass the current focus widget to the decorated method, or no-op if none."""
+    @functools.wraps(func)
+    def wrapper(self : Slots) -> None:
+        if (widget := window().focusWidget()) is None:
+            return
+        func(self, widget)
+    return wrapper
 
 
 def withMdiSubWindow(
@@ -208,13 +195,15 @@ class Slots:
     def editCut(self : Self, view : DiagramView) -> None:
         view.editCut()
 
-    @withFocusWidget(DiagramView | Navigator)
-    def editCopy(self : Self, widget : DiagramView | Navigator) -> None:
-        widget.editCopy()
+    @withFocusWidget
+    def editCopy(self : Self, widget : QWidget) -> None:
+        if isinstance(widget, DiagramView | Navigator):
+            widget.editCopy()
 
-    @withFocusWidget(DiagramView | Navigator)
-    def editPaste(self : Self, widget : DiagramView | Navigator) -> None:
-        widget.editPaste()
+    @withFocusWidget
+    def editPaste(self : Self, widget : QWidget) -> None:
+        if isinstance(widget, DiagramView | Navigator):
+            widget.editPaste()
 
     @withMdiWidget(DiagramView)
     def editDelete(self : Self, view : DiagramView) -> None:

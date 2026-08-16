@@ -9,10 +9,11 @@ from PyQt6.QtGui     import QTransform
 
 from .....core.check      import checked
 from .....core.types      import DataKind, HandleId
-from .....core.properties import PropertiesMapping, PropertiesDict, \
-                                 InherentProperty, PropertiesMixin
+from .....core.properties import PropertiesDict, InherentProperty
 
 from ..protocols import OnSceneOrientationChangedProtocol
+
+from .properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -96,7 +97,7 @@ class ItemTransformMixin:
 
     @checked
     def onPositionChanged(self : Self, _pos : QPointF | None = None) -> None:
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges(["X", "Y"])
         return
 
@@ -112,7 +113,7 @@ class ItemTransformMixin:
             if isinstance(child, OnSceneOrientationChangedProtocol):
                 child.onSceneOrientationChanged()
         # broadcast change
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Rotation")
 
     @checked
@@ -129,7 +130,7 @@ class ItemTransformMixin:
             if isinstance(child, OnSceneOrientationChangedProtocol):
                 child.onSceneOrientationChanged()
         # broadcast changes
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges(["MirrorH", "MirrorV"])
 
     @checked
@@ -275,7 +276,7 @@ class ItemTransformMixin:
                 parent_delta = \
                     parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
                 QGraphicsItem.moveBy(self, parent_delta.x(), parent_delta.y())
-        if isinstance(self, PropertiesMixin):
+        if isinstance(self, ItemPropertiesMixin):
             self.propertySignalChanges("Origin")
 
     def onOriginChanged(

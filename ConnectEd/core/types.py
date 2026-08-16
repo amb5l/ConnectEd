@@ -164,9 +164,9 @@ class TapHandleId(HandleId):
 
 
 class Display(Enum):
-    NONE = "<none>"
-    SHOW = "Show"
-    HIDE = "Hide"
+    HIDE       = "<hide>"
+    NAME       = "Name"
+    NAME_VALUE = "Name : Value"
 
 
 _DATA_KIND_TYPES: dict[DataKind, tuple[type, ...]] = {}

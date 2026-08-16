@@ -26,7 +26,7 @@ from ..host import asDiagramScene
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....properties import PropertiesMixin
+    from ......core.properties import PropertiesMixin
 
 
 class DiagramSceneApiPropertiesMixin:
