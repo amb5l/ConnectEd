@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.check import checked
+from .....core.utils import underscore2space
 from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
 
 from ...properties import PropertiesMixin
@@ -19,8 +20,6 @@ from ..protocols import (
     OnTextChangedProtocol,
     OnSceneOrientationChangedProtocol
 )
-
-from .properties import ItemPropertiesMixin
 
 
 class ItemXmlMixin:
@@ -49,18 +48,18 @@ class ItemXmlMixin:
         *,
         pins : bool = True
     ) -> None:
-        from ..property_text import PropertyTextItem
-        from ..port_pin      import PortPinMixin
-        from ..handle        import HandleItem
+        from ..port_pin import PortPinMixin
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
-        for child in self.childItems():
-            if pins and isinstance(child, PortPinMixin):
-                child.toXml(xw)
-            elif isinstance(child, HandleItem):
-                for handle_child in child.childItems():
-                    if isinstance(handle_child, PropertyTextItem):
-                        handle_child.toXml(xw)
+        if pins:
+            for child in self.childItems():
+                if isinstance(child, PortPinMixin):
+                    child.toXml(xw)
+        if isinstance(self, PropertiesMixin):
+            for prop in self.properties.values():
+                display = prop.displayItem()
+                if display is not None:
+                    display.toXml(xw)
 
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -71,7 +70,6 @@ class ItemXmlMixin:
     @checked
     def fromXmlChild(self : Self, xr : QXmlStreamReader) -> bool:
         """Handle one child start element. Returns True if consumed."""
-        from ..property_text     import PropertyTextItem
         from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
@@ -97,10 +95,28 @@ class ItemXmlMixin:
             raise TypeError("Bad host")
         tag = xr.name()
         if tag == "PropertyText":
-            pt = PropertyTextItem.fromXml(xr, self)
-            if (name := pt.name()) and name in self.properties:
-                self.propertySubscribe(name, pt.onTextChanged)
-                pt.onTextChanged()  # paint current value
+            name = next(
+                (
+                    xml_attr.value()
+                    for xml_attr in xr.attributes()
+                    if underscore2space(xml_attr.name()) == "Name"
+                ),
+                None
+            )
+            if name is None or name not in self.properties:
+                logger().warning(
+                    f"PropertyText for unknown property: {name}"
+                )
+                _skipXmlElement(xr, "PropertyText")
+                return True
+            display = self.properties[name].setDisplay(True)
+            if display is None:
+                raise ValueError(
+                    f"Display item for property {name} is None"
+                )
+            fromXmlProperties(display, xr)
+            if not (xr.isEndElement() and xr.name() == "PropertyText"):
+                fromXml(xr, {}, ptag="PropertyText")
             return True
         elif tag in _child_items_xref:
             child_cls = _child_items_xref[tag]
@@ -125,15 +141,15 @@ class ItemXmlMixin:
 
     @staticmethod
     def fromXmlRefresh(instance : object) -> None:
-        from ..property_text import PropertyTextItem
         if isinstance(instance, OnTextChangedProtocol):
             instance.onTextChanged()
         if isinstance(instance, OnSceneOrientationChangedProtocol):
             instance.onSceneOrientationChanged()
-        if isinstance(instance, ItemPropertiesMixin):
-            property_texts : list[PropertyTextItem] = instance.propertyTexts()
-            for pt in property_texts:
-                pt.onTextChanged()
+        if isinstance(instance, PropertiesMixin):
+            for prop in instance.properties.values():
+                display = prop.displayItem()
+                if display is not None:
+                    display.onTextChanged()
 
     @classmethod
     @checked
@@ -147,13 +163,21 @@ class ItemXmlMixin:
         if parent is not None:
             args["parent"] = parent
         instance = cls(**args)
-        if isinstance(instance, ItemPropertiesMixin):
+        if isinstance(instance, PropertiesMixin):
             fromXmlProperties(instance, xr)
         if isinstance(instance, OnGeometryChangedProtocol):
             instance.onGeometryChanged()
         if not (xr.isEndElement() and xr.name() == tag):
             instance.fromXmlChildren(xr)
         ItemXmlMixin.fromXmlRefresh(instance)
-        if isinstance(instance, ItemPropertiesMixin):
+        if isinstance(instance, PropertiesMixin):
             instance.setPropertiesLive(True)
         return instance
+
+
+def _skipXmlElement(xr : QXmlStreamReader, tag : str) -> None:
+    """Advance the reader to the end of the current *tag* element."""
+    while not xr.atEnd():
+        if xr.isEndElement() and xr.name() == tag:
+            break
+        xr.readNext()
