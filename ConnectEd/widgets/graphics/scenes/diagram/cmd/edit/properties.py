@@ -9,7 +9,7 @@ from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                                    DataKind, HandleId, RectHandleId
 
-from .....properties import PropertiesMixin
+from .....properties import Property, PropertiesMixin
 
 from .....items.property_text import PropertyTextItem
 
@@ -17,146 +17,143 @@ from .. import CmdBase
 
 
 class CmdPropertyBase(CmdBase):
-    _object : PropertiesMixin
-    _name   : str
+    """Base class for property commands."""
+
+    _owner : PropertiesMixin
 
     @checked
     def __init__(
-        self   : Self,
-        object : PropertiesMixin,
-        name   : str
+        self  : Self,
+        owner : PropertiesMixin
     ) -> None:
-        super().__init__()
-        self._object = object
-        self._name = name
+        self._owner = owner
 
 
 class CmdAddProperty(CmdPropertyBase):
+    """Command to add a property."""
+
     _name  : str
     _kind  : DataKind
     _value : Any
 
     @checked
     def __init__(
-        self   : Self,
-        object : PropertiesMixin,
-        name   : str,
-        kind   : DataKind,
-        value  : Any
+        self  : Self,
+        owner : PropertiesMixin,
+        name  : str,
+        kind  : DataKind,
+        value : Any
     ) -> None:
-        super().__init__(object, name)
+        super().__init__(owner, name, kind, value)
+        if name in owner.properties:
+            logger().error(f"Property '{name}' already exists")
+            self.setObsolete(True)
+            return
+        self._name  = name
         self._kind  = kind
         self._value = value
 
     @checked
     def redo(self : Self) -> None:
-        self._object.propertyAdd(self._name, self._kind, self._value)
+        self._owner.propertyAdd(self._name, self._kind, self._value)
 
     @checked
     def undo(self : Self) -> None:
-        self._object.propertyDelete(self._name)
+        self._owner.propertyDelete(self._name)
 
 
-class CmdEditProperty(CmdBase):
-    @dataclass
-    class State:
-        name  : str      | NoChange
-        kind  : DataKind | NoChange
-        value : Any      | NoChange
-
-    _object    : PropertiesMixin
-    _old_name  : str
-    _old_kind  : DataKind
-    _old_value : Any
+class CmdEditProperty(CmdPropertyBase):
     _new_name  : str      | NoChange
     _new_kind  : DataKind | NoChange
     _new_value : Any      | NoChange
 
     @checked
     def __init__(
-        self   : Self,
-        object : PropertiesMixin,
-        name   : str | tuple[str, str],
-        kind   : DataKind | NoChange = NO_CHANGE,
-        value  : Any      | NoChange = NO_CHANGE
+        self  : Self,
+        owner : PropertiesMixin,
+        name  : str | tuple[str, str],
+        old_kind  : DataKind | NoChange = NO_CHANGE,
+        old_value : Any      | NoChange = NO_CHANGE
     ) -> None:
-        super().__init__()
-        self._object = object
-        # unpack name/rename
+        super().__init__(owner)
         old_name, new_name = \
             name if isinstance(name, tuple) else (name, NO_CHANGE)
-        # detect unknown property
-        if old_name not in object.properties:
-            logger().warning(f"Property '{old_name}' not found")
+        if old_name not in owner.properties:
+            logger().error(f"Property '{old_name}' not found")
             self.setObsolete(True)
             return
-        # build old state
-        if (old_kind := object.propertyKind(old_name)) is None:
-            logger().error(f"Property '{old_name}' has no kind")
-            self.setObsolete(True)
-            return
-        old_value = object.propertyValue(old_name)
-        self._old_name  = old_name
-        self._old_kind  = old_kind
-        self._old_value = old_value
+        old_kind = owner.properties[old_name].kind()
+        old_value = owner.properties[old_name].value(raw = True)
+        self._name  = old_name
+        self._kind  = old_kind
+        self._value = old_value
         self._new_name  = NO_CHANGE if old_name == new_name else new_name
-        self._new_kind  = NO_CHANGE if old_kind == kind else kind
-        self._new_value = NO_CHANGE if old_value == value else value
+        self._new_kind  = NO_CHANGE if old_kind == old_kind else old_kind
+        self._new_value = NO_CHANGE if old_value == old_value else old_value
 
     @checked
     def redo(self : Self) -> None:
-        name = self._old_name
+        name = self._name
         if not isinstance(self._new_name, NoChange):
-            self._object.propertyRename(name, self._new_name)
+            self._owner.propertyRename(name, self._new_name)
             name = self._new_name
         if not isinstance(self._new_kind, NoChange):
-            self._object.setPropertyKind(name, self._new_kind)
+            self._owner.properties[name].setKind(self._new_kind)
         if not isinstance(self._new_value, NoChange):
-            self._object.setPropertyValue(name, self._new_value)
+            self._owner.properties[name].setValue(self._new_value)
 
     @checked
     def undo(self : Self) -> None:
         if not isinstance(self._new_name, NoChange):
-            self._object.propertyRename(self._new_name, self._old_name)
-        name = self._old_name
-        if not isinstance(self._old_kind, NoChange):
-            self._object.setPropertyKind(name, self._old_kind)
-        if not isinstance(self._old_value, NoChange):
-            self._object.setPropertyValue(name, self._old_value)
+            self._owner.propertyRename(self._new_name, self._name)
+        name = self._name
+        if not isinstance(self._new_kind, NoChange):
+            self._owner.properties[name].setKind(self._kind)
+        if not isinstance(self._new_value, NoChange):
+            self._owner.properties[name].setValue(self._value)
 
 
 class CmdDelProperty(CmdPropertyBase):
-    _kind  : DataKind
-    _value : Any
-    _pt    : PropertyTextItem | None
+    _name         : str
+    _kind         : DataKind
+    _value        : Any
+    _display_item : PropertyTextItem | None
 
     @checked
     def __init__(
-        self : Self,
-        obj  : PropertiesMixin,
-        name : str
+        self  : Self,
+        owner : PropertiesMixin,
+        name  : str
     ) -> None:
-        super().__init__(obj, name)
-        if (kind := obj.propertyKind(name)) is None:
+        self._owner = owner
+        self._name  = name
+        self._kind  = owner.properties[name].kind()
+        self._value = owner.properties[name].value(raw = True)
+        self._property = owner.properties[name]
+        if (kind := owner.properties[name].kind()) is None:
             logger().error(f"Property '{name}' has no kind")
             self.setObsolete(True)
             return
         self._kind  = kind
-        self._value = obj.propertyValue(name)
-        if isinstance(obj, PropertiesMixin):
-            self._pt = obj.propertyTextItem(name)
+        self._value = owner.properties[name].value()
+        if isinstance(owner, PropertiesMixin):
+            self._display_item = owner.properties[name].text()
         else:
-            self._pt = None
+            self._display_item = None
 
     @checked
     def redo(self : Self) -> None:
-        self._object.properties.delete(self._name)
+        self._owner.propertyDelete(self._name)
 
     @checked
     def undo(self : Self) -> None:
-        self._object.properties.add(self._name, self._kind, self._value)
-        if self._pt:
-            self._object.properties.setText(self._name, self._pt)
+        self._owner.propertyAdd(self._name, self._kind, self._value)
+        if self._display_item:
+            self._owner.propertyAddText(self._name, self._display_item)
+
+
+class CmdSetPropertyDisplay(CmdPropertyBase):
+    """Command for property display settings."""
 
 
 class CmdPropertyTextItemBase(CmdPropertyBase):
@@ -274,11 +271,11 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
 
     @checked
     def redo(self : Self) -> None:
-        self._object.properties.addText(self._name, **vars(self._state))
+        self._owner.properties.addText(self._name, **vars(self._state))
 
     @checked
     def undo(self : Self) -> None:
-        self._object.properties.delText(self._name)
+        self._owner.properties.delText(self._name)
 
 
 class CmdEditPropertyText(CmdPropertyTextItemBase):
@@ -393,13 +390,13 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
     def redo(self : Self) -> None:
         if self._after is None:
             return
-        self._object.properties.editText(self._name, **vars(self._after))
+        self._owner.properties.editText(self._name, **vars(self._after))
 
     @checked
     def undo(self : Self) -> None:
         if self._before is None:
             return
-        self._object.properties.editText(self._name, **vars(self._before))
+        self._owner.properties.editText(self._name, **vars(self._before))
 
 class CmdDelPropertyText(CmdPropertyTextItemBase):
     _pt     : PropertyTextItem | None
@@ -419,8 +416,8 @@ class CmdDelPropertyText(CmdPropertyTextItemBase):
 
     @checked
     def redo(self : Self) -> None:
-        self._object.properties.delText(self._name)
+        self._owner.properties.delText(self._name)
 
     @checked
     def undo(self : Self) -> None:
-        self._object.properties.addText(self._name, **vars(self._before))
+        self._owner.properties.addText(self._name, **vars(self._before))

@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QGraphicsRectItem
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from .part              import PartItemMixin
 from .role              import DecorativeItem, FunctionalItem
@@ -42,7 +42,7 @@ class SymbolBaseItem(
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
     _PROPERTIES_VHDL = {
-        "VHDL Library" : InherentProperty["SymbolBaseItem"](
+        "VHDL Library" : PropertySpec["SymbolBaseItem"](
             kind = DataKind.STR,
             getter = lambda self: self.vhdlLibrary(),
             setter = lambda self, value: self.setVhdlLibrary(value),
@@ -51,7 +51,7 @@ class SymbolBaseItem(
                 "(default is 'work')."
             )
         ),
-        "VHDL Package" : InherentProperty["SymbolBaseItem"](
+        "VHDL Package" : PropertySpec["SymbolBaseItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.vhdlPackage(),
             setter = lambda self, value: self.setVhdlPackage(value),
@@ -60,7 +60,7 @@ class SymbolBaseItem(
                 "'pkg.subpkg'. Leave empty for entity instantiation."
             )
         ),
-        "VHDL Architecture" : InherentProperty["SymbolBaseItem"](
+        "VHDL Architecture" : PropertySpec["SymbolBaseItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.vhdlArchitecture(),
             setter = lambda self, value: self.setVhdlArchitecture(value),
@@ -121,7 +121,7 @@ class SymbolBaseItem(
     def setVhdlLibrary(self : Self, vhdl_library : str) -> None:
         self._vhdl_library = vhdl_library
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("VHDL Library")
+            self.properties["VHDL Library"].notify()
 
     def vhdlPackage(self : Self) -> str:
         return self._vhdl_package
@@ -130,7 +130,7 @@ class SymbolBaseItem(
     def setVhdlPackage(self : Self, vhdl_package : str) -> None:
         self._vhdl_package = vhdl_package
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("VHDL Package")
+            self.properties["VHDL Package"].notify()
 
     def vhdlArchitecture(self : Self) -> str:
         return self._vhdl_architecture
@@ -139,9 +139,10 @@ class SymbolBaseItem(
     def setVhdlArchitecture(self : Self, vhdl_architecture : str) -> None:
         self._vhdl_architecture = vhdl_architecture
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("VHDL Architecture")
+            self.properties["VHDL Architecture"].notify()
 
     def vhdlSelectedName(self : Self) -> str:
+        s = ""
         if self._vhdl_package:
             s = self._vhdl_package + "." + self.name()
         if self._vhdl_library:

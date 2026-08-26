@@ -66,6 +66,9 @@ class Property:
     def isCustom(self : Self) -> bool:
         return not self.isInherent()
 
+    def writeable(self : Self) -> bool:
+        return self._setter is not None
+
     def name(self : Self) -> str:
         name = self._owner.propertyName(self)
         if name is None:
@@ -84,14 +87,11 @@ class Property:
             raise ValueError("Custom property kind must be STR or TEXT")
         self._kind = kind
 
-    def rawValue(self : Self) -> Any:
-        """Stored value without `{Other}` substitution."""
-        return self._value
-
     def value(
         self  : Self,
         slot  : Callable     | None = None,
-        trail : list[object] | None = None
+        trail : list[object] | None = None,
+        raw   : bool = False
     ) -> Any:
         trail = trail or []
         # detect recursion issues
@@ -123,6 +123,8 @@ class Property:
             if not callable(self._getter):
                 raise ValueError("Inherent property has no getter")
             return self._getter(self._owner)
+        elif raw:
+            return self._value
         else:
             # custom with substitution
             def repl(match: re.Match) -> str:
@@ -226,13 +228,13 @@ T = TypeVar("T")
 
 @dataclass
 class PropertySpec(Generic[T]):
-    kind    : DataKind | Callable[[T], DataKind]
-    value   : Any                             = None
-    getter  : Callable[[T], Any]       | None = None
-    setter  : Callable[[T, Any], None] | None = None
-    default : Callable[[T], Any]       | None = None
-    worthy  : Callable[[T], bool]      | None = None
-    tip     : str                      | None = None
+    kind    : DataKind | Callable[[T], DataKind] | None = None
+    value   : Any                                | None = None
+    getter  : Callable[[T], Any]                 | None = None
+    setter  : Callable[[T, Any], None]           | None = None
+    default : Callable[[T], Any]                 | None = None
+    worthy  : Callable[[T], bool]                | None = None
+    tip     : str                                | None = None
 
 
 @dataclass
@@ -387,7 +389,7 @@ class PropertiesMixin:
         for other_name, other_property in self.properties.items():
             if other_name == new_name or other_property.isInherent():
                 continue
-            raw = other_property.rawValue()
+            raw = other_property.value(raw = True)
             if not isinstance(raw, str):
                 logger().error(f"Property '{other_name}' has non-string value")
                 continue

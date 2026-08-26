@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QAction
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import InherentProperty
+from ..properties import PropertySpec
 
 from .role          import FunctionalItem
 from .base_rect     import BaseRectangleItem
@@ -30,7 +30,7 @@ class BlockItem(
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
     _PROPERTIES_PATH = {
-        "Path" : InherentProperty["BlockItem"](
+        "Path" : PropertySpec["BlockItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.path(),
             setter = lambda self, value: self.setPath(value)
@@ -63,7 +63,7 @@ class BlockItem(
     @checked
     def setPath(self : Self, path : str) -> None:
         self._path = path
-        self.propertySignalChanges("Path")
+        self.properties["Path"].notify()
 
     def onGeometryChanged(self : Self) -> None:
         super().onGeometryChanged()

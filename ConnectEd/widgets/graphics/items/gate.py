@@ -91,7 +91,7 @@ class GateItem(
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
-        self.propertySignalChanges("Label")
+        self.properties["Label"].notify()
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -234,7 +234,7 @@ class BufGateItem(GateItem):
             self._output.setPos(QPointF(-12, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
-        self.propertySignalChanges("Output")
+        self.properties["Output"].notify()
 
     def input(self : Self) -> str:
         return "" if not hasattr(self, '_input') else \
@@ -248,7 +248,7 @@ class BufGateItem(GateItem):
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
         self._input.setInverted(level == "L")
-        self.propertySignalChanges("Input")
+        self.properties["Input"].notify()
 
 
 class LogicGateItem(GateItem):
@@ -394,7 +394,7 @@ class LogicGateItem(GateItem):
             self._output.setPos(QPointF(-10, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
-        self.propertySignalChanges("Output")
+        self.properties["Output"].notify()
 
     def inputs(self : Self) -> str:
         return "" if not hasattr(self, '_inputs') else \
@@ -426,7 +426,7 @@ class LogicGateItem(GateItem):
                 path.moveTo(-30, y)
                 path.lineTo(-30, 10)
                 self.setPath(path)
-        self.propertySignalChanges("Inputs")
+        self.properties["Inputs"].notify()
 
 
 class AndGateItem(LogicGateItem):

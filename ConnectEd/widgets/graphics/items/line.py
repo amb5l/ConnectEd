@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QAction
 from ....core.check import checked
 from ....core.types import HandleId, LineHandleId, DataKind
 
-from ..properties import InherentProperty
+from ..properties import PropertySpec
 
 from .role import DecorativeItem
 
@@ -32,22 +32,22 @@ class LineItem(
 ):
     # class attributes
     _PROPERTIES_XY = {
-        "X1" : InherentProperty["LineItem"](
+        "X1" : PropertySpec["LineItem"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.x1(),
             setter = lambda self, value: self.setX1(value)
         ),
-        "Y1" : InherentProperty["LineItem"](
+        "Y1" : PropertySpec["LineItem"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.y1(),
             setter = lambda self, value: self.setY1(value)
         ),
-        "X2" : InherentProperty["LineItem"](
+        "X2" : PropertySpec["LineItem"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.x2(),
             setter = lambda self, value: self.setX2(value)
         ),
-        "Y2" : InherentProperty["LineItem"](
+        "Y2" : PropertySpec["LineItem"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.y2(),
             setter = lambda self, value: self.setY2(value)
@@ -133,7 +133,7 @@ class LineItem(
     @checked
     def setX1(self : Self, value : float) -> None:
         self.setP1(QPointF(value, self.p1().y()))
-        self.propertySignalChanges("X1")
+        self.properties["X1"].notify()
 
     def y1(self : Self) -> float:
         return self.p1().y()
@@ -141,7 +141,7 @@ class LineItem(
     @checked
     def setY1(self : Self, value : float) -> None:
         self.setP1(QPointF(self.p1().x(), value))
-        self.propertySignalChanges("Y1")
+        self.properties["Y1"].notify()
 
     def p2(self : Self) -> QPointF:
         return self.pos() + self.line().p2()
@@ -156,7 +156,7 @@ class LineItem(
     @checked
     def setX2(self : Self, value : float) -> None:
         self.setP2(QPointF(value, self.p2().y()))
-        self.propertySignalChanges("X2")
+        self.properties["X2"].notify()
 
     def y2(self : Self) -> float:
         return self.p2().y()
@@ -164,7 +164,7 @@ class LineItem(
     @checked
     def setY2(self : Self, value : float) -> None:
         self.setP2(QPointF(self.p2().x(), value))
-        self.propertySignalChanges("Y2")
+        self.properties["Y2"].notify()
 
     @checked
     def setPoints(self : Self, p1 : QPointF, p2 : QPointF) -> None:

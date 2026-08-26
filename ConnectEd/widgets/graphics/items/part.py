@@ -47,7 +47,7 @@ class PartItemMixin:
     def setLabel(self : Self, label : str) -> None:
         self._label = label
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Label")
+            self.properties["Label"].notify()
 
     def name(self : Self) -> str:
         return self._name
@@ -56,4 +56,4 @@ class PartItemMixin:
     def setName(self : Self, name : str) -> None:
         self._name = name
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Name")
+            self.properties["Name"].notify()

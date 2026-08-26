@@ -9,7 +9,7 @@ from .....core.check import checked
 from .....core.types import DataKind, EdgeLoc, Edge
 from .....core.utils import qtItemClass
 
-from ...properties import InherentProperty, PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 from ..protocols import (
     OnSceneChangedProtocol,
@@ -24,12 +24,12 @@ class ItemEdgeLocMixin:
 
     # class attributes
     _PROPERTIES = {
-        "Edge" : InherentProperty["ItemEdgeLocMixin"](
+        "Edge" : PropertySpec["ItemEdgeLocMixin"](
             kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
             setter = lambda self, value: self.setLocEdge(value)
         ),
-        "Offset" : InherentProperty["ItemEdgeLocMixin"](
+        "Offset" : PropertySpec["ItemEdgeLocMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.loc().offset,
             setter = lambda self, value: self.setLocOffset(value)
@@ -105,13 +105,13 @@ class ItemEdgeLocMixin:
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._edge_loc.offset))
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Edge")
+            self.properties["Edge"].notify()
 
     @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._edge_loc.edge, offset))
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Offset")
+            self.properties["Offset"].notify()
 
     @checked
     def locSnap(

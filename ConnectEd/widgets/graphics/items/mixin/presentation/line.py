@@ -11,11 +11,11 @@ from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange
 
+from ....properties import PropertiesMixin
+
 from ....scenes import withScene
 
 from ...protocols import SetPenProtocol
-
-from ..properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -63,8 +63,8 @@ class ItemPresentationLineMixin:
             return
         self._line_color = color
         self._updatePen()
-        if isinstance(self, ItemPropertiesMixin):
-            self.propertySignalChanges("Line Color")
+        if isinstance(self, PropertiesMixin):
+            self.properties["Line Color"].notify()
 
     def hasLineWidth(self : Self) -> bool:
         return hasattr(self, "_line_width")
@@ -97,8 +97,8 @@ class ItemPresentationLineMixin:
             return
         self._line_width = width
         self._updatePen()
-        if isinstance(self, ItemPropertiesMixin):
-            self.propertySignalChanges("Line Width")
+        if isinstance(self, PropertiesMixin):
+            self.properties["Line Width"].notify()
 
     def hasLineStyle(self : Self) -> bool:
         return hasattr(self, "_line_style")
@@ -138,8 +138,8 @@ class ItemPresentationLineMixin:
             return
         self._line_style = style
         self._updatePen()
-        if isinstance(self, ItemPropertiesMixin):
-            self.propertySignalChanges("Line Style")
+        if isinstance(self, PropertiesMixin):
+            self.properties["Line Style"].notify()
 
     # helpers
 

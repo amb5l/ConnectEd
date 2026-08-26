@@ -15,7 +15,7 @@ from .....core.types import DataKind
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
 
-from ...properties import InherentProperty, PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 from .api        import DiagramSceneApiMixin
 from .grips      import DiagramSceneGripsMixin
@@ -45,32 +45,32 @@ class DiagramScene(
     # class attributes
     _RESOURCES_CLS = DiagramSceneResources
     _PROPERTIES = {
-        "Name" : InherentProperty["DiagramScene"](
+        "Name" : PropertySpec["DiagramScene"](
             kind   = DataKind.STR,
             getter = lambda self: self.name(),
             setter = lambda self, value: self.setName(value)
         ),
-        "Sheet Name" : InherentProperty["DiagramScene"](
+        "Sheet Name" : PropertySpec["DiagramScene"](
             kind   = DataKind.STR,
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)
         ),
-        "Sheet Width" : InherentProperty["DiagramScene"](
+        "Sheet Width" : PropertySpec["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetWidth(),
             setter = lambda self, value: self.setSheetWidth(value)
         ),
-        "Sheet Height" : InherentProperty["DiagramScene"](
+        "Sheet Height" : PropertySpec["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetHeight(),
             setter = lambda self, value: self.setSheetHeight(value)
         ),
-        "Margin" : InherentProperty["DiagramScene"](
+        "Margin" : PropertySpec["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self._sheet_margin,
             setter = lambda self, value: self.setMargin(value)
         ),
-        "Border" : InherentProperty["DiagramScene"](
+        "Border" : PropertySpec["DiagramScene"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self._sheet_border,
             setter = lambda self, value: self.setBorder(value)

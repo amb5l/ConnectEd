@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QTransform
 from .....core.check import checked
 from .....core.types import DataKind, HandleId
 
-from ...properties import InherentProperty, PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 from ..protocols import OnSceneOrientationChangedProtocol
 
@@ -26,13 +26,13 @@ class ItemTransformMixin:
     # class attributes
     _ORIGIN : HandleId  # undefined = no origin on this item
     _PROPERTIES_POS = {
-        "X" : InherentProperty[QGraphicsItem](
+        "X" : PropertySpec[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.pos() != QPointF(0, 0),
             getter = lambda self: self.pos().x(),
             setter = lambda self, value: self.setX(value)
         ),
-        "Y" : InherentProperty[QGraphicsItem](
+        "Y" : PropertySpec[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.pos() != QPointF(0, 0),
             getter = lambda self: self.pos().y(),
@@ -40,7 +40,7 @@ class ItemTransformMixin:
         )
     }
     _PROPERTIES_ROTATE = {
-        "Rotation" : InherentProperty[QGraphicsItem](
+        "Rotation" : PropertySpec[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.rotation() != 0,
             getter = lambda self: self.rotation(),
@@ -48,13 +48,13 @@ class ItemTransformMixin:
         )
     }
     _PROPERTIES_MIRROR = {
-        "MirrorH" : InherentProperty["ItemTransformMixin"](
+        "MirrorH" : PropertySpec["ItemTransformMixin"](
             kind   = DataKind.BOOL,
             worthy = lambda self: self.mirrorH(),
             getter = lambda self: self.mirrorH(),
             setter = lambda self, value: self.setMirrorH(value)
         ),
-        "MirrorV" : InherentProperty["ItemTransformMixin"](
+        "MirrorV" : PropertySpec["ItemTransformMixin"](
             kind   = DataKind.BOOL,
             worthy = lambda self: self.mirrorV(),
             getter = lambda self: self.mirrorV(),
@@ -63,7 +63,7 @@ class ItemTransformMixin:
     }
     _PROPERTIES_NO_ORIGIN = \
         _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
-    _PROPERTY_ORIGIN = InherentProperty["ItemTransformMixin"](
+    _PROPERTY_ORIGIN = PropertySpec["ItemTransformMixin"](
         kind   = None,
         worthy = lambda self: self.hasOrigin(),
         getter = lambda self: self.origin(),
@@ -97,7 +97,8 @@ class ItemTransformMixin:
     @checked
     def onPositionChanged(self : Self, _pos : QPointF | None = None) -> None:
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges(["X", "Y"])
+            self.properties["X"].notify()
+            self.properties["Y"].notify()
         return
 
     @checked
@@ -113,7 +114,7 @@ class ItemTransformMixin:
                 child.onSceneOrientationChanged()
         # broadcast change
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Rotation")
+            self.properties["Rotation"].notify()
 
     @checked
     def onMirrorChanged(self : Self) -> None:
@@ -130,7 +131,8 @@ class ItemTransformMixin:
                 child.onSceneOrientationChanged()
         # broadcast changes
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges(["MirrorH", "MirrorV"])
+            self.properties["MirrorH"].notify()
+            self.properties["MirrorV"].notify()
 
     @checked
     def moveBy(
@@ -276,7 +278,7 @@ class ItemTransformMixin:
                     parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
                 QGraphicsItem.moveBy(self, parent_delta.x(), parent_delta.y())
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Origin")
+            self.properties["Origin"].notify()
 
     def onOriginChanged(
         self : Self,

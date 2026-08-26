@@ -11,7 +11,7 @@ from ....core.defs  import WIDTH
 from ....core.types import Direction, DataKind
 from ....core.utils import qtItemClass
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from ..scenes import withScene
 
@@ -57,17 +57,17 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     _ARROW_POS  : int
     _PROPERTIES = \
         {
-            "Name" : InherentProperty["PortPinMixin"](
+            "Name" : PropertySpec["PortPinMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value),
             ),
-            "Dir" : InherentProperty["PortPinMixin"](
+            "Dir" : PropertySpec["PortPinMixin"](
                 kind   = DataKind.DIRECTION,
                 getter = lambda self: self.direction(),
                 setter = lambda self, value: self.setDirection(value)
             ),
-            "Comment" : InherentProperty["PortPinMixin"](
+            "Comment" : PropertySpec["PortPinMixin"](
                 kind   = DataKind.STR,
                 worthy = lambda self: self.comment() != "",
                 getter = lambda self: self.comment(),
@@ -148,7 +148,7 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         if scene := self.scene():
             self._updatePen(scene)  # because name => bus => pin width
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Name")
+            self.properties["Name"].notify()
 
     def direction(self : Self) -> Direction:
         return self._direction
@@ -157,7 +157,7 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Dir")
+            self.properties["Dir"].notify()
         if scene := self.scene():
             self._updateArrowPath(scene)
 
@@ -168,7 +168,7 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     def setComment(self : Self, value : str) -> None:
         self._comment = value
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Comment")
+            self.properties["Comment"].notify()
 
     def bus(self : Self) -> bool:
         return self._bus
@@ -232,12 +232,12 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
 
     # class attributes
     _PROPERTIES_DOT_CLK = {
-        "Dot" : InherentProperty["PortPinPathItem"](
+        "Dot" : PropertySpec["PortPinPathItem"](
             kind   = DataKind.BOOL,
             getter = lambda self: self.dot(),
             setter = lambda self, value: self.setDot(value)
         ),
-        "Clock" : InherentProperty["PortPinPathItem"](
+        "Clock" : PropertySpec["PortPinPathItem"](
             kind   = DataKind.BOOL,
             getter = lambda self: self.clock(),
             setter = lambda self, value: self.setClock(value)
@@ -260,7 +260,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self._dot = value
         self._updateGraphics()
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Dot")
+            self.properties["Dot"].notify()
 
     def clock(self : Self) -> bool:
         return self._clock
@@ -271,7 +271,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self._updateGraphics()
         self._updateNameHandle()
         if isinstance(self, PropertiesMixin):
-            self.propertySignalChanges("Clock")
+            self.properties["Clock"].notify()
 
     @withScene
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:

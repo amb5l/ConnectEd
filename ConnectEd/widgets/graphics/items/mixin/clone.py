@@ -35,7 +35,9 @@ class ItemCloneMixin:
                     clone_property.setValue(source_property.value())
                 else:
                     clone_property = clone_item.propertyAdd(
-                        name, source_property.kind(), source_property.rawValue()
+                        name,
+                        source_property.kind(),
+                        source_property.value(raw = True)
                     )
                     if clone_property is None:
                         raise ValueError(

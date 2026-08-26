@@ -164,7 +164,7 @@ class PropertyTextItem(TextItem):
     def onTextChanged(self : Self) -> None:
         if isinstance(name := self.name(), str):
             if name in self.properties:
-                kind = self.propertyKind(name)
+                kind = self.properties[name].kind()
                 if kind in (DataKind.STR, DataKind.TEXT):
                     super().setBlock(kind == DataKind.TEXT)
                 text = val2str(self.value())
@@ -251,7 +251,7 @@ class PropertyTextItem(TextItem):
     @checked
     def setName(self : Self, name : str) -> None:
         self.bind(name)
-        self.propertySignalChanges("Name")
+        self.properties["Name"].notify()
 
     def value(self : Self) -> Any:
         name = self.name()
@@ -259,7 +259,7 @@ class PropertyTextItem(TextItem):
             return None
         if not isinstance((item := self.item()), PropertiesMixin):
             raise RuntimeError("Bad item")
-        return item.propertyValue(name, self.onTextChanged)
+        return item.properties[name].value()
 
     @checked
     def setValue(self : Self, value : Any) -> None:
@@ -268,7 +268,7 @@ class PropertyTextItem(TextItem):
             return None
         if isinstance(value, NoChange):
             return
-        self.setPropertyValue(name, value)
+        self.properties[name].setValue(value)
 
     @checked
     def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -288,9 +288,9 @@ class PropertyTextItem(TextItem):
         elif name != old_name:
             item.propertyRename(old_name, name)
         if not isinstance(kind, NoChange):
-            item.setPropertyKind(name, kind)
+            item.properties[name].setKind(kind)
         if not isinstance(value, NoChange):
-            item.setPropertyValue(name, value)
+            item.properties[name].setValue(value)
         if not isinstance(cleat, NoChange):
             self.setCleat(cleat)
 

@@ -132,22 +132,7 @@ class TapItem(
     @checked
     def setSuffix(self : Self, suffix : str) -> None:
         self._suffix = suffix
-        property = self.properties("Suffix")
-        for pt in self.propertyTexts("Suffix"):
-            if ":" in suffix:
-                # range
-                pt.setOrigin(RectHandleId.MIDDLE_LEFT)
-                pt.setWidth(-1.0)  # auto width
-                pt.setAlignH(AlignH.LEFT)
-                pt.setAlignV(AlignV.MIDDLE)
-            else:
-                # index
-                pt.setOrigin(RectHandleId.MIDDLE_RIGHT)
-                pt.setWidth(-1.0)  # auto width
-                pt.setAlignH(AlignH.RIGHT)
-                pt.setAlignV(AlignV.MIDDLE)
-        self.propertySignalChanges("Suffix")
-
+        self.properties["Suffix"].notify()
 
     @checked
     def ctxMenuItems(

@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QColor
 from ......core.check import checked
 from ......core.types import DataKind
 
-from ....properties import InherentProperty
+from ....properties import PropertySpec
 
 from ....scenes import withScene
 
@@ -31,21 +31,21 @@ class ItemPresentationMixin(
 ):
     # class attributes
     _PROPERTIES_LINE = {
-        "Line Color" : InherentProperty["ItemPresentationMixin"](
+        "Line Color" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.lineColor() is not None,
             getter  = lambda self: self.lineColor(),
             setter  = lambda self, value: self.setLineColor(value),
             default = lambda self: self.defaultLineColor()
         ),
-        "Line Width" : InherentProperty["ItemPresentationMixin"](
+        "Line Width" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.PEN_WIDTH,
             worthy  = lambda self: self.lineWidth() is not None,
             getter  = lambda self: self.lineWidth(),
             setter  = lambda self, value: self.setLineWidth(value),
             default = lambda self: self.defaultLineWidth()
         ),
-        "Line Style" : InherentProperty["ItemPresentationMixin"](
+        "Line Style" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.PEN_STYLE,
             worthy  = lambda self: self.lineStyle() is not None,
             getter  = lambda self: self.lineStyle(),
@@ -54,14 +54,14 @@ class ItemPresentationMixin(
         )
     }
     _PROPERTIES_FILL = {
-        "Fill Color" : InherentProperty["ItemPresentationMixin"](
+        "Fill Color" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.fillColor() is not None,
             getter  = lambda self: self.fillColor(),
             setter  = lambda self, value: self.setFillColor(value),
             default = lambda self: self.defaultFillColor()
         ),
-        "Fill Style" : InherentProperty["ItemPresentationMixin"](
+        "Fill Style" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.BRUSH_STYLE,
             worthy  = lambda self: self.fillStyle() is not None,
             getter  = lambda self: self.fillStyle(),
@@ -70,42 +70,42 @@ class ItemPresentationMixin(
         )
     }
     _PROPERTIES_APPEARANCE = {
-        "Text Color" : InherentProperty["ItemPresentationMixin"](
+        "Text Color" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.textColor() is not None,
             getter  = lambda self: self.textColor(),
             setter  = lambda self, value: self.setTextColor(value),
             default = lambda self: self.defaultTextColor()
         ),
-        "Text Font" : InherentProperty["ItemPresentationMixin"](
+        "Text Font" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_FAMILY,
             worthy  = lambda self: self.textFont() is not None,
             getter  = lambda self: self.textFont(),
             setter  = lambda self, value: self.setTextFont(value),
             default = lambda self: self.defaultTextFont()
         ),
-        "Text Size" : InherentProperty["ItemPresentationMixin"](
+        "Text Size" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_SIZE,
             worthy  = lambda self: self.textSize() is not None,
             getter  = lambda self: self.textSize(),
             setter  = lambda self, value: self.setTextSize(value),
             default = lambda self: self.defaultTextSize()
         ),
-        "Text Bold" : InherentProperty["ItemPresentationMixin"](
+        "Text Bold" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_BOOL,
             worthy  = lambda self: self.textBold() is not None,
             getter  = lambda self: self.textBold(),
             setter  = lambda self, value: self.setTextBold(value),
             default = lambda self: self.defaultTextBold()
         ),
-        "Text Italic" : InherentProperty["ItemPresentationMixin"](
+        "Text Italic" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_BOOL,
             worthy  = lambda self: self.textItalic() is not None,
             getter  = lambda self: self.textItalic(),
             setter  = lambda self, value: self.setTextItalic(value),
             default = lambda self: self.defaultTextItalic()
         ),
-        "Text Underline" : InherentProperty["ItemPresentationMixin"](
+        "Text Underline" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_BOOL,
             worthy  = lambda self: self.textUnderline() is not None,
             getter  = lambda self: self.textUnderline(),

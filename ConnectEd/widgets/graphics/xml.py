@@ -18,7 +18,7 @@ def toXmlProperties(obj : PropertiesMixin, xw : QXmlStreamWriter) -> None:
     for name, property in obj.properties.items():
         if not property.worthy():
             continue
-        value = property.rawValue() if property.isCustom() else property.value()
+        value = property.value(raw = True)
         xw.writeAttribute(space2underscore(name), val2str(value))
 
 

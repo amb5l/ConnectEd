@@ -9,7 +9,7 @@ from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
 from .....core.utils import pascal2proper, str2val
 
-from ....graphics.properties import _CUSTOM_PROPERTY_KINDS, PropertiesMixin
+from ....graphics.properties import PropertiesMixin
 
 from ..edit import StrEditor
 
@@ -93,12 +93,12 @@ class PropertyTextLayout(QGridLayout):
         self._kind_value_layout = QHBoxLayout()
         if not isinstance(kind, DataKind):
             raise TypeError("Bad kind")
-        if inherent is False:
-            self._kind_value = EnumComboBox[DataKind](kind, _CUSTOM_PROPERTY_KINDS)
-        elif inherent is True:
+        if inherent is True:
             self._kind_value = QLabel(kind.value)
         else:
-            self._kind_value = QLabel(self._NOT_FOUND)
+            self._kind_value = EnumComboBox[DataKind](
+                kind, (DataKind.STR, DataKind.TEXT)
+            )
         self._kind_value_layout.addWidget(self._kind_value)
         self._kind_value_layout.addStretch(1)
         self.addLayout(self._kind_value_layout, row, 1)
@@ -107,11 +107,11 @@ class PropertyTextLayout(QGridLayout):
         self._value_label = QLabel("Value:")
         self.addWidget(self._value_label, row, 0)
         if isinstance(owner_item, PropertiesMixin) \
-        and owner_item.propertyWriteable(name) is True:
+        and owner_item.properties[name].writeable():
             editor = kind.editor()
             args = {"value" : value}
             if inherent is False and kind is DataKind.KIND:
-                args["subset"] = _CUSTOM_PROPERTY_KINDS
+                args["subset"] = (DataKind.STR, DataKind.TEXT)
             self._value_value = editor(**args)
         else:
             self._value_value = QLabel(self._NOT_FOUND)

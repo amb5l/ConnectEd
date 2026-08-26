@@ -16,7 +16,7 @@ from ....core.types import DataKind, RectHandleId
 
 from ...dialogs.arc import ArcDialog
 
-from ..properties   import InherentProperty
+from ..properties   import PropertySpec
 from ..xml          import fromXmlProperties
 from ..painter_path import PainterPath
 
@@ -208,7 +208,7 @@ class PolylineItem(
     _RESIZE_GRIP_CLS = PolylineResizeGripItem
 
     _PROPERTIES_CLOSED = {
-        "Closed" : InherentProperty["PolylineItem"](
+        "Closed" : PropertySpec["PolylineItem"](
             kind   = DataKind.BOOL,
             getter = lambda self: self.closed(),
             setter = lambda self, value: self.setClosed(value)
@@ -336,7 +336,7 @@ class PolylineItem(
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
         self.updatePath()
-        self.propertySignalChanges("Closed")
+        self.properties["Closed"].notify()
 
     @checked
     def close(self : Self, sweep : float | None = None) -> None:
@@ -582,7 +582,7 @@ class PolylineItem(
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
         ItemXmlMixin.fromXmlRefresh(instance)
-        instance.propertySignalChanges("Closed")
+        instance.properties["Closed"].notify()
         return instance
 
     @checked

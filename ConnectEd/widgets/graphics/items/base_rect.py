@@ -11,7 +11,7 @@ from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
@@ -32,12 +32,12 @@ class BaseRectangleMixin(
     # class attributes
     _ORIGIN = RectHandleId.MIDDLE_CENTER
     _PROPERTIES_WIDTH_HEIGHT = {
-        "Width" : InherentProperty["BaseRectangleMixin"](
+        "Width" : PropertySpec["BaseRectangleMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.width(),
             setter = lambda self, value: self.setWidth(value)
         ),
-        "Height" : InherentProperty["BaseRectangleMixin"](
+        "Height" : PropertySpec["BaseRectangleMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.height(),
             setter = lambda self, value: self.setHeight(value)
@@ -142,8 +142,8 @@ class BaseRectangleMixin(
                 names.append("Width")
             if old.height() != new.height():
                 names.append("Height")
-            if names:
-                self.propertySignalChanges(names)
+            for name in names:
+                self.properties[name].notify()
 
     def width(self : Self) -> float:
         if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
