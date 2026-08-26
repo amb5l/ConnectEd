@@ -315,7 +315,7 @@ class PropertiesMixin:
         name  : str,
         kind  : DataKind,
         value : Any
-    ) -> None:
+    ) -> Property | None:
         """
         Initialize a property. Creates if required, and sets the value;
         for use in deserialization.
@@ -325,7 +325,8 @@ class PropertiesMixin:
             property.setKind(kind)
             property.setValue(value)
         else:
-            self.propertyAdd(name, kind, value)
+            property = self.propertyAdd(name, kind, value)
+        return property
 
     @checked
     def propertyAdd(
@@ -333,7 +334,7 @@ class PropertiesMixin:
         name  : str,
         kind  : DataKind,
         value : Any
-    ) -> bool:
+    ) -> Property | None:
         """
         Add a property.
         Returns True if the property was added, False otherwise.
@@ -341,14 +342,15 @@ class PropertiesMixin:
         # check for existing property
         if name in self.properties:
             logger().error(f"Property '{name}' already exists")
-            return False
+            return None
         # check kind
         if kind not in (DataKind.STR, DataKind.TEXT):
             logger().error(f"Invalid property kind: {kind}")
-            return False
+            return None
         # create custom property
-        self.properties[name] = Property(self, kind, value)
-        return True
+        property = Property(self, kind, value)
+        self.properties[name] = property
+        return property
 
     @checked
     def propertyRename(self : Self, old_name : str, new_name : str) -> bool:

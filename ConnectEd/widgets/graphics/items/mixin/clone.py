@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, cast
+from typing import Self, cast, TYPE_CHECKING
 
 from PyQt6.QtWidgets import QGraphicsItem
 
@@ -10,56 +10,84 @@ from ...properties import PropertiesMixin
 
 from ..protocols import FreshItemConstructor
 
+if TYPE_CHECKING:
+    from ..property_text import PropertyTextItem
+
 
 class ItemCloneMixin:
     @checked
     def clone(self : Self) -> Self:
         """Create a clone of this item with a new UUID."""
-        from ..handle        import HandleItem
-        from ..property_text import PropertyTextItem
-        from ..port_pin      import PortPinLineItem, PortPinPathItem
-        from .handle         import ItemHandlesMixin
+        from ..port_pin import PortPinLineItem, PortPinPathItem
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
         constructor = cast(FreshItemConstructor[Self], self.__class__)
-        clone_item = constructor(fresh=False), QGraphicsItem
-        if not isinstance(clone_item, QGraphicsItem) \
-        or not isinstance(clone_item, PropertiesMixin):
+        clone_item = constructor(fresh=False)
+        if not isinstance(clone_item, QGraphicsItem):
             raise TypeError("Bad clone")
-        # clone properties
+        # clone properties and their optional display texts
         if isinstance(self, PropertiesMixin):
-            for name in self.properties.keys():
-                if self.propertyInherent(name):
-                    value = self.propertyValue(name)
-                    if value is not None:
-                        clone_item.setPropertyValue(name, value)
+            if not isinstance(clone_item, PropertiesMixin):
+                raise TypeError("Bad clone")
+            for name, source_property in self.properties.items():
+                if source_property.isInherent():
+                    clone_property = clone_item.properties[name]
+                    clone_property.setValue(source_property.value())
                 else:
-                    kind = self.propertyKind(name)
-                    value = self.propertyValue(name)
-                    if kind is not None:
-                        clone_item.propertyAdd(name, kind, value)
-        # clone property texts and pins
+                    clone_property = clone_item.propertyAdd(
+                        name, source_property.kind(), source_property.rawValue()
+                    )
+                    if clone_property is None:
+                        raise ValueError(
+                            f"Failed to add property {name}"
+                        )
+                source_display_item = source_property.displayItem()
+                if source_display_item is None:
+                    continue
+                dest_display_item = clone_property.setDisplay(True)
+                if dest_display_item is None:
+                    raise ValueError(
+                        f"Display item for property {name} is None"
+                    )
+                _copyPropertyDisplay(source_display_item, dest_display_item)
+        # clone pins (each pin clones its own properties and displays)
         for source_child in self.childItems():
             if isinstance(source_child, PortPinLineItem | PortPinPathItem):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone_item)
-            elif isinstance(source_child, HandleItem):
-                for source_h_child in source_child.childItems():
-                    if  isinstance(source_h_child, PropertyTextItem) \
-                    and isinstance(clone_item, ItemHandlesMixin):
-                        clone_pt = source_h_child.clone()
-                        clone_pt.setParentItem(
-                            clone_item.handles().get(source_child.id())
-                        )
-                        name = clone_pt.name()
-                        if name is not None:
-                            clone_item.propertySubscribe(
-                                name, clone_pt.onTextChanged
-                            )
         self._cloneAfter(cast(Self, clone_item))
-        clone_item.setPropertiesLive(True)  # enable property change signalling
+        if isinstance(clone_item, PropertiesMixin):
+            clone_item.setPropertiesLive(True)
         return cast(Self, clone_item)
 
     def _cloneAfter(self, clone) -> None:
         """Hook for subclasses to copy geometry not covered by properties."""
         pass
+
+
+def _copyPropertyDisplay(
+    source : PropertyTextItem,
+    dest   : PropertyTextItem,
+) -> None:
+    dest.setVisible       ( source.isVisible()     )
+    dest.setCleat         ( source.cleat()         )
+    dest.setPos           ( source.pos()           )
+    dest.setRotation      ( source.rotation()      )
+    dest.setMirrorH       ( source.mirrorH()       )
+    dest.setMirrorV       ( source.mirrorV()       )
+    dest.setAutoflip      ( source.autoflip()      )
+    dest.setOrigin        ( source.origin()        )
+    dest.setAlignH        ( source.alignH()        )
+    dest.setAlignV        ( source.alignV()        )
+    dest.setWidth         ( source.width()         )
+    dest.setHeight        ( source.height()        )
+    dest.setPadLeft       ( source.padLeft()       )
+    dest.setPadRight      ( source.padRight()      )
+    dest.setPadTop        ( source.padTop()        )
+    dest.setPadBottom     ( source.padBottom()     )
+    dest.setTextColor     ( source.textColor()     )
+    dest.setTextFont      ( source.textFont()      )
+    dest.setTextSize      ( source.textSize()      )
+    dest.setTextBold      ( source.textBold()      )
+    dest.setTextItalic    ( source.textItalic()    )
+    dest.setTextUnderline ( source.textUnderline() )
