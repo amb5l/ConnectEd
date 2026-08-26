@@ -2,34 +2,31 @@ from __future__ import annotations
 
 from typing import Self
 
-from ....core.check      import checked
-from ....core.types      import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.check import checked
+from ....core.types import RectHandleId, DataKind
 
-from .property_text import PropertyTextSpec
-
-from .mixin.properties import ItemPropertiesMixin
+from ..properties import PropertySpec, PropertyDisplaySpec, PropertiesMixin
 
 
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
-    _PROPERTIES_PART : PropertiesDict = {
-            "Label" : InherentProperty["PartItemMixin"](
+    _PROPERTIES_PART = {
+            "Label" : PropertySpec["PartItemMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.label(),
                 setter = lambda self, value: self.setLabel(value)
             ),
-            "Name" : InherentProperty["PartItemMixin"](
+            "Name" : PropertySpec["PartItemMixin"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             )
         }
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(
+    _PROPERTY_DISPLAY_SPECS = {
+        "Label" : PropertyDisplaySpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         ),
-        "Name"  : PropertyTextSpec(
+        "Name"  : PropertyDisplaySpec(
             cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
         )
     }
@@ -49,7 +46,7 @@ class PartItemMixin:
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges("Label")
 
     def name(self : Self) -> str:
@@ -58,5 +55,5 @@ class PartItemMixin:
     @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges("Name")

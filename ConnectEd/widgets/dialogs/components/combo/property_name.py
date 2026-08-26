@@ -7,7 +7,7 @@ from .....app import logger
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
 
-from ....graphics.items.mixin.properties import PropertiesMixin
+from ....graphics.properties import PropertiesMixin
 
 
 class PropertyNameComboBox(QComboBox):
@@ -21,7 +21,7 @@ class PropertyNameComboBox(QComboBox):
     ) -> None:
         super().__init__()
         self._initial = name
-        names = owner.propertyNames()
+        names = owner.properties.keys()
         self.addItems(names)
         if name in names:
             self.setCurrentText(name)

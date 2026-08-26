@@ -234,8 +234,9 @@ def val2str(v : Any) -> str:
 def str2val(s : str, t : str) -> Any:
     """Parse XML / settings text produced by val2str."""
     from ..core.types import (
-        AlignH, AlignV, Edge, Direction, Display, DataKind,
-        RectHandleId, LineHandleId, PortHandleId, BlockPinHandleId, SymbolPinHandleId
+        AlignH, AlignV, Edge, Direction, DataKind,
+        RectHandleId, LineHandleId, PortHandleId,
+        BlockPinHandleId, SymbolPinHandleId
     )
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -251,7 +252,6 @@ def str2val(s : str, t : str) -> Any:
         case "QRectF"            : return QRectF(*strValuesToFloats(s))
         case "QSizeF"            : return QSizeF(*strValuesToFloats(s))
         case "QColor"            : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
-        case "Display"           : return Display(s)
         case "PenStyle"          : return Qt.PenStyle[s]
         case "BrushStyle"        : return Qt.BrushStyle[s]
         case "AlignH"            : return AlignH.fromStr(s)

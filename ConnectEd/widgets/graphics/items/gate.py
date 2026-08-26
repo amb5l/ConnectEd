@@ -9,17 +9,17 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.check      import checked
-from ....core.types      import Direction, DataKind, RectHandleId, HandleId
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.check import checked
+from ....core.types import Direction, DataKind, RectHandleId, HandleId
+
+from ..properties import PropertySpec, PropertyDisplaySpec
 
 from ..painter_path import PainterPath
 
 from .role import FunctionalItem
 
-from .grip          import GripItem, MoveGripItem
-from .gate_pin      import GatePinItem, BufGatePinItem, OrGatePinItem
-from .property_text import PropertyTextSpec
+from .grip     import GripItem, MoveGripItem
+from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -45,16 +45,16 @@ class GateItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _PROPERTIES_LABEL : PropertiesDict = {
-        "Label" : InherentProperty["GateItem"](
+    _PROPERTIES_LABEL = {
+        "Label" : PropertySpec["GateItem"](
             kind   = DataKind.STR,
             worthy = lambda self: self.label() != "",
             getter = lambda self: self.label(),
             setter = lambda self, value: self.setLabel(value)
         )
     }
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(
+    _PROPERTY_DISPLAY_SPECS = {
+        "Label" : PropertyDisplaySpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         )
     }
@@ -119,13 +119,13 @@ class BufGateItem(GateItem):
 
     # class attributes
     _PIN_CLS = BufGatePinItem
-    _PROPERTIES_IO : PropertiesDict = {
-        "Output" : InherentProperty["BufGateItem"](
+    _PROPERTIES_IO = {
+        "Output" : PropertySpec["BufGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Input" : InherentProperty["BufGateItem"](
+        "Input" : PropertySpec["BufGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.input(),
             setter = lambda self, value: self.setInput(value)
@@ -257,13 +257,13 @@ class LogicGateItem(GateItem):
     # class attributes
     _PIN_CLS     = GatePinItem
     _MID_PIN_CLS = GatePinItem  # for extended middle input pin
-    _PROPERTIES_IO : PropertiesDict = {
-        "Output" : InherentProperty["LogicGateItem"](
+    _PROPERTIES_IO = {
+        "Output" : PropertySpec["LogicGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Inputs" : InherentProperty["LogicGateItem"](
+        "Inputs" : PropertySpec["LogicGateItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.inputs(),
             setter = lambda self, value: self.setInputs(value)

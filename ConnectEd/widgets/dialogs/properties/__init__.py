@@ -1,36 +1,39 @@
 from __future__ import annotations
 
 from typing import Self, Any
+from enum   import StrEnum
 
-from PyQt6.QtCore    import Qt, QModelIndex, QItemSelectionModel
+from PyQt6.QtCore    import Qt, QModelIndex, QItemSelectionModel, QItemSelection
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QMessageBox, QPushButton, QAbstractItemView
-from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
+from PyQt6.QtGui     import QColor, QFontDatabase
 
 from ....app import logger
 
 from ....core.check import checked
 from ....core.types import (
-    NoChange, NO_CHANGE, AlignH, AlignV, HandleId, Display, DataKind,
+    NoChange, NO_CHANGE, AlignH, AlignV, HandleId, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId
 )
 from ....core.utils import removeSuffixes
-from ....core.properties import PropertiesMixin
 
-from ...graphics.scenes.diagram.properties import DiagramScenePropertiesMixin
+from ...graphics.properties import PropertiesMixin
 
-from ...graphics.items.mixin.handle     import ItemHandlesMixin
-from ...graphics.items.mixin.properties import ItemPropertiesMixin
+from ...graphics.items.mixin.handle import ItemHandlesMixin
 
-from ..components.table import TableView
+from ..components.table import TableModel, TreeTableView
 
-from .item import PropertiesItem
+from .item import ChangeItem, \
+                  ExistingPropertyChangeItem, NewPropertyChangeItem, \
+                  ExistingPropertyTextChangeItem, NewPropertyTextChangeItem, \
+                  PropertiesItem
 
 from .delegate import PropertiesDelegate
 
 from .types import (
+    ExistingChange, NewChange,
     PropertyChangeAdd, PropertyChangeModify, PropertyChangeDelete,
-    PropertyChangeTextAdd, PropertyChangeTextModify, PropertyChangeTextDelete,
+    PropertyTextChangeAdd, PropertyTextChangeModify, PropertyTextChangeDelete,
     PropertyChangeType
 )
 
@@ -40,32 +43,38 @@ if TYPE_CHECKING:
     from ...graphics.items.property_text import PropertyTextItem
 
 
+_PROP_COLS : list[str] = ["Name", "Custom", "Type", "Value"]
+
 _PT_COLS = {
-#                   kind                   default value              method name
-    "Display"   : ( DataKind.DISPLAY     , Display.NAME             , "display"       ), # noqa E501
-    "Cleat"     : ( None                 , None                     , "cleat"         ), # noqa E501
-    "X"         : ( DataKind.FLOAT       , 0.0                      , "x"             ), # noqa E501
-    "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"             ), # noqa E501
-    "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"      ), # noqa E501
-    "Mirror H"  : ( DataKind.BOOL        , False                    , "mirrorH"       ), # noqa E501
-    "Mirror V"  : ( DataKind.BOOL        , False                    , "mirrorV"       ), # noqa E501
-    "Auto Flip" : ( DataKind.BOOL        , True                     , "autoflip"      ), # noqa E501
-    "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"        ), # noqa E501
-    "Align H"   : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"        ), # noqa E501
-    "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"        ), # noqa E501
-    "Width"     : ( DataKind.SIZE        , None                     , "width"         ), # noqa E501
-    "Height"    : ( DataKind.SIZE        , None                     , "height"        ), # noqa E501
-    "Color"     : ( DataKind.COLOR       , None                     , "textColor"     ), # noqa E501
-    "Font"      : ( DataKind.FONT_FAMILY , None                     , "textFont"      ), # noqa E501
-    "Size"      : ( DataKind.FONT_SIZE   , None                     , "textSize"      ), # noqa E501
-    "Bold"      : ( DataKind.FONT_BOOL   , None                     , "textBold"      ), # noqa E501
-    "Italic"    : ( DataKind.FONT_BOOL   , None                     , "textItalic"    ), # noqa E501
-    "Underline" : ( DataKind.FONT_BOOL   , None                     , "textUnderline" )  # noqa E501
+#                   kind                   initial value              method
+    "Visible"   : ( DataKind.BOOL        , True                     , PropertyTextItem.isVisible     ),  # noqa E501
+    "Cleat"     : ( None                 , None                     , PropertyTextItem.cleat         ),  # noqa E501
+    "X"         : ( DataKind.FLOAT       , 0.0                      , PropertyTextItem.x             ),  # noqa E501
+    "Y"         : ( DataKind.FLOAT       , 0.0                      , PropertyTextItem.y             ),  # noqa E501
+    "Rotation"  : ( DataKind.ROTATION    , 0.0                      , PropertyTextItem.rotation      ),  # noqa E501
+    "Mirror H"  : ( DataKind.BOOL        , False                    , PropertyTextItem.mirrorH       ),  # noqa E501
+    "Mirror V"  : ( DataKind.BOOL        , False                    , PropertyTextItem.mirrorV       ),  # noqa E501
+    "Auto Flip" : ( DataKind.BOOL        , True                     , PropertyTextItem.autoflip      ),  # noqa E501
+    "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , PropertyTextItem.origin        ),  # noqa E501
+    "Align H"   : ( DataKind.ALIGN_H     , AlignH.LEFT              , PropertyTextItem.alignH        ),  # noqa E501
+    "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , PropertyTextItem.alignV        ),  # noqa E501
+    "Height"    : ( DataKind.SIZE        , None                     , PropertyTextItem.height        ),  # noqa E501
+    "Width"     : ( DataKind.SIZE        , None                     , PropertyTextItem.width         ),  # noqa E501
+    "Color"     : ( DataKind.COLOR       , None                     , PropertyTextItem.textColor     ),  # noqa E501
+    "Font"      : ( DataKind.FONT_FAMILY , None                     , PropertyTextItem.textFont      ),  # noqa E501
+    "Size"      : ( DataKind.FONT_SIZE   , None                     , PropertyTextItem.textSize      ),  # noqa E501
+    "Bold"      : ( DataKind.FONT_BOOL   , None                     , PropertyTextItem.textBold      ),  # noqa E501
+    "Italic"    : ( DataKind.FONT_BOOL   , None                     , PropertyTextItem.textItalic    ),  # noqa E501
+    "Underline" : ( DataKind.FONT_BOOL   , None                     , PropertyTextItem.textUnderline )   # noqa E501
 }
 
+_COLS : list[str] = _PROP_COLS + list(_PT_COLS.keys())
 
-_COLS : list[str] = ["Name", "Type", "Value", "Display"] + list(_PT_COLS.keys())
-
+_HEADINGS = \
+    [("Property", "Change")] + \
+    [("Property", name) for name in _PROP_COLS] + \
+    [("Text(s)", "Change")] + \
+    [("Text(s)", name) for name in _PT_COLS]
 
 _HANDLE_KIND : dict[type, DataKind] = {
     RectHandleId      : DataKind.RECT_HANDLE,
@@ -75,24 +84,36 @@ _HANDLE_KIND : dict[type, DataKind] = {
 }
 
 
+class ExistingPropertyChange(StrEnum):
+    NO_CHANGE = "No Change"
+    MODIFY    = "Modify"
+    DELETE    = "Delete"
+
+
+NewPropertyChange = "Add"
+
+
 class PropertiesDialog(QDialog):
-    _obj            : PropertiesMixin
-    _property_texts : list[PropertyTextItem]
-    _dialog_layout  : QVBoxLayout
-    _table_model    : QStandardItemModel
-    _table_view     : TableView
-    _button_layout  : QHBoxLayout
-    _display_button : QPushButton
-    _add_button     : QPushButton
-    _delete_button  : QPushButton
-    _ok_button      : QPushButton
-    _cancel_button  : QPushButton
-    _delegates      : list[PropertiesDelegate]
+    _obj             : PropertiesMixin
+    _property_texts  : dict[str, list[PropertyTextItem]]
+    _dialog_layout   : QVBoxLayout
+    _table_model     : TableModel
+    _table_view      : TreeTableView
+    _button_layout   : QHBoxLayout
+    _display_button  : QPushButton
+    _add_prop_button : QPushButton
+    _del_prop_button : QPushButton
+    _add_text_button : QPushButton
+    _del_text_button : QPushButton
+    _ok_button       : QPushButton
+    _cancel_button   : QPushButton
+    _delegates       : list[PropertiesDelegate]
+    _selected_index  : QModelIndex | None
 
     @checked
     def __init__(
         self : Self,
-        obj  : ItemPropertiesMixin | DiagramScenePropertiesMixin,
+        obj  : PropertiesMixin,
         view : DiagramView | None = None
     ) -> None:
         # superclass init
@@ -106,19 +127,52 @@ class PropertiesDialog(QDialog):
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
         # create model
-        self._table_model = QStandardItemModel()
+        self._table_model = TableModel()
         # set headers
-        self._table_model.setHorizontalHeaderLabels(_COLS)
+        self._table_model.setHorizontalHeaderGroupLabels(_HEADINGS)
         # add rows
-        for name in obj.propertyNames():
+        row_idx = 0
+        for name in obj.properties.keys():
             if (kind := obj.propertyKind(name)) is None:
                 logger().error(f"No kind for property {name}")
                 continue
-            self._table_model.appendRow(self._buildRow(
-                name, kind, obj.propertyValue(name)
-            ))
+            property = obj.properties[name]
+            value = property.value()
+            custom = property.isCustom()
+            if name not in self._property_texts \
+            or len(property_texts := self._property_texts[name]) == 0:
+                row = self._buildPropertyRow(name, custom, kind, value)
+            elif len(property_texts) == 1:
+                # single property text -> inline with property
+                pt = property_texts[0]
+                row = self._buildPropertyRow(name, custom, kind, value, pt)
+            else:
+                # multiple property texts -> child rows
+                row = self._buildPropertyRow(name, custom, kind, value)
+                self._table_model.appendRow(row)
+                parent = row[0]
+                if parent is None:
+                    raise ValueError("Bad parent item")
+                for pt in property_texts:
+                    row = self._buildPropertyTextRow(pt)
+                    parent.appendRow(row)
+            self._table_model.appendRow(row)
+            row_idx += 1
         # create table view
-        self._table_view = TableView(self._table_model)
+        self._table_view = TreeTableView(self._table_model)
+        # selection mode and behaviour
+        self._table_view.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self._table_view.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectItems
+        )
+        # hook selection changes
+        selection_model = self._table_view.selectionModel()
+        if selection_model is None:
+            raise ValueError("Bad selection model")
+        self._selected_index = None
+        selection_model.selectionChanged.connect(self._onSelectionChanged)
         # create and assign delegates (must keep references to prevent GC)
         self._delegates = []
         for col_idx in range(self._table_model.columnCount()):
@@ -138,14 +192,23 @@ class PropertiesDialog(QDialog):
         self._table_view.setColumnWidth(
             _COLS.index("Value"), self._getValueColumnWidth()
         )
-        # build button layout
+        # buttons
         self._button_layout = QHBoxLayout()
-        self._add_button = QPushButton("New")
-        self._add_button.clicked.connect(self._addRow)
-        self._button_layout.addWidget(self._add_button)
-        self._delete_button = QPushButton("Delete")
-        self._delete_button.clicked.connect(self._deleteRows)
-        self._button_layout.addWidget(self._delete_button)
+        self._add_prop_button = QPushButton("Add Property")
+        self._add_prop_button.clicked.connect(self._addProperty)
+        self._button_layout.addWidget(self._add_prop_button)
+        self._del_prop_button = QPushButton("Delete Property")
+        self._del_prop_button.setEnabled(False)  # nothing selected initially
+        self._del_prop_button.clicked.connect(self._deleteRows)
+        self._button_layout.addWidget(self._del_prop_button)
+        self._add_text_button = QPushButton("Add Text")
+        self._add_text_button.setEnabled(False)  # nothing selected initially
+        self._add_text_button.clicked.connect(self._addTextRow)
+        self._button_layout.addWidget(self._add_text_button)
+        self._del_text_button = QPushButton("Delete Text")
+        self._del_text_button.setEnabled(False)  # nothing selected initially
+        self._del_text_button.clicked.connect(self._deleteTextRows)
+        self._button_layout.addWidget(self._del_text_button)
         self._button_layout.addStretch()
         self._ok_button = QPushButton("OK")
         self._ok_button.clicked.connect(self.accept)
@@ -158,16 +221,16 @@ class PropertiesDialog(QDialog):
         self._dialog_layout.addLayout(self._button_layout)
         self.setLayout(self._dialog_layout)
         self.adjustSize()
-        horizontal_header = self._table_view.horizontalHeader()
-        vertical_header = self._table_view.verticalHeader()
-        if horizontal_header is not None and vertical_header is not None:
-            min_width = horizontal_header.length() + 50
-            min_height = vertical_header.length() + 50
+        header = self._table_view.header()
+        if header is not None:
+            min_width = header.length() + 50
+            min_height = header.sizeHint().height() + 50
             self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
 
     def accept(self : Self) -> None:
         name_col = _COLS.index("Name")
+        custom_col = _COLS.index("Custom")
         kind_col = _COLS.index("Type")
         value_col = _COLS.index("Value")
         names : list[str] = []
@@ -191,14 +254,21 @@ class PropertiesDialog(QDialog):
                 self._table_view.edit(index)
                 return
             names.append(name)
-            # check for type/value mismatches on new properties
+            # check custom, kind, value
+            if (custom_item := self._getItem(row, custom_col)) is None:
+                logger().error(f"Bad custom item for row {row}")
+                continue
+            if not isinstance(custom := custom_item.value(), bool):
+                logger().error(f"Custom is not a bool: {custom}")
+                return
             if (kind_item := self._getItem(row, kind_col)) is None:
                 logger().error(f"Bad kind item for row {row}")
                 continue
-            if not kind_item.isEditable():
-                continue
             if not isinstance(kind := kind_item.value(), DataKind):
                 logger().error(f"Kind is not a DataKind: {kind}")
+                return
+            if custom and kind != DataKind.STR and kind != DataKind.TEXT:
+                logger().error(f"Custom property '{name}' must have string/text type")
                 return
             if (value_item := self._getItem(row, value_col)) is None:
                 logger().error(f"Bad value item for row {row}")
@@ -222,75 +292,114 @@ class PropertiesDialog(QDialog):
         """
         Returns a list of changes to be applied to the item.
         """
+        def _item(i : int, col_name : str) -> PropertiesItem:
+            item = self._getItem(i, _COLS.index(col_name))
+            if item is None:
+                raise ValueError(f"Bad item for row {i} and column {col_name}")
+            return item
+        def _itemValue(i : int, col_name : str, type_ : type | tuple[type, ...]) -> Any:
+            item = _item(i, col_name)
+            if not isinstance(value := item.value(), type_):
+                raise ValueError(f"Value is not a {type_}: {value}")
+            return value
+        def _itemAndValue(
+            i        : int,
+            col_name : str,
+            type_    : type | tuple[type, ...]
+        ) -> tuple[PropertiesItem, Any]:
+            item = self._getItem(i, _COLS.index(col_name))
+            if item is None:
+                raise ValueError(f"Bad item for row {i} and column {col_name}")
+            value = item.value()
+            if not isinstance(value, type_):
+                raise ValueError(f"Value is not a {type_}: {value}")
+            return item, value
         model = self._table_model
         changes : list[PropertyChangeType] = []
-        # deletions
+        # process all rows
         for row_idx in range(model.rowCount()):
-            if (name_item := self._getItem(row_idx, 0)) is None:
-                logger().error(f"Bad name item for row {row_idx}")
-                continue
+            name_item, name = _itemAndValue(row_idx, "Name", str)
+            # determine property text row(s)
+            visible_item = self._getItem(row_idx, _COLS.index("Visible"))
+            if visible_item is None:
+                pt_parent = name_item
+                pt_row_range = range(name_item.rowCount())
+            else:
+                pt_parent = model
+                pt_row_range = range(row_idx, row_idx+1)
+            # process property text row(s)
+            def _getPTItem(
+                parent   : TableModel | PropertiesItem,
+                row_idx  : int,
+                col_name : str
+            ) -> PropertiesItem:
+                if isinstance(parent, TableModel):
+                    item = parent.item(row_idx, _COLS.index(col_name))
+                elif isinstance(parent, PropertiesItem):
+                    item = parent.child(row_idx, _COLS.index(col_name))
+                else:
+                    raise ValueError(f"Bad parent: {parent}")
+                if not isinstance(item, PropertiesItem):
+                    raise ValueError(f"Item is not a PropertiesItem: {item}")
+                return item
+            for pt_row_idx in pt_row_range:
+                visible_item = _getPTItem(pt_parent, pt_row_idx, "Visible")
+                if visible_item.deleted():
+                    ref = visible_item.ref()
+                    if not isinstance(ref, PropertyTextItem):
+                        raise ValueError(f"Bad reference: {ref}")
+                    changes.append(PropertyTextChangeDelete(ref))
+                elif visible_item.new():
+                    # addition
+                    pt_args = self._getRowPropertyTextItemValues(row_idx)
+                    if pt_args is None:
+                        raise ValueError(f"Bad PT arguments for row {row_idx}")
+                    changes.append(PropertyTextChangeAdd(name, *pt_args))
+                else:
+                    # any modifications?
+                    pass
+
+
+            else
+
+            if visible_item is None:
+                # no inline property text so look at child rows
+                for j in range(name_item.rowCount()):
+                    visible_item = name_item.child(j, _COLS.index("Visible"))
+
+
             if name_item.deleted():
-                name = name_item.value()
-                if not isinstance(name, str):
-                    logger().error(f"Name is not a string: {name}")
-                    continue
+                # deletion
                 changes.append(PropertyChangeDelete(name))
-        # additions and modifications
-        for row_idx in range(model.rowCount()):
-            if (name_item := self._getItem(row_idx, _COLS.index("Name"))) is None:
-                logger().error(f"Bad name item for row {row_idx}")
                 continue
-            if not isinstance(name := name_item.value(), str):
-                logger().error(f"Name is not a string: {name}")
-                continue
-            if (kind_item := self._getItem(row_idx, _COLS.index("Type"))) is None:
-                logger().error(f"Bad kind item for row {row_idx}")
-                continue
-            if not isinstance(kind := kind_item.value(), DataKind):
-                logger().error(f"Kind is not a DataKind: {kind}")
-                continue
-            if (value_item := self._getItem(row_idx, _COLS.index("Value"))) is None:
-                logger().error(f"Bad value item for row {row_idx}")
-                continue
-            value = value_item.value()
-            if (display_item := self._getItem(row_idx, _COLS.index("Display"))) is None:
-                logger().error(f"Bad display item for row {row_idx}")
-                continue
-            display = display_item.value()
+            custom_item, custom = _itemAndValue(row_idx, "Custom", bool)
+            kind_item, kind = _itemAndValue(row_idx, "Type", DataKind)
+            value_item, value = _itemAndValue(row_idx, "Value", kind.types())
             if name_item.new():
                 # addition
                 changes.append(PropertyChangeAdd(name, kind, value))
-                # property text
-                if display != Display.NONE:
+                continue
+            # modification
+            if name_item.changed() \
+            or kind_item.changed() \
+            or value_item.changed():
+                changes.append(PropertyChangeModify(name, kind, value))
+            # property text modification
+            if display_item.changed():
+                if display == xxxDisplay.NONE:
+                    changes.append(PropertyTextChangeDelete(name))
+                elif display_item.initial() == xxxDisplay.NONE:
                     pt_args = self._getRowPropertyTextItemValues(row_idx)
                     if pt_args is not None:
-                        changes.append(PropertyChangeTextAdd(
-                            name,
-                            display == Display.SHOW,
-                            *pt_args
+                        changes.append(PropertyTextChangeAdd(
+                            name, display == xxxDisplay.SHOW, *pt_args
                         ))
-            else:
-                # modification
-                if name_item.changed() \
-                or kind_item.changed() \
-                or value_item.changed():
-                    changes.append(PropertyChangeModify(name, kind, value))
-                # property text modification
-                if display_item.changed():
-                    if display == Display.NONE:
-                        changes.append(PropertyChangeTextDelete(name))
-                    elif display_item.initial() == Display.NONE:
-                        pt_args = self._getRowPropertyTextItemValues(row_idx)
-                        if pt_args is not None:
-                            changes.append(PropertyChangeTextAdd(
-                                name, display == Display.SHOW, *pt_args
-                            ))
-                    else:
-                        pt_args = self._getRowPropertyTextItemValueDeltas(row_idx)
-                        if pt_args is not None:
-                            changes.append(PropertyChangeTextModify(
-                                name, display == Display.SHOW, *pt_args
-                            ))
+                else:
+                    pt_args = self._getRowPropertyTextItemValueDeltas(row_idx)
+                    if pt_args is not None:
+                        changes.append(PropertyTextChangeModify(
+                            name, display == xxxDisplay.SHOW, *pt_args
+                        ))
         return changes
 
     def _getItem(
@@ -300,6 +409,43 @@ class PropertiesDialog(QDialog):
     ) -> PropertiesItem | None:
         item = self._table_model.item(row_idx, col_idx)
         return None if not isinstance(item, PropertiesItem) else item
+
+    def _onSelectionChanged(
+        self       : Self,
+        selected   : QItemSelection,
+        deselected : QItemSelection
+    ) -> None:
+        indexes = selected.indexes()
+        if len(indexes) == 0:
+            index = None
+        elif len(indexes) == 1:
+            index = indexes[0]
+        else:
+            raise ValueError("Multiple indexes selected") # should never happen
+        if index is None:
+            # no row selected
+            en_del_prop = False
+            en_add_text = False
+            en_del_text = False
+        elif index.parent().isValid():
+            # child (property text) row selected
+            en_del_prop = False
+            en_add_text = True
+            en_del_text = True
+        else:
+            # parent (property) row selected
+            en_del_prop = True
+            en_add_text = True
+            pt_col0_name = list(_PT_COLS.keys())[0]
+            pt_col0_col = _COLS.index(pt_col0_name)
+            pt_col0_idx = index.siblingAtColumn(pt_col0_col)
+            pt_col0_item = self._table_model.itemFromIndex(pt_col0_idx)
+            en_del_text = isinstance(pt_col0_item, PropertiesItem) \
+                and not pt_col0_item.deleted()
+        self._del_prop_button.setEnabled(en_del_prop)
+        self._add_text_button.setEnabled(en_add_text)
+        self._del_text_button.setEnabled(en_del_text)
+        self._selected_index = index
 
     def _onKindChanged(
         self    : Self,
@@ -314,7 +460,7 @@ class PropertiesDialog(QDialog):
 
     def _onDisplayChanged(
         self    : Self,
-        display : Display,
+        display : xxxDisplay,
         row_idx : int
     ) -> None:
         item = self._obj
@@ -326,21 +472,21 @@ class PropertiesDialog(QDialog):
                 continue
             if pt_item is not None and col_name == "Cleat":
                 pt_new = pt_item.new()
-            if display != Display.NONE and pt_item is None:
+            if display != xxxDisplay.NONE and pt_item is None:
                 if not isinstance(item, ItemHandlesMixin):
                     raise TypeError("Bad item")
                 if col_name == "Cleat":
                     kind = _HANDLE_KIND[item.handleIdType()]
                     value = list(item.handles().keys())[0]
                 pt_item = PropertiesItem(
-                    owner=item, kind=kind, value=value, new=True
+                    kind=kind, value=value, new=True
                 )
                 self._table_model.setItem(row_idx, col_idx, pt_item)
                 pt_new = True
             if pt_item is not None:
-                pt_item.setEnabled(display != Display.NONE or not pt_new)
-                pt_item.setEditable(display != Display.NONE)
-                pt_item.setDeleted(display == Display.NONE and not pt_new)
+                pt_item.setEnabled(display != xxxDisplay.NONE or not pt_new)
+                pt_item.setEditable(display != xxxDisplay.NONE)
+                pt_item.setDeleted(display == xxxDisplay.NONE and not pt_new)
 
     def _refreshDisplay(self : Self, row_idx : int) -> None:
         """Refresh PT columns from the model's Display value."""
@@ -348,7 +494,7 @@ class PropertiesDialog(QDialog):
         if not isinstance(display_item := self._table_model.item(row_idx, display_col), PropertiesItem):
             logger().error(f"Bad display item for row {row_idx}")
             return
-        if not isinstance(display_value := display_item.value(), Display):
+        if not isinstance(display_value := display_item.value(), xxxDisplay):
             logger().error(f"Bad display value for row {row_idx}")
             return
         self._onDisplayChanged(display_value, row_idx)
@@ -371,78 +517,79 @@ class PropertiesDialog(QDialog):
         ):
             self._refreshDisplay(row_idx)
 
-    def _buildRow(
-        self  : Self,
-        name  : str,
-        kind  : DataKind,
-        value : Any
-    ) -> list[PropertiesItem | None]:
-        item = self._obj
-        new = not item.propertyExists(name)
-        custom = new or not item.propertyInherent(name)
-        if not isinstance(value_kind := kind if new else item.propertyKind(name), DataKind):
-            logger().error(f"Bad value kind ({value_kind})")
-            value_kind = DataKind.STR
-        value_value = value if new else item.propertyValue(name)
-        value_default = None if new else item.propertyDefaultValue(name)
-        value_editable = item.propertyWriteable(name) is True
-        pt = None if new else item.propertyText(name)
-        display = \
-            Display.NONE if pt is None else \
-            Display.SHOW if pt.isVisible() else \
-            Display.HIDE
-        row : list[PropertiesItem | None] = [
-            # Name
-            PropertiesItem(
-                owner    = item,
-                kind     = DataKind.STR,
-                value    = name,
-                new      = new,
-                editable = custom
-            ),
-            # Type
-            PropertiesItem(
-                owner    = item,
-                kind     = DataKind.KIND,
-                value    = kind,
-                new      = new,
-                editable = custom
-            ),
-            # Value
-            PropertiesItem(
-                owner    = item,
-                kind     = value_kind,
-                value    = value_value,
-                default  = value_default,
-                new      = new,
-                editable = value_editable
-            ),
-            # Display
-            PropertiesItem(
-                owner = item,
-                kind  = DataKind.DISPLAY,
-                value = display,
-                new   = new
-            )
-        ]
-        for col_name, (kind, _default, method_name) in _PT_COLS.items():
-            cell = None
-            if pt is not None:
-                if col_name == "Cleat":
-                    kind = _HANDLE_KIND[pt.handleIdType()]
-                value = getattr(pt, method_name)()
-                cell = PropertiesItem(owner=item, kind=kind, value=value)
-            row.append(cell)
+    def _buildPropertyRow(
+        self   : Self,
+        name   : str,
+        custom : bool,
+        kind   : DataKind,
+        value  : Any,
+        pt     : PropertyTextItem | None = None,
+        *,
+        new    : bool = False
+    ) -> list[ChangeItem | PropertiesItem | None]:
+        row : list[ChangeItem | PropertiesItem | None] = []
+        if new:
+            row.append(NewPropertyChangeItem(NewChange.ADD))
+        else:
+            row.append(ExistingPropertyChangeItem(ExistingChange.NO_CHANGE))
+        row.append(PropertiesItem(DataKind.STR, name))
+        row.append(PropertiesItem(DataKind.BOOL, custom))
+        row.append(PropertiesItem(DataKind.KIND, kind))
+        row.append(PropertiesItem(kind, value))
+        if pt is None:
+            row.append(NewPropertyTextChangeItem(NewChange.NONE))
+            row += [None] * len(_PT_COLS)
+        else:
+            row.append(ExistingPropertyTextChangeItem(ExistingChange.NO_CHANGE))
+            row += self._propertyTextFields(pt)
         return row
 
-    def _addRow(self : Self) -> None:
+    def _propertyTextFields(
+        self : Self,
+        pt : PropertyTextItem
+    ) -> list[ChangeItem | PropertiesItem | None]:
+        return [
+            PropertiesItem(kind, method(pt))
+            for (kind, _default, method) in _PT_COLS.values()
+        ]
+
+    def _buildPropertyTextRow(
+        self : Self,
+        pt : PropertyTextItem
+    ) -> list[ChangeItem | PropertiesItem | None]:
+        row : list[ChangeItem | PropertiesItem | None] = []
+        row += [None] * (1 + len(_PROP_COLS))
+        row.append(ExistingPropertyTextChangeItem(ExistingChange.NO_CHANGE))
+        row += self._propertyTextFields(pt)
+        return row
+
+    def _addProperty(self : Self) -> None:
         """Add a new property."""
-        row_idx = self._table_model.rowCount()
-        row = self._buildRow("", DataKind.STR, "")
-        self._table_model.appendRow(row)
+        model = self._table_model
+        row_idx = model.rowCount()
+        row = self._buildPropertyRow("", True, DataKind.STR, "", new=True)
+        model.appendRow(row)
         self._refreshTable()
-        self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
-        self._table_view.edit(self._table_model.index(row_idx, _COLS.index("Name")))
+        self._table_view.setCurrentIndex(model.index(row_idx, 0))
+        self._table_view.edit(model.index(row_idx, _COLS.index("Name")))
+
+    def _delProperty(self : Self) -> None:
+        """Delete the selected property, and any associated texts."""
+        if self._selected_index is None:
+            logger().error("No selection")
+            return
+        row_idx = self._selected_index.row()
+        if (name_item := self._getItem(row_idx, 0)) is None:
+            logger().error(f"Bad name item for row {row_idx}")
+            return
+        if name_item.deleted():
+            logger().error(f"Property {name} already deleted")
+            return
+
+        if not isinstance(name := name_item.value(), str):
+            logger().error(f"Name is not a string: {name}")
+            return
+        selected_index = self._selectedIndex(selected)
 
     def _deleteRows(self : Self) -> None:
         # get all selected rows
@@ -456,7 +603,7 @@ class PropertiesDialog(QDialog):
             if not isinstance(name := name_item.value(), str):
                 logger().error(f"Name is not a string: {name}")
                 continue
-            if not self._obj.propertyExists(name) \
+            if name not in self._obj.properties \
             or not self._obj.propertyInherent(name):
                 for col_idx in range(self._table_model.columnCount()):
                     item = self._getItem(row, col_idx)

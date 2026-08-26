@@ -14,7 +14,6 @@ from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
 from ....core.utils      import qtItemClass
 from ....core.types      import NoChange, NO_CHANGE, \
                                 AlignH, AlignV, HandleId, RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty
 
 from ....resources.icons import AnchorTopLeftIcon,      \
                                 AnchorTopCenterIcon,    \
@@ -34,7 +33,9 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 
 from ....core.check import checked
 
-from ..quill      import Quill
+from ..properties import InherentProperty
+
+from ..quill import Quill
 
 from .grip import ResizeGripItem
 
@@ -167,7 +168,7 @@ class BaseTextItem(
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
     _RESIZE_GRIP_CLS = TextResizeGripItem
-    _PROPERTIES_BASE_TEXT : PropertiesDict = {
+    _PROPERTIES_BASE_TEXT = {
         "Text" : InherentProperty["BaseTextItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.text(),
@@ -186,7 +187,7 @@ class BaseTextItem(
             setter = lambda self, value: self.setAutoflip(value)
         )
     }
-    _PROPERTIES_ALIGN : PropertiesDict = {
+    _PROPERTIES_ALIGN = {
         "AlignH" : InherentProperty["BaseTextItem"](
             kind   = DataKind.ALIGN_H,
             getter = lambda self: self.alignH(),
@@ -198,7 +199,7 @@ class BaseTextItem(
             setter = lambda self, value: self.setAlignV(value)
         )
     }
-    _PROPERTIES_SIZE : PropertiesDict = {
+    _PROPERTIES_SIZE = {
         "Width" : InherentProperty["BaseTextItem"](
             kind   = DataKind.SIZE,
             worthy = lambda self: self.width() >= 0.0,
@@ -212,7 +213,7 @@ class BaseTextItem(
             setter = lambda self, value: self.setHeight(value)
         )
     }
-    _PROPERTIES_PADDING : PropertiesDict = {
+    _PROPERTIES_PADDING = {
         "Pad Left" : InherentProperty["BaseTextItem"](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.padLeft() != 0.0,
@@ -359,7 +360,7 @@ class BaseTextItem(
             self._child.setParentItem(self)
             self.onGeometryChanged()
             # subclasses may not expose the block property:
-            if self.propertyExists("Block"):
+            if "Block" in self.properties:
                 self.propertySignalChanges("Block")
 
     def autoflip(self : Self) -> bool:

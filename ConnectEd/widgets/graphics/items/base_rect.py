@@ -7,14 +7,14 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check      import checked
-from ....core.defs       import PITCH
-from ....core.types      import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import RectHandleId, DataKind
+
+from ..properties import InherentProperty, PropertiesMixin
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.properties import ItemPropertiesMixin
 from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
@@ -31,7 +31,7 @@ class BaseRectangleMixin(
 
     # class attributes
     _ORIGIN = RectHandleId.MIDDLE_CENTER
-    _PROPERTIES_WIDTH_HEIGHT : PropertiesDict = {
+    _PROPERTIES_WIDTH_HEIGHT = {
         "Width" : InherentProperty["BaseRectangleMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.width(),
@@ -136,7 +136,7 @@ class BaseRectangleMixin(
             QGraphicsEllipseItem.setRect(self, rect)
         new = self.rect()
         self.onGeometryChanged()
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             names : list[str] = []
             if old.width() != new.width():
                 names.append("Width")

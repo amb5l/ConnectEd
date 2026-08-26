@@ -8,11 +8,11 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem, \
 
 from ...app import logger
 
-from ...core.properties import PropertiesMixin
-
 from ..window.tree_view import TreeView
 
 from .items.grip import GripItem
+
+from .properties import PropertiesMixin
 
 
 class QueryWindow(QWidget):
@@ -100,7 +100,7 @@ class QueryWindow(QWidget):
                     QStandardItem(str(pos.y()))
                 ])
             elif isinstance(item, PropertiesMixin):
-                for prop_name in item.propertyNames():
+                for prop_name in item.properties.keys():
                     prop_value = item.propertyValue(prop_name)
                     item_row.appendRow([
                         QStandardItem(),

@@ -10,13 +10,13 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.check      import checked
-from ....core.defs       import PITCH
-from ....core.types      import DataKind, RectHandleId
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import DataKind, RectHandleId
 
 from ...dialogs.arc import ArcDialog
 
+from ..properties   import InherentProperty
 from ..xml          import fromXmlProperties
 from ..painter_path import PainterPath
 
@@ -207,7 +207,7 @@ class PolylineItem(
     _SELECT_MODES    = 2
     _RESIZE_GRIP_CLS = PolylineResizeGripItem
 
-    _PROPERTIES_CLOSED : PropertiesDict = {
+    _PROPERTIES_CLOSED = {
         "Closed" : InherentProperty["PolylineItem"](
             kind   = DataKind.BOOL,
             getter = lambda self: self.closed(),

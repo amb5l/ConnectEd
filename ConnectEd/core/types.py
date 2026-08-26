@@ -163,12 +163,6 @@ class TapHandleId(HandleId):
     SUFFIX = "Suffix"
 
 
-class Display(Enum):
-    HIDE       = "<hide>"
-    NAME       = "Name"
-    NAME_VALUE = "Name : Value"
-
-
 _DATA_KIND_TYPES: dict[DataKind, tuple[type, ...]] = {}
 _DATA_KIND_EDITORS: dict[DataKind, type] = {}
 
@@ -195,7 +189,6 @@ def _populate_data_kind_maps() -> None:
         DataKind.SIZE              : (float, NoneType),
         DataKind.BOOL              : (bool,),
         DataKind.EN_DIS            : (EnDis,),
-        DataKind.DISPLAY           : (Display,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
         DataKind.LINE_HANDLE       : (LineHandleId,),
         DataKind.PORT_HANDLE       : (PortHandleId,),
@@ -223,7 +216,6 @@ def _populate_data_kind_maps() -> None:
         DataKind.SIZE              : SizeEditor,
         DataKind.BOOL              : BoolEditor,
         DataKind.EN_DIS            : EnumComboBox[EnDis],
-        DataKind.DISPLAY           : EnumComboBox[Display],
         DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
         DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],
         DataKind.PORT_HANDLE       : EnumComboBox[PortHandleId],

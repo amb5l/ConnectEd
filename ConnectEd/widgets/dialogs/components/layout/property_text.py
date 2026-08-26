@@ -5,12 +5,11 @@ from typing import Self, Any
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QTextEdit
 
-from .....core.check      import checked
-from .....core.types      import NoChange, NO_CHANGE, DataKind, HandleId
-from .....core.utils      import pascal2proper, str2val
-from .....core.properties import _CUSTOM_PROPERTY_KINDS
+from .....core.check import checked
+from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
+from .....core.utils import pascal2proper, str2val
 
-from ....graphics.items.mixin.properties import PropertiesMixin
+from ....graphics.properties import _CUSTOM_PROPERTY_KINDS, PropertiesMixin
 
 from ..edit import StrEditor
 
@@ -48,14 +47,15 @@ class PropertyTextLayout(QGridLayout):
         kind       = self._NOT_FOUND
         value      = self._NOT_FOUND
         if isinstance(owner_item, PropertiesMixin) \
-        and owner_item.propertyExists(name):
+        and name in owner_item.properties:
             owner_desc = owner_item.__class__.__name__
             owner_desc = owner_desc.removesuffix("Item")
             owner_desc = owner_desc.removesuffix("Scene")
             owner_desc = pascal2proper(owner_desc)
-            inherent   = owner_item.propertyInherent(name)
-            kind       = owner_item.propertyKind(name)
-            value      = owner_item.propertyValue(name)
+            property   = owner_item.properties[name]
+            inherent   = property.isInherent()
+            kind       = property.kind()
+            value      = property.value()
         row = 0
         # owner
         self._owner_label = QLabel("Owner:")

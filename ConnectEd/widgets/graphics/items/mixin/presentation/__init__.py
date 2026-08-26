@@ -6,9 +6,10 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from ......core.check      import checked
-from ......core.types      import DataKind
-from ......core.properties import PropertiesDict, InherentProperty
+from ......core.check import checked
+from ......core.types import DataKind
+
+from ....properties import InherentProperty
 
 from ....scenes import withScene
 
@@ -29,7 +30,7 @@ class ItemPresentationMixin(
     ItemPresentationTextMixin
 ):
     # class attributes
-    _PROPERTIES_LINE : PropertiesDict = {
+    _PROPERTIES_LINE = {
         "Line Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.lineColor() is not None,
@@ -52,7 +53,7 @@ class ItemPresentationMixin(
             default = lambda self: self.defaultLineStyle()
         )
     }
-    _PROPERTIES_FILL : PropertiesDict = {
+    _PROPERTIES_FILL = {
         "Fill Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.fillColor() is not None,
@@ -68,7 +69,7 @@ class ItemPresentationMixin(
             default = lambda self: self.defaultFillStyle()
         )
     }
-    _PROPERTIES_APPEARANCE : PropertiesDict = {
+    _PROPERTIES_APPEARANCE = {
         "Text Color" : InherentProperty["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.textColor() is not None,

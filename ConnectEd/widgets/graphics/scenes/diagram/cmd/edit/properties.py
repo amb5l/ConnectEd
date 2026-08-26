@@ -5,14 +5,13 @@ from PyQt6.QtGui  import QColor
 
 from .......app import logger
 
-from .......core.check      import checked
-from .......core.types      import NoChange, NO_CHANGE, AlignH, AlignV, \
+from .......core.check import checked
+from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                                    DataKind, HandleId, RectHandleId
-from .......core.properties import PropertiesMixin
+
+from .....properties import PropertiesMixin
 
 from .....items.property_text import PropertyTextItem
-
-from .....items.mixin.properties import ItemPropertiesMixin
 
 from .. import CmdBase
 
@@ -87,7 +86,7 @@ class CmdEditProperty(CmdBase):
         old_name, new_name = \
             name if isinstance(name, tuple) else (name, NO_CHANGE)
         # detect unknown property
-        if not object.propertyExists(old_name):
+        if old_name not in object.properties:
             logger().warning(f"Property '{old_name}' not found")
             self.setObsolete(True)
             return
@@ -144,7 +143,7 @@ class CmdDelProperty(CmdPropertyBase):
             return
         self._kind  = kind
         self._value = obj.propertyValue(name)
-        if isinstance(obj, ItemPropertiesMixin):
+        if isinstance(obj, PropertiesMixin):
             self._pt = obj.propertyTextItem(name)
         else:
             self._pt = None

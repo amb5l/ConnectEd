@@ -8,15 +8,13 @@ from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty
 
-from .role import FunctionalItem
+from ..properties import InherentProperty
 
-from .base_rect import BaseRectangleItem
-
-from .part import PartItemMixin
-
-from .mixin.edge_loc   import ItemLocParentMixin
+from .role          import FunctionalItem
+from .base_rect     import BaseRectangleItem
+from .part          import PartItemMixin
+from .mixin.edge_loc import ItemLocParentMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,7 +29,7 @@ class BlockItem(
 ):
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
-    _PROPERTIES_PATH : PropertiesDict = {
+    _PROPERTIES_PATH = {
         "Path" : InherentProperty["BlockItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.path(),

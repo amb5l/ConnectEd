@@ -12,7 +12,7 @@ from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
 from .....dialogs.properties.types import (
     PropertyChangeBase,
     PropertyChangeAdd, PropertyChangeModify, PropertyChangeDelete,
-    PropertyChangeTextAdd, PropertyChangeTextModify, PropertyChangeTextDelete
+    PropertyTextChangeAdd, PropertyTextChangeModify, PropertyTextChangeDelete
 )
 
 from ..cmd import cmdExec
@@ -198,11 +198,11 @@ class DiagramSceneApiPropertiesMixin:
                 host.addProperty(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeModify):
                 host.editProperty(object, **args, undoable=undoable)
-            elif isinstance(change, PropertyChangeTextDelete):
+            elif isinstance(change, PropertyTextChangeDelete):
                 host.delPropertyText(object, **args, undoable=undoable)
-            elif isinstance(change, PropertyChangeTextAdd):
+            elif isinstance(change, PropertyTextChangeAdd):
                 host.addPropertyText(object, **args, undoable=undoable)
-            elif isinstance(change, PropertyChangeTextModify):
+            elif isinstance(change, PropertyTextChangeModify):
                 host.editPropertyText(object, **args, undoable=undoable)
         if undoable:
             host.undo_stack.endMacro()

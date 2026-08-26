@@ -6,8 +6,8 @@ from logging import Logger
 from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from .core.check    import checked
-from .core.log      import logger as core_logger
+from .core.check import checked
+from .core.log   import logger as core_logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -10,11 +10,12 @@ from PyQt6.QtGui     import QUndoStack, QPainter, QPen, QBrush
 
 from .....app import settings
 
-from .....core.check      import checked
-from .....core.types      import DataKind
-from .....core.properties import InherentProperty
+from .....core.check import checked
+from .....core.types import DataKind
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
+
+from ...properties import InherentProperty, PropertiesMixin
 
 from .api        import DiagramSceneApiMixin
 from .grips      import DiagramSceneGripsMixin
@@ -22,7 +23,6 @@ from .guides     import DiagramSceneGuidesMixin
 from .xml        import DiagramSceneXmlMixin
 from .private    import DiagramScenePrivateMixin
 from .resources  import DiagramSceneResources
-from .properties import DiagramScenePropertiesMixin
 
 from .netlist import Netlist
 
@@ -38,8 +38,8 @@ class DiagramScene(
     DiagramSceneGuidesMixin,
     DiagramSceneXmlMixin,
     DiagramScenePrivateMixin,
-    DiagramScenePropertiesMixin,
     SymbolsMixin,
+    PropertiesMixin,
     QGraphicsScene
 ):
     # class attributes

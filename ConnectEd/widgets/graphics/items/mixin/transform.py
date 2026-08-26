@@ -7,13 +7,12 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from .....core.check      import checked
-from .....core.types      import DataKind, HandleId
-from .....core.properties import PropertiesDict, InherentProperty
+from .....core.check import checked
+from .....core.types import DataKind, HandleId
+
+from ...properties import InherentProperty, PropertiesMixin
 
 from ..protocols import OnSceneOrientationChangedProtocol
-
-from .properties import ItemPropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -26,7 +25,7 @@ class ItemTransformMixin:
 
     # class attributes
     _ORIGIN : HandleId  # undefined = no origin on this item
-    _PROPERTIES_POS : PropertiesDict = {
+    _PROPERTIES_POS = {
         "X" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.pos() != QPointF(0, 0),
@@ -40,7 +39,7 @@ class ItemTransformMixin:
             setter = lambda self, value: self.setY(value)
         )
     }
-    _PROPERTIES_ROTATE : PropertiesDict = {
+    _PROPERTIES_ROTATE = {
         "Rotation" : InherentProperty[QGraphicsItem](
             kind   = DataKind.FLOAT,
             worthy = lambda self: self.rotation() != 0,
@@ -48,7 +47,7 @@ class ItemTransformMixin:
             setter = lambda self, value: self.setRotation(value)
         )
     }
-    _PROPERTIES_MIRROR : PropertiesDict = {
+    _PROPERTIES_MIRROR = {
         "MirrorH" : InherentProperty["ItemTransformMixin"](
             kind   = DataKind.BOOL,
             worthy = lambda self: self.mirrorH(),
@@ -62,7 +61,7 @@ class ItemTransformMixin:
             setter = lambda self, value: self.setMirrorV(value)
         )
     }
-    _PROPERTIES_NO_ORIGIN : PropertiesDict = \
+    _PROPERTIES_NO_ORIGIN = \
         _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
     _PROPERTY_ORIGIN = InherentProperty["ItemTransformMixin"](
         kind   = None,
@@ -70,16 +69,16 @@ class ItemTransformMixin:
         getter = lambda self: self.origin(),
         setter = lambda self, value: self.setOrigin(value)
     )
-    _PROPERTIES_RECT_ORIGIN : PropertiesDict = {
+    _PROPERTIES_RECT_ORIGIN = {
         "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.RECT_HANDLE)
     }
-    _PROPERTIES_LINE_ORIGIN : PropertiesDict = {
+    _PROPERTIES_LINE_ORIGIN = {
         "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.LINE_HANDLE)
     }
-    _PROPERTIES_BLOCK_PIN_ORIGIN : PropertiesDict = {
+    _PROPERTIES_BLOCK_PIN_ORIGIN = {
         "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.BLOCK_PIN_HANDLE)
     }
-    _PROPERTIES_SYMBOL_PIN_ORIGIN : PropertiesDict = {
+    _PROPERTIES_SYMBOL_PIN_ORIGIN = {
         "Origin" : replace(_PROPERTY_ORIGIN, kind=DataKind.SYMBOL_PIN_HANDLE)
     }
 
@@ -97,7 +96,7 @@ class ItemTransformMixin:
 
     @checked
     def onPositionChanged(self : Self, _pos : QPointF | None = None) -> None:
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges(["X", "Y"])
         return
 
@@ -113,7 +112,7 @@ class ItemTransformMixin:
             if isinstance(child, OnSceneOrientationChangedProtocol):
                 child.onSceneOrientationChanged()
         # broadcast change
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges("Rotation")
 
     @checked
@@ -130,7 +129,7 @@ class ItemTransformMixin:
             if isinstance(child, OnSceneOrientationChangedProtocol):
                 child.onSceneOrientationChanged()
         # broadcast changes
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges(["MirrorH", "MirrorV"])
 
     @checked
@@ -276,7 +275,7 @@ class ItemTransformMixin:
                 parent_delta = \
                     parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
                 QGraphicsItem.moveBy(self, parent_delta.x(), parent_delta.y())
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.propertySignalChanges("Origin")
 
     def onOriginChanged(

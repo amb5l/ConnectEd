@@ -6,9 +6,10 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check      import checked
-from ....core.types      import HandleId, LineHandleId, DataKind
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.check import checked
+from ....core.types import HandleId, LineHandleId, DataKind
+
+from ..properties import InherentProperty
 
 from .role import DecorativeItem
 
@@ -30,7 +31,7 @@ class LineItem(
     QGraphicsLineItem
 ):
     # class attributes
-    _PROPERTIES_XY : PropertiesDict = {
+    _PROPERTIES_XY = {
         "X1" : InherentProperty["LineItem"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.x1(),

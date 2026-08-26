@@ -6,18 +6,18 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 
-from ....core.defs       import PITCH
-from ....core.types      import NetKind, DataKind, AlignH, AlignV, \
-                                RectHandleId, TapHandleId
-from ....core.check      import checked
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.defs  import PITCH
+from ....core.types import NetKind, DataKind, AlignH, AlignV, \
+                           RectHandleId, TapHandleId
+from ....core.check import checked
+
+from ..properties import PropertySpec, PropertyDisplaySpec
 
 from .role import FunctionalItem
 
-from .handle        import HandleItem
-from .grip          import MoveGripItem
-from .node          import TapMajorNodeItem, TapMinorNodeItem
-from .property_text import PropertyTextSpec
+from .handle import HandleItem
+from .grip   import MoveGripItem
+from .node   import TapMajorNodeItem, TapMinorNodeItem
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.paint      import ItemPaintMixin
@@ -38,8 +38,8 @@ class TapItem(
 ):
     # class attributes
     _LINE = QLineF(0, 0, PITCH, PITCH)
-    _PROPERTIES_SUFFIX : PropertiesDict = {
-        "Suffix" : InherentProperty["TapItem"](
+    _PROPERTIES_SUFFIX = {
+        "Suffix" : PropertySpec["TapItem"](
             kind   = DataKind.STR,
             worthy = lambda self: self.suffix() != "",
             getter = lambda self: self.suffix(),
@@ -47,8 +47,8 @@ class TapItem(
         )
     }
     _PROPERTIES =_PROPERTIES_SUFFIX | ItemTransformMixin._PROPERTIES_NO_ORIGIN
-    _PROPERTY_TEXTS = {
-        "Suffix" : PropertyTextSpec(
+    _PROPERTY_DISPLAY_SPECS = {
+        "Suffix" : PropertyDisplaySpec(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
         )
     }
@@ -132,6 +132,7 @@ class TapItem(
     @checked
     def setSuffix(self : Self, suffix : str) -> None:
         self._suffix = suffix
+        property = self.properties("Suffix")
         for pt in self.propertyTexts("Suffix"):
             if ":" in suffix:
                 # range

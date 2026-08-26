@@ -7,9 +7,10 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from .....core.check      import checked
-from .....core.xml        import toXmlStartElement, toXmlEndElement, fromXml
-from .....core.properties import PropertiesMixin
+from .....core.check import checked
+from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
+
+from ...properties import PropertiesMixin
 
 from ...xml import toXmlProperties, fromXmlProperties
 
@@ -97,7 +98,7 @@ class ItemXmlMixin:
         tag = xr.name()
         if tag == "PropertyText":
             pt = PropertyTextItem.fromXml(xr, self)
-            if (name := pt.name()) and self.propertyExists(name):
+            if (name := pt.name()) and name in self.properties:
                 self.propertySubscribe(name, pt.onTextChanged)
                 pt.onTextChanged()  # paint current value
             return True

@@ -6,11 +6,12 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
-from ....core.defs       import PITCH, WIDTH
-from ....core.check      import checked
-from ....core.types      import AlignH, AlignV, HandleId, RectHandleId, DataKind
-from ....core.utils      import val2str
-from ....core.properties import PropertiesDict, InherentProperty
+from ....core.defs  import PITCH, WIDTH
+from ....core.check import checked
+from ....core.types import AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ....core.utils import val2str
+
+from ..properties import InherentProperty
 
 from .role import FunctionalItem
 
@@ -30,7 +31,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
     _ORIGIN = RectHandleId.BOTTOM_LEFT
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
 
-    _PROPERTIES_NAME_VALUE : PropertiesDict = {
+    _PROPERTIES_NAME_VALUE = {
         "Name" : InherentProperty["NetLabelItem"](
             kind   = DataKind.STR,
             getter = lambda self: self.name(),
@@ -42,7 +43,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
             setter = lambda self, value: self.setValue(value)
         )
     }
-    _PROPERTIES_ALIGN : PropertiesDict = {
+    _PROPERTIES_ALIGN = {
         "AlignH" : InherentProperty["NetLabelItem"](
             kind   = DataKind.ALIGN_H,
             worthy = lambda self: self.alignH() != AlignH.LEFT,
@@ -57,7 +58,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
             setter  = lambda self, value: self.setAlignV(value)
         )
     }
-    _PROPERTIES_SIZE : PropertiesDict = {
+    _PROPERTIES_SIZE = {
         "Width" : InherentProperty["NetLabelItem"](
             kind   = DataKind.SIZE,
             worthy = lambda self: self.width() >= 0.0,

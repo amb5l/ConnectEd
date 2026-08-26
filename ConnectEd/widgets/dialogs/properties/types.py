@@ -1,8 +1,24 @@
 from typing      import Any, TypeAlias
+from enum        import StrEnum
 from dataclasses import dataclass
 
+from PyQt6.QtGui import QColor
+
 from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
-                           HandleId, RectHandleId, DataKind, QColor
+                           HandleId, RectHandleId, DataKind
+
+from ...graphics.items.property_text import PropertyTextItem
+
+
+class ExistingChange(StrEnum):
+    NO_CHANGE = "No Change"
+    MODIFY = "Modify"
+    DELETE = "Delete"
+
+
+class NewChange(StrEnum):
+    NONE = "None"
+    ADD  = "Add"
 
 
 @dataclass
@@ -28,7 +44,7 @@ class PropertyChangeDelete(PropertyChangeBase):
 
 
 @dataclass
-class PropertyChangeTextAdd(PropertyChangeBase):
+class PropertyTextChangeAdd(PropertyChangeBase):
     visible   : bool
     cleat     : HandleId
     x         : float
@@ -51,7 +67,8 @@ class PropertyChangeTextAdd(PropertyChangeBase):
 
 
 @dataclass
-class PropertyChangeTextModify(PropertyChangeBase):
+class PropertyTextChangeModify:
+    reference : PropertyTextItem
     visible   : bool         | NoChange = NO_CHANGE
     cleat     : HandleId     | NoChange = NO_CHANGE
     x         : float        | NoChange = NO_CHANGE
@@ -74,15 +91,15 @@ class PropertyChangeTextModify(PropertyChangeBase):
 
 
 @dataclass
-class PropertyChangeTextDelete(PropertyChangeBase):
-    pass
+class PropertyTextChangeDelete:
+    reference : PropertyTextItem
 
 
 PropertyChangeType : TypeAlias = (
     PropertyChangeDelete     |
     PropertyChangeAdd        |
     PropertyChangeModify     |
-    PropertyChangeTextDelete |
-    PropertyChangeTextAdd    |
-    PropertyChangeTextModify
+    PropertyTextChangeDelete |
+    PropertyTextChangeAdd    |
+    PropertyTextChangeModify
 )

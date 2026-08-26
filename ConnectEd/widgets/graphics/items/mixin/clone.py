@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.check import checked
 
+from ...properties import PropertiesMixin
+
 from ..protocols import FreshItemConstructor
 
 
@@ -17,17 +19,16 @@ class ItemCloneMixin:
         from ..property_text import PropertyTextItem
         from ..port_pin      import PortPinLineItem, PortPinPathItem
         from .handle         import ItemHandlesMixin
-        from .properties     import ItemPropertiesMixin
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
         constructor = cast(FreshItemConstructor[Self], self.__class__)
         clone_item = constructor(fresh=False), QGraphicsItem
         if not isinstance(clone_item, QGraphicsItem) \
-        or not isinstance(clone_item, ItemPropertiesMixin):
+        or not isinstance(clone_item, PropertiesMixin):
             raise TypeError("Bad clone")
         # clone properties
-        if isinstance(self, ItemPropertiesMixin):
-            for name in self.propertyNames():
+        if isinstance(self, PropertiesMixin):
+            for name in self.properties.keys():
                 if self.propertyInherent(name):
                     value = self.propertyValue(name)
                     if value is not None:

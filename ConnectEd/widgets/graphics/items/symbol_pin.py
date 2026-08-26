@@ -10,12 +10,13 @@ from ....core.defs  import PITCH
 from ....core.types import RectHandleId, SymbolPinHandleId, HandleId, DataKind
 from ....core.check import checked
 
-from .handle        import HandleItem
-from .grip          import GripItem, MoveGripItem
-from .port_pin      import PortPinArrowItem, PortPinPathItem
-from .property_text import PropertyTextSpec
+from ..properties import PropertyDisplaySpec
 
-from .mixin.edge_loc   import ItemEdgeLocMixin
+from .handle   import HandleItem
+from .grip     import GripItem, MoveGripItem
+from .port_pin import PortPinArrowItem, PortPinPathItem
+
+from .mixin.edge_loc import ItemEdgeLocMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,8 +34,8 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     _ARROW_CLS  = SymbolPinArrowItem
     _ARROW_POS  = 0
     _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
-    _PROPERTY_TEXTS = {
-        "Name" : PropertyTextSpec(
+    _PROPERTY_DISPLAY_SPECS = {
+        "Name" : PropertyDisplaySpec(
             cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )
     }

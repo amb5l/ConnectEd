@@ -6,9 +6,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ......app import logger
 
-from ......core.check      import checked
-from ......core.types      import NoChange
-from ......core.properties import PropertiesMixin
+from ......core.check import checked
+from ......core.types import NoChange
 
 from .....dialogs.items.text          import TextItemDialog
 from .....dialogs.items.property_text import PropertyTextItemDialog
@@ -16,6 +15,7 @@ from .....dialogs.items.port_pin      import PortPinItemDialog
 from .....dialogs.appearance          import AppearanceDialog
 from .....dialogs.properties          import PropertiesDialog
 
+from ....properties import PropertiesMixin
 
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem

@@ -11,20 +11,20 @@ class Quill:
     @checked
     def __init__(
         self,
-        color     : QColor | Quill,
-        font      : str   | None = None,
-        size      : float | None = None,
-        bold      : bool  | None = None,
-        italic    : bool  | None = None,
-        underline : bool  | None = None,
+        a0        : Quill | QColor | None = None,
+        font      : str            | None = None,
+        size      : float          | None = None,
+        bold      : bool           | None = None,
+        italic    : bool           | None = None,
+        underline : bool           | None = None,
     ) -> None:
-        if isinstance(color, Quill):
+        if isinstance(a0, Quill):
             if any(v is not None for v in (font, size, bold, italic, underline)):
                 raise TypeError("Cannot mix a Quill copy with component arguments")
-            self._color = QColor(color._color)
-            self._qfont  = QFont(color._qfont)
+            self._color = QColor(a0._color)
+            self._qfont  = QFont(a0._qfont)
             return
-        self._color = QColor(color)
+        self._color = QColor(a0)
         self._qfont  = QFont()
         self._qfont.setFamily(font if font is not None else QFont().family())
         self._qfont.setPointSizeF(size if size is not None else QFont().pointSizeF())

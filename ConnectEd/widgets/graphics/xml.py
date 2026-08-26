@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from PyQt6.QtCore import QXmlStreamReader, QXmlStreamWriter
 
-from ...core.check      import checked
-from ...core.utils      import space2underscore, underscore2space, val2str
-from ...core.properties import PropertiesMixin
+from ...core.check import checked
+from ...core.utils import space2underscore, underscore2space, val2str
+
+from .properties import PropertiesMixin
 
 
 def toXmlProperties(instance : PropertiesMixin, xw : QXmlStreamWriter) -> None:
-    for name in instance.propertyNames():
+    for name in instance.properties.keys():
         if not instance.propertyWorthy(name):
             continue
         value = instance.propertyValue(name)

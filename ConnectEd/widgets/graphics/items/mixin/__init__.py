@@ -19,6 +19,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
 
     @checked
     def initItem(self : Self, fresh : bool = True) -> None:
+        from ...properties  import PropertiesMixin
         from .settings      import ItemSettingsMixin
         from .presentation  import ItemPresentationMixin
         from .select        import ItemSelectMixin
@@ -28,7 +29,6 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         from .change        import ItemChangeMixin
         from .subscribe     import ItemSubscribeMixin
         from .shape         import ItemShapeMixin
-        from .properties    import ItemPropertiesMixin
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
         self.setZValue(self.Z)
@@ -46,7 +46,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             self.initSelect()
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.initProperties(fresh)
         if isinstance(self, ItemEdgeLocMixin):
             self.initEdgeLoc()
@@ -58,8 +58,8 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             self.initSubscribe()
         if isinstance(self, ItemShapeMixin):
             self.initShape()
-        if isinstance(self, ItemPropertiesMixin):
-            self.setPropertiesLive(fresh)
+        if isinstance(self, PropertiesMixin):
+            self.initProperties(fresh)
 
     def __hash__(self : Self):
         return hash(self._uuid)

@@ -4,16 +4,17 @@ from typing      import Self, Any, cast
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
-from ....core.check      import checked
-from ....core.types      import NoChange, AlignH, AlignV, \
+from ....core.check import checked
+from ....core.types import NoChange, AlignH, AlignV, \
                                 HandleId, RectHandleId, DataKind
-from ....core.utils      import val2str
-from ....core.properties import InherentProperty, PropertiesMixin
+from ....core.utils import val2str
+
+from ..properties import Property, PropertySpec, PropertiesMixin
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -45,18 +46,18 @@ class PropertyTextItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {
-            "Name" : InherentProperty["PropertyTextItem"](
+            "Name" : PropertySpec["PropertyTextItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
-            "Visible" : InherentProperty["PropertyTextItem"](
+            "Visible" : PropertySpec["PropertyTextItem"](
                 kind   = DataKind.BOOL,
                 worthy = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             ),
-            "Cleat" : InherentProperty["PropertyTextItem"](
+            "Cleat" : PropertySpec["PropertyTextItem"](
                 kind   = lambda self: self.cleatKind(),
                 getter = lambda self: self.cleat(),
                 setter = lambda self, value: self.setCleat(value)
@@ -71,9 +72,9 @@ class PropertyTextItem(TextItem):
         TextItem._PROPERTIES_APPEARANCE
 
     # instance attributes
-    _name   : str
-    _cleat  : HandleId | None
-    _tether : PropertyTextTetherItem | None
+    _property : Property
+    _cleat    : HandleId | None
+    _tether   : PropertyTextTetherItem | None
 
     def settingsName(self : Self) -> str:
         if isinstance(item := self.item(), ItemNamesMixin):
@@ -86,32 +87,31 @@ class PropertyTextItem(TextItem):
     @checked
     def __init__(
         self       : Self,
-        name       : str                  = "",
-        cleat      : HandleId      | None = None,
-        pos        : QPointF       | None = None,
-        rotation   : float                = 0.0,
-        mirror_h   : bool                 = False,
-        mirror_v   : bool                 = False,
-        autoflip   : bool                 = True,
-        origin     : RectHandleId         = RectHandleId.TOP_LEFT,
-        align_h    : AlignH               = AlignH.LEFT,
-        align_v    : AlignV               = AlignV.TOP,
-        width      : float                = -1.0,
-        height     : float                = -1.0,
-        pad_left   : float                = 0.0,
-        pad_right  : float                = 0.0,
-        pad_top    : float                = 0.0,
-        pad_bottom : float                = 0.0,
-        color      : QColor        | None = None,
-        font       : str           | None = None,
-        size       : float         | None = None,
-        bold       : bool          | None = None,
-        italic     : bool          | None = None,
-        underline  : bool          | None = None,
-        fresh      : bool                 = True,
-        parent     : QGraphicsItem | None = None
+        property   : Property,
+        visible    : bool            = True,
+        cleat      : HandleId | None = None,  # None for scene owner
+        pos        : QPointF  | None = None,
+        rotation   : float           = 0.0,
+        mirror_h   : bool            = False,
+        mirror_v   : bool            = False,
+        autoflip   : bool            = True,
+        origin     : RectHandleId    = RectHandleId.TOP_LEFT,
+        align_h    : AlignH          = AlignH.LEFT,
+        align_v    : AlignV          = AlignV.TOP,
+        width      : float           = -1.0,
+        height     : float           = -1.0,
+        pad_left   : float           = 0.0,
+        pad_right  : float           = 0.0,
+        pad_top    : float           = 0.0,
+        pad_bottom : float           = 0.0,
+        color      : QColor   | None = None,
+        font       : str      | None = None,
+        size       : float    | None = None,
+        bold       : bool     | None = None,
+        italic     : bool     | None = None,
+        underline  : bool     | None = None,
+        fresh      : bool            = True
     ) -> None:
-        self._name = name
         super().__init__(
             pos        = pos,
             rotation   = rotation,
@@ -133,16 +133,13 @@ class PropertyTextItem(TextItem):
             bold       = bold,
             italic     = italic,
             underline  = underline,
-            fresh      = fresh,
-            parent     = parent
+            fresh      = fresh
         )
+        self._property = property
+        self.setVisible(visible)
+        self.setCleat(cleat)
         self._tether = PropertyTextTetherItem(self)
-        self.setCleat(cleat, parent)
         self.onTextChanged()
-
-    def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
-        if parent is not None:
-            self.onTextChanged()
 
     def onPositionChanged(
         self : Self,
@@ -166,7 +163,7 @@ class PropertyTextItem(TextItem):
 
     def onTextChanged(self : Self) -> None:
         if isinstance(name := self.name(), str):
-            if self.propertyExists(name):
+            if name in self.properties:
                 kind = self.propertyKind(name)
                 if kind in (DataKind.STR, DataKind.TEXT):
                     super().setBlock(kind == DataKind.TEXT)
@@ -178,7 +175,9 @@ class PropertyTextItem(TextItem):
         super().setText(text)
 
     def cleatKind(self : Self) -> DataKind:
-        item = cast(ItemHandlesMixin, self.item())
+        item = self.item()
+        if not isinstance(item, ItemHandlesMixin):
+            raise ValueError(f"Item {item} is not a handles item")
         return item.handleIdKind()
 
     def cleat(self : Self) -> HandleId | None:
@@ -187,28 +186,27 @@ class PropertyTextItem(TextItem):
     @checked
     def setVisible(self : Self, visible : bool) -> None:
         super().setVisible(visible)
-        self.propertySignalChanges("Visible")
+        self._property.notify()
 
     @checked
-    def setCleat(
-        self   : Self,
-        id     : HandleId | None,
-        parent : QGraphicsItem | None = None
-    ) -> None:
+    def setCleat(self : Self, id : HandleId | None) -> None:
+        owner = self._property.owner()
+        if isinstance(owner, QGraphicsItem):
+            if not isinstance(owner, ItemHandlesMixin):
+                raise ValueError(f"Owner {owner} has no handles")
+            handles = owner.handles()
+            if not handles:
+                raise ValueError(f"Owner {owner} has no handles")
+            if id is None:
+                id = next(iter(handles))
+            self.setParentItem(handles[id])
+        elif isinstance(owner, QGraphicsScene):
+            if id is not None:
+                raise ValueError("Cleat cannot be set for scene owner")
+        else:
+            raise ValueError(f"Owner {owner} is not an item or scene")
         self._cleat = id
-        ok = False
-        if id is not None:
-            if (item := parent or self.item()) is not None:
-                for child in item.childItems():
-                    if isinstance(child, HandleItem) and child.id() == id:
-                        self.setParentItem(child)
-                        ok = True
-                        break
-                if not ok:
-                    logger().warning("Cleat not found in parent item")
-        self.propertySignalChanges("Cleat")
-        if ok:
-            self.onGeometryChanged()
+        self._property.notify()
 
     @checked
     def setOrigin(self : Self, id : HandleId) -> None:

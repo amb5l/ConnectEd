@@ -17,7 +17,7 @@ from .private import _drawingSceneFromViewRef
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.window import Window
-    from ...widgets.graphics.items.mixin.properties import PropertiesMixin
+    from ...widgets.graphics.properties import PropertiesMixin
 
 
 _TOOLS : list[ToolEntry] = []
@@ -145,10 +145,10 @@ def get_items(
     if err is not None:
         return err
 
-    from ...widgets.graphics.items.node             import NodeItem
-    from ...widgets.graphics.items.segment          import SegmentItem
-    from ...widgets.graphics.items.mixin            import ItemMixin
-    from ...widgets.graphics.items.mixin.properties import PropertiesMixin
+    from ...widgets.graphics.items.node    import NodeItem
+    from ...widgets.graphics.items.segment import SegmentItem
+    from ...widgets.graphics.items.mixin   import ItemMixin
+    from ...widgets.graphics.properties    import PropertiesMixin
     items_out : list[dict[str, Any]] = []
     for item in scene.items():
         if isinstance(item, NodeItem | SegmentItem):
@@ -198,7 +198,7 @@ def _itemPropertyValues(
 ) -> dict[str, Any]:
     values : dict[str, Any] = {}
     for name in properties_filter:
-        if not item.propertyExists(name):
+        if name not in item.properties:
             continue
         values[name] = _jsonPropertyValue(item.propertyValue(name))
     return values
