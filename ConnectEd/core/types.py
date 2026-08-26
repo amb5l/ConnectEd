@@ -237,6 +237,7 @@ def _populate_data_kind_maps() -> None:
 
 
 class DataKind(Enum):
+    DUMMY             = "Dummy"
     KIND              = "Kind"
     STR               = "String"
     TEXT              = "Text"

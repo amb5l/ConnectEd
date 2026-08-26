@@ -8,7 +8,7 @@ from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import HandleId, RectHandleId, BlockPinHandleId, DataKind
 
-from ..properties import PropertyDisplaySpec
+from ..properties import PropertyDisplayState
 
 from .grip          import GripItem, ResizeGripItem
 from .port_pin      import PortPinArrowItem, PortPinLineItem
@@ -33,7 +33,7 @@ class BlockPinItem(ItemEdgeLocMixin, PortPinLineItem):
     _ARROW_POS  = 0
     _PROPERTIES = PortPinLineItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
     _PROPERTY_DISPLAY_SPECS = {
-        "Name" : PropertyDisplaySpec(
+        "Name" : PropertyDisplayState(
             cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )
     }

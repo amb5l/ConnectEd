@@ -138,7 +138,7 @@ class DiagramScene(
     @checked
     def setName(self : Self, name : str, notify : bool = True) -> None:
         self._name = name
-        self.propertySignalChanges("Name")
+        self.properties[name].notify()
         if notify and self._doc is not None and self.propertiesLive():
             self._doc.onChanged()
 
@@ -198,7 +198,7 @@ class DiagramScene(
     @checked
     def setSheetName(self : Self, name : str) -> None:
         self._sheet_name = name
-        self.propertySignalChanges("Sheet Name")
+        self.properties["Sheet Name"].notify()
 
     @checked
     def getSheetWidth(self : Self) -> float:
@@ -209,7 +209,7 @@ class DiagramScene(
         self._sheet_rect.setWidth(width)
         self.updateSceneRect()
         self.update()
-        self.propertySignalChanges("Sheet Width")
+        self.properties["Sheet Width"].notify()
 
     @checked
     def getSheetHeight(self : Self) -> float:
@@ -220,7 +220,7 @@ class DiagramScene(
         self._sheet_rect.setHeight(height)
         self.updateSceneRect()
         self.update()
-        self.propertySignalChanges("Sheet Height")
+        self.properties["Sheet Height"].notify()
 
     @checked
     def getMargin(self : Self) -> float:
@@ -230,7 +230,7 @@ class DiagramScene(
     def setMargin(self : Self, margin : float) -> None:
         self._sheet_margin = margin
         self.update()
-        self.propertySignalChanges("Margin")
+        self.properties["Margin"].notify()
 
     @checked
     def getBorder(self : Self) -> float:
@@ -240,4 +240,4 @@ class DiagramScene(
     def setBorder(self : Self, border : float) -> None:
         self._sheet_border = border
         self.update()
-        self.propertySignalChanges("Border")
+        self.properties["Border"].notify()

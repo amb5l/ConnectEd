@@ -333,7 +333,7 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
                 text_name = old_name if isinstance(new_name, NoChange) \
                     else new_name
                 self.scene.editProperty(
-                    object   = owner,
+                    owner   = owner,
                     name     = prop_name,
                     kind     = dialog.getKind(),
                     value    = dialog.getValue(),

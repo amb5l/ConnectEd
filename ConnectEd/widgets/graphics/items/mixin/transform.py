@@ -64,7 +64,7 @@ class ItemTransformMixin:
     _PROPERTIES_NO_ORIGIN = \
         _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
     _PROPERTY_ORIGIN = PropertySpec["ItemTransformMixin"](
-        kind   = None,
+        kind   = DataKind.DUMMY,
         worthy = lambda self: self.hasOrigin(),
         getter = lambda self: self.origin(),
         setter = lambda self, value: self.setOrigin(value)

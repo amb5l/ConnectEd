@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from typing      import Self, Any, cast
+from typing      import Self, Any
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
-from ....app import settings, logger
+from ....app import settings
 
 from ....core.check import checked
 from ....core.types import NoChange, AlignH, AlignV, \
                                 HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
-from ..properties import Property, PropertySpec, PropertiesMixin
+from ..properties import (
+    Property, PropertiesMixin, PropertySpec,
+    PropertyDisplayState, PropertyDisplayState, PropertyDisplayChange
+)
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -269,6 +272,88 @@ class PropertyTextItem(TextItem):
         if isinstance(value, NoChange):
             return
         self.properties[name].setValue(value)
+
+    def state(self : Self) -> PropertyDisplayState:
+        origin = self.origin()
+        if not isinstance(origin, RectHandleId):
+            raise ValueError(f"Origin {origin} is not a rect handle ID")
+        return PropertyDisplayState(
+            visible    = self.isVisible(),
+            cleat      = self.cleat(),
+            x          = self.pos().x(),
+            y          = self.pos().y(),
+            rotation   = self.rotation(),
+            mirror_h   = self.mirrorH(),
+            mirror_v   = self.mirrorV(),
+            autoflip   = self.autoflip(),
+            origin     = origin,
+            align_h    = self.alignH(),
+            align_v    = self.alignV(),
+            width      = self.width(),
+            height     = self.height(),
+            pad_left   = self.padLeft(),
+            pad_right  = self.padRight(),
+            pad_top    = self.padTop(),
+            pad_bottom = self.padBottom(),
+            color      = self.textColor(),
+            font       = self.textFont(),
+            size       = self.textSize(),
+            bold       = self.textBold(),
+            italic     = self.textItalic(),
+            underline  = self.textUnderline()
+        )
+
+    @checked
+    def apply(
+        self    : Self,
+        payload : PropertyDisplayState | PropertyDisplayChange
+    ) -> None:
+        if not isinstance(payload.visible, NoChange):
+            self.setVisible(payload.visible)
+        if not isinstance(payload.cleat, NoChange):
+            self.setCleat(payload.cleat)
+        if not isinstance(payload.x, NoChange):
+            self.setX(payload.x)
+        if not isinstance(payload.y, NoChange):
+            self.setY(payload.y)
+        if not isinstance(payload.rotation, NoChange):
+            self.setRotation(payload.rotation)
+        if not isinstance(payload.mirror_h, NoChange):
+            self.setMirrorH(payload.mirror_h)
+        if not isinstance(payload.mirror_v, NoChange):
+            self.setMirrorV(payload.mirror_v)
+        if not isinstance(payload.autoflip, NoChange):
+            self.setAutoflip(payload.autoflip)
+        if not isinstance(payload.origin, NoChange):
+            self.setOrigin(payload.origin)
+        if not isinstance(payload.align_h, NoChange):
+            self.setAlignH(payload.align_h)
+        if not isinstance(payload.align_v, NoChange):
+            self.setAlignV(payload.align_v)
+        if not isinstance(payload.width, NoChange):
+            self.setWidth(payload.width)
+        if not isinstance(payload.height, NoChange):
+            self.setHeight(payload.height)
+        if not isinstance(payload.pad_left, NoChange):
+            self.setPadLeft(payload.pad_left)
+        if not isinstance(payload.pad_right, NoChange):
+            self.setPadRight(payload.pad_right)
+        if not isinstance(payload.pad_top, NoChange):
+            self.setPadTop(payload.pad_top)
+        if not isinstance(payload.pad_bottom, NoChange):
+            self.setPadBottom(payload.pad_bottom)
+        if not isinstance(payload.color, NoChange):
+            self.setTextColor(payload.color)
+        if not isinstance(payload.font, NoChange):
+            self.setTextFont(payload.font)
+        if not isinstance(payload.size, NoChange):
+            self.setTextSize(payload.size)
+        if not isinstance(payload.bold, NoChange):
+            self.setTextBold(payload.bold)
+        if not isinstance(payload.italic, NoChange):
+            self.setTextItalic(payload.italic)
+        if not isinstance(payload.underline, NoChange):
+            self.setTextUnderline(payload.underline)
 
     @checked
     def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]

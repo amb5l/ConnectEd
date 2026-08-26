@@ -12,7 +12,7 @@ from ....app import logger
 from ....core.check import checked
 from ....core.types import Direction, DataKind, RectHandleId, HandleId
 
-from ..properties import PropertySpec, PropertyDisplaySpec
+from ..properties import PropertySpec, PropertyDisplayState
 
 from ..painter_path import PainterPath
 
@@ -54,7 +54,7 @@ class GateItem(
         )
     }
     _PROPERTY_DISPLAY_SPECS = {
-        "Label" : PropertyDisplaySpec(
+        "Label" : PropertyDisplayState(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         )
     }

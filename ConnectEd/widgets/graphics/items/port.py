@@ -10,7 +10,7 @@ from ....core.defs  import PITCH
 from ....core.types import HandleId, RectHandleId, PortHandleId, DataKind
 from ....core.check import checked
 
-from ..properties import PropertyDisplaySpec
+from ..properties import PropertyDisplayState
 
 from .grip     import GripItem, MoveGripItem, ResizeGripItem
 from .port_pin import PortPinArrowItem, PortPinLineItem
@@ -35,7 +35,7 @@ class PortItem(ItemTransformMixin, PortPinLineItem):
         PortPinLineItem._PROPERTIES | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_DISPLAY_SPECS = {
-        "Name" : PropertyDisplaySpec(
+        "Name" : PropertyDisplayState(
             cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )
     }

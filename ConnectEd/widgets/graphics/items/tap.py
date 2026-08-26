@@ -11,7 +11,7 @@ from ....core.types import NetKind, DataKind, AlignH, AlignV, \
                            RectHandleId, TapHandleId
 from ....core.check import checked
 
-from ..properties import PropertySpec, PropertyDisplaySpec
+from ..properties import PropertySpec, PropertyDisplayState
 
 from .role import FunctionalItem
 
@@ -48,7 +48,7 @@ class TapItem(
     }
     _PROPERTIES =_PROPERTIES_SUFFIX | ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_DISPLAY_SPECS = {
-        "Suffix" : PropertyDisplaySpec(
+        "Suffix" : PropertyDisplayState(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
         )
     }

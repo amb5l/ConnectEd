@@ -352,7 +352,7 @@ class DiagramSceneXmlMixin:
                 lambda xr, cls=item_cls: (fromXmlItem(xr, cls), None)[1]
 
         fromXml(xr, xref, ptag=top_element_name)
-        host.setLive(True)
+        host.setPropertiesLive(True)
 
     @checked
     def paste(self : Self) -> tuple[list[QGraphicsItem], QPointF | None]:

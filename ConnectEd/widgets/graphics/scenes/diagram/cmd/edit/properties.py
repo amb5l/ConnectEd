@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing      import Self, Any
 from dataclasses import dataclass
 
@@ -9,7 +11,8 @@ from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                                    DataKind, HandleId, RectHandleId
 
-from .....properties import Property, PropertiesMixin
+from .....properties import PropertiesMixin, \
+                            PropertyDisplayState, PropertyDisplayChange
 
 from .....items.property_text import PropertyTextItem
 
@@ -44,7 +47,7 @@ class CmdAddProperty(CmdPropertyBase):
         kind  : DataKind,
         value : Any
     ) -> None:
-        super().__init__(owner, name, kind, value)
+        super().__init__(owner)
         if name in owner.properties:
             logger().error(f"Property '{name}' already exists")
             self.setObsolete(True)
@@ -63,6 +66,9 @@ class CmdAddProperty(CmdPropertyBase):
 
 
 class CmdEditProperty(CmdPropertyBase):
+    _old_name  : str
+    _old_kind  : DataKind
+    _old_value : Any
     _new_name  : str      | NoChange
     _new_kind  : DataKind | NoChange
     _new_value : Any      | NoChange
@@ -84,16 +90,16 @@ class CmdEditProperty(CmdPropertyBase):
             return
         old_kind = owner.properties[old_name].kind()
         old_value = owner.properties[old_name].value(raw = True)
-        self._name  = old_name
-        self._kind  = old_kind
-        self._value = old_value
+        self._old_name  = old_name
+        self._old_kind  = old_kind
+        self._old_value = old_value
         self._new_name  = NO_CHANGE if old_name == new_name else new_name
         self._new_kind  = NO_CHANGE if old_kind == old_kind else old_kind
         self._new_value = NO_CHANGE if old_value == old_value else old_value
 
     @checked
     def redo(self : Self) -> None:
-        name = self._name
+        name = self._old_name
         if not isinstance(self._new_name, NoChange):
             self._owner.propertyRename(name, self._new_name)
             name = self._new_name
@@ -105,19 +111,19 @@ class CmdEditProperty(CmdPropertyBase):
     @checked
     def undo(self : Self) -> None:
         if not isinstance(self._new_name, NoChange):
-            self._owner.propertyRename(self._new_name, self._name)
-        name = self._name
+            self._owner.propertyRename(self._new_name, self._old_name)
+        name = self._old_name
         if not isinstance(self._new_kind, NoChange):
-            self._owner.properties[name].setKind(self._kind)
+            self._owner.properties[name].setKind(self._old_kind)
         if not isinstance(self._new_value, NoChange):
-            self._owner.properties[name].setValue(self._value)
+            self._owner.properties[name].setValue(self._old_value)
 
 
 class CmdDelProperty(CmdPropertyBase):
-    _name         : str
-    _kind         : DataKind
-    _value        : Any
-    _display_item : PropertyTextItem | None
+    _name        : str
+    _kind        : DataKind
+    _value       : Any
+    _cmd_display : CmdSetPropertyDisplay | None
 
     @checked
     def __init__(
@@ -125,299 +131,111 @@ class CmdDelProperty(CmdPropertyBase):
         owner : PropertiesMixin,
         name  : str
     ) -> None:
-        self._owner = owner
-        self._name  = name
-        self._kind  = owner.properties[name].kind()
-        self._value = owner.properties[name].value(raw = True)
-        self._property = owner.properties[name]
-        if (kind := owner.properties[name].kind()) is None:
-            logger().error(f"Property '{name}' has no kind")
+        super().__init__(owner)
+        if name not in owner.properties:
+            logger().error(f"Property '{name}' not found")
             self.setObsolete(True)
             return
-        self._kind  = kind
-        self._value = owner.properties[name].value()
-        if isinstance(owner, PropertiesMixin):
-            self._display_item = owner.properties[name].text()
-        else:
-            self._display_item = None
+        self._name  = name
+        property = owner.properties[name]
+        if property.isInherent():
+            logger().error(f"Property '{name}' is inherent")
+            self.setObsolete(True)
+            return
+        self._kind  = property.kind()
+        self._value = property.value(raw = True)
+        self._cmd_display = None
+        if property.displayItem() is not None:
+            self._cmd_display = CmdSetPropertyDisplay(owner, name, False)
 
     @checked
     def redo(self : Self) -> None:
+        if self._cmd_display is not None:
+            self._cmd_display.redo()
         self._owner.propertyDelete(self._name)
 
     @checked
     def undo(self : Self) -> None:
         self._owner.propertyAdd(self._name, self._kind, self._value)
-        if self._display_item:
-            self._owner.propertyAddText(self._name, self._display_item)
+        if self._cmd_display is not None:
+            self._cmd_display.undo()
 
 
 class CmdSetPropertyDisplay(CmdPropertyBase):
-    """Command for property display settings."""
+    """Command for setting property display on or off."""
 
+    _name   : str
+    _state  : PropertyDisplayState | None
+    _enable : bool
 
-class CmdPropertyTextItemBase(CmdPropertyBase):
-    @dataclass
-    class PropertyTextItemState:
-        visible    : bool
-        cleat      : HandleId
-        x          : float
-        y          : float
-        rotation   : float
-        mirror_h   : bool
-        mirror_v   : bool
-        autoflip   : bool
-        origin     : RectHandleId | None
-        align_h    : AlignH
-        align_v    : AlignV
-        width      : float
-        height     : float
-        pad_left   : float
-        pad_right  : float
-        pad_top    : float
-        pad_bottom : float
-        color      : QColor | None
-        font       : str    | None
-        size       : float  | None
-        bold       : bool   | None
-        italic     : bool   | None
-        underline  : bool   | None
-
-    @dataclass
-    class PropertyTextItemChange:
-        visible    : bool                | NoChange = NO_CHANGE
-        cleat      : HandleId            | NoChange = NO_CHANGE
-        x          : float               | NoChange = NO_CHANGE
-        y          : float               | NoChange = NO_CHANGE
-        rotation   : float               | NoChange = NO_CHANGE
-        mirror_h   : bool                | NoChange = NO_CHANGE
-        mirror_v   : bool                | NoChange = NO_CHANGE
-        autoflip   : bool                | NoChange = NO_CHANGE
-        origin     : RectHandleId | None | NoChange = NO_CHANGE
-        align_h    : AlignH              | NoChange = NO_CHANGE
-        align_v    : AlignV              | NoChange = NO_CHANGE
-        width      : float               | NoChange = NO_CHANGE
-        height     : float               | NoChange = NO_CHANGE
-        pad_left   : float               | NoChange = NO_CHANGE
-        pad_right  : float               | NoChange = NO_CHANGE
-        pad_top    : float               | NoChange = NO_CHANGE
-        pad_bottom : float               | NoChange = NO_CHANGE
-        color      : QColor       | None | NoChange = NO_CHANGE
-        font       : str          | None | NoChange = NO_CHANGE
-        size       : float        | None | NoChange = NO_CHANGE
-        bold       : bool         | None | NoChange = NO_CHANGE
-        italic     : bool         | None | NoChange = NO_CHANGE
-        underline  : bool         | None | NoChange = NO_CHANGE
-
-
-class CmdAddPropertyText(CmdPropertyTextItemBase):
-    _state : CmdPropertyTextItemBase.PropertyTextItemState
-
-    @checked
-    def __init__(
-        self       : Self,
-        object     : PropertiesMixin,
-        name       : str,
-        visible    : bool,
-        cleat      : HandleId,
-        x          : float,
-        y          : float,
-        rotation   : float,
-        mirror_h   : bool,
-        mirror_v   : bool,
-        autoflip   : bool,
-        origin     : RectHandleId,
-        align_h    : AlignH,
-        align_v    : AlignV,
-        width      : float,
-        height     : float,
-        pad_left   : float,
-        pad_right  : float,
-        pad_top    : float,
-        pad_bottom : float,
-        color      : QColor,
-        font       : str,
-        size       : float,
-        bold       : bool,
-        italic     : bool,
-        underline  : bool
-    ) -> None:
-        super().__init__(object, name)
-        self._state = self.PropertyTextItemState(
-            visible    = visible,
-            cleat      = cleat,
-            x          = x,
-            y          = y,
-            rotation   = rotation,
-            mirror_h   = mirror_h,
-            mirror_v   = mirror_v,
-            autoflip   = autoflip,
-            origin     = origin,
-            align_h    = align_h,
-            align_v    = align_v,
-            width      = width,
-            height     = height,
-            pad_left   = pad_left,
-            pad_right  = pad_right,
-            pad_top    = pad_top,
-            pad_bottom = pad_bottom,
-            color      = color,
-            font      = font,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline,
-        )
-
-    @checked
-    def redo(self : Self) -> None:
-        self._owner.properties.addText(self._name, **vars(self._state))
-
-    @checked
-    def undo(self : Self) -> None:
-        self._owner.properties.delText(self._name)
-
-
-class CmdEditPropertyText(CmdPropertyTextItemBase):
-    _before : CmdPropertyTextItemBase.PropertyTextItemState  | None
-    _after  : CmdPropertyTextItemBase.PropertyTextItemChange | None
-
-    @checked
-    def __init__(
-        self       : Self,
-        object     : PropertiesMixin,
-        name       : str,
-        visible    : bool         | NoChange = NO_CHANGE,
-        cleat      : HandleId     | NoChange = NO_CHANGE,
-        x          : float        | NoChange = NO_CHANGE,
-        y          : float        | NoChange = NO_CHANGE,
-        rotation   : float        | NoChange = NO_CHANGE,
-        mirror_h   : bool         | NoChange = NO_CHANGE,
-        mirror_v   : bool         | NoChange = NO_CHANGE,
-        autoflip   : bool         | NoChange = NO_CHANGE,
-        origin     : RectHandleId | NoChange = NO_CHANGE,
-        align_h    : AlignH       | NoChange = NO_CHANGE,
-        align_v    : AlignV       | NoChange = NO_CHANGE,
-        width      : float        | NoChange = NO_CHANGE,
-        height     : float        | NoChange = NO_CHANGE,
-        pad_left   : float        | NoChange = NO_CHANGE,
-        pad_right  : float        | NoChange = NO_CHANGE,
-        pad_top    : float        | NoChange = NO_CHANGE,
-        pad_bottom : float        | NoChange = NO_CHANGE,
-        color      : QColor       | NoChange = NO_CHANGE,
-        font       : str          | NoChange = NO_CHANGE,
-        size       : float        | NoChange = NO_CHANGE,
-        bold       : bool         | NoChange = NO_CHANGE,
-        italic     : bool         | NoChange = NO_CHANGE,
-        underline  : bool         | NoChange = NO_CHANGE,
-    ) -> None:
-        super().__init__(object, name)
-        if (pt := object.properties.text(name)) is None:
-            self._before = None
-            self._after = None
-            logger().error(f"Property '{name}' does not have a text item")
-            self.setObsolete(True)
-            return
-        if not isinstance(old_cleat := pt.cleat(), HandleId):
-            logger().error(f"Property text '{name}' has no cleat")
-            self.setObsolete(True)
-            return
-        if not isinstance(old_origin := pt.origin(), RectHandleId):
-            logger().error(f"Property text '{name}' has no origin")
-            self.setObsolete(True)
-            return
-        self._before = self.PropertyTextItemState(
-            visible    = pt.isVisible(),
-            cleat      = old_cleat,
-            x          = pt.x(),
-            y          = pt.y(),
-            rotation   = pt.rotation(),
-            mirror_h   = pt.mirrorH(),
-            mirror_v   = pt.mirrorV(),
-            autoflip   = pt.autoflip(),
-            origin     = old_origin,
-            align_h    = pt.alignH(),
-            align_v    = pt.alignV(),
-            width      = pt.width(),
-            height     = pt.height(),
-            pad_left   = pt.padLeft(),
-            pad_right  = pt.padRight(),
-            pad_top    = pt.padTop(),
-            pad_bottom = pt.padBottom(),
-            color      = pt.textColor(),
-            font       = pt.textFont(),
-            size       = pt.textSize(),
-            bold       = pt.textBold(),
-            italic     = pt.textItalic(),
-            underline  = pt.textUnderline()
-        )
-        self._after = self.PropertyTextItemChange(
-            visible    = visible,
-            cleat      = cleat,
-            x          = x,
-            y          = y,
-            rotation   = rotation,
-            mirror_h   = mirror_h,
-            mirror_v   = mirror_v,
-            autoflip   = autoflip,
-            origin     = origin,
-            align_h    = align_h,
-            align_v    = align_v,
-            width      = width,
-            height     = height,
-            pad_left   = pad_left,
-            pad_right  = pad_right,
-            pad_top    = pad_top,
-            pad_bottom = pad_bottom,
-            color      = color,
-            font       = font,
-            size       = size,
-            bold       = bold,
-            italic     = italic,
-            underline  = underline
-        )
-        # mark obsolete if new state is unchanged
-        changed = False
-        for field in self._after.__dataclass_fields__.keys():
-            new_value = getattr(self._after, field)
-            if new_value is not NO_CHANGE:
-                if new_value != getattr(self._before, field):
-                    changed = True
-                    break
-        self.setObsolete(not changed)
-
-    @checked
-    def redo(self : Self) -> None:
-        if self._after is None:
-            return
-        self._owner.properties.editText(self._name, **vars(self._after))
-
-    @checked
-    def undo(self : Self) -> None:
-        if self._before is None:
-            return
-        self._owner.properties.editText(self._name, **vars(self._before))
-
-class CmdDelPropertyText(CmdPropertyTextItemBase):
-    _pt     : PropertyTextItem | None
-    _before : CmdPropertyTextItemBase.PropertyTextItemState  | None
-    _after  : CmdPropertyTextItemBase.PropertyTextItemChange | None
-
-    @checked
     def __init__(
         self   : Self,
-        object : PropertiesMixin,
-        name   : str
+        owner  : PropertiesMixin,
+        name   : str,
+        enable : bool
     ) -> None:
-        super().__init__(object, name)
-        self._pt = object.properties.text(name)
-        if self._pt is None:
-            logger().warning(f"Property '{name}' does not have a text item")
+        super().__init__(owner)
+        if name not in owner.properties:
+            logger().error(f"Property '{name}' not found")
+            self.setObsolete(True)
+            return
+        self._name = name
+        property = owner.properties[name]
+        display_item = property.displayItem()
+        if enable == (display_item is not None):
+            self.setObsolete(True)
+            return
+        self._state = None
+        if not enable:
+            if display_item is not None:
+                self._state = display_item.state()
+        self._enable = enable
 
-    @checked
     def redo(self : Self) -> None:
-        self._owner.properties.delText(self._name)
+        property = self._owner.properties[self._name]
+        property.setDisplay(self._enable)
 
-    @checked
     def undo(self : Self) -> None:
-        self._owner.properties.addText(self._name, **vars(self._before))
+        property = self._owner.properties[self._name]
+        property.setDisplay(not self._enable)
+        if self._state is not None:
+            display_item = property.displayItem()
+            if display_item is not None:
+                display_item.apply(self._state)
+
+
+class CmdEditPropertyDisplay(CmdPropertyBase):
+    """Command for editing property display appearance."""
+
+    _item   : PropertyTextItem
+    _before : PropertyDisplayState
+    _change : PropertyDisplayChange
+
+    def __init__(
+        self   : Self,
+        owner  : PropertiesMixin,
+        name   : str,
+        change : PropertyDisplayChange
+    ) -> None:
+        super().__init__(owner)
+        if name not in owner.properties:
+            logger().error(f"Property '{name}' not found")
+            self.setObsolete(True)
+            return
+        if change.noop():
+            self.setObsolete(True)
+            return
+        display_item = owner.properties[name].displayItem()
+        if display_item is None:
+            logger().error(f"Property '{name}' does not have a display item")
+            self.setObsolete(True)
+            return
+        self._item = display_item
+        self._before = display_item.state()
+        self._change = change
+
+    def redo(self : Self) -> None:
+        self._item.apply(self._change)
+
+    def undo(self : Self) -> None:
+        self._item.apply(self._before)

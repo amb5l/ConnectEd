@@ -4,16 +4,17 @@ import re
 
 from typing          import Self, Any, TypeVar, Generic
 from collections.abc import Callable
-from dataclasses     import dataclass
+from dataclasses     import dataclass, fields
 
-from PyQt6.QtCore    import QObject, pyqtSignal, QPointF
+from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene
 from PyQt6.QtGui     import QColor
 
 from ...app import logger
 
 from ...core.check import checked
-from ...core.types import AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ...core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+                          HandleId, RectHandleId, DataKind
 from ...core.utils import val2str
 
 from .items.property_text import PropertyTextItem
@@ -212,6 +213,7 @@ class Property:
         owner : PropertiesMixin,
         spec  : PropertySpec
     ) -> Self:
+
         return cls(
             owner   = owner,
             kind    = spec.kind,
@@ -228,7 +230,7 @@ T = TypeVar("T")
 
 @dataclass
 class PropertySpec(Generic[T]):
-    kind    : DataKind | Callable[[T], DataKind] | None = None
+    kind    : DataKind | Callable[[T], DataKind]
     value   : Any                                | None = None
     getter  : Callable[[T], Any]                 | None = None
     setter  : Callable[[T, Any], None]           | None = None
@@ -238,34 +240,68 @@ class PropertySpec(Generic[T]):
 
 
 @dataclass
-class PropertyDisplaySpec:
-    cleat      : HandleId
-    x          : float         = 0
-    y          : float         = 0
-    rotation   : float         = 0.0
-    mirror_h   : bool          = False
-    mirror_v   : bool          = False
-    autoflip   : bool          = True
-    origin     : RectHandleId  = RectHandleId.TOP_LEFT
-    align_h    : AlignH        = AlignH.LEFT
-    align_v    : AlignV        = AlignV.TOP
-    width      : float         = -1.0
-    height     : float         = -1.0
-    pad_left   : float         = 0.0
-    pad_right  : float         = 0.0
-    pad_top    : float         = 0.0
-    pad_bottom : float         = 0.0
-    color      : QColor | None = None
-    font       : str    | None = None
-    size       : float  | None = None
-    bold       : bool   | None = None
-    italic     : bool   | None = None
-    underline  : bool   | None = None
+class PropertyDisplayState:
+    visible    : bool            = True
+    cleat      : HandleId | None = None
+    x          : float           = 0
+    y          : float           = 0
+    rotation   : float           = 0.0
+    mirror_h   : bool            = False
+    mirror_v   : bool            = False
+    autoflip   : bool            = True
+    origin     : RectHandleId    = RectHandleId.TOP_LEFT
+    align_h    : AlignH          = AlignH.LEFT
+    align_v    : AlignV          = AlignV.TOP
+    width      : float           = -1.0
+    height     : float           = -1.0
+    pad_left   : float           = 0.0
+    pad_right  : float           = 0.0
+    pad_top    : float           = 0.0
+    pad_bottom : float           = 0.0
+    color      : QColor   | None = None
+    font       : str      | None = None
+    size       : float    | None = None
+    bold       : bool     | None = None
+    italic     : bool     | None = None
+    underline  : bool     | None = None
+
+
+@dataclass
+class PropertyDisplayChange:
+    visible    : bool            | NoChange = NO_CHANGE
+    cleat      : HandleId | None | NoChange = NO_CHANGE
+    x          : float           | NoChange = NO_CHANGE
+    y          : float           | NoChange = NO_CHANGE
+    rotation   : float           | NoChange = NO_CHANGE
+    mirror_h   : bool            | NoChange = NO_CHANGE
+    mirror_v   : bool            | NoChange = NO_CHANGE
+    autoflip   : bool            | NoChange = NO_CHANGE
+    origin     : RectHandleId    | NoChange = NO_CHANGE
+    align_h    : AlignH          | NoChange = NO_CHANGE
+    align_v    : AlignV          | NoChange = NO_CHANGE
+    width      : float           | NoChange = NO_CHANGE
+    height     : float           | NoChange = NO_CHANGE
+    pad_left   : float           | NoChange = NO_CHANGE
+    pad_right  : float           | NoChange = NO_CHANGE
+    pad_top    : float           | NoChange = NO_CHANGE
+    pad_bottom : float           | NoChange = NO_CHANGE
+    color      : QColor   | None | NoChange = NO_CHANGE
+    font       : str      | None | NoChange = NO_CHANGE
+    size       : float    | None | NoChange = NO_CHANGE
+    bold       : bool     | None | NoChange = NO_CHANGE
+    italic     : bool     | None | NoChange = NO_CHANGE
+    underline  : bool     | None | NoChange = NO_CHANGE
+
+    def noop(self : Self) -> bool:
+        return all(
+            isinstance(getattr(self, field.name), NoChange)
+            for field in fields(self)
+        )
 
 
 class PropertiesMixin:
     _PROPERTY_SPECS         : dict[str, PropertySpec]
-    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyDisplaySpec]
+    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyDisplayState]
     properties              : dict[str, Property]
 
     def initProperties(self : Self, live : bool) -> None:
@@ -281,28 +317,7 @@ class PropertiesMixin:
                 display_item = self.properties[name].setDisplay(True)
                 if display_item is None:
                     raise ValueError(f"Display item for property {name} is None")
-                pos = QPointF(spec.x, spec.y)
-                display_item.setCleat         ( spec.cleat      )
-                display_item.setPos           ( pos             )
-                display_item.setRotation      ( spec.rotation   )
-                display_item.setMirrorH       ( spec.mirror_h   )
-                display_item.setMirrorV       ( spec.mirror_v   )
-                display_item.setAutoflip      ( spec.autoflip   )
-                display_item.setOrigin        ( spec.origin     )
-                display_item.setAlignH        ( spec.align_h    )
-                display_item.setAlignV        ( spec.align_v    )
-                display_item.setWidth         ( spec.width      )
-                display_item.setHeight        ( spec.height     )
-                display_item.setPadLeft       ( spec.pad_left   )
-                display_item.setPadRight      ( spec.pad_right  )
-                display_item.setPadTop        ( spec.pad_top    )
-                display_item.setPadBottom     ( spec.pad_bottom )
-                display_item.setTextColor     ( spec.color      )
-                display_item.setTextFont      ( spec.font       )
-                display_item.setTextSize      ( spec.size       )
-                display_item.setTextBold      ( spec.bold       )
-                display_item.setTextItalic    ( spec.italic     )
-                display_item.setTextUnderline ( spec.underline  )
+                display_item.apply(spec)
 
     def propertiesLive(self : Self) -> bool:
         return self._live
