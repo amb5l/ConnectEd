@@ -150,6 +150,8 @@ class ExpanderDelegate(QStyledItemDelegate):
         branch.state |= QStyle.StateFlag.State_Children
         if expanded:
             branch.state |= QStyle.StateFlag.State_Open
+        if style is None:
+            return
         style.drawPrimitive(
             QStyle.PrimitiveElement.PE_IndicatorBranch,
             branch,
@@ -201,6 +203,8 @@ class ExpanderDelegate(QStyledItemDelegate):
     ) -> QSize:
         widget = option.widget
         style = widget.style() if widget is not None else QApplication.style()
+        if style is None:
+            return QSize(0, 0)
         width = style.pixelMetric(
             QStyle.PixelMetric.PM_IndicatorWidth, option, widget
         )
@@ -223,6 +227,8 @@ class ExpanderDelegate(QStyledItemDelegate):
         widget : QWidget | None
     ) -> QRect:
         style = widget.style() if widget is not None else QApplication.style()
+        if style is None:
+            return QRect(0, 0, 0, 0)
         size = style.pixelMetric(
             QStyle.PixelMetric.PM_IndicatorWidth, option, widget
         )
