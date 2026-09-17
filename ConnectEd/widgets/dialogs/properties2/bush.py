@@ -120,7 +120,7 @@ class PropertiesBushWidget(QTableView):
                 for i, child in enumerate(property_texts):
                     row_copy = row.copy()
                     # populate property text columns
-                    row = self._populatePropertyText(row, child, i)
+                    row = self._populatePropertyText(row, child)
                     # add row to model if applicable
                     if i == len(property_texts) - 1:
                         model.appendRow(row)
