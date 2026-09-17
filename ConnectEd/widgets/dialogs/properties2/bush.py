@@ -161,7 +161,7 @@ class PropertiesBushWidget(QTableView):
         fields[ "Name"   ] = property.name()
         fields[ "Custom" ] = property.isCustom()
         fields[ "Type"   ] = property.kind()
-        fields[ "Value"  ]   = property.value()
+        fields[ "Value"  ] = property.value()
         for key, value in fields.items():
             row[self._header_labels.index(key)] = TableItem(value)
         return row
