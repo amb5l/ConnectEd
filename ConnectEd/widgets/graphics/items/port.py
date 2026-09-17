@@ -23,8 +23,8 @@ if TYPE_CHECKING:
 
 
 class PortArrowItem(PortPinArrowItem):
-    def resourcesName(self : Self) -> str:
-        return "PortArrow"
+    pass
+
 
 class PortItem(ItemTransformMixin, PortPinLineItem):
     # class attributes

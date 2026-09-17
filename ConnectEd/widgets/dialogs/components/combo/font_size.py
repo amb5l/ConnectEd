@@ -27,11 +27,9 @@ class FontSizeComboBox(QComboBox):
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        if isinstance(value, int):
-            value = float(value)
+        if isinstance(value, int): value = float(value)
         self._initial = value
-        if isinstance(default, int):
-            default = float(default)
+        if isinstance(default, int): default = float(default)
         self.setIconSize(customIconSize())
         # build default string and value
         default_str = f" = {val2str(default)}" if isinstance(default, float) \

@@ -72,14 +72,14 @@ class SymbolBaseItem(
     }
     _PROPERTIES = PartItemMixin._PROPERTIES_PART | _PROPERTIES_VHDL
 
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
+        return "Symbol"
 
     # instance attributes
     _vhdl_library      : str
     _vhdl_package      : str
     _vhdl_architecture : str
-
-    def resourcesName(self : Self) -> str:
-        return "Symbol"
 
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:
@@ -153,7 +153,8 @@ class SymbolBaseItem(
         from ..scenes.symbol import SymbolScene
         return (isinstance(self.scene(), SymbolScene), self.isSelected())
 
-    def _resourceKeyDefault(self : Self) -> tuple[bool, bool]:
+    @classmethod
+    def _resourceKeyDefault(cls : type[Self]) -> tuple[bool, bool]:
         return (False, False)
 
 

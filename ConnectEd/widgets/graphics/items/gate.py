@@ -62,6 +62,10 @@ class GateItem(
     _XML_CHILDREN = frozenset({"PropertyText"})
 
     @classmethod
+    def settingsName(cls : type[Self]) -> str:
+        return "Gate"
+
+    @classmethod
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
         return MoveGripItem
 
@@ -81,9 +85,6 @@ class GateItem(
     @checked
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         self.moveBy(d.x(), d.y())
-
-    def settingsName(self : Self) -> str:
-        return "Gate"
 
     def label(self : Self) -> str | None:
         return self._label
@@ -137,9 +138,6 @@ class BufGateItem(GateItem):
         ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE | \
         PrimaryItemMixin._PROPERTIES_FILL
-
-    def resourcesName(self : Self) -> str:
-        return "Gate"
 
     # instance attributes
     _input  : GatePinItem
@@ -278,7 +276,8 @@ class LogicGateItem(GateItem):
     _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
     _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
-    def resourcesName(self : Self) -> str:
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
         return "GateRound"  # gate pen with round cap and round join
 
     # instance attributes

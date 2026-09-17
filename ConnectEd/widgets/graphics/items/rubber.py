@@ -15,25 +15,24 @@ from ....core.types import Axis, Polarity
 
 from .segment import SegmentItem
 from .node    import NodeItem
-
-from .role import ChromeItem
+from .role    import ChromeItem
+from .mixin   import ItemNamesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.diagram import DiagramScene
 
 
-class RubberItem(QGraphicsPathItem):
+class RubberItem(ItemNamesMixin, QGraphicsPathItem):
     """Base class for rubber preview items."""
+
+    @classmethod
+    def settingsName(cls : type[Self]) -> str:
+        return "rubber"
+
     _static : NodeItem     # static node
     _mobile : NodeItem     # mobile node
     _axis   : Axis | None  # connected segment axis
-
-    def settingsName(self : Self) -> str:
-        return "rubber"
-
-    def resourcesName(self : Self) -> str:
-        return self.settingsName()
 
     @checked
     def __init__(self : Self) -> None:

@@ -33,6 +33,13 @@ class ItemPresentationTextMixin:
     _text_italic    : bool   | None
     _text_underline : bool   | None
 
+    @classmethod
+    def themeQuill(cls : type[Self], scene : DiagramScene) -> Quill:
+        return scene.resources.quill(
+            cls.resourcesName(),
+            cls._resourceNormalKey(),
+        )
+
     def hasText(self : Self) -> bool:
         return (
                self.hasTextColor()
@@ -49,7 +56,7 @@ class ItemPresentationTextMixin:
     def textColor(self : Self) -> QColor | None:
         return self._text_color if hasattr(self, "_text_color") else None
 
-    def defaultTextColor(
+    def themeTextColor(
         self : Self,
         view : DiagramView | None = None
     ) -> QColor | None:
@@ -64,7 +71,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.color()
 
@@ -86,7 +93,7 @@ class ItemPresentationTextMixin:
     def textFont(self : Self) -> str | None:
         return self._text_font if hasattr(self, "_text_font") else None
 
-    def defaultTextFont(
+    def themeTextFont(
         self : Self,
         view : DiagramView | None = None
     ) -> str | None:
@@ -97,7 +104,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.font()
 
@@ -119,7 +126,7 @@ class ItemPresentationTextMixin:
     def textSize(self : Self) -> float | None:
         return self._text_size if hasattr(self, "_text_size") else None
 
-    def defaultTextSize(
+    def themeTextSize(
         self : Self,
         view : DiagramView | None = None
     ) -> float | None:
@@ -130,7 +137,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.size()
 
@@ -152,7 +159,7 @@ class ItemPresentationTextMixin:
     def textBold(self : Self) -> bool | None:
         return self._text_bold if hasattr(self, "_text_bold") else None
 
-    def defaultTextBold(
+    def themeTextBold(
         self : Self,
         view : DiagramView | None = None
     ) -> bool | None:
@@ -163,7 +170,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.bold()
 
@@ -185,7 +192,7 @@ class ItemPresentationTextMixin:
     def textItalic(self : Self) -> bool | None:
         return self._text_italic if hasattr(self, "_text_italic") else None
 
-    def defaultTextItalic(
+    def themeTextItalic(
         self : Self,
         view : DiagramView | None = None
     ) -> bool | None:
@@ -196,7 +203,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.italic()
 
@@ -218,7 +225,7 @@ class ItemPresentationTextMixin:
     def textUnderline(self : Self) -> bool | None:
         return self._text_underline if hasattr(self, "_text_underline") else None
 
-    def defaultTextUnderline(
+    def themeTextUnderline(
         self : Self,
         view : DiagramView | None = None
     ) -> bool | None:
@@ -229,7 +236,7 @@ class ItemPresentationTextMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.underline()
 
@@ -259,7 +266,9 @@ class ItemPresentationTextMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
+        quill = scene.resources.quill(
+            self.resourcesName(), self._resourceKey()
+        )
         self.setQuill(quill)
 
     @withScene
@@ -271,7 +280,9 @@ class ItemPresentationTextMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        quill = scene.resources.quill(self.resourcesName(), self._resourceKey())
+        quill = scene.resources.quill(
+            self.resourcesName(), self._resourceKey()
+        )
         unselected = not self.isSelected()
         override_color = self._text_color if unselected \
             and hasattr(self, "_text_color") and self._text_color is not None \

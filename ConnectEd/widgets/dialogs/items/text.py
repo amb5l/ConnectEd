@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Self, TypeVar, Generic
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ....core.check import checked
@@ -11,17 +11,15 @@ from ....core.types import NoChange, AlignH, AlignV, RectHandleId
 
 from ...graphics.items.text import BaseTextItem, TextItem
 
-from ..components.layout.text_value          import TextValueLayout
-from ..components.group_box.text_orientation import TextOrientationGroupBox
-from ..components.group_box.text_align       import TextAlignGroupBox
-from ..components.group_box.text_padding     import TextPaddingGroupBox
-from ..components.group_box.origin           import OriginGroupBox
-from ..components.group_box.text_appearance  import TextAppearancePreviewGroupBox
-from ..components.layout.ok_cancel           import OkCancelLayout
+from ..components.layout.text_value import TextValueLayout
+
+from ..components.layout.text_appearance import TextAppearanceLayout
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...graphics.views.diagram import DiagramView
+    from ...graphics.items.text import TextState
 
 
 T = TypeVar("T", bound=BaseTextItem)
@@ -31,83 +29,22 @@ class BaseTextItemDialog(QDialog, Generic[T]):
     _TITLE : str
 
     # instance variables
-    _layout                : QVBoxLayout
-    _middle_layout         : QHBoxLayout
-    _left_layout           : QVBoxLayout
-    _right_layout          : QVBoxLayout
-    _orientation_group_box : TextOrientationGroupBox
-    _align_group_box       : TextAlignGroupBox
-    _origin_group_box      : OriginGroupBox
-    _padding_group_box     : TextPaddingGroupBox
-    _appearance_group_box  : TextAppearancePreviewGroupBox
-    _ok_cancel_layout      : OkCancelLayout
+    _layout      : QVBoxLayout
+    _main_layout : TextAppearanceLayout
 
     @checked
     def __init__(
-        self   : Self,
-        item   : T,
-        parent : DiagramView | None
+        self : Self,
+        source : T | TextState,
+        view : DiagramView
     ):
-        super().__init__(parent)
+        super().__init__(view)
         self.setWindowTitle(self._TITLE)
         self.setModal(True)
         self._layout = QVBoxLayout(self)
-        # top (text) section
         self.initTopSection(item)
-        # middle left - rotation, alignment and origin
-        self._left_layout = QVBoxLayout()
-        self._orientation_group_box = TextOrientationGroupBox(
-            item.rotation(), item.mirrorH(), item.mirrorV(), item.autoflip()
-        )
-        self._left_layout.addWidget(self._orientation_group_box)
-        self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
-        self._left_layout.addWidget(self._align_group_box)
-        if not isinstance(origin := item.origin(), RectHandleId):
-            raise TypeError("Bad origin")
-        self._origin_group_box = OriginGroupBox(origin)
-        self._left_layout.addWidget(self._origin_group_box)
-        # middle right — padding and appearance
-        self._right_layout = QVBoxLayout()
-        self._padding_group_box = TextPaddingGroupBox(
-            item.padTop(), item.padBottom(), item.padLeft(), item.padRight()
-        )
-        self._right_layout.addWidget(self._padding_group_box)
-        if not isinstance(default_color := item.defaultTextColor(parent), QColor):
-            raise TypeError("Bad default color")
-        if not isinstance(default_font := item.defaultTextFont(parent), str):
-            raise TypeError("Bad default font")
-        if not isinstance(default_size := item.defaultTextSize(parent), float):
-            raise TypeError("Bad default size")
-        if not isinstance(default_bold := item.defaultTextBold(parent), bool):
-            raise TypeError("Bad default bold")
-        if not isinstance(default_italic := item.defaultTextItalic(parent), bool):
-            raise TypeError("Bad default italic")
-        if not isinstance(default_underline := item.defaultTextUnderline(parent), bool):
-            raise TypeError("Bad default underline")
-        self._appearance_group_box = TextAppearancePreviewGroupBox(
-            item.textColor(),
-            item.textFont(),
-            item.textSize(),
-            item.textBold(),
-            item.textItalic(),
-            item.textUnderline(),
-            default_color,
-            default_font,
-            default_size,
-            default_bold,
-            default_italic,
-            default_underline
-        )
-        self._right_layout.addWidget(self._appearance_group_box)
-        # middle left and right combined
-        self._middle_layout = QHBoxLayout()
-        self._middle_layout.addLayout(self._left_layout)
-        self._middle_layout.addLayout(self._right_layout)
-        self._layout.addLayout(self._middle_layout)
-        # ok/cancel section
-        self._ok_cancel_layout = OkCancelLayout(self)
-        self._layout.addLayout(self._ok_cancel_layout)
-        # finalise
+        self._main_layout = TextAppearanceLayout(item, self, view)
+        self._layout.addLayout(self._main_layout)
         self.setLayout(self._layout)
 
     def initTopSection(self : Self, item) -> None:
@@ -121,71 +58,71 @@ class BaseTextItemDialog(QDialog, Generic[T]):
 
     @checked
     def getRotation(self : Self) -> float | NoChange:
-        return self._orientation_group_box.getRotation()
+        return self._main_layout._orientation_group_box.getRotation()
 
     @checked
     def getMirrorH(self : Self) -> bool | NoChange:
-        return self._orientation_group_box.getMirrorH()
+        return self._main_layout._orientation_group_box.getMirrorH()
 
     @checked
     def getMirrorV(self : Self) -> bool | NoChange:
-        return self._orientation_group_box.getMirrorV()
+        return self._main_layout._orientation_group_box.getMirrorV()
 
     @checked
     def getAutoflip(self : Self) -> bool | NoChange:
-        return self._orientation_group_box.getAutoflip()
+        return self._main_layout._orientation_group_box.getAutoflip()
 
     @checked
     def getAlignH(self : Self) -> AlignH | NoChange:
-        return self._align_group_box.getAlignH()
+        return self._main_layout._align_group_box.getAlignH()
 
     @checked
     def getAlignV(self : Self) -> AlignV | NoChange:
-        return self._align_group_box.getAlignV()
+        return self._main_layout._align_group_box.getAlignV()
 
     @checked
     def getOrigin(self : Self) -> RectHandleId | NoChange:
-        return self._origin_group_box.getOrigin()
+        return self._main_layout._origin_group_box.getOrigin()
 
     @checked
     def getPadLeft(self : Self) -> float | NoChange:
-        return self._padding_group_box.getPadLeft()
+        return self._main_layout._padding_group_box.getPadLeft()
 
     @checked
     def getPadRight(self : Self) -> float | NoChange:
-        return self._padding_group_box.getPadRight()
+        return self._main_layout._padding_group_box.getPadRight()
 
     @checked
     def getPadTop(self : Self) -> float | NoChange:
-        return self._padding_group_box.getPadTop()
+        return self._main_layout._padding_group_box.getPadTop()
 
     @checked
     def getPadBottom(self : Self) -> float | NoChange:
-        return self._padding_group_box.getPadBottom()
+        return self._main_layout._padding_group_box.getPadBottom()
 
     @checked
     def getColor(self : Self) -> QColor | NoChange:
-        return self._appearance_group_box.getColor()
+        return self._main_layout._typography_group_box.getColor()
 
     @checked
     def getFont(self : Self) -> str | NoChange:
-        return self._appearance_group_box.getFont()
+        return self._main_layout._typography_group_box.getFont()
 
     @checked
     def getSize(self : Self) -> float | NoChange:
-        return self._appearance_group_box.getSize()
+        return self._main_layout._typography_group_box.getSize()
 
     @checked
     def getBold(self : Self) -> bool | NoChange:
-        return self._appearance_group_box.getBold()
+        return self._main_layout._typography_group_box.getBold()
 
     @checked
     def getItalic(self : Self) -> bool | NoChange:
-        return self._appearance_group_box.getItalic()
+        return self._main_layout._typography_group_box.getItalic()
 
     @checked
     def getUnderline(self : Self) -> bool | NoChange:
-        return self._appearance_group_box.getUnderline()
+        return self._main_layout._typography_group_box.getUnderline()
 
     @checked
     def _focusEditor(self : Self) -> None:

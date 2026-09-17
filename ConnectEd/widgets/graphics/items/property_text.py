@@ -16,22 +16,20 @@ from ....core.utils import val2str
 
 from ..properties import (
     Property, PropertiesMixin, PropertySpec,
-    PropertyDisplayState, PropertyDisplayState, PropertyDisplayChange
+    PropertyDisplayState, PropertyDisplayChange
 )
 
 from .text   import TextItem
 from .handle import HandleItem
 from .tether import TextTetherItem
 
-from .mixin import ItemNamesMixin
-
+from .mixin.names      import ItemNamesMixin
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.diagram  import DiagramView
-    from ...dialogs.items.property_text import PropertyTextItemDialog
 
 
 class PropertyTextTetherItem(TextTetherItem):
@@ -79,13 +77,18 @@ class PropertyTextItem(TextItem):
     _cleat    : HandleId | None
     _tether   : PropertyTextTetherItem | None
 
-    def settingsName(self : Self) -> str:
-        if isinstance(item := self.item(), ItemNamesMixin):
+    def settingsName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Instance method in this case."""
+        if isinstance(item := self.owner(), ItemNamesMixin):
             settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
             if hasattr(settings_items, settings_name):
                 return settings_name
         return "PropertyText"
+
+    def resourcesName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+        """Instance method in this case."""
+        return self.settingsName()
 
     @checked
     def __init__(
@@ -178,7 +181,7 @@ class PropertyTextItem(TextItem):
         super().setText(text)
 
     def cleatKind(self : Self) -> DataKind:
-        item = self.item()
+        item = self.owner()
         if not isinstance(item, ItemHandlesMixin):
             raise ValueError(f"Item {item} is not a handles item")
         return item.handleIdKind()
@@ -233,13 +236,10 @@ class PropertyTextItem(TextItem):
     def setBlock(self : Self, block : bool) -> None:
         raise NotImplementedError("setBlock() is not implemented")
 
-    def item(self : Self) -> QGraphicsItem | None:
+    def owner(self : Self) -> PropertiesMixin | None:
         if isinstance(parent := self.parentItem(), HandleItem):
-            return parent.parentItem()
-        elif parent is None:
-            return None
-        else:
-            return parent
+            parent = parent.parentItem()
+        return parent if isinstance(parent, PropertiesMixin) else None
 
     @checked
     def bind(self : Self, name : str) -> None:
@@ -260,7 +260,7 @@ class PropertyTextItem(TextItem):
         name = self.name()
         if name is None or name == "":
             return None
-        if not isinstance((item := self.item()), PropertiesMixin):
+        if not isinstance((item := self.owner()), PropertiesMixin):
             raise RuntimeError("Bad item")
         return item.properties[name].value()
 
@@ -362,7 +362,7 @@ class PropertyTextItem(TextItem):
         kind  = dialog.getKind()
         value = dialog.getValue()
         cleat = dialog.getCleat()
-        item = self.item()
+        item = self.owner()
         if not isinstance(item, PropertiesMixin):
             raise RuntimeError("Bad item")
         old_name = self.name()

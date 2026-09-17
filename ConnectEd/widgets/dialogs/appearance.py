@@ -11,7 +11,7 @@ from ..graphics.items.mixin.presentation import ItemPresentationMixin
 
 from .components.layout.line_appearance import LineAppearanceLayout
 from .components.layout.fill_appearance import FillAppearanceLayout
-from .components.layout.text_appearance import TextAppearancePreviewLayout
+from .components.layout.text_typography import TextTypographyPreviewLayout
 from .components.layout.ok_cancel       import OkCancelLayout
 
 from .private import _combinedValue
@@ -24,7 +24,7 @@ class AppearanceDialog(QDialog):
     _fill_group_box   : QGroupBox | None
     _fill_layout      : FillAppearanceLayout | None
     _text_group_box   : QGroupBox | None
-    _text_layout      : TextAppearancePreviewLayout | None
+    _text_layout      : TextTypographyPreviewLayout | None
     _ok_cancel_layout : OkCancelLayout
 
     @checked
@@ -80,19 +80,19 @@ class AppearanceDialog(QDialog):
             self._fill_layout    = None
         if text_count > 0:
             self._text_group_box = QGroupBox("Text") if category_count > 1 else None
-            self._text_layout = TextAppearancePreviewLayout(
+            self._text_layout = TextTypographyPreviewLayout(
                 _combinedValue(items, "textColor"),
                 _combinedValue(items, "textFont"),
                 _combinedValue(items, "textSize"),
                 _combinedValue(items, "textBold"),
                 _combinedValue(items, "textItalic"),
                 _combinedValue(items, "textUnderline"),
-                _combinedValue(items, "defaultTextColor"),
-                _combinedValue(items, "defaultTextFont"),
-                _combinedValue(items, "defaultTextSize"),
-                _combinedValue(items, "defaultTextBold"),
-                _combinedValue(items, "defaultTextItalic"),
-                _combinedValue(items, "defaultTextUnderline")
+                _combinedValue(items, "themeTextColor"),
+                _combinedValue(items, "themeTextFont"),
+                _combinedValue(items, "themeTextSize"),
+                _combinedValue(items, "themeTextBold"),
+                _combinedValue(items, "themeTextItalic"),
+                _combinedValue(items, "themeTextUnderline")
             )
             if category_count > 1:
                 if self._text_group_box is None:

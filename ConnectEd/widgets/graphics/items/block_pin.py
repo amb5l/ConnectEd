@@ -51,9 +51,6 @@ class BlockPinItem(ItemEdgeLocMixin, PortPinLineItem):
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
         return ResizeGripItem
 
-    def resourcesName(self : Self) -> str:
-        return "BlockPin"
-
     @checked
     def ctxMenuItems(
         self : Self,

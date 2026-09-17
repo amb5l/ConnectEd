@@ -123,11 +123,14 @@ class NodeItem(
     def _resourceKey(self : Self) -> tuple[NodeState, bool]:
         return (self._state, self.isSelected())
 
-    def _resourceKeyDefault(self : Self) -> tuple[NodeState, bool]:
+    @classmethod
+    def _resourceKeyDefault(cls : type[Self]) -> tuple[NodeState, bool]:
         return (NodeState.UNCONNECTED, False)
 
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
-        self.setPath(scene.resources.path(self.resourcesName(), self._state))
+        self.setPath(
+            scene.resources.path(self.resourcesName(), self._state)
+        )
 
 
 class FreeNodeItem(NodeItem):

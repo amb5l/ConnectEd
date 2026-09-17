@@ -98,7 +98,7 @@ class PropertiesDialog(QDialog):
     _property_texts  : dict[str, list[PropertyTextItem]]
     _dialog_layout   : QVBoxLayout
     _table_model     : TableModel
-    _table_view      : TreeTableView
+    _table_view      : TableView
     _button_layout   : QHBoxLayout
     _display_button  : QPushButton
     _add_prop_button : QPushButton
@@ -386,19 +386,19 @@ class PropertiesDialog(QDialog):
                 changes.append(PropertyChangeModify(name, kind, value))
             # property text modification
             if display_item.changed():
-                if display == xxxDisplay.NONE:
+                if display == Display.NONE:
                     changes.append(PropertyTextChangeDelete(name))
-                elif display_item.initial() == xxxDisplay.NONE:
+                elif display_item.initial() == Display.NONE:
                     pt_args = self._getRowPropertyTextItemValues(row_idx)
                     if pt_args is not None:
                         changes.append(PropertyTextChangeAdd(
-                            name, display == xxxDisplay.SHOW, *pt_args
+                            name, display == Display.SHOW, *pt_args
                         ))
                 else:
                     pt_args = self._getRowPropertyTextItemValueDeltas(row_idx)
                     if pt_args is not None:
                         changes.append(PropertyTextChangeModify(
-                            name, display == xxxDisplay.SHOW, *pt_args
+                            name, display == Display.SHOW, *pt_args
                         ))
         return changes
 
@@ -460,7 +460,7 @@ class PropertiesDialog(QDialog):
 
     def _onDisplayChanged(
         self    : Self,
-        display : xxxDisplay,
+        display : Display,
         row_idx : int
     ) -> None:
         item = self._obj
@@ -472,7 +472,7 @@ class PropertiesDialog(QDialog):
                 continue
             if pt_item is not None and col_name == "Cleat":
                 pt_new = pt_item.new()
-            if display != xxxDisplay.NONE and pt_item is None:
+            if display != Display.NONE and pt_item is None:
                 if not isinstance(item, ItemHandlesMixin):
                     raise TypeError("Bad item")
                 if col_name == "Cleat":
@@ -484,9 +484,9 @@ class PropertiesDialog(QDialog):
                 self._table_model.setItem(row_idx, col_idx, pt_item)
                 pt_new = True
             if pt_item is not None:
-                pt_item.setEnabled(display != xxxDisplay.NONE or not pt_new)
-                pt_item.setEditable(display != xxxDisplay.NONE)
-                pt_item.setDeleted(display == xxxDisplay.NONE and not pt_new)
+                pt_item.setEnabled(display != Display.NONE or not pt_new)
+                pt_item.setEditable(display != Display.NONE)
+                pt_item.setDeleted(display == Display.NONE and not pt_new)
 
     def _refreshDisplay(self : Self, row_idx : int) -> None:
         """Refresh PT columns from the model's Display value."""
@@ -494,7 +494,7 @@ class PropertiesDialog(QDialog):
         if not isinstance(display_item := self._table_model.item(row_idx, display_col), PropertiesItem):
             logger().error(f"Bad display item for row {row_idx}")
             return
-        if not isinstance(display_value := display_item.value(), xxxDisplay):
+        if not isinstance(display_value := display_item.value(), Display):
             logger().error(f"Bad display value for row {row_idx}")
             return
         self._onDisplayChanged(display_value, row_idx)

@@ -67,6 +67,10 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
     def __eq__(self : Self, other : object) -> bool:
         return isinstance(other, ItemMixin) and self._uuid == other._uuid
 
+    def suid(self : Self) -> str:
+        """Scene unique identifier."""
+        return self._uuid
+
     def savePos(self : Self) -> QPointF:
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")
@@ -83,6 +87,9 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         while isinstance(item, QGraphicsItem) and item.parentItem() is not None:
             item = item.parentItem()
         return item
+
+    def description(self : Self) -> str:
+        return self.__class__.__name__.replace("Item", "")
 
     def _resetUuid(self : Self) -> None:
         self._uuid = str(uuid.uuid4())

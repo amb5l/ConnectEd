@@ -32,6 +32,10 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
     _ARROW_POS = 0
 
     @classmethod
+    def settingsName(cls : type[Self]) -> str:
+        return "GatePin"  # fixed for self and subclasses
+
+    @classmethod
     def handleIdType(cls) -> type[GatePinHandleId]:
         return GatePinHandleId
 
@@ -42,9 +46,6 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
     @classmethod
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
         return FixedGripItem
-
-    def settingsName(self : Self) -> str:
-        return "GatePin"
 
     @checked
     def __init__(
@@ -102,7 +103,8 @@ class BufGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 2)
     _ARROW_POS = -2
 
-    def resourcesName(self : Self) -> str:
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
         return "BufGatePin"
 
 
@@ -110,5 +112,6 @@ class OrGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 4)
     _ARROW_POS = -4
 
-    def resourcesName(self : Self) -> str:
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
         return "OrGatePin"

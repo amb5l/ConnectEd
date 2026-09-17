@@ -36,21 +36,21 @@ class ItemPresentationMixin(
             worthy  = lambda self: self.lineColor() is not None,
             getter  = lambda self: self.lineColor(),
             setter  = lambda self, value: self.setLineColor(value),
-            default = lambda self: self.defaultLineColor()
+            default = lambda self: self.themeLineColor()
         ),
         "Line Width" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.PEN_WIDTH,
             worthy  = lambda self: self.lineWidth() is not None,
             getter  = lambda self: self.lineWidth(),
             setter  = lambda self, value: self.setLineWidth(value),
-            default = lambda self: self.defaultLineWidth()
+            default = lambda self: self.themeLineWidth()
         ),
         "Line Style" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.PEN_STYLE,
             worthy  = lambda self: self.lineStyle() is not None,
             getter  = lambda self: self.lineStyle(),
             setter  = lambda self, value: self.setLineStyle(value),
-            default = lambda self: self.defaultLineStyle()
+            default = lambda self: self.themeLineStyle()
         )
     }
     _PROPERTIES_FILL = {
@@ -59,14 +59,14 @@ class ItemPresentationMixin(
             worthy  = lambda self: self.fillColor() is not None,
             getter  = lambda self: self.fillColor(),
             setter  = lambda self, value: self.setFillColor(value),
-            default = lambda self: self.defaultFillColor()
+            default = lambda self: self.themeFillColor()
         ),
         "Fill Style" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.BRUSH_STYLE,
             worthy  = lambda self: self.fillStyle() is not None,
             getter  = lambda self: self.fillStyle(),
             setter  = lambda self, value: self.setFillStyle(value),
-            default = lambda self: self.defaultFillStyle()
+            default = lambda self: self.themeFillStyle()
         )
     }
     _PROPERTIES_APPEARANCE = {
@@ -75,42 +75,42 @@ class ItemPresentationMixin(
             worthy  = lambda self: self.textColor() is not None,
             getter  = lambda self: self.textColor(),
             setter  = lambda self, value: self.setTextColor(value),
-            default = lambda self: self.defaultTextColor()
+            default = lambda self: self.themeTextColor()
         ),
         "Text Font" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_FAMILY,
             worthy  = lambda self: self.textFont() is not None,
             getter  = lambda self: self.textFont(),
             setter  = lambda self, value: self.setTextFont(value),
-            default = lambda self: self.defaultTextFont()
+            default = lambda self: self.themeTextFont()
         ),
         "Text Size" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.FONT_SIZE,
             worthy  = lambda self: self.textSize() is not None,
             getter  = lambda self: self.textSize(),
             setter  = lambda self, value: self.setTextSize(value),
-            default = lambda self: self.defaultTextSize()
+            default = lambda self: self.themeTextSize()
         ),
         "Text Bold" : PropertySpec["ItemPresentationMixin"](
-            kind    = DataKind.FONT_BOOL,
+            kind    = DataKind.BOOL,
             worthy  = lambda self: self.textBold() is not None,
             getter  = lambda self: self.textBold(),
             setter  = lambda self, value: self.setTextBold(value),
-            default = lambda self: self.defaultTextBold()
+            default = lambda self: self.themeTextBold()
         ),
         "Text Italic" : PropertySpec["ItemPresentationMixin"](
-            kind    = DataKind.FONT_BOOL,
+            kind    = DataKind.BOOL,
             worthy  = lambda self: self.textItalic() is not None,
             getter  = lambda self: self.textItalic(),
             setter  = lambda self, value: self.setTextItalic(value),
-            default = lambda self: self.defaultTextItalic()
+            default = lambda self: self.themeTextItalic()
         ),
         "Text Underline" : PropertySpec["ItemPresentationMixin"](
-            kind    = DataKind.FONT_BOOL,
+            kind    = DataKind.BOOL,
             worthy  = lambda self: self.textUnderline() is not None,
             getter  = lambda self: self.textUnderline(),
             setter  = lambda self, value: self.setTextUnderline(value),
-            default = lambda self: self.defaultTextUnderline()
+            default = lambda self: self.themeTextUnderline()
         )
     }
 
@@ -136,18 +136,19 @@ class ItemPresentationMixin(
             raise TypeError("This item does not support the ItemSelectionMixin")
         # wire update methods
         if hasattr(self, "setPen"):
-            self._updatePen = self._updatePenFast
             if hasattr(self, "_line_color") \
             or hasattr(self, "_line_width") \
             or hasattr(self, "_line_style"):
                 self._updatePen = self._updatePenSlow
+            else:
+                self._updatePen = self._updatePenFast
         if hasattr(self, "setBrush"):
-            self._updateBrush = self._updateBrushFast
             if hasattr(self, "_fill_color") \
             or hasattr(self, "_fill_style"):
                 self._updateBrush = self._updateBrushSlow
+            else:
+                self._updateBrush = self._updateBrushFast
         if hasattr(self, "setQuill"):
-            self._updateQuill = self._updateQuillFast
             if hasattr(self, "_text_color") \
             or hasattr(self, "_text_font") \
             or hasattr(self, "_text_size") \
@@ -155,6 +156,8 @@ class ItemPresentationMixin(
             or hasattr(self, "_text_italic") \
             or hasattr(self, "_text_underline"):
                 self._updateQuill = self._updateQuillSlow
+            else:
+                self._updateQuill = self._updateQuillFast
 
     def _resourceKey(self : Self) -> bool | tuple:
         """Theme lookup key for pen, brush and quill. Override in subclass."""
@@ -162,8 +165,9 @@ class ItemPresentationMixin(
             raise TypeError("Bad host")
         return self.isSelected()
 
-    def _resourceKeyDefault(self : Self) -> bool | tuple:
-        """Default theme lookup key (non-selected, normal state)."""
+    @classmethod
+    def _resourceNormalKey(cls : type[Self]) -> bool | tuple:
+        """Resource key for non-selected / normal state."""
         return False
 
     def onSettingsChanged(self : Self) -> None:

@@ -177,7 +177,8 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         return (self.bus(), self.isSelected())
 
-    def _resourceKeyDefault(self : Self) -> tuple[bool, bool]:
+    @classmethod
+    def _resourceKeyDefault(cls : type[Self]) -> tuple[bool, bool]:
         return (False, False)
 
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
@@ -203,8 +204,12 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     ) -> None:
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         key = self.isSelected()
-        self._arrow.setPen(scene.resources.pen(self._arrow.resourcesName(), key))
-        self._arrow.setBrush(scene.resources.brush(self._arrow.resourcesName(), key))
+        self._arrow.setPen(
+            scene.resources.pen(self._arrow.resourcesName(), key)
+        )
+        self._arrow.setBrush(
+            scene.resources.brush(self._arrow.resourcesName(), key)
+        )
 
     def _updateNameHandle(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")

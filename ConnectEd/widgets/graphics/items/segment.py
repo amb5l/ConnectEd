@@ -231,7 +231,8 @@ class SegmentItem(
     def _resourceKey(self : Self) -> tuple[NetKind, bool]:
         return (self._net_kind, self.isSelected())
 
-    def _resourceKeyDefault(self : Self) -> tuple[NetKind, bool]:
+    @classmethod
+    def _resourceKeyDefault(cls : type[Self]) -> tuple[NetKind, bool]:
         return (NetKind.UNRESOLVED, False)
 
 

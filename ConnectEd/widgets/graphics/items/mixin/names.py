@@ -4,8 +4,10 @@ from typing import Self
 
 
 class ItemNamesMixin:
-    def settingsName(self : Self) -> str:
-        return self.__class__.__name__.removesuffix("Item")
+    @classmethod
+    def settingsName(cls : type[Self]) -> str:
+        return cls.__name__.removesuffix("Item")
 
-    def resourcesName(self : Self) -> str:
-        return self.settingsName()
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
+        return cls.settingsName()

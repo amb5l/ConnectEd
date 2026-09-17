@@ -132,6 +132,9 @@ class DiagramScene(
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()
 
+    def description(self : Self) -> str:
+        return self.__class__.__name__.replace("Scene", "")
+
     def name(self : Self) -> str:
         return self._name
 

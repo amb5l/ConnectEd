@@ -105,25 +105,6 @@ class PropertiesItem(TableItem):
         if kind == old_kind:
             return
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
-        if kind != old_kind:
-            # kind is being changed: applies only to custom properties
-            old_value = self.value()
-            new_value = None
-            try:
-                match kind:
-                    case DataKind.STR | DataKind.TEXT:
-                        new_value = str(old_value)
-                    case DataKind.INT:
-                        new_value = int(old_value)  # pyright: ignore[reportArgumentType]
-                    case DataKind.FLOAT:
-                        new_value = float(old_value)  # pyright: ignore[reportArgumentType]
-                    case DataKind.BOOL:
-                        new_value = bool(old_value)
-                    case _:
-                        logger().error(f"Invalid kind: {kind}")
-            except ValueError:
-                pass
-            self.setValue(new_value)
 
     @checked
     def types(self : Self) -> tuple[type, ...]:

@@ -38,7 +38,7 @@ class ItemPresentationFillMixin:
     def fillColor(self : Self) -> QColor | None:
         return self._fill_color if hasattr(self, "_fill_color") else None
 
-    def defaultFillColor(
+    def themeFillColor(
         self : Self,
         view : DiagramView | None = None
     ) -> QColor | None:
@@ -49,7 +49,7 @@ class ItemPresentationFillMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.color()
 
@@ -71,7 +71,7 @@ class ItemPresentationFillMixin:
     def fillStyle(self : Self) -> Qt.BrushStyle | None:
         return self._fill_style if hasattr(self, "_fill_style") else None
 
-    def defaultFillStyle(
+    def themeFillStyle(
         self : Self,
         view : DiagramView | None = None
     ) -> Qt.BrushStyle | None:
@@ -82,7 +82,7 @@ class ItemPresentationFillMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.style()
 
@@ -117,7 +117,9 @@ class ItemPresentationFillMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
+        brush = scene.resources.brush(
+            self.resourcesName(), self._resourceKey()
+        )
         self.setBrush(brush)
 
     @withScene
@@ -132,7 +134,9 @@ class ItemPresentationFillMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        brush = scene.resources.brush(self.resourcesName(), self._resourceKey())
+        brush = scene.resources.brush(
+            self.resourcesName(), self._resourceKey()
+        )
         unselected = not self.isSelected()
         override_color = self._fill_color if unselected \
             and hasattr(self, "_fill_color") and self._fill_color is not None \

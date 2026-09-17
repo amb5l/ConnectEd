@@ -11,6 +11,8 @@ from PyQt6.QtGui     import QStandardItemModel
 from ....core.check import checked
 from ....core.types import DataKind
 
+from ...utils import kind2cellEditor
+
 from ...graphics.properties import _CUSTOM_PROPERTY_KINDS
 
 from ..components.edit import \
@@ -70,7 +72,7 @@ class PropertiesDelegate(QStyledItemDelegate):
             return None
         if (kind := item.kind()) is None:
             return None
-        editor = kind.editor()
+        editor = kind2cellEditor(kind)
         args = {
             "value"   : item.value(),
             "default" : item.default(),
@@ -82,7 +84,7 @@ class PropertiesDelegate(QStyledItemDelegate):
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
         e = editor(**args)
-        if kind is DataKind.DISPLAY and isinstance(e, EnumComboBox):
+        if kind is DataKind.BOOL and isinstance(e, EnumComboBox):
             row = index.row()
             e.currentIndexChanged.connect(
                 lambda: self._dialog._onDisplayChanged(e.raw(), row)

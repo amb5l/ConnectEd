@@ -1,200 +1,122 @@
+from __future__ import annotations
+
 from typing import Self
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
-from PyQt6.QtGui     import QFont, QColor
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui     import QColor
 
 from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE
+from .....core.types import RectHandleId
 
-from ..combo.color       import ColorComboBox
-from ..combo.font_family import FontFamilyComboBox
-from ..combo.font_size   import FontSizeComboBox
-from ..combo.font_bool   import FontBoolComboBox
+from ....graphics.quill import Quill
+
+from ....graphics.items.text import TextAppearanceState, BaseTextItem
+
+from ..group_box.text_orientation import TextOrientationGroupBox
+from ..group_box.text_align       import TextAlignGroupBox
+from ..group_box.text_padding     import TextPaddingGroupBox
+from ..group_box.origin           import OriginGroupBox
+from ..group_box.text_typography  import TextTypographyPreviewGroupBox
+
+from .ok_cancel  import OkCancelLayout
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....graphics.views.diagram  import DiagramView
+    from ....graphics.items.base_text import BaseTextAppearanceState
+    from ...items.text import BaseTextItemDialog
 
 
 class TextAppearanceLayout(QVBoxLayout):
-    _initial_color     : QColor | None | NoChange
-    _initial_font      : str    | None | NoChange
-    _initial_size      : float  | None | NoChange
-    _initial_bold      : bool   | None | NoChange
-    _initial_italic    : bool   | None | NoChange
-    _initial_underline : bool   | None | NoChange
-    _default_color     : QColor
-    _default_font      : str
-    _default_size      : float
-    _default_bold      : bool
-    _default_italic    : bool
-    _default_underline : bool
-    _options_layout    : QGridLayout
-    _color_label       : QLabel
-    _color_combo       : ColorComboBox
-    _font_label        : QLabel
-    _font_combo        : FontFamilyComboBox
-    _size_label        : QLabel
-    _size_combo        : FontSizeComboBox
-    _bold_label        : QLabel
-    _bold_combo        : FontBoolComboBox
-    _italic_label      : QLabel
-    _italic_combo      : FontBoolComboBox
-    _underline_label   : QLabel
-    _underline_combo   : FontBoolComboBox
+    _main_layout           : QHBoxLayout
+    _left_layout           : QVBoxLayout
+    _right_layout          : QVBoxLayout
+    _orientation_group_box : TextOrientationGroupBox
+    _align_group_box       : TextAlignGroupBox
+    _origin_group_box      : OriginGroupBox
+    _padding_group_box     : TextPaddingGroupBox
+    _typography_group_box  : TextTypographyPreviewGroupBox
+    _ok_cancel_layout      : OkCancelLayout
+    _enabled               : bool
 
     @checked
     def __init__(
-        self              : Self,
-        initial_color     : QColor | None | NoChange,
-        initial_font      : str    | None | NoChange,
-        initial_size      : float  | None | NoChange,
-        initial_bold      : bool   | None | NoChange,
-        initial_italic    : bool   | None | NoChange,
-        initial_underline : bool   | None | NoChange,
-        default_color     : QColor,
-        default_font      : str,
-        default_size      : float,
-        default_bold      : bool,
-        default_italic    : bool,
-        default_underline : bool,
-        parent            : QWidget | None = None
-    ) -> None:
-        super().__init__(parent)
-        self._initial_color     = initial_color
-        self._initial_font      = initial_font
-        self._initial_size      = initial_size
-        self._initial_bold      = initial_bold
-        self._initial_italic    = initial_italic
-        self._initial_underline = initial_underline
-        self._default_color     = default_color
-        self._default_font      = default_font
-        self._default_size      = default_size
-        self._default_bold      = default_bold
-        self._default_italic    = default_italic
-        self._default_underline = default_underline
-        self._options_layout = QGridLayout()
-        self._color_label = QLabel("Color:")
-        self._options_layout.addWidget(self._color_label, 0, 0)
-        self._color_combo = ColorComboBox(initial_color, default_color)
-        self._options_layout.addWidget(self._color_combo, 0, 1)
-        self._font_label = QLabel("Font:")
-        self._options_layout.addWidget(self._font_label, 1, 0)
-        self._font_combo = FontFamilyComboBox(initial_font, default_font)
-        self._options_layout.addWidget(self._font_combo, 1, 1)
-        self._size_label = QLabel("Size:")
-        self._options_layout.addWidget(self._size_label, 2, 0)
-        self._size_combo = FontSizeComboBox(initial_size, default_size)
-        self._options_layout.addWidget(self._size_combo, 2, 1)
-        self._bold_label = QLabel("Bold:")
-        self._options_layout.addWidget(self._bold_label, 3, 0)
-        self._bold_combo = FontBoolComboBox(initial_bold, default_bold)
-        self._options_layout.addWidget(self._bold_combo, 3, 1)
-        self._italic_label = QLabel("Italic:")
-        self._options_layout.addWidget(self._italic_label, 4, 0)
-        self._italic_combo = FontBoolComboBox(initial_italic, default_italic)
-        self._options_layout.addWidget(self._italic_combo, 4, 1)
-        self._underline_label = QLabel("Underline:")
-        self._options_layout.addWidget(self._underline_label, 5, 0)
-        self._underline_combo = FontBoolComboBox(initial_underline, default_underline)
-        self._options_layout.addWidget(self._underline_combo, 5, 1)
-        self.addLayout(self._options_layout)
+        self   : Self,
+        source : BaseTextItem | tuple[BaseTextAppearanceState, Quill],
+        dialog : BaseTextItemDialog,
+        view   : DiagramView
+    ):
+        # superclass init
+        super().__init__(dialog)
 
-    @checked
-    def getColor(self : Self) -> QColor | NoChange:
-        return self._color_combo.value()
+        # get state
+        if isinstance(source, BaseTextItem):
+            state = BaseTextAppearanceState.fromItem(source)
+            scene = view.scene()
+            if scene is None:
+                raise ValueError("Scene is None")
+            theme = source.themeQuill(scene)
+        else:
+           state, theme = source
+        self._enabled = True
+        # middle left - rotation, alignment and origin
+        self._left_layout = QVBoxLayout()
+        self._orientation_group_box = TextOrientationGroupBox(
+            state.rotation, state.mirror_h, state.mirror_v, state.autoflip
+        )
+        self._left_layout.addWidget(self._orientation_group_box)
+        self._align_group_box = TextAlignGroupBox(state.align_h, state.align_v)
+        self._left_layout.addWidget(self._align_group_box)
+        if not isinstance(origin := state.origin, RectHandleId):
+            raise TypeError("Bad origin")
+        self._origin_group_box = OriginGroupBox(origin)
+        self._left_layout.addWidget(self._origin_group_box)
+        # middle right — padding and appearance
+        self._right_layout = QVBoxLayout()
+        self._padding_group_box = TextPaddingGroupBox(
+            state.pad_top, state.pad_bottom, state.pad_left, state.pad_right
+        )
+        self._right_layout.addWidget(self._padding_group_box)
+        self._typography_group_box = TextTypographyPreviewGroupBox(
 
-    @checked
-    def getFont(self : Self) -> str | NoChange:
-        return self._font_combo.value()
-
-    @checked
-    def getSize(self : Self) -> float | NoChange:
-        return self._size_combo.value()
-
-    @checked
-    def getBold(self : Self) -> bool | NoChange:
-        return self._bold_combo.value()
-
-    @checked
-    def getItalic(self : Self) -> bool | NoChange:
-        return self._italic_combo.value()
-
-    @checked
-    def getUnderline(self : Self) -> bool | NoChange:
-        return self._underline_combo.value()
-
-
-class TextAppearancePreviewLayout(TextAppearanceLayout):
-    _preview : QLabel
-
-    @checked
-    def __init__(
-        self              : Self,
-        initial_color     : QColor | None | NoChange,
-        initial_font      : str    | None | NoChange,
-        initial_size      : float  | None | NoChange,
-        initial_bold      : bool   | None | NoChange,
-        initial_italic    : bool   | None | NoChange,
-        initial_underline : bool   | None | NoChange,
-        default_color     : QColor,
-        default_font      : str,
-        default_size      : float,
-        default_bold      : bool,
-        default_italic    : bool,
-        default_underline : bool,
-        parent            : QWidget | None = None
-    ) -> None:
-        super().__init__(
-            initial_color,
-            initial_font,
-            initial_size,
-            initial_bold,
-            initial_italic,
-            initial_underline,
+            item.textColor(),
+            item.textFont(),
+            item.textSize(),
+            item.textBold(),
+            item.textItalic(),
+            item.textUnderline(),
             default_color,
             default_font,
             default_size,
             default_bold,
             default_italic,
-            default_underline,
-            parent
+            default_underline
         )
-        self._preview = QLabel("Sample Text")
-        self._preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._preview.setMinimumHeight(40)
-        self._updatePreview()
-        self.addWidget(self._preview)
-        self._font_combo.activated.connect(self._updatePreview)
-        self._bold_combo.activated.connect(self._updatePreview)
-        self._italic_combo.activated.connect(self._updatePreview)
-        self._underline_combo.activated.connect(self._updatePreview)
+        self._right_layout.addWidget(self._typography_group_box)
+        # middle left and right combined
+        self._main_layout = QHBoxLayout()
+        self._main_layout.addLayout(self._left_layout)
+        self._main_layout.addLayout(self._right_layout)
+        self.addLayout(self._main_layout)
+        # ok/cancel section
+        self._ok_cancel_layout = OkCancelLayout(dialog)
+        self.addLayout(self._ok_cancel_layout)
 
-    def _updatePreview(self : Self) -> None:
-        if isinstance(font := self._font_combo.value(), NoChange):
-            font = self._initial_font
-        if font is None:
-            font = self._default_font
-        if isinstance(bold := self._bold_combo.value(), NoChange):
-            bold = self._initial_bold
-        if bold is None:
-            bold = self._default_bold
-        if isinstance(italic := self._italic_combo.value(), NoChange):
-            italic = self._initial_italic
-        if italic is None:
-            italic = self._default_italic
-        if isinstance(underline := self._underline_combo.value(), NoChange):
-            underline = self._initial_underline
-        if underline is None:
-            underline = self._default_underline
-        if isinstance(font, NoChange) \
-        or isinstance(bold, NoChange) \
-        or isinstance(italic, NoChange) \
-        or isinstance(underline, NoChange):
-            self._preview.setText("") # options are ambiguous
-            return
-        qfont = QFont()
-        qfont.setFamily(font)
-        qfont.setPointSizeF(24.0) # TODO scale with dialog, or use settings?
-        qfont.setBold(bold)
-        qfont.setItalic(italic)
-        qfont.setUnderline(underline)
-        self._preview.setFont(qfont)
-        self._preview.setText("Sample Text")
+    # override replaces normal layout enable behaviour
+    def isEnabled(self : Self) -> bool:
+        return self._enabled
+
+    # override replaces normal layout enable behaviour
+    def setEnabled(self : Self, enabled : bool) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+        self._enabled = enabled
+        self._setItemsEnabled(self, enabled)
+
+    def _setItemsEnabled(self, layout, enabled: bool) -> None:
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            if item is None:
+                continue
+            if (widget := item.widget()) is not None:
+                widget.setEnabled(enabled)
+            elif (child := item.layout()) is not None:
+                self._setItemsEnabled(child, enabled)

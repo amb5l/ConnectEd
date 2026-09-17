@@ -1,0 +1,25 @@
+_PROPERTY_FIELDS = [
+    "Custom"
+    "Kind",
+    "Value",
+    "Display",
+    "Visible",
+    "Cleat",
+    "X",
+    "Y",
+    "Rotation",
+    "Mirror H",
+    "Mirror V",
+    "Auto Flip",
+    "Origin",
+    "Align H",
+    "Align V",
+    "Height",
+    "Width",
+    "Color",
+    "Font",
+    "Size",
+    "Bold",
+    "Italic",
+    "Underline"
+]

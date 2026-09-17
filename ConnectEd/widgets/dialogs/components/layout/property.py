@@ -9,6 +9,8 @@ from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
 from .....core.utils import pascal2proper, str2val
 
+from ....utils import kind2dialogEditor
+
 from ....graphics.properties import PropertiesMixin
 
 from ..edit import StrEditor
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
     from ...items.property_text import PropertyTextItem
 
 
-class PropertyTextLayout(QGridLayout):
+class PropertyLayout(QGridLayout):
     _NOT_FOUND = "<not found>"
 
     _owner_label        : QLabel
@@ -108,7 +110,7 @@ class PropertyTextLayout(QGridLayout):
         self.addWidget(self._value_label, row, 0)
         if isinstance(owner_item, PropertiesMixin) \
         and owner_item.properties[name].writeable():
-            editor = kind.editor()
+            editor = kind2dialogEditor(kind)
             args = {"value" : value}
             if inherent is False and kind is DataKind.KIND:
                 args["subset"] = (DataKind.STR, DataKind.TEXT)

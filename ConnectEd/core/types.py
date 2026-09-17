@@ -35,11 +35,6 @@ class NoChange:
 NO_CHANGE = NoChange()
 
 
-class EnDis(Enum):
-    DISABLE = False
-    ENABLE  = True
-
-
 class Axis(Enum):
     H = "H"
     V = "V"
@@ -164,22 +159,9 @@ class TapHandleId(HandleId):
 
 
 _DATA_KIND_TYPES: dict[DataKind, tuple[type, ...]] = {}
-_DATA_KIND_EDITORS: dict[DataKind, type] = {}
 
 
-def _populate_data_kind_maps() -> None:
-    from ..widgets.dialogs.components.edit import \
-        StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
-    from ..widgets.dialogs.components.combo.enum        import EnumComboBox
-    from ..widgets.dialogs.components.combo.rotation    import RotationComboBox
-    from ..widgets.dialogs.components.combo.color       import ColorComboBox
-    from ..widgets.dialogs.components.combo.line_width  import LineWidthComboBox
-    from ..widgets.dialogs.components.combo.line_style  import LineStyleComboBox
-    from ..widgets.dialogs.components.combo.fill_style  import FillStyleComboBox
-    from ..widgets.dialogs.components.combo.font_family import FontFamilyComboBox
-    from ..widgets.dialogs.components.combo.font_size   import FontSizeComboBox
-    from ..widgets.dialogs.components.combo.font_bool   import FontBoolComboBox
-
+def _populate_data_kind_types() -> None:
     _DATA_KIND_TYPES.update({
         DataKind.KIND              : (DataKind,),
         DataKind.STR               : (str,),
@@ -188,7 +170,6 @@ def _populate_data_kind_maps() -> None:
         DataKind.FLOAT             : (float,),
         DataKind.SIZE              : (float, NoneType),
         DataKind.BOOL              : (bool,),
-        DataKind.EN_DIS            : (EnDis,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
         DataKind.LINE_HANDLE       : (LineHandleId,),
         DataKind.PORT_HANDLE       : (PortHandleId,),
@@ -207,33 +188,9 @@ def _populate_data_kind_maps() -> None:
         DataKind.FONT_SIZE         : (float, NoneType),
         DataKind.FONT_BOOL         : (bool, NoneType)
     })
-    _DATA_KIND_EDITORS.update({
-        DataKind.KIND              : EnumComboBox[DataKind],
-        DataKind.STR               : StrEditor,
-        DataKind.TEXT              : TextEditor,
-        DataKind.INT               : IntEditor,
-        DataKind.FLOAT             : FloatEditor,
-        DataKind.SIZE              : SizeEditor,
-        DataKind.BOOL              : BoolEditor,
-        DataKind.EN_DIS            : EnumComboBox[EnDis],
-        DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
-        DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],
-        DataKind.PORT_HANDLE       : EnumComboBox[PortHandleId],
-        DataKind.BLOCK_PIN_HANDLE  : EnumComboBox[BlockPinHandleId],
-        DataKind.SYMBOL_PIN_HANDLE : EnumComboBox[SymbolPinHandleId],
-        DataKind.ROTATION          : RotationComboBox,
-        DataKind.ALIGN_H           : EnumComboBox[AlignH],
-        DataKind.ALIGN_V           : EnumComboBox[AlignV],
-        DataKind.EDGE              : EnumComboBox[Edge],
-        DataKind.DIRECTION         : EnumComboBox[Direction],
-        DataKind.COLOR             : ColorComboBox,
-        DataKind.PEN_STYLE         : LineStyleComboBox,
-        DataKind.PEN_WIDTH         : LineWidthComboBox,
-        DataKind.BRUSH_STYLE       : FillStyleComboBox,
-        DataKind.FONT_FAMILY       : FontFamilyComboBox,
-        DataKind.FONT_SIZE         : FontSizeComboBox,
-        DataKind.FONT_BOOL         : FontBoolComboBox
-    })
+    for kind in DataKind:
+        if kind is not DataKind.DUMMY and kind not in _DATA_KIND_TYPES:
+            raise ValueError(f"No type for kind: {kind}")
 
 
 class DataKind(Enum):
@@ -245,8 +202,6 @@ class DataKind(Enum):
     FLOAT             = "Float"
     SIZE              = "Size"
     BOOL              = "Boolean"
-    EN_DIS            = "Enable"
-    DISPLAY           = "Display"
     RECT_HANDLE       = "Rectangle Handle"
     LINE_HANDLE       = "Line Handle"
     PORT_HANDLE       = "Port Handle"
@@ -269,13 +224,8 @@ class DataKind(Enum):
 
     def types(self : Self) -> tuple[type, ...]:
         if not _DATA_KIND_TYPES:
-            _populate_data_kind_maps()
+            _populate_data_kind_types()
         return _DATA_KIND_TYPES[self]
-
-    def editor(self : Self) -> type:
-        if not _DATA_KIND_EDITORS:
-            _populate_data_kind_maps()
-        return _DATA_KIND_EDITORS[self]
 
 
 class Counter:

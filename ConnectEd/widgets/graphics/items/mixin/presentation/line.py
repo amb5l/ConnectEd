@@ -36,7 +36,7 @@ class ItemPresentationLineMixin:
     def hasLineColor(self : Self) -> bool:
         return hasattr(self, "_line_color")
 
-    def defaultLineColor(
+    def themeLineColor(
         self : Self,
         view : DiagramView | None = None
     ) -> QColor | None:
@@ -47,7 +47,7 @@ class ItemPresentationLineMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.color()
 
@@ -72,7 +72,7 @@ class ItemPresentationLineMixin:
     def lineWidth(self : Self) -> float | None:
         return self._line_width if hasattr(self, "_line_width") else None
 
-    def defaultLineWidth(
+    def themeLineWidth(
         self : Self,
         view : DiagramView | None = None
     ) -> float | None:
@@ -82,7 +82,7 @@ class ItemPresentationLineMixin:
         or not isinstance(self, ItemNamesMixin):
             raise TypeError("Bad host")
         scene = self._defaultScene(view)
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         if scene is None:
             return None
         pen = scene.resources.pen(self.resourcesName(), key)
@@ -106,7 +106,7 @@ class ItemPresentationLineMixin:
     def lineStyle(self : Self) -> Qt.PenStyle | None:
         return self._line_style if hasattr(self, "_line_style") else None
 
-    def defaultLineStyle(
+    def themeLineStyle(
         self : Self,
         view : DiagramView | None = None
     ) -> Qt.PenStyle | None:
@@ -117,7 +117,7 @@ class ItemPresentationLineMixin:
             raise TypeError("Bad host")
         if (scene := self._defaultScene(view)) is None:
             return None
-        key = self._resourceKeyDefault()
+        key = self._resourceNormalKey()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.style()
 
@@ -154,7 +154,9 @@ class ItemPresentationLineMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
+        pen = scene.resources.pen(
+            self.resourcesName(), self._resourceKey()
+        )
         self.setPen(pen)
 
     @withScene
@@ -166,7 +168,9 @@ class ItemPresentationLineMixin:
         or not isinstance(self, ItemNamesMixin) \
         or not isinstance(self, ItemPresentationMixin):
             raise TypeError("Bad host")
-        pen = scene.resources.pen(self.resourcesName(), self._resourceKey())
+        pen = scene.resources.pen(
+            self.resourcesName(), self._resourceKey()
+        )
         unselected = not self.isSelected()
         override_color = self._line_color if unselected \
             and hasattr(self, "_line_color") and self._line_color is not None \

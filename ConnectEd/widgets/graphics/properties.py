@@ -163,6 +163,9 @@ class Property:
         if self._notifier and self._owner.propertiesLive():
             self._notifier.changed.emit()
 
+    def display(self : Self) -> bool:
+        return self._display_item is not None
+
     def setDisplay(self : Self, enable : bool) -> PropertyTextItem | None:
         if enable:
             if self._display_item is None:
