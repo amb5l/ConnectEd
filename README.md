@@ -8,6 +8,11 @@ ConnectEd supports both VHDL and Verilog:
 
 **This project is in an early stage of development.**
 
+## Development
+
+See [README-DEV.md](README-DEV.md) for venv setup, tests, and Cursor / VS Code
+extensions.
+
 ## Acknowledgements
 
 ConnectEd is written in Python, and built on the PyQt6 Python bindings for Qt.
