@@ -30,8 +30,9 @@ def connect_ed_app() -> ConnectEdApp:
 def test_property_layout_resolves_block_label(connect_ed_app : ConnectEdApp) -> None:
     block = BlockItem(QPointF(0.0, 0.0), QPointF(100.0, 50.0))
     block.setLabel("U1")
-    label_pt = block.properties.text("Label")
+    label_pt = block.properties["Label"].displayItem()
     assert label_pt is not None
+    assert label_pt.name() == "Label"
 
     layout = PropertyLayout(label_pt, "Label")
 

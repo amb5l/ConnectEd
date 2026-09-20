@@ -88,8 +88,5 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             item = item.parentItem()
         return item
 
-    def description(self : Self) -> str:
-        return self.__class__.__name__.replace("Item", "")
-
     def _resetUuid(self : Self) -> None:
         self._uuid = str(uuid.uuid4())

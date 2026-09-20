@@ -12,14 +12,14 @@ from ....app import logger
 from ....core.check import checked
 from ....core.types import Direction, DataKind, RectHandleId, HandleId
 
-from ..properties import PropertySpec, PropertyDisplayState
-
+from ..properties   import PropertySpec
 from ..painter_path import PainterPath
 
 from .role import FunctionalItem
 
-from .grip     import GripItem, MoveGripItem
-from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
+from .property_text import PropertyTextSpec
+from .grip          import GripItem, MoveGripItem
+from .gate_pin      import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -54,7 +54,7 @@ class GateItem(
         )
     }
     _PROPERTY_DISPLAY_SPECS = {
-        "Label" : PropertyDisplayState(
+        "Label" : PropertyTextSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         )
     }

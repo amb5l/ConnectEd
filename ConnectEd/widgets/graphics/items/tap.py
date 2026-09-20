@@ -7,17 +7,16 @@ from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 
 from ....core.defs  import PITCH
-from ....core.types import NetKind, DataKind, AlignH, AlignV, \
-                           RectHandleId, TapHandleId
+from ....core.types import NetKind, DataKind, RectHandleId, TapHandleId
 from ....core.check import checked
 
-from ..properties import PropertySpec, PropertyDisplayState
+from ..properties import PropertySpec
 
-from .role import FunctionalItem
-
-from .handle import HandleItem
-from .grip   import MoveGripItem
-from .node   import TapMajorNodeItem, TapMinorNodeItem
+from .property_text import PropertyTextSpec
+from .role          import FunctionalItem
+from .handle        import HandleItem
+from .grip          import MoveGripItem
+from .node          import TapMajorNodeItem, TapMinorNodeItem
 
 from .mixin.transform  import ItemTransformMixin
 from .mixin.paint      import ItemPaintMixin
@@ -48,7 +47,7 @@ class TapItem(
     }
     _PROPERTIES =_PROPERTIES_SUFFIX | ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_DISPLAY_SPECS = {
-        "Suffix" : PropertyDisplayState(
+        "Suffix" : PropertyTextSpec(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
         )
     }

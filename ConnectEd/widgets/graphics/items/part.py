@@ -5,7 +5,9 @@ from typing import Self
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import PropertySpec, PropertyDisplayState, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
+
+from .property_text import PropertyTextSpec
 
 
 class PartItemMixin:
@@ -23,10 +25,10 @@ class PartItemMixin:
             )
         }
     _PROPERTY_DISPLAY_SPECS = {
-        "Label" : PropertyDisplayState(
+        "Label" : PropertyTextSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         ),
-        "Name"  : PropertyDisplayState(
+        "Name"  : PropertyTextSpec(
             cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
         )
     }

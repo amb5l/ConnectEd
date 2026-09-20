@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing      import Self, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene, QMenu
@@ -10,12 +10,11 @@ from PyQt6.QtGui     import QAction, QColor
 from ....app import settings
 
 from ....core.check import checked
-from ....core.types import NoChange, AlignH, AlignV, \
-                                HandleId, RectHandleId, DataKind
+from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+                           HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
-from ..properties import PropertySpec, \
-                         PropertyDisplayState, PropertyDisplayChange
+from ..properties import PropertySpec
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -78,8 +77,9 @@ class PropertyTextItem(TextItem):
 
     def settingsName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Instance method in this case."""
-        if isinstance(item := self.owner(), ItemNamesMixin):
-            settings_name = f"{item.settingsName()}{self._name}"
+        if isinstance(owner := self.owner(), ItemNamesMixin) \
+        and hasattr(self, "_property"):
+            settings_name = f"{owner.settingsName()}{self.name()}"
             settings_items = settings().get("theme/items")
             if hasattr(settings_items, settings_name):
                 return settings_name
@@ -145,6 +145,7 @@ class PropertyTextItem(TextItem):
         self.setCleat(cleat)
         self._tether = PropertyTextTetherItem(self)
         self.onTextChanged()
+        self._updateQuill()
 
     def onPositionChanged(
         self : Self,
@@ -167,17 +168,13 @@ class PropertyTextItem(TextItem):
             grip.setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
-        if isinstance(name := self.name(), str):
-            if name in self.properties:
-                kind = self.properties[name].kind()
-                if kind in (DataKind.STR, DataKind.TEXT):
-                    super().setBlock(kind == DataKind.TEXT)
-                text = val2str(self.value())
-            else:
-                text = f"<{self._name} - not found>"
-        else:
-            text = f"<{self._name}>"
-        super().setText(text)
+        kind = self._property.kind()
+        if kind in (DataKind.STR, DataKind.TEXT):
+            super().setBlock(kind == DataKind.TEXT)
+        super().setText(val2str(self._property.value()))
+
+    def property(self : Self) -> Property:
+        return self._property
 
     def cleatKind(self : Self) -> DataKind:
         item = self.owner()
@@ -240,43 +237,33 @@ class PropertyTextItem(TextItem):
             parent = parent.parentItem()
         return parent if isinstance(parent, PropertiesMixin) else None
 
-    @checked
-    def bind(self : Self, name : str) -> None:
-        """Rebind to an owner property (does not signal this item's Name)."""
-        self._name = name
-        self.onTextChanged()
-        self._updateQuill()
-
-    def name(self : Self) -> str | None:
-        return self._name if hasattr(self, "_name") else None
+    def name(self : Self) -> str:
+        return self._property.name()
 
     @checked
     def setName(self : Self, name : str) -> None:
-        self.bind(name)
+        old = self.name()
+        if old == name:
+            return
+        if not self._property.owner().propertyRename(old, name):
+            return
         self.properties["Name"].notify()
+        self._updateQuill()
 
     def value(self : Self) -> Any:
-        name = self.name()
-        if name is None or name == "":
-            return None
-        if not isinstance((item := self.owner()), PropertiesMixin):
-            raise RuntimeError("Bad item")
-        return item.properties[name].value()
+        return self._property.value()
 
     @checked
     def setValue(self : Self, value : Any) -> None:
-        name = self.name()
-        if name is None or name == "":
-            return None
         if isinstance(value, NoChange):
             return
-        self.properties[name].setValue(value)
+        self._property.setValue(value)
 
-    def state(self : Self) -> PropertyDisplayState:
+    def state(self : Self) -> PropertyTextState:
         origin = self.origin()
         if not isinstance(origin, RectHandleId):
             raise ValueError(f"Origin {origin} is not a rect handle ID")
-        return PropertyDisplayState(
+        return PropertyTextState(
             visible    = self.isVisible(),
             cleat      = self.cleat(),
             x          = self.pos().x(),
@@ -305,7 +292,7 @@ class PropertyTextItem(TextItem):
     @checked
     def apply(
         self    : Self,
-        payload : PropertyDisplayState | PropertyDisplayChange
+        payload : PropertyTextState | PropertyTextChange
     ) -> None:
         if not isinstance(payload.visible, NoChange):
             self.setVisible(payload.visible)
@@ -386,6 +373,7 @@ class PropertyTextItem(TextItem):
 
 @dataclass
 class PropertyTextSpec:
+    """Used to specify property texts during owner construction."""
     visible    : bool            = True
     cleat      : HandleId | None = None
     x          : float           = 0
@@ -416,5 +404,84 @@ class PropertyTextSpec:
             self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
             self.origin, self.align_h, self.align_v, self.width, self.height,
             self.pad_left, self.pad_right, self.pad_top, self.pad_bottom,
-            self.color, self.font, self.size, self.bold, self.italic, self.underline
+            self.color,
+            self.font, self.size, self.bold, self.italic, self.underline
+        )
+
+
+@dataclass
+class PropertyTextState:
+    """Used to return property text states from editor dialogs."""
+    visible    : bool
+    cleat      : HandleId | None
+    x          : float
+    y          : float
+    rotation   : float
+    mirror_h   : bool
+    mirror_v   : bool
+    autoflip   : bool
+    origin     : RectHandleId
+    align_h    : AlignH
+    align_v    : AlignV
+    width      : float
+    height     : float
+    pad_left   : float
+    pad_right  : float
+    pad_top    : float
+    pad_bottom : float
+    color      : QColor   | None
+    font       : str      | None
+    size       : float    | None
+    bold       : bool     | None
+    italic     : bool     | None
+    underline  : bool     | None
+
+
+@dataclass
+class PropertyTextChange:
+    """Used to return property text changes from editor dialogs."""
+    visible    : bool            | NoChange = NO_CHANGE
+    cleat      : HandleId | None | NoChange = NO_CHANGE
+    x          : float           | NoChange = NO_CHANGE
+    y          : float           | NoChange = NO_CHANGE
+    rotation   : float           | NoChange = NO_CHANGE
+    mirror_h   : bool            | NoChange = NO_CHANGE
+    mirror_v   : bool            | NoChange = NO_CHANGE
+    autoflip   : bool            | NoChange = NO_CHANGE
+    origin     : RectHandleId    | NoChange = NO_CHANGE
+    align_h    : AlignH          | NoChange = NO_CHANGE
+    align_v    : AlignV          | NoChange = NO_CHANGE
+    width      : float           | NoChange = NO_CHANGE
+    height     : float           | NoChange = NO_CHANGE
+    pad_left   : float           | NoChange = NO_CHANGE
+    pad_right  : float           | NoChange = NO_CHANGE
+    pad_top    : float           | NoChange = NO_CHANGE
+    pad_bottom : float           | NoChange = NO_CHANGE
+    color      : QColor   | None | NoChange = NO_CHANGE
+    font       : str      | None | NoChange = NO_CHANGE
+    size       : float    | None | NoChange = NO_CHANGE
+    bold       : bool     | None | NoChange = NO_CHANGE
+    italic     : bool     | None | NoChange = NO_CHANGE
+    underline  : bool     | None | NoChange = NO_CHANGE
+
+    @classmethod
+    def fromComparison(
+        cls    : type[Self],
+        before : PropertyTextState,
+        after  : PropertyTextState
+    ) -> Self:
+        instance = cls()
+        for field in fields(instance):
+            before_field_value = getattr(before, field.name)
+            after_field_value = getattr(after, field.name)
+            if before_field_value == after_field_value:
+                setattr(instance, field.name, NoChange)
+            else:
+                setattr(instance, field.name, after_field_value)
+        return instance
+
+    def noop(self : Self) -> bool:
+        return all(
+            isinstance(getattr(self, field.name), NoChange)
+            for field in fields(self)
         )

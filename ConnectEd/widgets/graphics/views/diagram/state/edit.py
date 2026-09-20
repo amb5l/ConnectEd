@@ -325,8 +325,6 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
                 if not isinstance(owner, PropertiesMixin):
                     raise ValueError("Owner is not a PropertiesMixin")
                 old_name = item.name()
-                if old_name is None:
-                    raise ValueError("Old name is None")
                 new_name = dialog.getName()
                 prop_name = old_name if isinstance(new_name, NoChange) \
                     else (old_name, new_name)

@@ -8,14 +8,14 @@ from dataclasses     import dataclass, fields
 
 from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene
-from PyQt6.QtGui     import QColor
 
 from ...app import logger
 
 from ...core.check import checked
-from ...core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
-                          HandleId, RectHandleId, DataKind
-from ...core.utils import val2str
+from ...core.types import NoChange, NO_CHANGE, DataKind
+from ...core.utils import val2str, pascal2proper
+
+from .items.property_text import PropertyTextState
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -169,6 +169,7 @@ class Property:
         return self._display_item is not None
 
     def setDisplay(self : Self, enable : bool) -> PropertyTextItem | None:
+        from .items.property_text import PropertyTextItem
         if enable:
             if self._display_item is None:
                 # create display item
@@ -212,6 +213,13 @@ class Property:
             except TypeError:
                 pass
 
+    def state(self : Self) -> PropertyState:
+        return PropertyState(
+            name=self.name(),
+            value=self.value(raw=True),
+            kind=self.kind()
+        )
+
     @classmethod
     def fromSpec(
         cls   : type[Self],
@@ -235,6 +243,7 @@ T = TypeVar("T")
 
 @dataclass
 class PropertySpec(Generic[T]):
+    """Used to create a properties in owner definitions."""
     kind    : DataKind | Callable[[T], DataKind]
     value   : Any                                | None = None
     getter  : Callable[[T], Any]                 | None = None
@@ -245,68 +254,40 @@ class PropertySpec(Generic[T]):
 
 
 @dataclass
-class PropertyDisplayState:
-    visible    : bool            = True
-    cleat      : HandleId | None = None
-    x          : float           = 0
-    y          : float           = 0
-    rotation   : float           = 0.0
-    mirror_h   : bool            = False
-    mirror_v   : bool            = False
-    autoflip   : bool            = True
-    origin     : RectHandleId    = RectHandleId.TOP_LEFT
-    align_h    : AlignH          = AlignH.LEFT
-    align_v    : AlignV          = AlignV.TOP
-    width      : float           = -1.0
-    height     : float           = -1.0
-    pad_left   : float           = 0.0
-    pad_right  : float           = 0.0
-    pad_top    : float           = 0.0
-    pad_bottom : float           = 0.0
-    color      : QColor   | None = None
-    font       : str      | None = None
-    size       : float    | None = None
-    bold       : bool     | None = None
-    italic     : bool     | None = None
-    underline  : bool     | None = None
+class PropertyState:
+    """Used to capture property states in editor dialogs."""
+    name  : str
+    value : Any
+    kind  : DataKind
 
 
 @dataclass
-class PropertyDisplayChange:
-    visible    : bool            | NoChange = NO_CHANGE
-    cleat      : HandleId | None | NoChange = NO_CHANGE
-    x          : float           | NoChange = NO_CHANGE
-    y          : float           | NoChange = NO_CHANGE
-    rotation   : float           | NoChange = NO_CHANGE
-    mirror_h   : bool            | NoChange = NO_CHANGE
-    mirror_v   : bool            | NoChange = NO_CHANGE
-    autoflip   : bool            | NoChange = NO_CHANGE
-    origin     : RectHandleId    | NoChange = NO_CHANGE
-    align_h    : AlignH          | NoChange = NO_CHANGE
-    align_v    : AlignV          | NoChange = NO_CHANGE
-    width      : float           | NoChange = NO_CHANGE
-    height     : float           | NoChange = NO_CHANGE
-    pad_left   : float           | NoChange = NO_CHANGE
-    pad_right  : float           | NoChange = NO_CHANGE
-    pad_top    : float           | NoChange = NO_CHANGE
-    pad_bottom : float           | NoChange = NO_CHANGE
-    color      : QColor   | None | NoChange = NO_CHANGE
-    font       : str      | None | NoChange = NO_CHANGE
-    size       : float    | None | NoChange = NO_CHANGE
-    bold       : bool     | None | NoChange = NO_CHANGE
-    italic     : bool     | None | NoChange = NO_CHANGE
-    underline  : bool     | None | NoChange = NO_CHANGE
+class PropertyChange:
+    """Used to return property changes from editor dialogs."""
+    name  : str      | NoChange = NO_CHANGE
+    value : Any      | NoChange = NO_CHANGE
+    kind  : DataKind | NoChange = NO_CHANGE
 
-    def noop(self : Self) -> bool:
-        return all(
-            isinstance(getattr(self, field.name), NoChange)
-            for field in fields(self)
-        )
+    @classmethod
+    def fromComparison(
+        cls    : type[Self],
+        before : PropertyState,
+        after  : PropertyState
+    ) -> Self:
+        instance = cls()
+        for field in fields(instance):
+            before_field_value = getattr(before, field.name)
+            after_field_value = getattr(after, field.name)
+            if before_field_value == after_field_value:
+                setattr(instance, field.name, NoChange)
+            else:
+                setattr(instance, field.name, after_field_value)
+        return instance
 
 
 class PropertiesMixin:
     _PROPERTY_SPECS         : dict[str, PropertySpec]
-    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyDisplayState]
+    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyTextState]
     properties              : dict[str, Property]
 
     def initProperties(self : Self, live : bool) -> None:
@@ -449,3 +430,35 @@ class PropertiesMixin:
             (n for n, p in self.properties.items() if p == property),
             None
         )
+
+    def propertyTextItems(
+        self     : Self,
+        property : Property | None = None
+    ) -> list[PropertyTextItem]:
+        if isinstance(self, QGraphicsScene):
+            items = [
+                item
+                for item in self.items()
+                if isinstance(item, PropertyTextItem)
+            ]
+        elif isinstance(self, QGraphicsItem):
+            items = []
+            for child in self.childItems():
+                if isinstance(child, PropertyTextItem):
+                    items.append(child)
+                for grandchild in child.childItems():
+                    if isinstance(grandchild, PropertyTextItem):
+                        items.append(grandchild)
+        else:
+            return []
+        if property is not None:
+            return [item for item in items if item.property() is property]
+        return items
+
+    def description(self : Self) -> str:
+        class_name = self.__class__.__name__
+        if class_name.endswith("Item"):
+            class_name = class_name[:-4]
+        elif class_name.endswith("Scene"):
+            class_name = class_name[:-5]
+        return pascal2proper(class_name)

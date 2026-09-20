@@ -6,10 +6,11 @@ from PyQt6.QtWidgets import QApplication
 
 from ConnectEd.app import ConnectEdApp
 from ConnectEd.core.settings import Settings
+from ConnectEd.core.types import DataKind
 from ConnectEd.core.palette import mid_cyan, mid_red
 from ConnectEd.widgets.graphics.items.block import BlockItem
 from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.scenes.drawing.resources import DrawingSceneResources
+from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 
 
 @pytest.fixture
@@ -25,8 +26,9 @@ def test_property_text_block_name_settings_and_resources(
     connect_ed_app : ConnectEdApp,
 ) -> None:
     block = BlockItem(QPointF(0.0, 0.0), QPointF(100.0, 50.0))
-    pt = block.properties.text("Name")
+    pt = block.properties["Name"].displayItem()
     assert pt is not None
+    assert pt.name() == "Name"
     assert pt.settingsName() == "BlockName"
     assert pt.resourcesName() == "BlockName"
 
@@ -35,8 +37,10 @@ def test_property_text_unknown_property_falls_back(
     connect_ed_app : ConnectEdApp,
 ) -> None:
     block = BlockItem(QPointF(0.0, 0.0), QPointF(100.0, 50.0))
-    pt = PropertyTextItem(name="", parent=block)
-    pt._name = "CustomProp"
+    prop = block.propertyAdd("CustomProp", DataKind.STR, "x")
+    assert prop is not None
+    pt = PropertyTextItem(property=prop)
+    assert pt.name() == "CustomProp"
     assert pt.settingsName() == "PropertyText"
     assert pt.resourcesName() == "PropertyText"
 
@@ -44,7 +48,7 @@ def test_property_text_unknown_property_falls_back(
 def test_resources_quill_lazy_loads_block_name_color(
     connect_ed_app : ConnectEdApp,
 ) -> None:
-    resources = DrawingSceneResources()
+    resources = DiagramSceneResources()
     quill = resources.quill("BlockName", False)
     assert quill.color() == mid_cyan
     assert quill.color() != mid_red
@@ -53,6 +57,6 @@ def test_resources_quill_lazy_loads_block_name_color(
 def test_resources_quill_lazy_loads_property_text_fallback(
     connect_ed_app : ConnectEdApp,
 ) -> None:
-    resources = DrawingSceneResources()
+    resources = DiagramSceneResources()
     quill = resources.quill("PropertyText", False)
     assert quill.color() == mid_red

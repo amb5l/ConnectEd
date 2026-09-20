@@ -20,9 +20,7 @@ class PropertyDialog(BaseTextItemDialog):
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
-        if not isinstance(name := item.name(), str):
-            raise TypeError("Bad name")
-        self._top_section = PropertyGroupBox(item, name)
+        self._top_section = PropertyGroupBox(item, item.name())
         self._layout.addWidget(self._top_section)
 
     @checked

@@ -83,7 +83,42 @@ class PropertiesItemTypeWidget(QWidget):
             self._current_widget = current_data
 
 
+_TAB_ORDER = [
+    "Property Texts",
+    "Diagrams",
+    "Blocks",
+    "Symbols",
+    "Gates",
+    "Ports",
+    "Net Labels",
+    "Taps",
+    "Subnets",
+    "Nets",
+    "Lines",
+    "Rectangles",
+    "Ellipses",
+    "Polylines",
+    "Bitmaps"
+]
+
+
 class PropertiesItemTypeTabWidget(QTabWidget):
     """
     Widget for displaying multiple PropertiesItemTypeWidget tabs.
     """
+
+    def __init__(
+        self   : Self,
+        owners : dict[str, list[PropertiesMixin]],
+        parent : QWidget | None = None
+    ) -> None:
+        # superclass init
+        super().__init__(parent)
+        # sort owner types
+        owner_type_names = \
+            sorted(owners.keys(), key=lambda x: _TAB_ORDER.index(x))
+        # create tabs
+        for owner_type_name in owner_type_names:
+            owner_type_items = owners[owner_type_name]
+            tab = PropertiesItemTypeWidget(owner_type_items)
+            self.addTab(tab, owner_type_name)

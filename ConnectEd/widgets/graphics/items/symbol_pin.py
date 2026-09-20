@@ -10,11 +10,10 @@ from ....core.defs  import PITCH
 from ....core.types import RectHandleId, SymbolPinHandleId, HandleId, DataKind
 from ....core.check import checked
 
-from ..properties import PropertyDisplayState
-
-from .handle   import HandleItem
-from .grip     import GripItem, MoveGripItem
-from .port_pin import PortPinArrowItem, PortPinPathItem
+from .property_text import PropertyTextSpec
+from .handle        import HandleItem
+from .grip          import GripItem, MoveGripItem
+from .port_pin      import PortPinArrowItem, PortPinPathItem
 
 from .mixin.edge_loc import ItemEdgeLocMixin
 
@@ -35,7 +34,7 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     _ARROW_POS  = 0
     _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
     _PROPERTY_DISPLAY_SPECS = {
-        "Name" : PropertyDisplayState(
+        "Name" : PropertyTextSpec(
             cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )
     }
