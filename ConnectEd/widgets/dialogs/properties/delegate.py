@@ -3,17 +3,18 @@ from __future__ import annotations
 from typing  import Self
 from inspect import signature
 
-from PyQt6.QtCore    import QModelIndex, QAbstractItemModel
-from PyQt6.QtWidgets import QWidget, QLineEdit, \
+from PyQt6.QtCore    import Qt, QEvent, QRect, QSize, QModelIndex, \
+                            QAbstractItemModel, pyqtSignal
+from PyQt6.QtWidgets import QWidget, QLineEdit, QApplication, QStyle, \
                             QStyledItemDelegate, QStyleOptionViewItem
-from PyQt6.QtGui     import QStandardItemModel
+from PyQt6.QtGui     import QPainter, QMouseEvent, QStandardItemModel
 
 from ....core.check import checked
 from ....core.types import DataKind
 
-from ...utils import kind2cellEditor
+from ..components.table import TableItem
 
-from ...graphics.properties import _CUSTOM_PROPERTY_KINDS
+from ...utils import kind2dialogEditor
 
 from ..components.edit import \
     StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
@@ -29,34 +30,29 @@ from ..components.combo.font_bool   import FontBoolComboBox
 
 from .item import PropertiesItem
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import PropertiesDialog
-    EditorType = (
-        StrEditor,
-        TextEditor,
-        IntEditor,
-        FloatEditor,
-        SizeEditor,
-        BoolEditor,
-        EnumComboBox,
-        ColorComboBox,
-        LineStyleComboBox,
-        LineWidthComboBox,
-        FillStyleComboBox,
-        FontFamilyComboBox,
-        FontSizeComboBox,
-        FontBoolComboBox
-    )
+EditorType = (
+    StrEditor,
+    TextEditor,
+    IntEditor,
+    FloatEditor,
+    SizeEditor,
+    BoolEditor,
+    EnumComboBox,
+    ColorComboBox,
+    LineStyleComboBox,
+    LineWidthComboBox,
+    FillStyleComboBox,
+    FontFamilyComboBox,
+    FontSizeComboBox,
+    FontBoolComboBox
+)
 
 
 class PropertiesDelegate(QStyledItemDelegate):
-    _dialog : PropertiesDialog
 
     @checked
-    def __init__(self : Self, dialog : PropertiesDialog) -> None:
-        super().__init__(dialog)
-        self._dialog = dialog
+    def __init__(self : Self, parent : QWidget | None = None) -> None:
+        super().__init__(parent)
 
     def createEditor(
         self   : Self,
@@ -72,27 +68,18 @@ class PropertiesDelegate(QStyledItemDelegate):
             return None
         if (kind := item.kind()) is None:
             return None
-        editor = kind2cellEditor(kind)
+        editor = kind2dialogEditor(kind)
         args = {
             "value"   : item.value(),
             "default" : item.default(),
             "parent"  : parent,
         }
         if kind is DataKind.KIND:
-            args["subset"] = _CUSTOM_PROPERTY_KINDS
+            args["subset"] = [DataKind.STR, DataKind.TEXT]
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
-        e = editor(**args)
-        if kind is DataKind.BOOL and isinstance(e, EnumComboBox):
-            row = index.row()
-            e.currentIndexChanged.connect(
-                lambda: self._dialog._onDisplayChanged(e.raw(), row)
-            )
-            e.destroyed.connect(
-                lambda: self._dialog._refreshDisplay(row)
-            )
-        return e
+        return editor(**args)
 
     @checked
     def setEditorData(
@@ -126,3 +113,129 @@ class PropertiesDelegate(QStyledItemDelegate):
         if not isinstance(item := model.itemFromIndex(index), PropertiesItem):
             return
         item.setValue(value)
+
+
+class ExpanderDelegate(QStyledItemDelegate):
+    """
+    Paints a tree branch in a dedicated gutter column.
+
+    Cell value (TableItem.value / UserRole+current):
+      True  — has extra children, expanded
+      False — has extra children, collapsed
+      None  — no extra children (blank)
+    """
+
+    toggled = pyqtSignal(QModelIndex, bool)
+
+    @checked
+    def __init__(self : Self, parent : QWidget | None = None) -> None:
+        super().__init__(parent)
+
+    def paint(
+        self    : Self,
+        painter : QPainter | None,
+        option  : QStyleOptionViewItem,
+        index   : QModelIndex
+    ) -> None:
+        super().paint(painter, option, index)
+        if painter is None:
+            return
+        expanded = self._expanded(index)
+        if expanded is None:
+            return
+        widget = option.widget
+        style = widget.style() if widget is not None else QApplication.style()
+        branch = QStyleOptionViewItem(option)
+        branch.rect = self._indicatorRect(option, widget)
+        branch.state |= QStyle.StateFlag.State_Children
+        if expanded:
+            branch.state |= QStyle.StateFlag.State_Open
+        if style is None:
+            return
+        style.drawPrimitive(
+            QStyle.PrimitiveElement.PE_IndicatorBranch,
+            branch,
+            painter,
+            widget
+        )
+
+    def createEditor(
+        self   : Self,
+        parent : QWidget | None,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ) -> QWidget | None:
+        return None
+
+    def editorEvent(
+        self   : Self,
+        event  : QEvent             | None,
+        model  : QAbstractItemModel | None,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ) -> bool:
+        if event is None or model is None:
+            return False
+        expanded = self._expanded(index)
+        if expanded is None:
+            return False
+        if event.type() != QEvent.Type.MouseButtonRelease:
+            return False
+        if not isinstance(event, QMouseEvent):
+            return False
+        if event.button() != Qt.MouseButton.LeftButton:
+            return False
+        if not option.rect.contains(event.pos()):
+            return False
+        if not isinstance(model, QStandardItemModel):
+            return False
+        item = model.itemFromIndex(index)
+        if not isinstance(item, TableItem):
+            return False
+        item.setValue(not expanded)
+        self.toggled.emit(index, not expanded)
+        return True
+
+    def sizeHint(
+        self   : Self,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ) -> QSize:
+        widget = option.widget
+        style = widget.style() if widget is not None else QApplication.style()
+        if style is None:
+            return QSize(0, 0)
+        width = style.pixelMetric(
+            QStyle.PixelMetric.PM_IndicatorWidth, option, widget
+        )
+        height = super().sizeHint(option, index).height()
+        return QSize(width + 4, height)
+
+    def _expanded(self : Self, index : QModelIndex) -> bool | None:
+        model = index.model()
+        if isinstance(model, QStandardItemModel):
+            item = model.itemFromIndex(index)
+            if isinstance(item, TableItem):
+                value = item.value()
+                return value if isinstance(value, bool) else None
+        value = index.data(Qt.ItemDataRole.UserRole + TableItem._IDX_CURRENT)
+        return value if isinstance(value, bool) else None
+
+    def _indicatorRect(
+        self   : Self,
+        option : QStyleOptionViewItem,
+        widget : QWidget | None
+    ) -> QRect:
+        style = widget.style() if widget is not None else QApplication.style()
+        if style is None:
+            return QRect(0, 0, 0, 0)
+        size = style.pixelMetric(
+            QStyle.PixelMetric.PM_IndicatorWidth, option, widget
+        )
+        cell = option.rect
+        return QRect(
+            cell.x() + (cell.width()  - size) // 2,
+            cell.y() + (cell.height() - size) // 2,
+            size,
+            size
+        )

@@ -17,7 +17,9 @@ from ...core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                           HandleId, RectHandleId, DataKind
 from ...core.utils import val2str
 
-from .items.property_text import PropertyTextItem
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .items.property_text import PropertyTextItem
 
 
 class PropertyNotifier(QObject):

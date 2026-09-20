@@ -14,10 +14,8 @@ from ....core.types import NoChange, AlignH, AlignV, \
                                 HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
-from ..properties import (
-    Property, PropertiesMixin, PropertySpec,
-    PropertyDisplayState, PropertyDisplayChange
-)
+from ..properties import PropertySpec, \
+                         PropertyDisplayState, PropertyDisplayChange
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -29,7 +27,8 @@ from .mixin.handle     import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.diagram  import DiagramView
+    from ..views.diagram import DiagramView
+    from ..properties    import Property, PropertiesMixin
 
 
 class PropertyTextTetherItem(TextTetherItem):
@@ -354,58 +353,6 @@ class PropertyTextItem(TextItem):
             self.setTextItalic(payload.italic)
         if not isinstance(payload.underline, NoChange):
             self.setTextUnderline(payload.underline)
-
-    @checked
-    def applyDialog(self : Self, dialog : PropertyTextItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
-        self._applyDialogCommon(dialog)
-        name  = dialog.getName()
-        kind  = dialog.getKind()
-        value = dialog.getValue()
-        cleat = dialog.getCleat()
-        item = self.owner()
-        if not isinstance(item, PropertiesMixin):
-            raise RuntimeError("Bad item")
-        old_name = self.name()
-        if old_name is None:
-            raise RuntimeError("PropertyTextItem has no name")
-        if isinstance(name, NoChange):
-            name = old_name
-        elif name != old_name:
-            item.propertyRename(old_name, name)
-        if not isinstance(kind, NoChange):
-            item.properties[name].setKind(kind)
-        if not isinstance(value, NoChange):
-            item.properties[name].setValue(value)
-        if not isinstance(cleat, NoChange):
-            self.setCleat(cleat)
-
-    def propertyTuple(self : Self) -> tuple:
-        return (
-            self.name(),
-            self.isVisible(),
-            self.cleat(),
-            self.pos().x(),
-            self.pos().y(),
-            self.rotation(),
-            self.mirrorH(),
-            self.mirrorV(),
-            self.autoflip(),
-            self.origin(),
-            self.alignH(),
-            self.alignV(),
-            self.width(),
-            self.height(),
-            self.padLeft(),
-            self.padRight(),
-            self.padTop(),
-            self.padBottom(),
-            self.color(),
-            self.textFont(),
-            self.textSize(),
-            self.textBold(),
-            self.textItalic(),
-            self.textUnderline()
-        )
 
     @checked
     def ctxMenuItems(
