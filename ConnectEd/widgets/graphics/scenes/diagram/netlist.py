@@ -107,19 +107,6 @@ class Netlist:
         return None if subnet_id is None else self._subnets[subnet_id]
 
     @checked
-    def netKindForSegment(self : Self, seg : SegmentItem) -> NetKind:
-        if (node := seg.node1() or seg.node2()) is None:
-            return NetKind.UNRESOLVED
-        if (subnet := self.nodeSubnet(node)) is None:
-            return NetKind.UNRESOLVED
-        net = subnet.net
-        if net is not None and net.suffix is not None:
-            return _netKindFromSuffix(net.suffix)
-        if subnet.suffix is not None:
-            return _netKindFromSuffix(subnet.suffix)
-        return NetKind.UNRESOLVED
-
-    @checked
     def nodeNet(self : Self, node : NodeItem) -> Net | None:
         subnet = self.nodeSubnet(node)
         return None if subnet is None else subnet.net
@@ -246,6 +233,35 @@ class Netlist:
     @checked
     def hasSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
         return self._graph.has_edge(node1, node2)
+
+    @checked
+    def segmentSubnet(self : Self, seg : SegmentItem) -> Subnet | None:
+        if (node := seg.node1() or seg.node2()) is None:
+            return None
+        if (subnet := self.nodeSubnet(node)) is None:
+            return None
+        return subnet
+
+    @checked
+    def segmentNet(self : Self, seg : SegmentItem) -> Net | None:
+        if (node := seg.node1() or seg.node2()) is None:
+            return None
+        if (subnet := self.nodeSubnet(node)) is None:
+            return None
+        return subnet.net
+
+    @checked
+    def segmentNetKind(self : Self, seg : SegmentItem) -> NetKind:
+        if (node := seg.node1() or seg.node2()) is None:
+            return NetKind.UNRESOLVED
+        if (subnet := self.nodeSubnet(node)) is None:
+            return NetKind.UNRESOLVED
+        net = subnet.net
+        if net is not None and net.suffix is not None:
+            return _netKindFromSuffix(net.suffix)
+        if subnet.suffix is not None:
+            return _netKindFromSuffix(subnet.suffix)
+        return NetKind.UNRESOLVED
 
     @checked
     def addSegment(self : Self, seg : SegmentItem) -> None:

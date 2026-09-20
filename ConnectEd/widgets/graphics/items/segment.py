@@ -125,7 +125,7 @@ class SegmentItem(
         if not isinstance(scene, DiagramScene):
             logger().error("Bad scene")
             return
-        kind = scene.netlist.netKindForSegment(self)
+        kind = scene.netlist.segmentNetKind(self)
         if kind == self._net_kind:
             return
         self._net_kind = kind
@@ -135,7 +135,7 @@ class SegmentItem(
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         from ..scenes.diagram import DiagramScene
         if isinstance(scene, DiagramScene):
-            self._net_kind = scene.netlist.netKindForSegment(self)
+            self._net_kind = scene.netlist.segmentNetKind(self)
         ItemPresentationMixin.onSceneChanged(self, scene)
 
     def isOrthogonal(self : Self) -> bool:
