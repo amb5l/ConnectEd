@@ -82,7 +82,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         _PROPERTIES_ALIGN                    | \
         _PROPERTIES_SIZE                     | \
         BaseTextItem._PROPERTIES_PADDING     | \
-        BaseTextItem._PROPERTIES_APPEARANCE
+        BaseTextItem._PROPERTIES_TYPOGRAPHY
 
     # instance attributes
     _name  : str

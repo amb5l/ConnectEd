@@ -20,17 +20,14 @@ class TableItem(QStandardItem):
     _IDX_INITIAL = 0
     _IDX_CURRENT = 1
     _IDX_DELETED = 2
-    _IDX_REF     = 3
 
     @checked
     def __init__(
         self     : Self,
-        value    : Any | None = None,
-        ref      : Any | None = None,
-        *,
+        value    : Any,
         new      : bool = False,
         editable : bool = True,
-        enabled  : bool = True,
+        enabled  : bool = True
     ) -> None:
         super().__init__()
         self.setDeleted(False)
@@ -38,7 +35,6 @@ class TableItem(QStandardItem):
         self.setEnabled(enabled)
         self.setEditable(editable)
         self.setValue(value)
-        self.setRef(ref)
 
     @checked
     def initial(self : Self) -> Any:
@@ -49,11 +45,11 @@ class TableItem(QStandardItem):
         self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_INITIAL)
 
     @checked
-    def value(self : Self) -> Any | None:
+    def value(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
 
     @checked
-    def setValue(self : Self, value : Any | None | NoChange) -> None:
+    def setValue(self : Self, value : Any | NoChange) -> None:
         if isinstance(value, NoChange):
             return
         self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
@@ -76,13 +72,6 @@ class TableItem(QStandardItem):
     def setDeleted(self : Self, deleted : bool) -> None:
         self.setData(deleted, Qt.ItemDataRole.UserRole + self._IDX_DELETED)
         self._updateAppearance()
-
-    def ref(self : Self) -> Any:
-        return self.data(Qt.ItemDataRole.UserRole + self._IDX_REF)
-
-    @checked
-    def setRef(self : Self, value : Any) -> None:
-        self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_REF)
 
     @checked
     def setEnabled(self : Self, enabled : bool) -> None:

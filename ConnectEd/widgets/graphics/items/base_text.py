@@ -167,7 +167,7 @@ class BaseTextItem(
         _PROPERTIES_ALIGN                          | \
         _PROPERTIES_SIZE                           | \
         _PROPERTIES_PADDING                        | \
-        PrimaryItemMixin._PROPERTIES_APPEARANCE
+        PrimaryItemMixin._PROPERTIES_TYPOGRAPHY
 
     # instance attributes
     _child      : TextLineRenderer | TextBlockRenderer  # text renderer

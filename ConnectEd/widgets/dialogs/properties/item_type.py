@@ -6,23 +6,26 @@ from PyQt6.QtWidgets import QWidget, QTabWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox, QCheckBox, QPushButton
 
-from ...graphics.properties import PropertiesMixin
-
 from ..components.table import TableModel
 
-from .list import PropertiesListWidget
 from .grid import PropertiesGridWidget
+from .bush import PropertiesBushWidget
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import OwnerStore
 
 
 class PropertiesItemTypeWidget(QWidget):
     """
-    Widget for displaying properties of a single item type in a list or grid.
+    Widget for displaying properties of a single item type,
+    in a bush or grid.
     """
 
     _model              : TableModel
-    _list_widget        : PropertiesListWidget
     _grid_widget        : PropertiesGridWidget | None
-    _current_widget     : PropertiesListWidget | PropertiesGridWidget
+    _bush_widget        : PropertiesBushWidget
+    _current_widget     : PropertiesGridWidget | PropertiesBushWidget
     _control_layout     : QHBoxLayout
     _perspective_layout : QHBoxLayout | None
     _perspective_label  : QLabel | None
@@ -33,13 +36,13 @@ class PropertiesItemTypeWidget(QWidget):
 
     def __init__(
         self   : Self,
-        items  : list[PropertiesMixin],
+        store  : OwnerStore,
         parent : QWidget | None = None
     ) -> None:
         # superclass init
         super().__init__(parent)
         # create perspectives and control layout
-        self._list_widget = PropertiesListWidget(
+        self._bush_widget = PropertiesBushWidget(
             items, self._transpose_checkbox
         )
         self._control_layout = QHBoxLayout()
@@ -48,7 +51,7 @@ class PropertiesItemTypeWidget(QWidget):
             self._perspective_label = QLabel("View:")
             self._perspective_layout.addWidget(self._perspective_label)
             self._perspective_combo = QComboBox()
-            self._perspective_combo.addItem("List", self._list_widget)
+            self._perspective_combo.addItem("Bush", self._bush_widget)
             self._perspective_combo.addItem("Grid", self._grid_widget)
             self._perspective_combo.currentIndexChanged.connect(
                 self._onPerspectiveChanged
@@ -67,7 +70,7 @@ class PropertiesItemTypeWidget(QWidget):
         self._control_layout.addWidget(self._transpose_checkbox)
         # build top layout
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self._list_widget)
+        self._layout.addWidget(self._bush_widget)
         self._layout.addLayout(self._control_layout)
         self.setLayout(self._layout)
 
@@ -76,7 +79,7 @@ class PropertiesItemTypeWidget(QWidget):
             return
         current_data = self._perspective_combo.currentData()
         if isinstance(
-            current_data, PropertiesListWidget | PropertiesGridWidget
+            current_data, PropertiesBushWidget | PropertiesGridWidget
         ):
             # update layout
             self._layout.replaceWidget(self._current_widget, current_data)
@@ -84,7 +87,6 @@ class PropertiesItemTypeWidget(QWidget):
 
 
 _TAB_ORDER = [
-    "Property Texts",
     "Diagrams",
     "Blocks",
     "Symbols",
@@ -92,13 +94,12 @@ _TAB_ORDER = [
     "Ports",
     "Net Labels",
     "Taps",
-    "Subnets",
-    "Nets",
     "Lines",
     "Rectangles",
     "Ellipses",
     "Polylines",
-    "Bitmaps"
+    "Bitmaps",
+    "Property Texts"
 ]
 
 
@@ -109,16 +110,15 @@ class PropertiesItemTypeTabWidget(QTabWidget):
 
     def __init__(
         self   : Self,
-        owners : dict[str, list[PropertiesMixin]],
+        store : dict[str, OwnerStore],
         parent : QWidget | None = None
     ) -> None:
         # superclass init
         super().__init__(parent)
         # sort owner types
         owner_type_names = \
-            sorted(owners.keys(), key=lambda x: _TAB_ORDER.index(x))
+            sorted(store.keys(), key=lambda x: _TAB_ORDER.index(x))
         # create tabs
         for owner_type_name in owner_type_names:
-            owner_type_items = owners[owner_type_name]
-            tab = PropertiesItemTypeWidget(owner_type_items)
+            tab = PropertiesItemTypeWidget(store[owner_type_name])
             self.addTab(tab, owner_type_name)

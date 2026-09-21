@@ -2,16 +2,20 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QTableView, QCheckBox, \
-                            QGraphicsItem
+from PyQt6.QtWidgets import QWidget, QTableView
+from PyQt6.QtGui     import QShowEvent
 
-from ...graphics.properties import Property, PropertiesMixin
-
-from ...graphics.items.property_text import PropertyTextItem
+from ...graphics.properties import PropertiesMixin
 
 from ...graphics.items.mixin import ItemMixin
 
 from ..components.table import TableItem, TableModel
+
+from .item import PropertiesItem, PropertiesValueItem, PropertiesExpanderItem
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import StoreProperty, StorePropertyText, OwnerStore
 
 
 OWNER_COLUMNS = [  # level 1 - owner
@@ -81,29 +85,36 @@ class TableRow:
 
 class PropertiesBushWidget(QTableView):
     """
-    Compressed tree widget.
-    Level 1 rows = owners
-    Level 2 rows = properties
-    Level 3 rows = property texts
-    Cells of the first child row are promoted to sit alongside parent cells.
-    This works because each level has its own set of columns.
-    Cell merge, and expanders, give tree-like appearance/behaviour.
+    Compressed tree of owners, properties, and property texts.
+
+    An owner's first row carries its first property and that property's first
+    text. Further texts of that property follow on their own rows. The next
+    row carries the next property and its first text, and so on. Owner cells
+    span every row of that owner. Property cells span the rows of that
+    property. Each level has its own columns, so the promoted cells sit side
+    by side. Expanders hide the rows after the promoted one.
+    Does not support transpose.
     """
 
     # instance attributes
-    _header_names  : list[str]
-    _model         : TableModel
+    _store        : OwnerStore
+    _header_names : list[str]
 
     def __init__(
-        self               : Self,
-        owners             : list[PropertiesMixin],
-        transpose_checkbox : QCheckBox,
-        parent             : QWidget | None = None
+        self   : Self,
+        store  : OwnerStore,
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        self._store = store
         model = TableModel()
         model.setHorizontalHeaderLabels(self._getHeaderLabels())
-        self._buildModel(model, owners)
+        self.setModel(model)
+
+    def showEvent(self, a0: QShowEvent | None) -> None:
+        """Rebuild model from store when widget is shown."""
+        super().showEvent(a0)
+        self._rebuildModel()
 
     def _getHeaderLabels(self : Self) -> list[str]:
         self._header_names = []
@@ -115,110 +126,90 @@ class PropertiesBushWidget(QTableView):
                 header_labels.append(header_label)
         return header_labels
 
-    def _buildModel(
-        self   : Self,
-        model  : TableModel,
-        owners : list[PropertiesMixin]
-    ) -> None:
+    def _rebuildModel(self : Self) -> None:
+        model = self.model()
+        if not isinstance(model, TableModel):
+            raise ValueError("Bad model")
         # capture expander states
-        property_expanders      : dict[PropertiesMixin, bool] = {}
-        property_text_expanders : dict[Property, bool] = {}
-        if row_count := model.rowCount() > 1:
+        property_expanders : dict[PropertiesMixin, bool] = {}
+        property_text_expanders : dict[object, bool] = {}
+        if (row_count := model.rowCount()) > 0:
             p_exp_idx = self._header_names.index("Property Expander")
             pt_exp_idx = self._header_names.index("Property Text Expander")
-            for row_idx in range(model.rowCount()):
+            name_idx = self._header_names.index("Name")
+            for row_idx in range(row_count):
                 p_exp_item = model.item(row_idx, p_exp_idx)
-                if isinstance(p_exp_item, TableItem) \
+                if isinstance(p_exp_item, PropertiesExpanderItem) \
                 and isinstance(p_exp := p_exp_item.value(), bool):
                     owner_id_idx = self._header_names.index("Owner ID")
                     owner_id_item = model.item(row_idx, owner_id_idx)
-                    if not isinstance(owner_id_item, TableItem):
+                    if not isinstance(owner_id_item, PropertiesItem):
                         raise ValueError("Unexpected owner ID item")
                     owner = owner_id_item.ref()
                     if not isinstance(owner, PropertiesMixin):
                         raise ValueError("Unexpected owner type")
                     property_expanders[owner] = p_exp
                 pt_exp_item = model.item(row_idx, pt_exp_idx)
-                if isinstance(pt_exp_item, TableItem) \
+                if isinstance(pt_exp_item, PropertiesExpanderItem) \
                 and isinstance(pt_exp := pt_exp_item.value(), bool):
-                    property_name_idx = self._header_names.index("Property")
-                    property_name_item = model.item(row_idx, property_name_idx)
-                    if not isinstance(property_name_item, TableItem):
+                    name_item = model.item(row_idx, name_idx)
+                    if not isinstance(name_item, PropertiesItem):
                         raise ValueError("Unexpected property name item")
-                    property = property_name_item.ref()
-                    if not isinstance(property, Property):
-                        raise ValueError("Unexpected property name type")
-                    property_text_expanders[property] = pt_exp
-        # clear existing rows
-        if row_count > 0:
-            model.removeRows(0, model.rowCount())
+                    if (state := name_item.ref()) is None:
+                        raise ValueError("Unexpected property name ref")
+                    property_text_expanders[state] = pt_exp
+            model.removeRows(0, row_count)
         # sort items
         pass  # TODO: sort items
         # add new rows
-        for owner in owners:
-            if not isinstance(owner, ItemMixin):
+        property_col = len(OWNER_COLUMNS)
+        property_col_stop = property_col + len(PROPERTY_COLUMNS)
+        for owner, store_properties in self._store.items():
+            owner_row_idx = model.rowCount()
+            p_exp = property_expanders.get(owner, True) \
+                if len(store_properties) > 1 else None
+            if len(store_properties) == 0:
+                row = self._emptyRow()
+                self._populateOwner(row, owner)
+                model.appendRow(row.cells())
                 continue
-            owner_row_idx = model.rowCount()      # track item rows
-            row = self._emptyRow()               # initialize row
-            row = self._populateOwner(row, owner)  # populate owner columns
-            property_row_idx = owner_row_idx      # track property rows
-            # property expander
-            p_exp = None
-            if len(owner.properties) > 1:
-                p_exp = property_expanders.get(owner, True)
-                row["Property Expander"] = TableItem(p_exp)
-            # property rows
-            for property in owner.properties.values():
+            for property_idx, store_property in enumerate(store_properties):
                 property_row_idx = model.rowCount()
-                # populate property columns
-                row = self._populateProperty(row, property)
-                if not isinstance(owner, QGraphicsItem):
-                    continue
-                # get property texts
-                property_texts = [
-                    child for child in owner.childItems()
-                    if isinstance(child, PropertyTextItem)
-                ]
-                # property text expander
-                pt_exp = None
-                if len(property_texts) > 1:
-                    pt_exp = property_text_expanders.get(property, True)
-                    row["Property Text Expander"] = TableItem(pt_exp)
-                # property text rows
-                for i, child in enumerate(property_texts):
-                    row_copy = row.copy()
-                    # populate property text columns
-                    row = self._populatePropertyText(row, child)
-                    # add row to model if applicable
-                    if i == len(property_texts) - 1:
-                        model.appendRow(row)
-                        row = row_copy
-                # add last (or only) property row to model
-                model.appendRow(row)
-                # get property text row span for this property
+                texts = store_property.texts
+                pt_exp = \
+                    property_text_expanders.get(store_property.current, True) \
+                    if len(texts) > 1 else None
+                for text_idx in range(max(1, len(texts))):
+                    row = self._emptyRow()
+                    if property_idx == 0 and text_idx == 0:
+                        self._populateOwner(row, owner)
+                        if p_exp is not None:
+                            row["Property Expander"] = \
+                                PropertiesExpanderItem(p_exp)
+                    if text_idx == 0:
+                        self._populateProperty(row, store_property)
+                        if pt_exp is not None:
+                            row["Property Text Expander"] = \
+                                PropertiesExpanderItem(pt_exp)
+                    if text_idx < len(texts):
+                        self._populatePropertyText(row, texts[text_idx])
+                    model.appendRow(row.cells())
                 row_span = model.rowCount() - property_row_idx
                 if row_span > 1:
-                    # merge property cells to span property texts
-                    col_start = len(OWNER_COLUMNS)
-                    col_stop = col_start + len(PROPERTY_COLUMNS)
-                    for col_idx in range(col_start, col_stop):
+                    for col_idx in range(property_col, property_col_stop):
                         self.setSpan(property_row_idx, col_idx, row_span, 1)
-                    # hide 2nd children if expander is closed
                     if pt_exp is False:
-                        for row_idx in range(property_row_idx + 1, model.rowCount()):
+                        for row_idx in range(
+                            property_row_idx + 1, model.rowCount()
+                        ):
                             self.setRowHidden(row_idx, True)
-            # get property row span for this owner
             row_span = model.rowCount() - owner_row_idx
             if row_span > 1:
-                # merge owner cells to span property rows
                 for col_idx in range(len(OWNER_COLUMNS)):
                     self.setSpan(owner_row_idx, col_idx, row_span, 1)
-                # hide 2nd children if expander is closed
                 if p_exp is False:
-                    pass  # TODO: hide 2nd children if expander is closed
                     for row_idx in range(owner_row_idx + 1, model.rowCount()):
                         self.setRowHidden(row_idx, True)
-        self.setModel(model)
 
     def _emptyRow(self : Self) -> TableRow:
         return TableRow(self._header_names)
@@ -226,48 +217,65 @@ class PropertiesBushWidget(QTableView):
     def _populateOwner(
         self  : Self,
         row   : TableRow,
-        owner : ItemMixin
+        owner : PropertiesMixin
     ) -> TableRow:
-        row["Owner ID"] = TableItem(owner.suid(), owner)
+        if not isinstance(owner, ItemMixin):
+            raise ValueError("Unexpected owner type")
+        row["Owner ID"] = PropertiesItem(owner.suid(), owner)
         return row
 
     def _populateProperty(
-        self     : Self,
-        row      : TableRow,
-        property : Property
-    ) -> TableRow:
-        row[ "Name"   ] = TableItem(property.name(), property)
-        row[ "Custom" ] = TableItem(property.isCustom())
-        row[ "Type"   ] = TableItem(property.kind())
-        row[ "Value"  ] = TableItem(property.value())
-        return row
+        self  : Self,
+        row   : TableRow,
+        store : StoreProperty,
+        new   : bool = False
+    ) -> None:
+        if store.initial is None:
+            raise ValueError("Store property initial is None")
+        if store.obj is None:
+            raise ValueError("Store property source is None")
+        name     = store.current.name
+        kind     = store.current.kind
+        value    = store.current.value
+        custom   = store.obj.isCustom()
+        editable = store.obj.writeable()
+        p = PropertiesItem
+        v = PropertiesValueItem
+        row[ "Name"   ] = p(name, store.current, "name", new, not custom)
+        row[ "Custom" ] = p(custom, None, None, new, False)
+        row[ "Type"   ] = p(kind, store.current, "kind", new, not custom)
+        row[ "Value"  ] = v(kind, value, store.current, "value", new, editable)
 
     def _populatePropertyText(
-        self : Self,
-        row  : TableRow,
-        pt   : PropertyTextItem
-    ) -> TableRow:
-        row[ "Visible"    ] = TableItem(pt.isVisible(), pt)
-        row[ "Cleat"      ] = TableItem(pt.cleat())
-        row[ "X"          ] = TableItem(pt.x())
-        row[ "Y"          ] = TableItem(pt.y())
-        row[ "Rotation"   ] = TableItem(pt.rotation())
-        row[ "Mirror H"   ] = TableItem(pt.mirrorH())
-        row[ "Mirror V"   ] = TableItem(pt.mirrorV())
-        row[ "Autoflip"   ] = TableItem(pt.autoflip())
-        row[ "Origin"     ] = TableItem(pt.origin())
-        row[ "Align H"    ] = TableItem(pt.alignH())
-        row[ "Align V"    ] = TableItem(pt.alignV())
-        row[ "Width"      ] = TableItem(pt.width())
-        row[ "Height"     ] = TableItem(pt.height())
-        row[ "Pad Left"   ] = TableItem(pt.padLeft())
-        row[ "Pad Right"  ] = TableItem(pt.padRight())
-        row[ "Pad Top"    ] = TableItem(pt.padTop())
-        row[ "Pad Bottom" ] = TableItem(pt.padBottom())
-        row[ "Color"      ] = TableItem(pt.color())
-        row[ "Font"       ] = TableItem(pt.font())
-        row[ "Size"       ] = TableItem(pt.textSize())
-        row[ "Bold"       ] = TableItem(pt.textBold())
-        row[ "Italic"     ] = TableItem(pt.textItalic())
-        row[ "Underline"  ] = TableItem(pt.textUnderline())
-        return row
+        self  : Self,
+        row   : TableRow,
+        store : StorePropertyText,
+        new   : bool = False
+    ) -> None:
+        if store.initial is None:
+            raise ValueError("Store property text initial is None")
+        p = PropertiesItem
+        c = store.current
+        row[ "Visible"    ] = p( c.visible    , c , "visible"    , new )
+        row[ "Cleat"      ] = p( c.cleat      , c , "cleat"      , new )
+        row[ "X"          ] = p( c.x          , c , "x"          , new )
+        row[ "Y"          ] = p( c.y          , c , "y"          , new )
+        row[ "Rotation"   ] = p( c.rotation   , c , "rotation"   , new )
+        row[ "Mirror H"   ] = p( c.mirror_h   , c , "mirror_h"   , new )
+        row[ "Mirror V"   ] = p( c.mirror_v   , c , "mirror_v"   , new )
+        row[ "Autoflip"   ] = p( c.autoflip   , c , "autoflip"   , new )
+        row[ "Origin"     ] = p( c.origin     , c , "origin"     , new )
+        row[ "Align H"    ] = p( c.align_h    , c , "align_h"    , new )
+        row[ "Align V"    ] = p( c.align_v    , c , "align_v"    , new )
+        row[ "Width"      ] = p( c.width      , c , "width"      , new )
+        row[ "Height"     ] = p( c.height     , c , "height"     , new )
+        row[ "Pad Left"   ] = p( c.pad_left   , c , "pad_left"   , new )
+        row[ "Pad Right"  ] = p( c.pad_right  , c , "pad_right"  , new )
+        row[ "Pad Top"    ] = p( c.pad_top    , c , "pad_top"    , new )
+        row[ "Pad Bottom" ] = p( c.pad_bottom , c , "pad_bottom" , new )
+        row[ "Color"      ] = p( c.color      , c , "color"      , new )
+        row[ "Font"       ] = p( c.font       , c , "font"       , new )
+        row[ "Size"       ] = p( c.size       , c , "size"       , new )
+        row[ "Bold"       ] = p( c.bold       , c , "bold"       , new )
+        row[ "Italic"     ] = p( c.italic     , c , "italic"     , new )
+        row[ "Underline"  ] = p( c.underline  , c , "underline"  , new )

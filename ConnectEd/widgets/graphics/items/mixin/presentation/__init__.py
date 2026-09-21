@@ -69,7 +69,7 @@ class ItemPresentationMixin(
             default = lambda self: self.themeFillStyle()
         )
     }
-    _PROPERTIES_APPEARANCE = {
+    _PROPERTIES_TYPOGRAPHY = {
         "Text Color" : PropertySpec["ItemPresentationMixin"](
             kind    = DataKind.COLOR,
             worthy  = lambda self: self.textColor() is not None,

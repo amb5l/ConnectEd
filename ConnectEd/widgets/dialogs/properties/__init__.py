@@ -3,16 +3,20 @@ from __future__ import annotations
 from typing      import Self
 from dataclasses import dataclass, replace
 
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGraphicsItem, QGraphicsScene
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGraphicsItem
 
-from ...graphics.properties import Property, PropertyState, PropertiesMixin
+from ....core.check import checked
 
-from ...graphics.scenes.diagram import DiagramScene
+from ...graphics.properties import (
+    Property, PropertyState,
+    PropertyChange, PropertyAdd, PropertyDelete,
+    PropertiesMixin
+)
 
-from ...graphics.items.role          import FunctionalItem, DecorativeItem
-from ...graphics.items.property_text import PropertyTextItem, PropertyTextState
-from ...graphics.items.segment       import SegmentItem
-from ...graphics.items.node          import NodeItem
+from ...graphics.items.property_text import (
+    PropertyTextItem, PropertyTextState,
+    PropertyTextChange, PropertyTextAdd, PropertyTextDelete
+)
 
 from ..components.layout.ok_cancel import OkCancelLayout
 
@@ -20,34 +24,71 @@ from .item_type import (
     PropertiesItemTypeWidget, PropertiesItemTypeTabWidget
 )
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...graphics.scenes.diagram import DiagramScene
+
 
 @dataclass
-class StoreText:
-    source  : PropertyTextItem  | None # None if new
-    initial : PropertyTextState | None = None
-    current : PropertyTextState | None = None
-    deleted : bool = False
+class StorePropertyText:
+    obj     : PropertyTextItem  | None  # None if new
+    current : PropertyTextState
+    initial : PropertyTextState | None
+    deleted : bool
 
-    def __post_init__(self : Self) -> None:
-        if self.initial is None and self.source is not None:
-            self.initial = self.source.state()
-        if self.current is None and self.initial is not None:
+    @checked
+    def __init__(
+        self   : Self,
+        source : PropertyTextItem | PropertyTextState
+    ) -> None:
+        if isinstance(source, PropertyTextItem):
+            self.obj     = source
+            self.initial = source.state()
             self.current = replace(self.initial)
+            self.deleted = False
+        else:
+            self.obj     = None
+            self.current = source
+            self.initial = None
+            self.deleted = False
 
 
 @dataclass
 class StoreProperty:
-    source  : Property      | None         # None if new
-    texts   : list[StoreText]
-    initial : PropertyState | None = None  # original name lives here
-    current : PropertyState | None = None  # rename edits current.name
-    deleted : bool = False
+    obj     : Property | None  # None if new
+    current : PropertyState
+    initial : PropertyState | None
+    deleted : bool
+    texts   : list[StorePropertyText]
 
-    def __post_init__(self : Self) -> None:
-        if self.initial is None and self.source is not None:
-            self.initial = self.source.state()
-        if self.current is None and self.initial is not None:
+    @checked
+    def __init__(
+        self   : Self,
+        source : Property | PropertyState,
+        texts  : list[StorePropertyText] | None = None
+    ) -> None:
+        if isinstance(source, Property):
+            self.obj     = source
+            self.initial = source.state()
             self.current = replace(self.initial)
+            self.deleted = False
+        else:
+            self.obj     = None
+            self.current = source
+            self.initial = None
+            self.deleted = False
+        self.texts = texts or []
+
+
+OwnerStore = dict[PropertiesMixin, list[StoreProperty]]
+
+PropertiesChange = \
+    PropertyChange     | \
+    PropertyAdd        | \
+    PropertyDelete     | \
+    PropertyTextChange | \
+    PropertyTextAdd    | \
+    PropertyTextDelete
 
 
 class PropertiesDialog(QDialog):
@@ -55,89 +96,65 @@ class PropertiesDialog(QDialog):
     Dialog for editing properties.
     """
 
+    _store : dict[str, OwnerStore]
     _main_widget : PropertiesItemTypeWidget | PropertiesItemTypeTabWidget
-    _store       : dict[PropertiesMixin, list[StoreProperty]]
 
+    @checked
     def __init__(
         self   : Self,
-        items  : list[QGraphicsItem | QGraphicsScene],
+        owners : list[QGraphicsItem] | list[DiagramScene],
         parent : QWidget | None = None
     ) -> None:
         # initialize dialog
         super().__init__(parent)
-        # check for no items
-        if len(items) == 0:
+        # check for no owners
+        if len(owners) == 0:
             raise ValueError("No items")
-        # process/filter items
-        item_set = set(items)
-        filtered_items = []
-        for item in items:
-            # exclude chrome
-            if not isinstance(item, FunctionalItem | DecorativeItem):
+        # process/filter owners
+        owner_set = set(owners)
+        clean_owners : list[PropertiesMixin] = []
+        for owner in owner_set:
+            if not isinstance(owner, PropertiesMixin):
                 continue
-            # handle segments and nodes
-            if isinstance(item, NodeItem):
-                if not isinstance((scene := item.scene()), DiagramScene):
-                    continue
-                subnet = scene.netlist.nodeSubnet(item)
-                net = scene
-            if isinstance(item, SegmentItem):
-                if not isinstance((scene := item.scene()), DiagramScene):
-                    continue
-                net = scene.netlist.segmentNet(item)
-                if net is None:
-                    continue
-                subnet = scene.netlist.nodeSubnet(net)
-                if subnet is None:
-                    continue
-                net = subnet.net
-                continue
-            # filter property texts
-            if isinstance(item, PropertyTextItem):
+            if isinstance(owner, PropertyTextItem):
                 # exclude scene property texts
-                if (owner := item.owner()) is None:
+                if (pt_owner := owner.owner()) is None:
                     continue
                 # exclude property texts whose parent is present
-                if owner in item_set:
+                if pt_owner in owner_set:
                     continue
-            filtered_items.append(item)
-        # build subnets and nets and net labels from connection segments
-        shit
-
-
+            clean_owners.append(owner)
         # process items into items_dict
-        owners_dict : dict[str, list[PropertiesMixin]] = {}
-        for item in items:
-            owner_type_name = item.description()
-            owners_dict.setdefault(owner_type_name, []).append(item)
-        # build store of property and text states
+        owner_dict : dict[str, list[PropertiesMixin]] = {}
+        for owner in clean_owners:
+            owner_type_name = owner.description()
+            owner_dict.setdefault(owner_type_name, []).append(owner)
+        # build store of property and text states for each owner type
         self._store = {}
-        for item in items:
-            self._store[item] = []
-            for property in item.properties.values():
-                texts = item.propertyTextItems(property)
-                store_texts = [StoreText(text) for text in texts]
-                store_property = StoreProperty(property, store_texts)
-                self._store[item].append(store_property)
+        for owner_type_name in owner_dict.keys():
+            self._store[owner_type_name] = {}
+            for owner in owner_dict[owner_type_name]:
+                self._store[owner_type_name][owner] = []
+                for property in owner.properties.values():
+                    texts = owner.propertyTextItems(property)
+                    store_texts = [StorePropertyText(text) for text in texts]
+                    store_property = StoreProperty(property, store_texts)
+                    self._store[owner_type_name][owner].append(store_property)
         # set window title
-        item_types = list(owners_dict.keys())
-        if len(items) == 1:
+        item_types = list(owner_dict.keys())
+        if len(owners) == 1:
             title = f"{item_types[0]} Properties"
         elif len(item_types) == 1:
-            title = f"{item_types[0]} Properties ({len(items)} items)"
+            title = f"{item_types[0]} Properties ({len(owners)} items)"
         else:
-            title = f"Properties ({len(items)} items)"
+            title = f"Properties ({len(owners)} items)"
         self.setWindowTitle(title)
         # create main widget
-        if len(owners_dict.keys()) == 1:
-            self._main_widget = PropertiesItemTypeWidget(items)
+        if len(owner_dict.keys()) == 1:
+            owner_store = list(self._store.values())[0]
+            self._main_widget = PropertiesItemTypeWidget(owner_store)
         else:
-            self._main_widget = PropertiesItemTypeTabWidget()
-            for owner_type_name in owners_dict.keys():
-                self._main_widget.addTab(
-                    PropertiesItemTypeWidget(owners_dict[owner_type_name]),
-                    owner_type_name
-                )
+            self._main_widget = PropertiesItemTypeTabWidget(self._store)
         # buttons
         ok_cancel_layout = OkCancelLayout(self)
         # create layout
@@ -145,3 +162,54 @@ class PropertiesDialog(QDialog):
         layout.addWidget(self._main_widget)
         layout.addLayout(ok_cancel_layout)
         self.setLayout(layout)
+
+    @checked
+    def getEdits(self : Self) -> list[PropertiesChange]:
+        edits : list[PropertiesChange] = []
+        for owner_store in self._store.values():
+            for owner, store_properties in owner_store.items():
+                for store_property in store_properties:
+                    if store_property.obj is None:
+                        if not store_property.deleted:
+                            edits.append(PropertyAdd(
+                                owner,
+                                store_property.current,
+                                [
+                                    text.current
+                                    for text in store_property.texts
+                                    if text.obj is None and not text.deleted
+                                ]
+                            ))
+                        continue
+                    if store_property.deleted:
+                        edits.append(PropertyDelete(
+                            owner, store_property.obj
+                        ))
+                        continue
+                    if store_property.initial is not None:
+                        change = PropertyChange.fromComparison(
+                            owner,
+                            store_property.obj,
+                            store_property.initial,
+                            store_property.current
+                        )
+                        if not change.noop():
+                            edits.append(change)
+                    for text in store_property.texts:
+                        if text.obj is None:
+                            if not text.deleted:
+                                edits.append(PropertyTextAdd(
+                                    owner, store_property.obj, text.current
+                                ))
+                            continue
+                        elif text.deleted:
+                            edits.append(PropertyTextDelete(text.obj))
+                            continue
+                        elif text.initial is None:
+                            continue
+                        text_change = PropertyTextChange.fromComparison(
+                            text.obj, text.initial, text.current
+                        )
+                        if not text_change.noop():
+                            edits.append(text_change)
+        return edits

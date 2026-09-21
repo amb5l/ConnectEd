@@ -4,7 +4,7 @@ import re
 
 from typing          import Self, Any, TypeVar, Generic
 from collections.abc import Callable
-from dataclasses     import dataclass, fields
+from dataclasses     import dataclass, field, fields
 
 from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene
@@ -15,11 +15,11 @@ from ...core.check import checked
 from ...core.types import NoChange, NO_CHANGE, DataKind
 from ...core.utils import val2str, pascal2proper
 
-from .items.property_text import PropertyTextState
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .items.property_text import PropertyTextItem
+    from .items.property_text import (
+        PropertyTextItem, PropertyTextSpec, PropertyTextState
+    )
 
 
 class PropertyNotifier(QObject):
@@ -27,6 +27,8 @@ class PropertyNotifier(QObject):
 
 
 class Property:
+    """Object representing a property of a properties mixin."""
+
     _owner        : PropertiesMixin
     _kind         : DataKind | Callable[[PropertiesMixin], DataKind]
     _value        : Any                                    | None
@@ -244,6 +246,7 @@ T = TypeVar("T")
 @dataclass
 class PropertySpec(Generic[T]):
     """Used to create a properties in owner definitions."""
+
     kind    : DataKind | Callable[[T], DataKind]
     value   : Any                                | None = None
     getter  : Callable[[T], Any]                 | None = None
@@ -256,38 +259,70 @@ class PropertySpec(Generic[T]):
 @dataclass
 class PropertyState:
     """Used to capture property states in editor dialogs."""
+
     name  : str
     value : Any
     kind  : DataKind
 
 
 @dataclass
-class PropertyChange:
-    """Used to return property changes from editor dialogs."""
-    name  : str      | NoChange = NO_CHANGE
-    value : Any      | NoChange = NO_CHANGE
-    kind  : DataKind | NoChange = NO_CHANGE
+class PropertyEdit:
+    """Base class for property edits."""
+
+    owner : PropertiesMixin
+
+
+@dataclass
+class PropertyAdd(PropertyEdit):
+    """Property Edit: add a new property."""
+
+    state : PropertyState
+    texts : list[PropertyTextState] = field(default_factory=list)
+
+
+@dataclass
+class PropertyDelete(PropertyEdit):
+    """Property Edit: delete an existing property."""
+
+    property : Property
+
+
+@dataclass
+class PropertyChange(PropertyEdit):
+    """Property Edit: change an existing property."""
+
+    property : Property
+    name     : str      | NoChange = NO_CHANGE
+    value    : Any      | NoChange = NO_CHANGE
+    kind     : DataKind | NoChange = NO_CHANGE
 
     @classmethod
     def fromComparison(
-        cls    : type[Self],
-        before : PropertyState,
-        after  : PropertyState
+        cls      : type[Self],
+        owner    : PropertiesMixin,
+        property : Property,
+        before   : PropertyState,
+        after    : PropertyState
     ) -> Self:
-        instance = cls()
-        for field in fields(instance):
-            before_field_value = getattr(before, field.name)
-            after_field_value = getattr(after, field.name)
-            if before_field_value == after_field_value:
-                setattr(instance, field.name, NoChange)
-            else:
-                setattr(instance, field.name, after_field_value)
-        return instance
+        kwargs : dict[str, Any] = {}
+        for state_field in fields(before):
+            before_value = getattr(before, state_field.name)
+            after_value  = getattr(after,  state_field.name)
+            if before_value != after_value:
+                kwargs[state_field.name] = after_value
+        return cls(owner, property, **kwargs)
+
+    def noop(self : Self) -> bool:
+        """Return True if the edit is a no-op."""
+        return all(
+            isinstance(getattr(self, state_field.name), NoChange)
+            for state_field in fields(PropertyState)
+        )
 
 
 class PropertiesMixin:
     _PROPERTY_SPECS         : dict[str, PropertySpec]
-    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyTextState]
+    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyTextSpec]
     properties              : dict[str, Property]
 
     def initProperties(self : Self, live : bool) -> None:

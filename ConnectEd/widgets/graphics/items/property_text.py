@@ -14,6 +14,8 @@ from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
+from ...graphics.quill import Quill
+
 from ..properties import PropertySpec
 
 from .text   import TextItem
@@ -26,8 +28,9 @@ from .mixin.handle     import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.diagram import DiagramView
-    from ..properties    import Property, PropertiesMixin
+    from ..views.diagram  import DiagramView
+    from ..scenes.diagram import DiagramScene
+    from ..properties     import Property, PropertiesMixin
 
 
 class PropertyTextTetherItem(TextTetherItem):
@@ -42,6 +45,8 @@ class PropertyTextTetherItem(TextTetherItem):
 
 
 class PropertyTextItem(TextItem):
+    """A tethered text item for displaying a property value."""
+
     # class attributes
     _PROPERTIES = \
         {
@@ -68,7 +73,7 @@ class PropertyTextItem(TextItem):
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
-        TextItem._PROPERTIES_APPEARANCE
+        TextItem._PROPERTIES_TYPOGRAPHY
 
     # instance attributes
     _property : Property
@@ -79,10 +84,7 @@ class PropertyTextItem(TextItem):
         """Instance method in this case."""
         if isinstance(owner := self.owner(), ItemNamesMixin) \
         and hasattr(self, "_property"):
-            settings_name = f"{owner.settingsName()}{self.name()}"
-            settings_items = settings().get("theme/items")
-            if hasattr(settings_items, settings_name):
-                return settings_name
+            return type(self)._themeItemName(owner, self.name())
         return "PropertyText"
 
     def resourcesName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -292,7 +294,7 @@ class PropertyTextItem(TextItem):
     @checked
     def apply(
         self    : Self,
-        payload : PropertyTextState | PropertyTextChange
+        payload : PropertyTextSpec | PropertyTextState | PropertyTextChange
     ) -> None:
         if not isinstance(payload.visible, NoChange):
             self.setVisible(payload.visible)
@@ -370,10 +372,35 @@ class PropertyTextItem(TextItem):
         ]
         return items
 
+    @classmethod
+    def themeQuillFor(
+        cls           : type[Self],
+        scene         : DiagramScene,
+        owner         : ItemNamesMixin | type[ItemNamesMixin],
+        property_name : str
+    ) -> Quill:
+        return scene.resources.quill(
+            cls._themeItemName(owner, property_name),
+            cls._resourceNormalKey(),
+        )
+
+    @classmethod
+    def _themeItemName(
+        cls       : type[Self],
+        owner     : ItemNamesMixin | type[ItemNamesMixin],
+        prop_name : str
+    ) -> str:
+        settings_name = f"{owner.settingsName()}{prop_name}"
+        items = settings().get("theme/items")
+        if hasattr(items, settings_name):
+            return settings_name
+        return "PropertyText"
+
 
 @dataclass
 class PropertyTextSpec:
     """Used to specify property texts during owner construction."""
+
     visible    : bool            = True
     cleat      : HandleId | None = None
     x          : float           = 0
@@ -411,7 +438,8 @@ class PropertyTextSpec:
 
 @dataclass
 class PropertyTextState:
-    """Used to return property text states from editor dialogs."""
+    """Used to capture property text states in editor dialogs."""
+
     visible    : bool
     cleat      : HandleId | None
     x          : float
@@ -438,8 +466,33 @@ class PropertyTextState:
 
 
 @dataclass
-class PropertyTextChange:
-    """Used to return property text changes from editor dialogs."""
+class PropertyTextEdit:
+    """Base class for property text edits."""
+
+    pass
+
+
+@dataclass
+class PropertyTextAdd(PropertyTextEdit):
+    """Property Text Edit: add a new property text."""
+
+    owner    : PropertiesMixin
+    property : Property
+    state    : PropertyTextState
+
+
+@dataclass
+class PropertyTextDelete(PropertyTextEdit):
+    """Property Text Edit: delete an existing property text."""
+
+    item : PropertyTextItem
+
+
+@dataclass
+class PropertyTextChange(PropertyTextEdit):
+    """Property Text Edit: change an existing property text."""
+
+    item       : PropertyTextItem
     visible    : bool            | NoChange = NO_CHANGE
     cleat      : HandleId | None | NoChange = NO_CHANGE
     x          : float           | NoChange = NO_CHANGE
@@ -467,21 +520,21 @@ class PropertyTextChange:
     @classmethod
     def fromComparison(
         cls    : type[Self],
+        item   : PropertyTextItem,
         before : PropertyTextState,
         after  : PropertyTextState
     ) -> Self:
-        instance = cls()
-        for field in fields(instance):
-            before_field_value = getattr(before, field.name)
-            after_field_value = getattr(after, field.name)
-            if before_field_value == after_field_value:
-                setattr(instance, field.name, NoChange)
-            else:
-                setattr(instance, field.name, after_field_value)
-        return instance
+        kwargs : dict[str, Any] = {}
+        for field in fields(before):
+            before_value = getattr(before, field.name)
+            after_value  = getattr(after,  field.name)
+            if before_value != after_value:
+                kwargs[field.name] = after_value
+        return cls(item, **kwargs)
 
     def noop(self : Self) -> bool:
+        """Return True if the edit is a no-op."""
         return all(
             isinstance(getattr(self, field.name), NoChange)
-            for field in fields(self)
+            for field in fields(PropertyTextState)
         )

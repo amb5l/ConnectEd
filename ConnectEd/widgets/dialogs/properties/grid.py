@@ -8,7 +8,7 @@ from ...graphics.properties import Property, PropertiesMixin
 
 from ..components.table import TableModel, TableView
 
-from .list import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
+from .defs import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
 
 
 class SliceComboBox(QComboBox):

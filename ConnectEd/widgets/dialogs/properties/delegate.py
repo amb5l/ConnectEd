@@ -70,9 +70,8 @@ class PropertiesDelegate(QStyledItemDelegate):
             return None
         editor = kind2dialogEditor(kind)
         args = {
-            "value"   : item.value(),
-            "default" : item.default(),
-            "parent"  : parent,
+            "value"  : item.value(),
+            "parent" : parent,
         }
         if kind is DataKind.KIND:
             args["subset"] = [DataKind.STR, DataKind.TEXT]
