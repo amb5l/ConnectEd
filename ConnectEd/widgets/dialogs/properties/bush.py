@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QTableView
+from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QShowEvent
 
-from ...table.model import TableModel
 from ...table.item  import TableItem
+from ...table.model import TableModel
+from ...table.view  import TableView
 
 from ...graphics.properties import PropertiesMixin
 
@@ -19,20 +20,19 @@ if TYPE_CHECKING:
     from . import StoreProperty, StorePropertyText, OwnerStore
 
 
-OWNER_COLUMNS = [  # level 1 - owner
-        "Owner ID"
-    ]
-
-PROPERTY_COLUMNS = [  # level 2 - property
-        "Property Expander",
+_COLUMNS : dict[str, list[str]] = {
+    "Owner" : [
+        "Owner ID",
+        "Property Expander"
+    ],
+    "Property" : [
         "Name",
         "Custom",
         "Type",
-        "Value"
-    ]
-
-PROPERTY_TEXT_COLUMNS = [  # level 3 - property text
-        "Property Text Expander",
+        "Value",
+        "Property Text Expander"
+    ],
+    "Property Text" : [
         "Visible",
         "Cleat",
         "X",
@@ -56,13 +56,8 @@ PROPERTY_TEXT_COLUMNS = [  # level 3 - property text
         "Bold",
         "Italic",
         "Underline"
-    ]
-
-_COLUMN_GROUPS = [
-    OWNER_COLUMNS,
-    PROPERTY_COLUMNS,
-    PROPERTY_TEXT_COLUMNS,
-]
+    ],
+}
 
 
 class TableRow:
@@ -84,7 +79,7 @@ class TableRow:
         return self._cells
 
 
-class PropertiesBushWidget(QTableView):
+class PropertiesBushWidget(TableView):
     """
     Compressed tree of owners, properties, and property texts.
 
@@ -106,26 +101,27 @@ class PropertiesBushWidget(QTableView):
         store  : OwnerStore,
         parent : QWidget | None = None
     ) -> None:
-        super().__init__(parent)
         self._store = store
         model = TableModel()
-        model.setHorizontalHeaderLabels(self._getHeaderLabels())
-        self.setModel(model)
+        model.setHorizontalHeaderGroupLabels(self._headerPairs())
+        super().__init__(model, parent)
 
     def showEvent(self, a0: QShowEvent | None) -> None:
         """Rebuild model from store when widget is shown."""
         super().showEvent(a0)
         self._rebuildModel()
 
-    def _getHeaderLabels(self : Self) -> list[str]:
-        self._header_names = []
-        header_labels = []
-        for column_group in _COLUMN_GROUPS:
-            for header_name in column_group:
-                self._header_names.append(header_name)
-                header_label = "" if "Expander" in header_name else header_name
-                header_labels.append(header_label)
-        return header_labels
+    def _headerPairs(self : Self) -> list[tuple[str, str]]:
+        self._header_names = [
+            name
+            for names in _COLUMNS.values()
+            for name in names
+        ]
+        return [
+            (group, "" if "Expander" in name else name)
+            for group, names in _COLUMNS.items()
+            for name in names
+        ]
 
     def _rebuildModel(self : Self) -> None:
         model = self.model()
@@ -163,8 +159,9 @@ class PropertiesBushWidget(QTableView):
         # sort items
         pass  # TODO: sort items
         # add new rows
-        property_col = len(OWNER_COLUMNS)
-        property_col_stop = property_col + len(PROPERTY_COLUMNS)
+        owner_col_stop = len(_COLUMNS["Owner"])
+        property_col = owner_col_stop
+        property_col_stop = property_col + len(_COLUMNS["Property"])
         for owner, store_properties in self._store.items():
             owner_row_idx = model.rowCount()
             p_exp = property_expanders.get(owner, True) \
@@ -206,7 +203,7 @@ class PropertiesBushWidget(QTableView):
                             self.setRowHidden(row_idx, True)
             row_span = model.rowCount() - owner_row_idx
             if row_span > 1:
-                for col_idx in range(len(OWNER_COLUMNS)):
+                for col_idx in range(owner_col_stop):
                     self.setSpan(owner_row_idx, col_idx, row_span, 1)
                 if p_exp is False:
                     for row_idx in range(owner_row_idx + 1, model.rowCount()):
