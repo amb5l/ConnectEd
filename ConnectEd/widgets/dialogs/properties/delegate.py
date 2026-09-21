@@ -12,7 +12,7 @@ from PyQt6.QtGui     import QPainter, QMouseEvent, QStandardItemModel
 from ....core.check import checked
 from ....core.types import DataKind
 
-from ..components.table import TableItem
+from ...table.item import TableItem
 
 from ...utils import kind2dialogEditor
 

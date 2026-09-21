@@ -4,9 +4,10 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QComboBox, QCheckBox
 
-from ...graphics.properties import Property, PropertiesMixin
+from ...table.model import TableModel
+from ...table.view  import TableView
 
-from ..components.table import TableModel, TableView
+from ...graphics.properties import PropertiesMixin
 
 from .defs import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
 

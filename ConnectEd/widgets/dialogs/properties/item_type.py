@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QTabWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox, QCheckBox, QPushButton
 
-from ..components.table import TableModel
+from ...table.model import TableModel
 
 from .grid import PropertiesGridWidget
 from .bush import PropertiesBushWidget

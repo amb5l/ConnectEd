@@ -5,11 +5,12 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QTableView
 from PyQt6.QtGui     import QShowEvent
 
+from ...table.model import TableModel
+from ...table.item  import TableItem
+
 from ...graphics.properties import PropertiesMixin
 
 from ...graphics.items.mixin import ItemMixin
-
-from ..components.table import TableItem, TableModel
 
 from .item import PropertiesItem, PropertiesValueItem, PropertiesExpanderItem
 

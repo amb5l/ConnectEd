@@ -8,7 +8,8 @@ from ....core.check import checked
 from ....core.types import NoChange, DataKind
 from ....core.utils import val2str
 
-from ..components.table import TableItem
+from ...table.item import TableItem
+
 
 class PropertiesItem(TableItem):
     """Adds writethrough and checkbox presentation support."""
