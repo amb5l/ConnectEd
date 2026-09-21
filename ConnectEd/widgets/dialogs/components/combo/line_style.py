@@ -32,7 +32,7 @@ class LineStyleComboBox(QComboBox):
     def __init__(
         self    : Self,
         value   : Qt.PenStyle | None | NoChange,
-        default : Qt.PenStyle,
+        default : Qt.PenStyle | None | NoChange = None,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)

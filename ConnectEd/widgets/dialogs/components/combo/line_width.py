@@ -23,7 +23,7 @@ class LineWidthComboBox(QComboBox):
     def __init__(
         self    : Self,
         value   : float | int | None | NoChange,
-        default : float | int,
+        default : float | int | None | NoChange = None,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)

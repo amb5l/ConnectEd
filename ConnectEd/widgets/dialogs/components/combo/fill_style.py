@@ -40,7 +40,7 @@ class FillStyleComboBox(QComboBox):
     def __init__(
         self    : Self,
         value   : Qt.BrushStyle | None | NoChange,
-        default : Qt.BrushStyle,
+        default : Qt.BrushStyle | None | NoChange = None,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -80,7 +80,7 @@ class FillStyleComboBox(QComboBox):
         return r if r != self._initial else NO_CHANGE
 
     @checked
-    def setValue(self : Self, value : Qt.BrushStyle) -> None:
+    def setValue(self : Self, value : Qt.BrushStyle | None) -> None:
         if value is None:
             index = self._idx_default
         else:

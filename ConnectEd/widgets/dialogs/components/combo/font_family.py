@@ -18,7 +18,7 @@ class FontFamilyComboBox(QComboBox):
     def __init__(
         self    : Self,
         value   : str | None | NoChange,
-        default : str,
+        default : str | None | NoChange = None,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -45,7 +45,7 @@ class FontFamilyComboBox(QComboBox):
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
-    def value(self : Self) -> str | NoChange:
+    def value(self : Self) -> str | None | NoChange:
         r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
         return r if r != self._initial else NO_CHANGE
 

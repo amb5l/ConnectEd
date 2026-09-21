@@ -42,7 +42,7 @@ class ColorComboBox(QComboBox):
     def __init__(
         self    : Self,
         value   : QColor | None | NoChange,
-        default : QColor | NoChange,
+        default : QColor | None | NoChange = None,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -95,7 +95,7 @@ class ColorComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def value(self : Self) -> QColor | NoChange:
+    def value(self : Self) -> QColor | None | NoChange:
         r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
         return r if r != self._initial else NO_CHANGE
 
