@@ -20,8 +20,8 @@ from ...graphics.items.property_text import (
 
 from ..components.layout.ok_cancel import OkCancelLayout
 
-from .item_type import (
-    PropertiesItemTypeWidget, PropertiesItemTypeTabWidget
+from .editor import (
+    PropertiesEditorWidget, PropertiesEditorTabWidget
 )
 
 from typing import TYPE_CHECKING
@@ -97,7 +97,7 @@ class PropertiesDialog(QDialog):
     """
 
     _store : dict[str, OwnerStore]
-    _main_widget : PropertiesItemTypeWidget | PropertiesItemTypeTabWidget
+    _main_widget : PropertiesEditorWidget | PropertiesEditorTabWidget
 
     @checked
     def __init__(
@@ -152,9 +152,9 @@ class PropertiesDialog(QDialog):
         # create main widget
         if len(owner_dict.keys()) == 1:
             owner_store = list(self._store.values())[0]
-            self._main_widget = PropertiesItemTypeWidget(owner_store)
+            self._main_widget = PropertiesEditorWidget(owner_store)
         else:
-            self._main_widget = PropertiesItemTypeTabWidget(self._store)
+            self._main_widget = PropertiesEditorTabWidget(self._store)
         # buttons
         ok_cancel_layout = OkCancelLayout(self)
         # create layout

@@ -11,6 +11,10 @@ from ...graphics.properties import PropertiesMixin
 
 from .defs import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import StoreProperty, StorePropertyText, OwnerStore
+
 
 class SliceComboBox(QComboBox):
     """Slice (property attribute) picker."""
@@ -35,9 +39,11 @@ class PropertiesGridWidget(TableView):
     Widget for displaying properties in a grid.
     """
 
+    _transposed : bool = False
+
     def __init__(
         self               : Self,
-        items              : list[PropertiesMixin],
+        store              : OwnerStore,
         transpose_checkbox : QCheckBox,
         parent             : QWidget | None = None
     ) -> None:
@@ -71,3 +77,10 @@ class PropertiesGridWidget(TableView):
 
         # superclass init
         super().__init__(model, parent)
+
+    def transposed(self) -> bool:
+        return self._transposed
+
+    def setTransposed(self, transposed: bool) -> None:
+        self._transposed = transposed
+        # sort out header labels
