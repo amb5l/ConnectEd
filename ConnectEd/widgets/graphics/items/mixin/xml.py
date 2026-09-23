@@ -57,9 +57,8 @@ class ItemXmlMixin:
                     child.toXml(xw)
         if isinstance(self, PropertiesMixin):
             for prop in self.properties.values():
-                display = prop.displayItem()
-                if display is not None:
-                    display.toXml(xw)
+                for pt in self.propertyTextItems(prop):
+                    pt.toXml(xw)
 
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -109,12 +108,8 @@ class ItemXmlMixin:
                 )
                 _skipXmlElement(xr, "PropertyText")
                 return True
-            display = self.properties[name].setDisplay(True)
-            if display is None:
-                raise ValueError(
-                    f"Display item for property {name} is None"
-                )
-            fromXmlProperties(display, xr)
+            pt = self.propertyTextAdd(self.properties[name])
+            fromXmlProperties(pt, xr)
             if not (xr.isEndElement() and xr.name() == "PropertyText"):
                 fromXml(xr, {}, ptag="PropertyText")
             return True
@@ -147,9 +142,8 @@ class ItemXmlMixin:
             instance.onSceneOrientationChanged()
         if isinstance(instance, PropertiesMixin):
             for prop in instance.properties.values():
-                display = prop.displayItem()
-                if display is not None:
-                    display.onTextChanged()
+                for pt in instance.propertyTextItems(prop):
+                    pt.onTextChanged()
 
     @classmethod
     @checked

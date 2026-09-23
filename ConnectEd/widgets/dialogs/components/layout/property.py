@@ -19,7 +19,7 @@ from ..combo.enum import EnumComboBox
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.property_text import PropertyTextItem
+    from ....graphics.items.property_text import PropertyTextItem
 
 
 class PropertyLayout(QGridLayout):

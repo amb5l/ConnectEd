@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGraphicsItem
 from ....core.check import checked
 
 from ...graphics.properties import (
-    PropertyPending, PropertyEdits, PropertiesMixin
+    PropertyPending, PropertyAndTextsEdit, PropertiesMixin
 )
 
 from ...graphics.items.property_text import PropertyTextItem
@@ -97,8 +97,8 @@ class PropertiesDialog(QDialog):
         self.setLayout(layout)
 
     @checked
-    def getEdits(self : Self) -> list[PropertyEdits]:
-        edits : list[PropertyEdits] = []
+    def getEdits(self : Self) -> list[PropertyAndTextsEdit]:
+        edits : list[PropertyAndTextsEdit] = []
         for owner_store in self._store.values():
             for owner, store_properties in owner_store.items():
                 for store_property in store_properties:

@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import QGraphicsItem
 from ......app import logger
 
 from ......core.check import checked
-from ......core.types import NoChange
 
 from .....dialogs.items.text          import TextItemDialog
 from .....dialogs.items.property_text import PropertyTextItemDialog
@@ -229,9 +228,7 @@ class DiagramViewStateEditItemProperties(DiagramViewState):
             dialog_item = dialog_items[0]
             dialog = PropertiesDialog(dialog_item, self.view)
             if dialog.exec():
-                self.scene.editProperties(
-                    dialog_item, dialog.getChanges(), undoable=True
-                )
+                self.scene.editProperties(dialog.getEdits(), undoable=True)
         else:
             logger().error(f"Expected 1 item, got {len(dialog_items)}")
         self.view.state.go(self.view.stateIdle)
@@ -249,7 +246,7 @@ class DiagramViewStateEditDiagramProperties(DiagramViewState):
         self._requireNoItemsNoSpos(items, spos)
         dialog = PropertiesDialog(self.scene, self.view)
         if dialog.exec():
-            self.scene.editProperties(self.scene, dialog.getChanges(), undoable=True)
+            self.scene.editProperties(dialog.getEdits(), undoable=True)
         self.view.state.go(self.view.stateIdle)
 
 class DiagramViewStateEditQuery(DiagramViewState):
@@ -324,37 +321,31 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
                 owner = item.owner()
                 if not isinstance(owner, PropertiesMixin):
                     raise ValueError("Owner is not a PropertiesMixin")
-                old_name = item.name()
-                new_name = dialog.getName()
-                prop_name = old_name if isinstance(new_name, NoChange) \
-                    else (old_name, new_name)
-                text_name = old_name if isinstance(new_name, NoChange) \
-                    else new_name
                 self.scene.editProperty(
-                    owner   = owner,
-                    name     = prop_name,
+                    owner    = owner,
+                    property = item.property(),
+                    name     = dialog.getName(),
                     kind     = dialog.getKind(),
                     value    = dialog.getValue(),
                     undoable = True
                 )
                 self.scene.editPropertyText(
-                    object    = owner,
-                    name      = text_name,
-                    cleat     = dialog.getCleat(),
-                    rotation  = dialog.getRotation(),
-                    mirror_h  = dialog.getMirrorH(),
-                    mirror_v  = dialog.getMirrorV(),
-                    autoflip  = dialog.getAutoflip(),
-                    origin    = dialog.getOrigin(),
-                    align_h   = dialog.getAlignH(),
-                    align_v   = dialog.getAlignV(),
-                    color     = dialog.getColor(),
-                    font      = dialog.getFont(),
-                    size      = dialog.getSize(),
-                    bold      = dialog.getBold(),
-                    italic    = dialog.getItalic(),
-                    underline = dialog.getUnderline(),
-                    undoable  = True
+                    item       = item,
+                    cleat      = dialog.getCleat(),
+                    rotation   = dialog.getRotation(),
+                    mirror_h   = dialog.getMirrorH(),
+                    mirror_v   = dialog.getMirrorV(),
+                    autoflip   = dialog.getAutoflip(),
+                    origin     = dialog.getOrigin(),
+                    align_h    = dialog.getAlignH(),
+                    align_v    = dialog.getAlignV(),
+                    color      = dialog.getColor(),
+                    font       = dialog.getFont(),
+                    size       = dialog.getSize(),
+                    bold       = dialog.getBold(),
+                    italic     = dialog.getItalic(),
+                    underline  = dialog.getUnderline(),
+                    undoable   = True
                 )
         else:
             logger().warning("No property text selected")

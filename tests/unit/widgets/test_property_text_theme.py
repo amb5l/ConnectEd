@@ -26,8 +26,9 @@ def test_property_text_block_name_settings_and_resources(
     connect_ed_app : ConnectEdApp,
 ) -> None:
     block = BlockItem(QPointF(0.0, 0.0), QPointF(100.0, 50.0))
-    pt = block.properties["Name"].displayItem()
-    assert pt is not None
+    texts = block.propertyTextItems(block.properties["Name"])
+    assert texts
+    pt = texts[0]
     assert pt.name() == "Name"
     assert pt.settingsName() == "BlockName"
     assert pt.resourcesName() == "BlockName"

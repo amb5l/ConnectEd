@@ -147,6 +147,7 @@ class PropertyTextItem(TextItem):
         self._tether = PropertyTextTetherItem(self)
         self.onTextChanged()
         self._updateQuill()
+        self._property.subscribe(self.onTextChanged)
 
     def onPositionChanged(
         self : Self,

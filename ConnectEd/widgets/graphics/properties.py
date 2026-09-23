@@ -40,7 +40,6 @@ class Property:
     _worthy       : Callable[[PropertiesMixin], bool]      | None
     _notifier     : PropertyNotifier                       | None
     _tip          : str                                    | None
-    _display_item : PropertyTextItem                       | None
 
     def __init__(
         self    : Self,
@@ -62,7 +61,6 @@ class Property:
         self._worthy       = worthy
         self._notifier     = None
         self._tip          = tip
-        self._display_item = None
 
     def owner(self : Self) -> PropertiesMixin:
         return self._owner
@@ -169,42 +167,6 @@ class Property:
         if self._notifier and self._owner.propertiesLive():
             self._notifier.changed.emit()
 
-    def display(self : Self) -> bool:
-        return self._display_item is not None
-
-    def setDisplay(self : Self, enable : bool) -> PropertyTextItem | None:
-        from .items.property_text import PropertyTextItem
-        if enable:
-            if self._display_item is None:
-                # create display item
-                display_item = PropertyTextItem(property = self)
-                if isinstance(self._owner, QGraphicsScene):
-                    self._owner.addItem(display_item)
-                self.setDisplayItem(display_item)
-        elif self._display_item is not None:
-            # delete display item (let GC collect it)
-            if isinstance(self._owner, QGraphicsScene):
-                self._owner.removeItem(self._display_item)
-            elif isinstance(self._owner, QGraphicsItem):
-                self._display_item.setParentItem(None)
-            else:
-                raise ValueError("Owner is not a scene or item")
-            self.setDisplayItem(None)
-        return self._display_item
-
-    def displayItem(self : Self) -> PropertyTextItem | None:
-        return self._display_item
-
-    def setDisplayItem(
-        self         : Self,
-        display_item : PropertyTextItem | None
-    ) -> None:
-        if self._display_item is not None:
-            self.unsubscribe(self._display_item.onTextChanged)
-        self._display_item = display_item
-        if display_item is not None:
-            self.subscribe(display_item.onTextChanged)
-
     def subscribe(self : Self, slot : Callable) -> None:
         if self._notifier is None:
             self._notifier = PropertyNotifier()
@@ -297,14 +259,14 @@ class PropertyPending:
     def getEdit(
         self  : Self,
         owner : PropertiesMixin
-    ) -> PropertyEdits | None:
+    ) -> PropertyAndTextsEdit | None:
         """Return this pending's edits, or None when it produces none."""
         if self.state is None:
             if self.obj is None:
                 return None
-            return PropertyEdits(owner, self.obj, PropertyDelete(), [])
+            return PropertyAndTextsEdit(owner, self.obj, PropertyDelete(), [])
         if self.obj is None:
-            return PropertyEdits(owner, None, PropertyAdd(self.state, [
+            return PropertyAndTextsEdit(owner, None, PropertyAdd(self.state, [
                 text.state
                 for text in self.texts
                 if text.state is not None
@@ -317,7 +279,7 @@ class PropertyPending:
                 texts.append(text_edit)
         if edit is None and len(texts) == 0:
             return None
-        return PropertyEdits(owner, self.obj, edit, texts)
+        return PropertyAndTextsEdit(owner, self.obj, edit, texts)
 
 
 @dataclass
@@ -373,7 +335,7 @@ class PropertyChange(PropertyEdit):
 
 
 @dataclass
-class PropertyEdits:
+class PropertyAndTextsEdit:
     """A property edit and the text edits that belong with it."""
 
     owner    : PropertiesMixin
@@ -383,24 +345,22 @@ class PropertyEdits:
 
 
 class PropertiesMixin:
-    _PROPERTY_SPECS         : dict[str, PropertySpec]
-    _PROPERTY_DISPLAY_SPECS : dict[str, PropertyTextSpec]
-    properties              : dict[str, Property]
+    _PROPERTIES     : dict[str, PropertySpec]
+    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
+    properties      : dict[str, Property]
 
     def initProperties(self : Self, live : bool) -> None:
         self.properties = {}
         self._live = live
-        for name, spec in self._PROPERTY_SPECS.items():
+        for name, spec in self._PROPERTIES.items():
             self.properties[name] = Property.fromSpec(self, spec)
-        if live and hasattr(self, "_PROPERTY_DISPLAY_SPECS"):
-            for name, spec in self._PROPERTY_DISPLAY_SPECS.items():
+        if live and hasattr(self, "_PROPERTY_TEXTS"):
+            for name, spec in self._PROPERTY_TEXTS.items():
                 if name not in self.properties:
                     logger().error(f"Property {name} does not exist")
                     continue
-                display_item = self.properties[name].setDisplay(True)
-                if display_item is None:
-                    raise ValueError(f"Display item for property {name} is None")
-                display_item.apply(spec)
+                text = self.propertyTextAdd(self.properties[name])
+                text.apply(spec)
 
     def propertiesLive(self : Self) -> bool:
         return self._live
@@ -499,7 +459,7 @@ class PropertiesMixin:
     @checked
     def propertyDelete(self : Self, name : str) -> bool:
         """
-        Remove a property (and its associated property text item if applicable).
+        Remove a property and its texts.
         Returns True if the property was removed, False otherwise.
         """
         # check property existence
@@ -512,8 +472,8 @@ class PropertiesMixin:
         if property.isInherent():
             logger().error(f"Inherent property '{name}' cannot be removed")
             return False
-        # delete display item
-        property.setDisplay(False)
+        for text in self.propertyTextItems(property):
+            self.propertyTextRemove(text)
         # notify property receivers
         property.notify()
         # remove property from dictionary
@@ -528,10 +488,38 @@ class PropertiesMixin:
             None
         )
 
+    def propertyTextAdd(self : Self, property : Property) -> PropertyTextItem:
+        from .items.property_text import PropertyTextItem
+        text = PropertyTextItem(property = property)
+        if isinstance(self, QGraphicsScene):
+            self.addItem(text)
+        return text
+
+    def propertyTextRemove(self : Self, text : PropertyTextItem) -> None:
+        text.property().unsubscribe(text.onTextChanged)
+        if isinstance(self, QGraphicsItem):
+            text.setParentItem(None)
+            if (scene := text.scene()) is not None:
+                scene.removeItem(text)
+        elif isinstance(self, QGraphicsScene):
+            self.removeItem(text)
+        else:
+            raise ValueError("Owner is not a scene or item")
+
+    def propertyTextAttach(self : Self, text : PropertyTextItem) -> None:
+        text.property().subscribe(text.onTextChanged)
+        if isinstance(self, QGraphicsScene):
+            self.addItem(text)
+        elif isinstance(self, QGraphicsItem):
+            text.setCleat(text.cleat())
+        else:
+            raise ValueError("Owner is not a scene or item")
+
     def propertyTextItems(
         self     : Self,
         property : Property | None = None
     ) -> list[PropertyTextItem]:
+        from .items.property_text import PropertyTextItem
         if isinstance(self, QGraphicsScene):
             items = [
                 item

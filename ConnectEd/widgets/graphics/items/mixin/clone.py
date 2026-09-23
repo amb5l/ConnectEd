@@ -25,7 +25,7 @@ class ItemCloneMixin:
         clone_item = constructor(fresh=False)
         if not isinstance(clone_item, QGraphicsItem):
             raise TypeError("Bad clone")
-        # clone properties and their optional display texts
+        # clone properties and their texts
         if isinstance(self, PropertiesMixin):
             if not isinstance(clone_item, PropertiesMixin):
                 raise TypeError("Bad clone")
@@ -43,15 +43,9 @@ class ItemCloneMixin:
                         raise ValueError(
                             f"Failed to add property {name}"
                         )
-                source_display_item = source_property.displayItem()
-                if source_display_item is None:
-                    continue
-                dest_display_item = clone_property.setDisplay(True)
-                if dest_display_item is None:
-                    raise ValueError(
-                        f"Display item for property {name} is None"
-                    )
-                _copyPropertyDisplay(source_display_item, dest_display_item)
+                for source_text in self.propertyTextItems(source_property):
+                    dest_text = clone_item.propertyTextAdd(clone_property)
+                    _copyPropertyDisplay(source_text, dest_text)
         # clone pins (each pin clones its own properties and displays)
         for source_child in self.childItems():
             if isinstance(source_child, PortPinLineItem | PortPinPathItem):

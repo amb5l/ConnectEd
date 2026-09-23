@@ -10,7 +10,7 @@ from .....core.check import checked
 from .....core.types import NoChange, DataKind
 
 from ....graphics.properties import (
-    Property, PropertyPending, PropertyEdits, PropertiesMixin
+    Property, PropertyPending, PropertyAndTextsEdit, PropertiesMixin
 )
 
 from ....utils import kind2dialogEditor
@@ -70,7 +70,7 @@ class PropertyDialog(QDialog):
         self._initUI()
 
     @checked
-    def getEdits(self : Self) -> PropertyEdits | None:
+    def getEdits(self : Self) -> PropertyAndTextsEdit | None:
         """Copy the widgets into the pending and return its edits."""
         self._sync()
         return self._pending.getEdit(self._owner)

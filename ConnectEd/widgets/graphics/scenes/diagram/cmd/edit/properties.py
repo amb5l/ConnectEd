@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-from typing      import Self, Any
-from dataclasses import dataclass
-
-from PyQt6.QtGui  import QColor
+from typing import Self
 
 from .......app import logger
 
 from .......core.check import checked
-from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
-                                   DataKind, HandleId, RectHandleId
+from .......core.types import NoChange, DataKind
 
-from .....properties import PropertiesMixin, \
-                            PropertyDisplayState, PropertyDisplayChange
+from .....properties import PropertiesMixin, Property, PropertyState, \
+                            PropertyChange
 
-from .....items.property_text import PropertyTextItem
+from .....items.property_text import PropertyTextItem, PropertyTextState, \
+                                     PropertyTextChange
 
 from .. import CmdBase
 
@@ -35,207 +32,256 @@ class CmdPropertyBase(CmdBase):
 class CmdAddProperty(CmdPropertyBase):
     """Command to add a property."""
 
-    _name  : str
-    _kind  : DataKind
-    _value : Any
+    _state    : PropertyState
+    _property : Property
 
     @checked
     def __init__(
         self  : Self,
         owner : PropertiesMixin,
-        name  : str,
-        kind  : DataKind,
-        value : Any
+        state : PropertyState
     ) -> None:
         super().__init__(owner)
-        if name in owner.properties:
-            logger().error(f"Property '{name}' already exists")
+        if state.name in owner.properties:
+            logger().error(f"Property '{state.name}' already exists")
             self.setObsolete(True)
             return
-        self._name  = name
-        self._kind  = kind
-        self._value = value
+        if state.kind not in (DataKind.STR, DataKind.TEXT):
+            logger().error(f"Invalid property kind: {state.kind}")
+            self.setObsolete(True)
+            return
+        self._state    = state
+        self._property = Property(owner, state.kind, state.value)
 
     @checked
     def redo(self : Self) -> None:
-        self._owner.propertyAdd(self._name, self._kind, self._value)
+        if self._state.name in self._owner.properties:
+            logger().error(f"Property '{self._state.name}' already exists")
+            return
+        self._owner.properties[self._state.name] = self._property
 
     @checked
     def undo(self : Self) -> None:
-        self._owner.propertyDelete(self._name)
+        name = self._owner.propertyName(self._property)
+        if name is None:
+            logger().error(f"Property '{self._state.name}' not found")
+            return
+        self._owner.propertyDelete(name)
+
+    def property(self : Self) -> Property:
+        return self._property
 
 
 class CmdEditProperty(CmdPropertyBase):
-    _old_name  : str
-    _old_kind  : DataKind
-    _old_value : Any
-    _new_name  : str      | NoChange
-    _new_kind  : DataKind | NoChange
-    _new_value : Any      | NoChange
+    """Command to edit a property."""
+
+    _property : Property
+    _before   : PropertyState
+    _change   : PropertyChange
 
     @checked
     def __init__(
-        self  : Self,
-        owner : PropertiesMixin,
-        name  : str | tuple[str, str],
-        old_kind  : DataKind | NoChange = NO_CHANGE,
-        old_value : Any      | NoChange = NO_CHANGE
+        self     : Self,
+        owner    : PropertiesMixin,
+        property : Property,
+        change   : PropertyChange
     ) -> None:
         super().__init__(owner)
-        old_name, new_name = \
-            name if isinstance(name, tuple) else (name, NO_CHANGE)
-        if old_name not in owner.properties:
-            logger().error(f"Property '{old_name}' not found")
-            self.setObsolete(True)
-            return
-        old_kind = owner.properties[old_name].kind()
-        old_value = owner.properties[old_name].value(raw = True)
-        self._old_name  = old_name
-        self._old_kind  = old_kind
-        self._old_value = old_value
-        self._new_name  = NO_CHANGE if old_name == new_name else new_name
-        self._new_kind  = NO_CHANGE if old_kind == old_kind else old_kind
-        self._new_value = NO_CHANGE if old_value == old_value else old_value
-
-    @checked
-    def redo(self : Self) -> None:
-        name = self._old_name
-        if not isinstance(self._new_name, NoChange):
-            self._owner.propertyRename(name, self._new_name)
-            name = self._new_name
-        if not isinstance(self._new_kind, NoChange):
-            self._owner.properties[name].setKind(self._new_kind)
-        if not isinstance(self._new_value, NoChange):
-            self._owner.properties[name].setValue(self._new_value)
-
-    @checked
-    def undo(self : Self) -> None:
-        if not isinstance(self._new_name, NoChange):
-            self._owner.propertyRename(self._new_name, self._old_name)
-        name = self._old_name
-        if not isinstance(self._new_kind, NoChange):
-            self._owner.properties[name].setKind(self._old_kind)
-        if not isinstance(self._new_value, NoChange):
-            self._owner.properties[name].setValue(self._old_value)
-
-
-class CmdDelProperty(CmdPropertyBase):
-    _name        : str
-    _kind        : DataKind
-    _value       : Any
-    _cmd_display : CmdSetPropertyDisplay | None
-
-    @checked
-    def __init__(
-        self  : Self,
-        owner : PropertiesMixin,
-        name  : str
-    ) -> None:
-        super().__init__(owner)
-        if name not in owner.properties:
-            logger().error(f"Property '{name}' not found")
-            self.setObsolete(True)
-            return
-        self._name  = name
-        property = owner.properties[name]
-        if property.isInherent():
-            logger().error(f"Property '{name}' is inherent")
-            self.setObsolete(True)
-            return
-        self._kind  = property.kind()
-        self._value = property.value(raw = True)
-        self._cmd_display = None
-        if property.displayItem() is not None:
-            self._cmd_display = CmdSetPropertyDisplay(owner, name, False)
-
-    @checked
-    def redo(self : Self) -> None:
-        if self._cmd_display is not None:
-            self._cmd_display.redo()
-        self._owner.propertyDelete(self._name)
-
-    @checked
-    def undo(self : Self) -> None:
-        self._owner.propertyAdd(self._name, self._kind, self._value)
-        if self._cmd_display is not None:
-            self._cmd_display.undo()
-
-
-class CmdSetPropertyDisplay(CmdPropertyBase):
-    """Command for setting property display on or off."""
-
-    _name   : str
-    _state  : PropertyDisplayState | None
-    _enable : bool
-
-    def __init__(
-        self   : Self,
-        owner  : PropertiesMixin,
-        name   : str,
-        enable : bool
-    ) -> None:
-        super().__init__(owner)
-        if name not in owner.properties:
-            logger().error(f"Property '{name}' not found")
-            self.setObsolete(True)
-            return
-        self._name = name
-        property = owner.properties[name]
-        display_item = property.displayItem()
-        if enable == (display_item is not None):
-            self.setObsolete(True)
-            return
-        self._state = None
-        if not enable:
-            if display_item is not None:
-                self._state = display_item.state()
-        self._enable = enable
-
-    def redo(self : Self) -> None:
-        property = self._owner.properties[self._name]
-        property.setDisplay(self._enable)
-
-    def undo(self : Self) -> None:
-        property = self._owner.properties[self._name]
-        property.setDisplay(not self._enable)
-        if self._state is not None:
-            display_item = property.displayItem()
-            if display_item is not None:
-                display_item.apply(self._state)
-
-
-class CmdEditPropertyDisplay(CmdPropertyBase):
-    """Command for editing property display appearance."""
-
-    _item   : PropertyTextItem
-    _before : PropertyDisplayState
-    _change : PropertyDisplayChange
-
-    def __init__(
-        self   : Self,
-        owner  : PropertiesMixin,
-        name   : str,
-        change : PropertyDisplayChange
-    ) -> None:
-        super().__init__(owner)
-        if name not in owner.properties:
-            logger().error(f"Property '{name}' not found")
+        if owner.propertyName(property) is None:
+            logger().error("Property does not belong to owner")
             self.setObsolete(True)
             return
         if change.noop():
             self.setObsolete(True)
             return
-        display_item = owner.properties[name].displayItem()
-        if display_item is None:
-            logger().error(f"Property '{name}' does not have a display item")
+        self._property = property
+        self._before   = property.state()
+        self._change   = change
+
+    @checked
+    def redo(self : Self) -> None:
+        self._apply(self._change)
+
+    @checked
+    def undo(self : Self) -> None:
+        self._apply(self._before)
+
+    @checked
+    def _apply(
+        self    : Self,
+        payload : PropertyState | PropertyChange
+    ) -> None:
+        name = self._owner.propertyName(self._property)
+        if name is None:
+            logger().error("Property does not belong to owner")
+            return
+        if not isinstance(payload.name, NoChange) and payload.name != name:
+            self._owner.propertyRename(name, payload.name)
+        if not isinstance(payload.kind, NoChange):
+            self._property.setKind(payload.kind)
+        if not isinstance(payload.value, NoChange):
+            self._property.setValue(payload.value)
+
+
+class CmdDelProperty(CmdPropertyBase):
+    """Command to delete a property and its texts."""
+
+    _name     : str
+    _property : Property
+    _texts    : list[CmdDelPropertyText]
+
+    @checked
+    def __init__(
+        self     : Self,
+        owner    : PropertiesMixin,
+        property : Property
+    ) -> None:
+        super().__init__(owner)
+        name = owner.propertyName(property)
+        if name is None:
+            logger().error("Property does not belong to owner")
             self.setObsolete(True)
             return
-        self._item = display_item
-        self._before = display_item.state()
+        if property.isInherent():
+            logger().error(f"Property '{name}' is inherent")
+            self.setObsolete(True)
+            return
+        self._name     = name
+        self._property = property
+        self._texts    = [
+            CmdDelPropertyText(owner, text)
+            for text in owner.propertyTextItems(property)
+        ]
+
+    @checked
+    def redo(self : Self) -> None:
+        for text in self._texts:
+            text.redo()
+        name = self._owner.propertyName(self._property)
+        if name is None:
+            logger().error(f"Property '{self._name}' not found")
+            return
+        self._owner.propertyDelete(name)
+
+    @checked
+    def undo(self : Self) -> None:
+        if self._name in self._owner.properties:
+            logger().error(f"Property '{self._name}' already exists")
+            return
+        self._owner.properties[self._name] = self._property
+        for text in reversed(self._texts):
+            text.undo()
+
+
+class CmdAddPropertyText(CmdPropertyBase):
+    """Command to add a property text."""
+
+    _property : Property
+    _state    : PropertyTextState
+    _item     : PropertyTextItem | None
+
+    @checked
+    def __init__(
+        self     : Self,
+        owner    : PropertiesMixin,
+        property : Property,
+        state    : PropertyTextState
+    ) -> None:
+        super().__init__(owner)
+        if owner.propertyName(property) is None:
+            logger().error("Property does not belong to owner")
+            self.setObsolete(True)
+            return
+        self._property = property
+        self._state    = state
+        self._item     = None
+
+    @checked
+    def redo(self : Self) -> None:
+        if self._item is None:
+            text = self._owner.propertyTextAdd(self._property)
+            text.apply(self._state)
+            self._item = text
+            return
+        self._owner.propertyTextAttach(self._item)
+
+    @checked
+    def undo(self : Self) -> None:
+        if self._item is None:
+            return
+        self._owner.propertyTextRemove(self._item)
+
+
+class CmdEditPropertyText(CmdPropertyBase):
+    """Command to edit a property text."""
+
+    _item   : PropertyTextItem
+    _before : PropertyTextState
+    _change : PropertyTextChange
+
+    @checked
+    def __init__(
+        self   : Self,
+        item   : PropertyTextItem,
+        change : PropertyTextChange
+    ) -> None:
+        super().__init__(item.property().owner())
+        if change.item is not item:
+            logger().error("Property text change is for a different text")
+            self.setObsolete(True)
+            return
+        if change.noop():
+            self.setObsolete(True)
+            return
+        if not any(
+            text is item
+            for text in self._owner.propertyTextItems(item.property())
+        ):
+            logger().error("Property text is not on owner")
+            self.setObsolete(True)
+            return
+        self._item   = item
+        self._before = item.state()
         self._change = change
 
+    @checked
     def redo(self : Self) -> None:
         self._item.apply(self._change)
 
+    @checked
     def undo(self : Self) -> None:
         self._item.apply(self._before)
+
+
+class CmdDelPropertyText(CmdPropertyBase):
+    """Command to delete a property text."""
+
+    _item : PropertyTextItem
+
+    @checked
+    def __init__(
+        self  : Self,
+        owner : PropertiesMixin,
+        item  : PropertyTextItem
+    ) -> None:
+        super().__init__(owner)
+        if item.property().owner() is not owner:
+            logger().error("Property text does not belong to owner")
+            self.setObsolete(True)
+            return
+        if not any(
+            text is item
+            for text in owner.propertyTextItems(item.property())
+        ):
+            logger().error("Property text is not on owner")
+            self.setObsolete(True)
+            return
+        self._item = item
+
+    @checked
+    def redo(self : Self) -> None:
+        self._owner.propertyTextRemove(self._item)
+
+    @checked
+    def undo(self : Self) -> None:
+        self._owner.propertyTextAttach(self._item)

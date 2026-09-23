@@ -33,13 +33,6 @@ class ItemPresentationTextMixin:
     _text_italic    : bool   | None
     _text_underline : bool   | None
 
-    @classmethod
-    def themeQuill(cls : type[Self], scene : DiagramScene) -> Quill:
-        return scene.resources.quill(
-            cls.resourcesName(),
-            cls._resourceNormalKey(),
-        )
-
     def hasText(self : Self) -> bool:
         return (
                self.hasTextColor()

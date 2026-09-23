@@ -55,9 +55,8 @@ class TextAppearanceLayout(QVBoxLayout):
             scene = view.scene()
             if scene is None:
                 raise ValueError("Scene is None")
-            theme = source.themeQuill(scene)
         else:
-           state, theme = source
+           state, _theme = source
         self._enabled = True
         # middle left - rotation, alignment and origin
         self._left_layout = QVBoxLayout()
