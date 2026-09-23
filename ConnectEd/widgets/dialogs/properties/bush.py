@@ -5,7 +5,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QShowEvent
 
-from ...table.item  import TableItem
+from ...table.row   import TableRow
 from ...table.model import TableModel
 from ...table.view  import TableView
 
@@ -13,11 +13,13 @@ from ...graphics.properties import PropertiesMixin
 
 from ...graphics.items.mixin import ItemMixin
 
-from .item import PropertiesItem, PropertiesValueItem, PropertiesExpanderItem
+from ...properties import populateProperty, populatePropertyText
+
+from .item import PropertiesItem, PropertiesExpanderItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import StoreProperty, StorePropertyText, OwnerStore
+    from . import OwnerStore
 
 
 _COLUMNS : dict[str, list[str]] = {
@@ -60,25 +62,6 @@ _COLUMNS : dict[str, list[str]] = {
 }
 
 
-class TableRow:
-    """
-    Dict-shaped list of TableItems.
-    """
-
-    _names : list[str]
-    _cells : list[TableItem | None]
-
-    def __init__(self, names : list[str]) -> None:
-        self._names = names
-        self._cells = [None] * len(names)
-
-    def __setitem__(self, name : str, cell : TableItem | None) -> None:
-        self._cells[self._names.index(name)] = cell
-
-    def cells(self) -> list[TableItem | None]:
-        return self._cells
-
-
 class PropertiesBushWidget(TableView):
     """
     Compressed tree of owners, properties, and property texts.
@@ -107,7 +90,10 @@ class PropertiesBushWidget(TableView):
         super().__init__(model, parent)
 
     def showEvent(self, a0: QShowEvent | None) -> None:
-        """Rebuild model from store when widget is shown."""
+        """
+        Rebuild model from store when widget is shown, because another
+        widget may have changed the store.
+        """
         super().showEvent(a0)
         self._rebuildModel()
 
@@ -162,20 +148,23 @@ class PropertiesBushWidget(TableView):
         owner_col_stop = len(_COLUMNS["Owner"])
         property_col = owner_col_stop
         property_col_stop = property_col + len(_COLUMNS["Property"])
-        for owner, store_properties in self._store.items():
+        for owner, property_drafts in self._store.items():
             owner_row_idx = model.rowCount()
+            property_drafts = [
+                draft for draft in property_drafts if draft.state is not None
+            ]
             p_exp = property_expanders.get(owner, True) \
-                if len(store_properties) > 1 else None
-            if len(store_properties) == 0:
+                if len(property_drafts) > 1 else None
+            if len(property_drafts) == 0:
                 row = self._emptyRow()
                 self._populateOwner(row, owner)
                 model.appendRow(row.cells())
                 continue
-            for property_idx, store_property in enumerate(store_properties):
+            for property_idx, property_draft in enumerate(property_drafts):
                 property_row_idx = model.rowCount()
-                texts = store_property.texts
+                texts = property_draft.texts
                 pt_exp = \
-                    property_text_expanders.get(store_property.current, True) \
+                    property_text_expanders.get(property_draft.state, True) \
                     if len(texts) > 1 else None
                 for text_idx in range(max(1, len(texts))):
                     row = self._emptyRow()
@@ -185,12 +174,12 @@ class PropertiesBushWidget(TableView):
                             row["Property Expander"] = \
                                 PropertiesExpanderItem(p_exp)
                     if text_idx == 0:
-                        self._populateProperty(row, store_property)
+                        populateProperty(row, property_draft)
                         if pt_exp is not None:
                             row["Property Text Expander"] = \
                                 PropertiesExpanderItem(pt_exp)
                     if text_idx < len(texts):
-                        self._populatePropertyText(row, texts[text_idx])
+                        populatePropertyText(row, texts[text_idx])
                     model.appendRow(row.cells())
                 row_span = model.rowCount() - property_row_idx
                 if row_span > 1:
@@ -221,59 +210,3 @@ class PropertiesBushWidget(TableView):
             raise ValueError("Unexpected owner type")
         row["Owner ID"] = PropertiesItem(owner.suid(), owner)
         return row
-
-    def _populateProperty(
-        self  : Self,
-        row   : TableRow,
-        store : StoreProperty,
-        new   : bool = False
-    ) -> None:
-        if store.initial is None:
-            raise ValueError("Store property initial is None")
-        if store.obj is None:
-            raise ValueError("Store property source is None")
-        name     = store.current.name
-        kind     = store.current.kind
-        value    = store.current.value
-        custom   = store.obj.isCustom()
-        editable = store.obj.writeable()
-        p = PropertiesItem
-        v = PropertiesValueItem
-        row[ "Name"   ] = p(name, store.current, "name", new, not custom)
-        row[ "Custom" ] = p(custom, None, None, new, False)
-        row[ "Type"   ] = p(kind, store.current, "kind", new, not custom)
-        row[ "Value"  ] = v(kind, value, store.current, "value", new, editable)
-
-    def _populatePropertyText(
-        self  : Self,
-        row   : TableRow,
-        store : StorePropertyText,
-        new   : bool = False
-    ) -> None:
-        if store.initial is None:
-            raise ValueError("Store property text initial is None")
-        p = PropertiesItem
-        c = store.current
-        row[ "Visible"    ] = p( c.visible    , c , "visible"    , new )
-        row[ "Cleat"      ] = p( c.cleat      , c , "cleat"      , new )
-        row[ "X"          ] = p( c.x          , c , "x"          , new )
-        row[ "Y"          ] = p( c.y          , c , "y"          , new )
-        row[ "Rotation"   ] = p( c.rotation   , c , "rotation"   , new )
-        row[ "Mirror H"   ] = p( c.mirror_h   , c , "mirror_h"   , new )
-        row[ "Mirror V"   ] = p( c.mirror_v   , c , "mirror_v"   , new )
-        row[ "Autoflip"   ] = p( c.autoflip   , c , "autoflip"   , new )
-        row[ "Origin"     ] = p( c.origin     , c , "origin"     , new )
-        row[ "Align H"    ] = p( c.align_h    , c , "align_h"    , new )
-        row[ "Align V"    ] = p( c.align_v    , c , "align_v"    , new )
-        row[ "Width"      ] = p( c.width      , c , "width"      , new )
-        row[ "Height"     ] = p( c.height     , c , "height"     , new )
-        row[ "Pad Left"   ] = p( c.pad_left   , c , "pad_left"   , new )
-        row[ "Pad Right"  ] = p( c.pad_right  , c , "pad_right"  , new )
-        row[ "Pad Top"    ] = p( c.pad_top    , c , "pad_top"    , new )
-        row[ "Pad Bottom" ] = p( c.pad_bottom , c , "pad_bottom" , new )
-        row[ "Color"      ] = p( c.color      , c , "color"      , new )
-        row[ "Font"       ] = p( c.font       , c , "font"       , new )
-        row[ "Size"       ] = p( c.size       , c , "size"       , new )
-        row[ "Bold"       ] = p( c.bold       , c , "bold"       , new )
-        row[ "Italic"     ] = p( c.italic     , c , "italic"     , new )
-        row[ "Underline"  ] = p( c.underline  , c , "underline"  , new )

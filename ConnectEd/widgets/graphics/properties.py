@@ -18,7 +18,9 @@ from ...core.utils import val2str, pascal2proper
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .items.property_text import (
-        PropertyTextItem, PropertyTextSpec, PropertyTextState
+        PropertyTextItem,
+        PropertyTextSpec, PropertyTextState, PropertyTextPending,
+        PropertyTextEdit
     )
 
 
@@ -266,10 +268,63 @@ class PropertyState:
 
 
 @dataclass
-class PropertyEdit:
-    """Base class for property edits."""
+class PropertyPending:
+    """Working copy of a property inside an editor dialog."""
 
-    owner : PropertiesMixin
+    obj   : Property      | None  # None if new
+    state : PropertyState | None  # None if deleted
+    texts : list[PropertyTextPending]
+
+    @checked
+    def __init__(
+        self   : Self,
+        source : Property | PropertyState
+    ) -> None:
+        if isinstance(source, Property):
+            from .items.property_text import PropertyTextPending
+            self.obj   = source
+            self.state = source.state()
+            self.texts = [
+                PropertyTextPending(item)
+                for item in source.owner().propertyTextItems(source)
+            ]
+        else:
+            self.obj   = None
+            self.state = source
+            self.texts = []
+
+    @checked
+    def getEdit(
+        self  : Self,
+        owner : PropertiesMixin
+    ) -> PropertyEdits | None:
+        """Return this pending's edits, or None when it produces none."""
+        if self.state is None:
+            if self.obj is None:
+                return None
+            return PropertyEdits(owner, self.obj, PropertyDelete(), [])
+        if self.obj is None:
+            return PropertyEdits(owner, None, PropertyAdd(self.state, [
+                text.state
+                for text in self.texts
+                if text.state is not None
+            ]), [])
+        change = PropertyChange.fromComparison(self.obj.state(), self.state)
+        edit = None if change.noop() else change
+        texts = []
+        for text in self.texts:
+            if (text_edit := text.getEdit(owner, self.obj)) is not None:
+                texts.append(text_edit)
+        if edit is None and len(texts) == 0:
+            return None
+        return PropertyEdits(owner, self.obj, edit, texts)
+
+
+@dataclass
+class PropertyEdit:
+    """Base class for carrying a property edit."""
+
+    pass
 
 
 @dataclass
@@ -284,25 +339,22 @@ class PropertyAdd(PropertyEdit):
 class PropertyDelete(PropertyEdit):
     """Property Edit: delete an existing property."""
 
-    property : Property
+    pass
 
 
 @dataclass
 class PropertyChange(PropertyEdit):
     """Property Edit: change an existing property."""
 
-    property : Property
-    name     : str      | NoChange = NO_CHANGE
-    value    : Any      | NoChange = NO_CHANGE
-    kind     : DataKind | NoChange = NO_CHANGE
+    name  : str      | NoChange = NO_CHANGE
+    value : Any      | NoChange = NO_CHANGE
+    kind  : DataKind | NoChange = NO_CHANGE
 
     @classmethod
     def fromComparison(
-        cls      : type[Self],
-        owner    : PropertiesMixin,
-        property : Property,
-        before   : PropertyState,
-        after    : PropertyState
+        cls    : type[Self],
+        before : PropertyState,
+        after  : PropertyState
     ) -> Self:
         kwargs : dict[str, Any] = {}
         for state_field in fields(before):
@@ -310,7 +362,7 @@ class PropertyChange(PropertyEdit):
             after_value  = getattr(after,  state_field.name)
             if before_value != after_value:
                 kwargs[state_field.name] = after_value
-        return cls(owner, property, **kwargs)
+        return cls(**kwargs)
 
     def noop(self : Self) -> bool:
         """Return True if the edit is a no-op."""
@@ -318,6 +370,16 @@ class PropertyChange(PropertyEdit):
             isinstance(getattr(self, state_field.name), NoChange)
             for state_field in fields(PropertyState)
         )
+
+
+@dataclass
+class PropertyEdits:
+    """A property edit and the text edits that belong with it."""
+
+    owner    : PropertiesMixin
+    property : Property    | None
+    edit     : PropertyAdd | PropertyDelete | PropertyChange | None
+    texts    : list[PropertyTextEdit]
 
 
 class PropertiesMixin:

@@ -2,41 +2,25 @@ from __future__ import annotations
 
 from typing import Self
 
+from PyQt6.QtCore    import QItemSelection
 from PyQt6.QtWidgets import QWidget, QComboBox, QCheckBox
+
 
 from ...table.model import TableModel
 from ...table.view  import TableView
 
-from ...graphics.properties import PropertiesMixin
-
-from .defs import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
+from .defs   import PropertyFieldSpec, DisplayFieldSpec, _FIELD_SPECS
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import StoreProperty, StorePropertyText, OwnerStore
-
-
-class SliceComboBox(QComboBox):
-    """Slice (property attribute) picker."""
-
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        value_idx = 0
-        for field in _FIELD_SPECS:
-            if isinstance(field, PropertyFieldSpec) \
-            or isinstance(field, DisplayFieldSpec):
-                label = field.label
-                if label == "Name" or label == "Custom":
-                    continue
-                self.addItem(label)
-                if label == "Value":
-                    value_idx = self.count() - 1
-        self.setCurrentIndex(value_idx)
+    from . import OwnerStore
+    from .editor import PropertiesEditorWidget
 
 
 class PropertiesGridWidget(TableView):
     """
-    Widget for displaying properties in a grid.
+    Widget for displaying property values in a grid.
+    User can dive into a property and access its texts by
     """
 
     _transposed : bool = False
@@ -47,8 +31,6 @@ class PropertiesGridWidget(TableView):
         transpose_checkbox : QCheckBox,
         parent             : QWidget | None = None
     ) -> None:
-        if len(items) == 0:
-            raise ValueError("Items list is empty")
         # create model
         model = TableModel()
         # get property names
@@ -77,6 +59,18 @@ class PropertiesGridWidget(TableView):
 
         # superclass init
         super().__init__(model, parent)
+
+    def selectionChanged(
+        self       : Self,
+        selected   : QItemSelection,
+        deselected : QItemSelection
+    ) -> None:
+        pass  # TODO: implement
+        # call parent widget's selectionChanged method
+        editor_widget = self.parent()
+        if not isinstance(editor_widget, PropertiesEditorWidget):
+            return
+        self.parent().onSelectionChanged(selected, deselected)
 
     def transposed(self) -> bool:
         return self._transposed

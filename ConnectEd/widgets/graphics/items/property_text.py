@@ -16,7 +16,7 @@ from ....core.utils import val2str
 
 from ...graphics.quill import Quill
 
-from ..properties import PropertySpec
+from ..properties import Property, PropertiesMixin, PropertySpec
 
 from .text   import TextItem
 from .handle import HandleItem
@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.diagram  import DiagramView
     from ..scenes.diagram import DiagramScene
-    from ..properties     import Property, PropertiesMixin
 
 
 class PropertyTextTetherItem(TextTetherItem):
@@ -466,6 +465,44 @@ class PropertyTextState:
 
 
 @dataclass
+class PropertyTextPending:
+    """Working copy of a property text inside an editor dialog."""
+
+    obj   : PropertyTextItem  | None  # None if new
+    state : PropertyTextState | None  # None if deleted
+
+    @checked
+    def __init__(
+        self   : Self,
+        source : PropertyTextItem | PropertyTextState
+    ) -> None:
+        if isinstance(source, PropertyTextItem):
+            self.obj   = source
+            self.state = source.state()
+        else:
+            self.obj   = None
+            self.state = source
+
+    @checked
+    def getEdit(
+        self     : Self,
+        owner    : PropertiesMixin,
+        property : Property
+    ) -> PropertyTextAdd | PropertyTextDelete | PropertyTextChange | None:
+        """Return the property text edit this pending produces, or None."""
+        if self.state is None:
+            if self.obj is None:
+                return None
+            return PropertyTextDelete(self.obj)
+        if self.obj is None:
+            return PropertyTextAdd(owner, property, self.state)
+        change = PropertyTextChange.fromComparison(self)
+        if change.noop():
+            return None
+        return change
+
+
+@dataclass
 class PropertyTextEdit:
     """Base class for property text edits."""
 
@@ -519,18 +556,20 @@ class PropertyTextChange(PropertyTextEdit):
 
     @classmethod
     def fromComparison(
-        cls    : type[Self],
-        item   : PropertyTextItem,
-        before : PropertyTextState,
-        after  : PropertyTextState
+        cls     : type[Self],
+        pending : PropertyTextPending
     ) -> Self:
+        if pending.obj is None or pending.state is None:
+            raise ValueError("Property text pending has no item or state")
+        before = pending.obj.state()
+        after  = pending.state
         kwargs : dict[str, Any] = {}
         for field in fields(before):
             before_value = getattr(before, field.name)
             after_value  = getattr(after,  field.name)
             if before_value != after_value:
                 kwargs[field.name] = after_value
-        return cls(item, **kwargs)
+        return cls(pending.obj, **kwargs)
 
     def noop(self : Self) -> bool:
         """Return True if the edit is a no-op."""

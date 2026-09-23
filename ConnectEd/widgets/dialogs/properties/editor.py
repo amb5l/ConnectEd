@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Self
 
+from PyQt6.QtCore    import Qt, QItemSelection
 from PyQt6.QtWidgets import QWidget, QTabWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox, QCheckBox, QPushButton
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 class PropertiesEditorWidget(QWidget):
     """
     Widget for displaying properties of a single item type,
-    in a bush or grid.
+    in a grid or bush.
     Control layout
     """
 
@@ -56,7 +57,7 @@ class PropertiesEditorWidget(QWidget):
         # bush widget
         self._bush_widget = PropertiesBushWidget(store)
         # default main widget
-        self._main_widget = self._grid_widget
+        self._setMainWidget(self._grid_widget)
         # dialog layout
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self._main_widget)
@@ -70,7 +71,7 @@ class PropertiesEditorWidget(QWidget):
         self._control_layout.addWidget(self._view_label)
         self._view_combo = QComboBox()
         self._view_combo.addItem("Grid", self._grid_widget)
-        self._view_combo.addItem("Tree", self._bush_widget)
+        self._view_combo.addItem("List", self._bush_widget)
         self._view_combo.currentIndexChanged.connect(self._onViewChanged)
         self._control_layout.addWidget(self._view_combo)
         # transpose label and checkbox
@@ -78,14 +79,86 @@ class PropertiesEditorWidget(QWidget):
         self._control_layout.addWidget(self._transpose_label)
         self._transpose_checkbox = QCheckBox()
         self._control_layout.addWidget(self._transpose_checkbox)
+        # property buttons
+        self._add_property_button = QPushButton("+ Property")
+        self._add_property_button.setEnabled(False)
+        self._add_property_button.clicked.connect(self._onAddProperty)
+        self._control_layout.addWidget(self._add_property_button)
+        self._del_property_button = QPushButton("- Property")
+        self._del_property_button.setEnabled(False)
+        self._del_property_button.clicked.connect(self._onDelProperty)
+        self._control_layout.addWidget(self._del_property_button)
+        # text buttons
+        self._add_text_button = QPushButton("+ Text")
+        self._add_text_button.setEnabled(False)
+        self._add_text_button.clicked.connect(self._onAddText)
+        self._control_layout.addWidget(self._add_text_button)
+        self._del_text_button = QPushButton("- Text")
+        self._del_text_button.setEnabled(False)
+        self._del_text_button.clicked.connect(self._onDelText)
+        self._control_layout.addWidget(self._del_text_button)
+        # filter button
+        self._filter_button = QPushButton("Filter")
+        self._filter_button.setEnabled(False)
+        self._filter_button.clicked.connect(self._onFilter)
+        self._control_layout.addWidget(self._filter_button)
+        # sort button
+        self._sort_button = QPushButton("Sort")
+        self._sort_button.setEnabled(False)
+        self._sort_button.clicked.connect(self._onSort)
+        self._control_layout.addWidget(self._sort_button)
+
+    def onSelectionChanged(
+        self       : Self,
+        widget     : PropertiesGridWidget | PropertiesBushWidget,
+        properties : int,
+        texts      : int
+    ) -> None:
+        """Main widget has changed selection -> update button enables."""
+        # filter unwanted calls
+        if widget != self._main_widget:
+            return
+        # update button enables
+        self._add_property_button .setEnabled(True)
+        self._del_property_button .setEnabled(properties > 0)
+        self._add_text_button     .setEnabled(properties == 1)
+        self._del_text_button     .setEnabled(texts > 0)
+        self._filter_button       .setEnabled(True)
+        self._sort_button         .setEnabled(True)
 
     def _setMainWidget(
         self   : Self,
         widget : PropertiesGridWidget | PropertiesBushWidget
     ) -> None:
-        self._main_widget = widget
+        # initialize
+        if not hasattr(self, '_main_widget'):
+            self._main_widget = widget
+        # handle no-op
+        elif self._main_widget == widget:
+            return
+        # update main widget
+        else:
+            self._main_widget = widget
+            self._layout.replaceWidget(self._main_widget, widget)
+        # clear selection
+        self._main_widget.clearSelection()
+        # update button enables
+        self.selectionChanged(self._main_widget, QItemSelection(), QItemSelection())
+        # update transpose checkbox
         if self._main_widget == self._grid_widget:
             # set transposed checkbox
+            self._transpose_checkbox.setTristate(False)
+            self._transpose_checkbox.setChecked(self._grid_widget.transposed())
+            self._transpose_checkbox.setEnabled(True)
+        elif self._main_widget == self._bush_widget:
+            # disable transpose checkbox
+            self._transpose_checkbox.setTristate(True)
+            self._transpose_checkbox.setCheckState(
+                Qt.CheckState.PartiallyChecked
+            )
+            self._transpose_checkbox.setEnabled(False)
+        else:
+            raise ValueError("Invalid main widget")
 
     def _onViewChanged(self, index: int) -> None:
         if self._view_combo is None:
@@ -94,9 +167,25 @@ class PropertiesEditorWidget(QWidget):
         if isinstance(
             current_data, PropertiesBushWidget | PropertiesGridWidget
         ):
-            # update layout
-            self._layout.replaceWidget(self._main_widget, current_data)
-            self._main_widget = current_data
+            self._setMainWidget(current_data)
+
+    def _onAddProperty(self) -> None:
+        pass  # TODO: implement
+
+    def _onDelProperty(self) -> None:
+        pass  # TODO: implement
+
+    def _onAddText(self) -> None:
+        pass  # TODO: implement
+
+    def _onDelText(self) -> None:
+        pass  # TODO: implement
+
+    def _onFilter(self) -> None:
+        pass  # TODO: implement
+
+    def _onSort(self) -> None:
+        pass  # TODO: implement
 
 
 _TAB_ORDER = [
