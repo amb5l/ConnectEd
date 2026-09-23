@@ -54,7 +54,7 @@ class PropertiesGridWidget(TableView):
             header.setVisible(False)
         transpose_checkbox.clicked.connect(self.onTransposedChanged)
 
-    def showEvent(self, a0 : QShowEvent | None) -> None:
+    def showEvent(self : Self, a0 : QShowEvent | None) -> None:
         """
         Rebuild from the store when shown, because another widget may have
         changed it.
@@ -78,10 +78,10 @@ class PropertiesGridWidget(TableView):
     def onTransposedChanged(self : Self, transposed : bool) -> None:
         self.setTransposed(transposed)
 
-    def transposed(self) -> bool:
+    def transposed(self : Self) -> bool:
         return self._transposed
 
-    def setTransposed(self, transposed : bool) -> None:
+    def setTransposed(self : Self, transposed : bool) -> None:
         if self._transpose_checkbox.isChecked() != transposed:
             self._transpose_checkbox.setChecked(transposed)
         if transposed == self._transposed:

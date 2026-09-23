@@ -72,5 +72,5 @@ class PropertyTextTableWidget(TableView):
         super().__init__(model, parent)
 
 
-    def getEdits(self) -> list[PropertyTextEdit]:
+    def getEdits(self : Self) -> list[PropertyTextEdit]:
         return []  # TODO: implement

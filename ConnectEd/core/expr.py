@@ -28,6 +28,8 @@ Example:
 
 import ast
 
+from typing import Self
+
 from .check import checked
 
 
@@ -41,13 +43,13 @@ class SafeExpressionEvaluator:
 
     @checked
     def __init__(
-        self,
-        variables: dict[str, int | float] | None = None,
+        self      : Self,
+        variables : dict[str, int | float] | None = None,
         *,
-        allow_bitwise: bool = True,
-        allow_power: bool = True,
-        max_power_exponent: int = 64,
-        case_sensitive: bool = True,
+        allow_bitwise      : bool = True,
+        allow_power        : bool = True,
+        max_power_exponent : int = 64,
+        case_sensitive     : bool = True,
     ):
         self.variables: dict[str, int | float] = variables or {}
         self.allow_bitwise = allow_bitwise
@@ -56,12 +58,12 @@ class SafeExpressionEvaluator:
         self.case_sensitive = case_sensitive
 
     @checked
-    def set_variable(self, name: str, value: int | float) -> None:
+    def set_variable(self : Self, name: str, value: int | float) -> None:
         """Add or update a parameter value (triggers re-evaluation elsewhere)."""
         self.variables[name] = value
 
     @checked
-    def evaluate(self, expr: str) -> int:
+    def evaluate(self : Self, expr: str) -> int:
         """
         Evaluate the expression string and return an integer.
 
@@ -83,7 +85,7 @@ class SafeExpressionEvaluator:
     # ------------------------------------------------------------------ #
     # Internal recursive AST walker (whitelisted nodes only)
     # ------------------------------------------------------------------ #
-    def _eval_node(self, node: ast.AST) -> int | float:
+    def _eval_node(self : Self, node: ast.AST) -> int | float:
         # Numeric literals (Python 3.8+)
         if isinstance(node, ast.Constant):
             if isinstance(node.value, (int, float)):

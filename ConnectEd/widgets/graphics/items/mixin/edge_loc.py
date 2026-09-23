@@ -137,12 +137,12 @@ class ItemEdgeLocMixin:
         raise TypeError("Use loc() — edge-located items are not free-positioned")
 
     @overload
-    def setPos(self, pos : QPointF) -> None: ...
+    def setPos(self : Self, pos : QPointF) -> None: ...
 
     @overload
-    def setPos(self, ax : float, ay : float) -> None: ...
+    def setPos(self : Self, ax : float, ay : float) -> None: ...
 
-    def setPos(self, *args, **kwargs) -> None:
+    def setPos(self : Self, *args, **kwargs) -> None:
         raise TypeError("Use setLoc() — edge-located items are not free-positioned")
 
 

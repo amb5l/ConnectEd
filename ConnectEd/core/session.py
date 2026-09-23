@@ -42,7 +42,7 @@ class Session(QObject):
     docChanged = pyqtSignal(Doc)  # noqa N815
     docClosed  = pyqtSignal(Doc)  # noqa N815
 
-    def __init__(self):
+    def __init__(self : Self):
         super().__init__()
         self._open_docs = []
 
@@ -71,7 +71,7 @@ class Session(QObject):
         return doc
 
     @checked
-    def load(self, path : str) -> Doc | None:
+    def load(self : Self, path : str) -> Doc | None:
         if (existing_doc := self.openDocForPath(path)) is not None:
             return existing_doc
         path = cleanPath(path)

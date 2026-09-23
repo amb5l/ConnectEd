@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from .openai_compatible import OpenAiCompatibleProvider, listModels as _listModels
 
@@ -13,7 +13,7 @@ class OpenAiCompatiblePresetProvider(OpenAiCompatibleProvider):
     """Registered as ``openai_compatible``; requires explicit base_url and model."""
 
     def __init__(
-        self,
+        self     : Self,
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",

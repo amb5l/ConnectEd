@@ -111,7 +111,7 @@ class TextAppearanceLayout(QVBoxLayout):
         self._enabled = enabled
         self._setItemsEnabled(self, enabled)
 
-    def _setItemsEnabled(self, layout, enabled: bool) -> None:
+    def _setItemsEnabled(self : Self, layout, enabled: bool) -> None:
         for i in range(layout.count()):
             item = layout.itemAt(i)
             if item is None:

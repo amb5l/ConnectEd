@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Self
+
 from .item import TableItem
 
 
@@ -11,12 +13,12 @@ class TableRow:
     _names : list[str]
     _cells : list[TableItem | None]
 
-    def __init__(self, names : list[str]) -> None:
+    def __init__(self : Self, names : list[str]) -> None:
         self._names = names
         self._cells = [None] * len(names)
 
-    def __setitem__(self, name : str, cell : TableItem | None) -> None:
+    def __setitem__(self : Self, name : str, cell : TableItem | None) -> None:
         self._cells[self._names.index(name)] = cell
 
-    def cells(self) -> list[TableItem | None]:
+    def cells(self : Self) -> list[TableItem | None]:
         return self._cells

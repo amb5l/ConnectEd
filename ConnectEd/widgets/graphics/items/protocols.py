@@ -18,7 +18,7 @@ T = TypeVar("T", covariant=True)
 
 
 class FreshItemConstructor(Protocol[T]):
-    def __call__(self, *, fresh: bool = ...) -> T: ...
+    def __call__(self : Self, *, fresh: bool = ...) -> T: ...
 
 
 @runtime_checkable

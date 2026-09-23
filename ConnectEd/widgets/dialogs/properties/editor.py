@@ -64,7 +64,7 @@ class PropertiesEditorWidget(QWidget):
         self._layout.addLayout(self._control_layout)
         self.setLayout(self._layout)
 
-    def _buildControlLayout(self) -> None:
+    def _buildControlLayout(self : Self) -> None:
         self._control_layout = QHBoxLayout()
         # view label and combo
         self._view_label = QLabel("View:")
@@ -160,7 +160,7 @@ class PropertiesEditorWidget(QWidget):
         else:
             raise ValueError("Invalid main widget")
 
-    def _onViewChanged(self, index: int) -> None:
+    def _onViewChanged(self : Self, index: int) -> None:
         if self._view_combo is None:
             return
         current_data = self._view_combo.currentData()
@@ -169,22 +169,22 @@ class PropertiesEditorWidget(QWidget):
         ):
             self._setMainWidget(current_data)
 
-    def _onAddProperty(self) -> None:
+    def _onAddProperty(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onDelProperty(self) -> None:
+    def _onDelProperty(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onAddText(self) -> None:
+    def _onAddText(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onDelText(self) -> None:
+    def _onDelText(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onFilter(self) -> None:
+    def _onFilter(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onSort(self) -> None:
+    def _onSort(self : Self) -> None:
         pass  # TODO: implement
 
 

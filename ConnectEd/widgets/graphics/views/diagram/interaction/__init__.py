@@ -141,7 +141,7 @@ class DiagramItemsInteraction(DiagramInteraction):
 
 
 class CtxMenuHost(Protocol):
-    def ctxMenuItems(self, pos : QPointF) -> list[QAction | QMenu]: ...
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]: ...
 
 
 class RotateItemMixin:

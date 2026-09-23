@@ -77,31 +77,31 @@ class _EnvKeyValueLineEdit(QLineEdit):
     _env_display_text : str
 
     @checked
-    def __init__(self, parent : QWidget | None = None) -> None:
+    def __init__(self : Self, parent : QWidget | None = None) -> None:
         super().__init__(parent)
         self._env_display_text = ""
         self.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-    def setEnvDisplayText(self, text : str) -> None:
+    def setEnvDisplayText(self : Self, text : str) -> None:
         self._env_display_text = text
         self._refreshElidedText()
 
-    def clearEnvDisplay(self) -> None:
+    def clearEnvDisplay(self : Self) -> None:
         self._env_display_text = ""
         super().setText("")
 
-    def resizeEvent(self, a0 : QResizeEvent | None = None) -> None:
+    def resizeEvent(self : Self, a0 : QResizeEvent | None = None) -> None:
         super().resizeEvent(a0)
         if self._env_display_text:
             self._refreshElidedText()
 
-    def setText(self, a0 : str | None = None) -> None:
+    def setText(self : Self, a0 : str | None = None) -> None:
         if self.isReadOnly() and self._env_display_text:
             return
         self._env_display_text = ""
         super().setText(a0)
 
-    def _refreshElidedText(self) -> None:
+    def _refreshElidedText(self : Self) -> None:
         text = _elidedLineEditText(self, self._env_display_text)
         block = self.blockSignals(True)
         super().setText(text)
@@ -109,7 +109,7 @@ class _EnvKeyValueLineEdit(QLineEdit):
         self.home(False)
         self.blockSignals(block)
 
-    def refreshElidedDisplay(self) -> None:
+    def refreshElidedDisplay(self : Self) -> None:
         if self._env_display_text:
             self._refreshElidedText()
 

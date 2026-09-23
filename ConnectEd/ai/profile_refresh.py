@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Self
+
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
@@ -18,13 +20,13 @@ class ProfileModelsRefreshWorker(QThread):
 
     @checked
     def __init__(
-        self,
+        self     : Self,
         profiles : list[AiProfile],
         parent   : QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._profiles = profiles
 
-    def run(self) -> None:
+    def run(self : Self) -> None:
         refreshAllProfileModels(self._profiles)
         self.finished.emit(self._profiles)

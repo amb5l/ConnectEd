@@ -75,7 +75,7 @@ class PropertyDialog(QDialog):
         self._sync()
         return self._pending.getEdit(self._owner)
 
-    def _initUI(self) -> None:
+    def _initUI(self : Self) -> None:
         if self._pending.state is None:
             raise ValueError("Property pending state is None")
         self.setWindowTitle(self._pending.state.name)
@@ -128,7 +128,7 @@ class PropertyDialog(QDialog):
         self._layout.addWidget(self._texts_widget, 1)
         self._layout.addLayout(OkCancelLayout(self))
 
-    def _installValueEditor(self, kind : DataKind, value : Any) -> None:
+    def _installValueEditor(self : Self, kind : DataKind, value : Any) -> None:
         widget = kind2dialogEditor(kind)(value=value)
         if self._pending.obj is not None and not self._pending.obj.writeable():
             widget.setEnabled(False)
@@ -139,7 +139,7 @@ class PropertyDialog(QDialog):
             self._value_layout.addWidget(widget)
         self._value_value = widget
 
-    def _onKindChanged(self) -> None:
+    def _onKindChanged(self : Self) -> None:
         state = self._pending.state
         if state is None:
             return
@@ -150,7 +150,7 @@ class PropertyDialog(QDialog):
         state.kind = kind
         self._installValueEditor(kind, state.value)
 
-    def _sync(self) -> None:
+    def _sync(self : Self) -> None:
         state = self._pending.state
         if state is None:
             return
@@ -161,7 +161,7 @@ class PropertyDialog(QDialog):
             state.kind = kind
         self._syncValue()
 
-    def _syncValue(self) -> None:
+    def _syncValue(self : Self) -> None:
         state = self._pending.state
         if state is None or not hasattr(self, "_value_value"):
             return

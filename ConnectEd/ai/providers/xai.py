@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from .openai_compatible import OpenAiCompatibleProvider, listModels as _listModels
 
@@ -12,7 +12,7 @@ DEFAULT_API_KEY_NAME = "$XAI_API_KEY"
 
 class XaiProvider(OpenAiCompatibleProvider):
     def __init__(
-        self,
+        self     : Self,
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",

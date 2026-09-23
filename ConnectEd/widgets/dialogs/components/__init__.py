@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import QSize
 
 from ....core.check import checked
@@ -24,7 +26,7 @@ class NoChangeIcon(BaseIcon):
     PATH = getIconPath("no_change.svg")
 
     @property
-    def SIZE(self) -> QSize:
+    def SIZE(self : Self) -> QSize:
         return customIconSize()
 
 
@@ -32,7 +34,7 @@ class DefaultIcon(BaseIcon):
     PATH = getIconPath("default.svg")
 
     @property
-    def SIZE(self) -> QSize:
+    def SIZE(self : Self) -> QSize:
         return customIconSize()
 
 
@@ -41,5 +43,5 @@ class QueryIcon(BaseIcon):
     CHAR = "?"
 
     @property
-    def SIZE(self) -> QSize:
+    def SIZE(self : Self) -> QSize:
         return customIconSize()

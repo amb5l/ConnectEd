@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Self
+
 from ...core.check import checked
 from PyQt6.QtGui import QColor, QFont
 
@@ -10,7 +12,7 @@ class Quill:
 
     @checked
     def __init__(
-        self,
+        self      : Self,
         a0        : Quill | QColor | None = None,
         font      : str            | None = None,
         size      : float          | None = None,
@@ -32,41 +34,41 @@ class Quill:
         self._qfont.setItalic(italic if italic is not None else False)
         self._qfont.setUnderline(underline if underline is not None else False)
 
-    def color(self) -> QColor:
+    def color(self : Self) -> QColor:
         return self._color
 
-    def setColor(self, color: QColor) -> None:
+    def setColor(self : Self, color: QColor) -> None:
         self._color = color
 
-    def font(self) -> str:
+    def font(self : Self) -> str:
         return self._qfont.family()
 
-    def setFont(self, font: str) -> None:
+    def setFont(self : Self, font: str) -> None:
         self._qfont.setFamily(font)
 
-    def size(self) -> float:
+    def size(self : Self) -> float:
         return self._qfont.pointSizeF()
 
-    def setSize(self, size: float) -> None:
+    def setSize(self : Self, size: float) -> None:
         self._qfont.setPointSizeF(size)
 
-    def bold(self) -> bool:
+    def bold(self : Self) -> bool:
         return self._qfont.bold()
 
-    def setBold(self, bold: bool) -> None:
+    def setBold(self : Self, bold: bool) -> None:
         self._qfont.setBold(bold)
 
-    def italic(self) -> bool:
+    def italic(self : Self) -> bool:
         return self._qfont.italic()
 
-    def setItalic(self, italic: bool) -> None:
+    def setItalic(self : Self, italic: bool) -> None:
         self._qfont.setItalic(italic)
 
-    def underline(self) -> bool:
+    def underline(self : Self) -> bool:
         return self._qfont.underline()
 
-    def setUnderline(self, underline: bool) -> None:
+    def setUnderline(self : Self, underline: bool) -> None:
         self._qfont.setUnderline(underline)
 
-    def qFont(self) -> QFont:
+    def qFont(self : Self) -> QFont:
         return self._qfont

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from typing          import Any, Self
 from collections.abc import Iterator
-from typing import Any
 
 from anthropic import Anthropic
 
@@ -77,7 +77,7 @@ class AnthropicProvider:
     _model   : str
 
     def __init__(
-        self,
+        self     : Self,
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",
@@ -92,7 +92,7 @@ class AnthropicProvider:
         self._base_url = base_url
 
     def chat(
-        self,
+        self     : Self,
         messages : list[ChatMessage],
         tools    : list[ToolSpec],
     ) -> Iterator[ChatEvent]:

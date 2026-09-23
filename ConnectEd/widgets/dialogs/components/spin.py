@@ -36,7 +36,7 @@ class CustomSpinBox(QSpinBox):
             self._value = self.value()
             line_edit.setText(self._DISABLED_TEXT)
 
-    def textFromValue(self, v: int) -> str:
+    def textFromValue(self : Self, v: int) -> str:
         """
         Override to return custom text when the widget is disabled.
         """

@@ -89,7 +89,7 @@ class PropertiesBushWidget(TableView):
         model.setHorizontalHeaderGroupLabels(self._headerPairs())
         super().__init__(model, parent)
 
-    def showEvent(self, a0: QShowEvent | None) -> None:
+    def showEvent(self : Self, a0: QShowEvent | None) -> None:
         """
         Rebuild model from store when widget is shown, because another
         widget may have changed the store.

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+
+from typing          import Any, Self
 from collections.abc import Iterator
-from typing import Any
 
 from openai import OpenAI
 
@@ -99,7 +100,7 @@ class OpenAiCompatibleProvider:
     _model    : str
 
     def __init__(
-        self,
+        self     : Self,
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",
@@ -114,7 +115,7 @@ class OpenAiCompatibleProvider:
         self._model    = model
 
     def chat(
-        self,
+        self     : Self,
         messages : list[ChatMessage],
         tools    : list[ToolSpec],
     ) -> Iterator[ChatEvent]:

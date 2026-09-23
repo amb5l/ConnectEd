@@ -57,12 +57,12 @@ class ItemCloneMixin:
             if isinstance(source_child, PortPinLineItem | PortPinPathItem):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone_item)
-        self._cloneAfter(cast(Self, clone_item))
+        self._cloneAfter(clone_item)
         if isinstance(clone_item, PropertiesMixin):
             clone_item.setPropertiesLive(True)
         return cast(Self, clone_item)
 
-    def _cloneAfter(self, clone) -> None:
+    def _cloneAfter(self : Self, clone : ItemCloneMixin) -> None:
         """Hook for subclasses to copy geometry not covered by properties."""
         pass
 

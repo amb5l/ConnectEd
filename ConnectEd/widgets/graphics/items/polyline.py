@@ -27,6 +27,7 @@ from .role import DecorativeItem
 from .mixin.transform  import ItemTransformMixin
 from .mixin.handle     import ItemRectHandlesMixin
 from .mixin.xml        import ItemXmlMixin
+from .mixin.clone      import ItemCloneMixin
 from .mixin.primary    import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
@@ -600,8 +601,10 @@ class PolylineItem(
                 self._segments.append(PolySegItem(self, v2, self._vertices[0]))
 
     @checked
-    def _cloneAfter(self : Self, clone : Self) -> None:
+    def _cloneAfter(self : Self, clone : ItemCloneMixin) -> None:
         """Copy vertex graph and segment sweeps after ItemCloneMixin clone."""
+        if not isinstance(clone, PolylineItem):
+            raise TypeError("Bad clone")
         for i in range(1, self.vertexCount()):
             clone.addVertex(
                 self.vertex(i).scenePos(),
