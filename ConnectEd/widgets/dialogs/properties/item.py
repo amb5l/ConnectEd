@@ -29,9 +29,9 @@ class PropertiesItem(TableItem):
         enabled  : bool = True
     ) -> None:
         self._updating_presentation = False
+        super().__init__(value, new, editable, enabled)
         self.setRef(ref)
         self.setAttr(attr)
-        super().__init__(value, new, editable, enabled)
 
     def setText(self : Self, atext : str | None) -> None:
         raise NotImplementedError("PropertiesItem.setText() is not implemented")
@@ -54,8 +54,12 @@ class PropertiesItem(TableItem):
             if self.value() is not bool_val:
                 self.setValue(bool_val)
             return
+        # EditRole is a user commit. Other roles store data for the item.
+        if role == Qt.ItemDataRole.EditRole:
+            super().setData(value, role)
+            self.setValue(value)
+            return
         super().setData(value, role)
-        self.setValue(value)
 
     @checked
     def setEnabled(self : Self, enabled : bool) -> None:

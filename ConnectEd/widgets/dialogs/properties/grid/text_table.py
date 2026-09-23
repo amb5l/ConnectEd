@@ -4,19 +4,17 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
-from ...table.row   import TableRow
-from ...table.model import TableModel
-from ...table.view  import TableView
+from ....table.row   import TableRow
+from ....table.model import TableModel
+from ....table.view  import TableView
 
-from ...properties import populatePropertyText
+from ....properties import populatePropertyText
 
-from ...graphics.items.property_text import PropertyTextPending
-
-from ...graphics.items.property_text import PropertyTextEdit
+from ....graphics.items.property_text import PropertyTextPending, PropertyTextEdit
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...graphics.items.property_text import PropertyTextItem
+    from ....graphics.items.property_text import PropertyTextItem
 
 
 _COLUMNS = [

@@ -6,20 +6,20 @@ from PyQt6.QtWidgets import QDialog, QWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit
 
-from ....core.check import checked
-from ....core.types import NoChange, DataKind
+from .....core.check import checked
+from .....core.types import NoChange, DataKind
 
-from ...graphics.properties import (
+from ....graphics.properties import (
     Property, PropertyPending, PropertyEdits, PropertiesMixin
 )
 
-from ...utils import kind2dialogEditor
+from ....utils import kind2dialogEditor
 
-from ..components.combo.enum import EnumComboBox
+from ...components.combo.enum import EnumComboBox
 
-from ..components.layout.ok_cancel import OkCancelLayout
+from ...components.layout.ok_cancel import OkCancelLayout
 
-from .table import PropertyTextTableWidget
+from .text_table import PropertyTextTableWidget
 
 
 class PropertyDialog(QDialog):

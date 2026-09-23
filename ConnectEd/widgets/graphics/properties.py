@@ -247,7 +247,7 @@ T = TypeVar("T")
 
 @dataclass
 class PropertySpec(Generic[T]):
-    """Used to create a properties in owner definitions."""
+    """Used to create a property in owner definitions."""
 
     kind    : DataKind | Callable[[T], DataKind]
     value   : Any                                | None = None
