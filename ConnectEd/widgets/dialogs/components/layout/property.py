@@ -43,7 +43,7 @@ class PropertyLayout(QGridLayout):
     @checked
     def __init__(self : Self, object : PropertyTextItem, name : str) -> None:
         super().__init__()
-        owner_item = object.item()
+        owner_item = object.owner()
         owner_desc = self._NOT_FOUND
         inherent   = None
         kind       = self._NOT_FOUND

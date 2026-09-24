@@ -219,10 +219,9 @@ class DiagramViewState:
     def _requireNoItemsNoSpos(
         self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
     ) -> None:
+        del spos  # dialogs do not use the position go() always supplies
         if len(items) > 0:
             raise ValueError("Expected no items")
-        if spos is not None:
-            raise ValueError("Expected no spos")
 
     def _requireNoItemsSpos(
         self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
@@ -243,10 +242,9 @@ class DiagramViewState:
     def _requireOneItemNoSpos(
         self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
     ) -> QGraphicsItem:
+        del spos  # dialogs do not use the position go() always supplies
         if len(items) != 1:
             raise ValueError("Expected one item")
-        if spos is not None:
-            raise ValueError("Expected no spos")
         return items[0]
 
     def _requireOneItemSpos(
@@ -264,6 +262,5 @@ class DiagramViewState:
         else_items : Sequence[QGraphicsItem],
         spos       : QPointF | None
     ) -> list[QGraphicsItem]:
-        if spos is not None:
-            raise ValueError("Expected no spos")
+        del spos  # dialogs do not use the position go() always supplies
         return list(else_items) if len(items) == 0 else list(items)
