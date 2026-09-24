@@ -3,3 +3,6 @@ networkx==3.6.1
 antlr4-python3-runtime==4.13.2
 pyTooling==8.11.0
 typeguard==4.4.4
+PyYAML==6.0.3
+openai==3.19.2
+anthropic==1.8.0
