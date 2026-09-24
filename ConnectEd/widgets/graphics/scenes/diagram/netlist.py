@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 PinParent = GateItem | BlockItem | SymbolInstanceItem
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, eq=False)
 class Subnet:
     """Corresponds to a connected component of the graph."""
     id     : int | None    = None  # None = uninitialised
@@ -457,9 +457,18 @@ class Netlist:
 
     @checked
     def onNetLabelChanged(self : Self, label : NetLabelItem) -> None:
-        subnets = self.subnetsForLabel(label)
-        if subnets:
-            self._resolveSubnets(subnets)
+        current = self.subnetsForLabel(label)
+        current_ids = {subnet.id for subnet in current}
+        affected = list(current)
+        # A label dragged off a segment no longer touches that subnet, so
+        # the subnet must be resolved again and drop this label's name.
+        if label.name() == "Name" and label.value():
+            base, _suffix = _netNameAndSuffix(label.value())
+            for subnet in self._subnets.values():
+                if subnet.name == base and subnet.id not in current_ids:
+                    affected.append(subnet)
+        if affected:
+            self._resolveSubnets(affected)
             self._scene.netlistChanged.emit()
 
     # -- node helpers ------------------------------------------------------
