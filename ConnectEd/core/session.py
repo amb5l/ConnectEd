@@ -103,6 +103,10 @@ class Session(QObject):
         logger().warning(f"Document not found: {doc}")
         return False
 
+    def releaseDocs(self : Self) -> None:
+        """Drop open documents while the application object still exists."""
+        self._open_docs.clear()
+
     def close(self : Self, doc : Doc) -> None:
         """Close a document."""
         for open_doc in self._open_docs:

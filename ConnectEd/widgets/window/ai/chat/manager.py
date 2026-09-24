@@ -141,6 +141,12 @@ class AiChatManager(QObject):
         dock.show()
         dock.raise_()
 
+    def shutdown(self : Self) -> None:
+        for dock in list(self._chats):
+            dock.chat_widget.releaseEditLock()
+            dock.chat_widget.session().shutdown()
+        self._chats.clear()
+
     def _onChatClosed(self : Self, dock : AiChatDock) -> None:
         if dock not in self._chats:
             return

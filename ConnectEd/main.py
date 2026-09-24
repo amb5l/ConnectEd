@@ -1,9 +1,10 @@
+import gc
 import sys
 
 from collections.abc import Callable
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtGui     import QIcon
+from PyQt6.QtGui     import QIcon, QUndoStack
 
 from .app import ConnectEdApp
 
@@ -86,6 +87,20 @@ def main(func : Callable | None = None) -> int:
         func(app)
     elif func is None or known_args.noexit or not known_args.cli:
         r = app.exec()
+    # Undo commands keep item pointers. Clear those stacks while the items
+    # still exist, or destroying a scene later aborts the process.
+    def _clearUndoStack(scene : object) -> None:
+        stack = getattr(scene, "undo_stack", None)
+        if isinstance(stack, QUndoStack):
+            stack.clear()
+
+    for doc in list(app.session()._open_docs):
+        _clearUndoStack(getattr(doc, "_object", None))
+        for scene in getattr(doc, "_scenes", {}).values():
+            _clearUndoStack(scene)
+    app.session().releaseDocs()
+    gc.collect()
+    app.processEvents()
     app.settings().save()
     logger.info("finished")
     return r

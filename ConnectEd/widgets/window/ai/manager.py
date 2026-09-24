@@ -49,6 +49,12 @@ class AiManager(QObject):
     def chatManager(self : Self) -> AiChatManager:
         return self._chat_manager
 
+    def shutdown(self : Self) -> None:
+        worker = self._refresh_worker
+        if worker is not None and worker.isRunning():
+            worker.wait(5000)
+        self._chat_manager.shutdown()
+
     @checked
     def scheduleStartup(self : Self) -> None:
         QTimer.singleShot(0, self.refreshProfilesIfNeeded)

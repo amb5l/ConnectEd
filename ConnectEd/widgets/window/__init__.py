@@ -152,6 +152,8 @@ class Window(QMainWindow):
         except TypeError: # workaround for Qt cleanup
             pass
         settings().set("startup/geometry", self.saveGeometry().data())
+        if (ai := self.aiManager()) is not None:
+            ai.shutdown()
         super().closeEvent(a0)
 
     def _onSubWindowActivated(
