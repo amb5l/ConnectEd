@@ -106,15 +106,20 @@ class DiagramSceneResources:
             QPointF(-size/2, size/2)
         ]))
         self._paths["Grip"][GripShape.ARROW] = arrow
-        star = QPainterPath()
-        star.addRect(rect)
+        hotspot = QPainterPath()
+        quadrant = QPolygonF([
+            QPointF(-size/2, -size/4),
+            QPointF(-size/2, -size/2),
+            QPointF(-size/4, -size/2),
+            QPointF(0, 0)
+        ])
+        hotspot.addPolygon(quadrant)
         rotated = QPainterPath()
-        rotated.addRect(rect)
-        rotated = QTransform().rotate(45).map(rotated)
-        star = star.united(rotated)
-        self._paths["Grip"][GripShape.STAR] = star
-
-
+        rotated.addPolygon(quadrant)
+        for i in range(3):
+            rotated = QTransform().rotate(90).map(rotated)
+            hotspot = hotspot.united(rotated)
+        self._paths["Grip"][GripShape.HOTSPOT] = hotspot
         # symbol body
         self._pens["Symbol"] = {}
         pen_normal, pen_selected = self._getPens(

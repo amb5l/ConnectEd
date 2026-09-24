@@ -36,7 +36,7 @@ class GripShape(StrEnum):
     CIRCLE  = "Circle"   # resize/move
     DIAMOND = "Diamond"  # vertex
     ARROW   = "Arrow"    # segment
-    STAR    = "Star"     # hotspot
+    HOTSPOT = "Hotspot"  # hotspot
 
 
 class GripItem(

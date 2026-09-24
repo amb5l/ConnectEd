@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class NetLabelItem(FunctionalItem, BaseTextItem):
     # class attributes
     _ORIGIN = RectHandleId.BOTTOM_LEFT
-    _ORIGIN_GRIP_SHAPE = GripShape.STAR
+    _ORIGIN_GRIP_SHAPE = GripShape.HOTSPOT
 
     _PROPERTIES_NAME_VALUE = {
         "Name" : PropertySpec["NetLabelItem"](
