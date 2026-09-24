@@ -298,7 +298,9 @@ class BaseTextItem(
     def setText(self : Self, text : str) -> None:
         self._child._setText(text)
         self.onGeometryChanged()
-        self.properties["Text"].notify()
+        # subclasses may not expose the text property:
+        if "Text" in self.properties:
+            self.properties["Text"].notify()
 
     def alignH(self : Self) -> AlignH:
         return self._align_h
