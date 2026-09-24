@@ -98,7 +98,9 @@ class BaseTextItem(
             worthy = lambda self: self.block(),
             getter = lambda self: self.block(),
             setter = lambda self, value: self.setBlock(value)
-        ),
+        )
+    }
+    _PROPERTIES_AUTOFLIP = {
         "AutoFlip" : PropertySpec["BaseTextItem"](
             kind   = DataKind.BOOL,
             worthy = lambda self: not self.autoflip(),
@@ -164,6 +166,7 @@ class BaseTextItem(
         ItemTransformMixin._PROPERTIES_ROTATE      | \
         ItemTransformMixin._PROPERTIES_MIRROR      | \
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
+        _PROPERTIES_AUTOFLIP                       | \
         _PROPERTIES_ALIGN                          | \
         _PROPERTIES_SIZE                           | \
         _PROPERTIES_PADDING                        | \
