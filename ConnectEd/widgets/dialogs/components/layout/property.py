@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Self, Any
 
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, \
-                            QLabel, QLineEdit, QTextEdit
+                            QLabel, QLineEdit, QTextEdit, \
+                            QGraphicsItem
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
@@ -12,6 +13,8 @@ from .....core.utils import pascal2proper, str2val
 from ....utils import kind2dialogEditor
 
 from ....graphics.properties import PropertiesMixin
+
+from ....graphics.items.mixin.edge_loc import ItemEdgeLocMixin
 
 from ..edit import StrEditor
 
@@ -50,10 +53,32 @@ class PropertyLayout(QGridLayout):
         value      = self._NOT_FOUND
         if isinstance(owner_item, PropertiesMixin) \
         and name in owner_item.properties:
+            # get owner description
             owner_desc = owner_item.__class__.__name__
             owner_desc = owner_desc.removesuffix("Item")
             owner_desc = owner_desc.removesuffix("Scene")
             owner_desc = pascal2proper(owner_desc)
+            # append label or name
+            identifier = None
+            if "Label" in owner_item.properties:
+                identifier = owner_item.properties["Label"].value()
+            elif "Name" in owner_item.properties:
+                identifier = owner_item.properties["Name"].value()
+            if identifier:
+                owner_desc += f' "{identifier}"'
+            # append position or edge location
+            if isinstance(owner_item, QGraphicsItem):
+                if isinstance(owner_item, ItemEdgeLocMixin):
+                    edge = owner_item.loc().edge
+                    offset = owner_item.loc().offset
+                    if edge is not None and offset is not None:
+                        edge = edge.value.lower()
+                        owner_desc += f" ({edge} edge, offset {offset})"
+                else:
+                    pos_x = owner_item.pos().x()
+                    pos_y = owner_item.pos().y()
+                    if pos_x is not None and pos_y is not None:
+                        owner_desc += f" (x {pos_x}, y {pos_y})"
             property   = owner_item.properties[name]
             inherent   = property.isInherent()
             kind       = property.kind()
