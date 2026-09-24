@@ -8,6 +8,8 @@ from ....app import settings, window
 
 from ....core.check import checked
 
+from ...splash import progress
+
 from ...menu import Menu, PlaceMenu
 
 from ....ai.profiles import loadProfiles, profileMenuLabel
@@ -36,8 +38,10 @@ class MenuBar(QMenuBar):
         parent : Window
     ) -> None:
         super().__init__(parent)
+        progress("Building menus...", 0.82)
         self._slots   = Slots()
         self._actions = Actions(self._slots)
+        progress("Building menus...", 0.84)
 
         self._menus = {}
         a = self._actions
@@ -89,6 +93,7 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(a.viewGridDisplay)
         self.view_menu.addAction(a.viewGridSnap)
         self.view_menu.addSeparator()
+        progress("Building menus...", 0.86)
         self.view_theme_menu = Menu("&Theme")
         self.view_theme_menu.addAction(a.viewThemeDark)
         self.view_theme_menu.addAction(a.viewThemeLightMono)

@@ -81,7 +81,6 @@ class Window(QMainWindow):
         self._mdi_area.subWindowActivated.connect(self._onSubWindowActivated)
 
         # menu bar
-        progress("Building menus...", 0.84)
         self._menu_bar = MenuBar(self)
         self.setMenuBar(self._menu_bar)
 
@@ -91,11 +90,10 @@ class Window(QMainWindow):
         self.setStatusBar(self._status_bar)
 
         # dock widgets — bottom: Messages/Transcript/Log (left tabs) | AI Chat (right)
+        progress("Building messages...", 0.90)
         qd = Qt.DockWidgetArea
         self._messages_dock = MessagesViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._messages_dock)
-        self._ai_manager = AiManager(self, self._messages_dock)
-        self._ai_manager.chatManager().newChat()
         self._transcript_dock = TranscriptViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._transcript_dock)
         self._log_dock = LogViewDock(self)
@@ -103,9 +101,12 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self._messages_dock, self._transcript_dock)
         self.tabifyDockWidget(self._messages_dock, self._log_dock)
         self._messages_dock.raise_()
+        progress("Building chat...", 0.93)
+        self._ai_manager = AiManager(self, self._messages_dock)
+        self._ai_manager.chatManager().newChat()
         self._menu_bar.updateAiMenu()
         self._ai_manager.scheduleStartup()
-        progress("Building panels...", 0.92)
+        progress("Building panels...", 0.96)
         self._navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self._navigator_dock)
         self._netlist_dock = NetlistBrowserDock(self)

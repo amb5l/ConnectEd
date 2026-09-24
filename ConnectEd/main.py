@@ -49,10 +49,17 @@ def main(func : Callable | None = None) -> int:
             raise RuntimeError("No color scheme")
         splash = Splash(scheme == Qt.ColorScheme.Light)
         splash.show()
-    # The window module imports most of the UI. Show the splash first.
+    # The window import pulls in most of the UI. Load the slow pieces
+    # first so the splash can move between them.
     window_cls = None
     if not known_args.cli:
         progress("Loading interface...", 0.05)
+        import ConnectEd.ai.providers  # noqa: F401
+        progress("Loading graphics...", 0.08)
+        import ConnectEd.widgets.graphics.items.block  # noqa: F401
+        progress("Loading diagram...", 0.11)
+        import ConnectEd.widgets.graphics.scenes.diagram.netlist  # noqa: F401
+        progress("Loading window...", 0.14)
         from .widgets.window import Window
         window_cls = Window
     app.setLogger(logger)
