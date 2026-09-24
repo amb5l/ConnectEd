@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, \
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, DataKind, HandleId
-from .....core.utils import pascal2proper, str2val
+from .....core.utils import numtrim, pascal2proper, str2val
 
 from ....utils import kind2dialogEditor
 
@@ -73,16 +73,16 @@ class PropertyLayout(QGridLayout):
                     offset = owner_item.loc().offset
                     if edge is not None and offset is not None:
                         edge = edge.value.lower()
-                        owner_desc += f" ({edge} edge, offset {offset})"
+                        owner_desc += f" ({edge} edge, offset {numtrim(offset)})"
                 else:
                     pos_x = owner_item.pos().x()
                     pos_y = owner_item.pos().y()
                     if pos_x is not None and pos_y is not None:
-                        owner_desc += f" (x {pos_x}, y {pos_y})"
-            property   = owner_item.properties[name]
-            inherent   = property.isInherent()
-            kind       = property.kind()
-            value      = property.value()
+                        owner_desc += f" (x {numtrim(pos_x)}, y {numtrim(pos_y)})"
+            property = owner_item.properties[name]
+            inherent = property.isInherent()
+            kind     = property.kind()
+            value    = property.value()
         row = 0
         # owner
         self._owner_label = QLabel("Owner:")

@@ -13,6 +13,7 @@ from ....app import logger
 from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import DataKind, RectHandleId
+from ....core.utils import val2str
 
 from ...dialogs.arc import ArcDialog
 
@@ -85,8 +86,8 @@ class PolyVtxItem(GripShapeMixin, GripItem):
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.removesuffix("Item"))
-        xw.writeAttribute("X", str(self.pos().x()))
-        xw.writeAttribute("Y", str(self.pos().y()))
+        xw.writeAttribute("X", val2str(self.pos().x()))
+        xw.writeAttribute("Y", val2str(self.pos().y()))
         xw.writeEndElement()
 
 
@@ -530,16 +531,11 @@ class PolylineItem(
         for i, vtx in enumerate(self._vertices[1:]):
             seg = self._segments[i-1]
             xw.writeStartElement("Segment")
-            x = vtx.pos().x()
-            x = int(x) if x.is_integer() else x
-            xw.writeAttribute("X", str(x))
-            y = vtx.pos().y()
-            y = int(y) if y.is_integer() else y
-            xw.writeAttribute("Y", str(y))
+            xw.writeAttribute("X", val2str(vtx.pos().x()))
+            xw.writeAttribute("Y", val2str(vtx.pos().y()))
             sweep = seg.sweep()
             if sweep is not None and sweep != 0:
-                sweep = int(sweep) if sweep.is_integer() else sweep
-                xw.writeAttribute("Sweep", str(sweep))
+                xw.writeAttribute("Sweep", val2str(sweep))
             xw.writeEndElement()
         self.toXmlChildren(xw)
         self.toXmlEnd(xw)

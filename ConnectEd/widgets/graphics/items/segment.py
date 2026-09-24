@@ -11,6 +11,7 @@ from ....app import logger, settings
 from ....core.check import checked
 from ....core.defs  import Z_SEGMENT
 from ....core.types import Axis, NetKind
+from ....core.utils import val2str
 
 from ..scenes import withScene
 
@@ -198,10 +199,10 @@ class SegmentItem(
             # use node scene positions
             p1 = self._node1.scenePos()
             p2 = self._node2.scenePos()
-            xw.writeAttribute("X1", f"{p1.x()}")
-            xw.writeAttribute("Y1", f"{p1.y()}")
-            xw.writeAttribute("X2", f"{p2.x()}")
-            xw.writeAttribute("Y2", f"{p2.y()}")
+            xw.writeAttribute("X1", val2str(p1.x()))
+            xw.writeAttribute("Y1", val2str(p1.y()))
+            xw.writeAttribute("X2", val2str(p2.x()))
+            xw.writeAttribute("Y2", val2str(p2.y()))
         else:
             # use node IDs
             xw.writeAttribute("ID1", str(ids[0]))

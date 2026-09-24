@@ -198,6 +198,14 @@ def removeSuffixes(s : str, *suffixes: str) -> str:
 
 
 @checked
+def numtrim(n : int | float) -> str:
+    """Text form of a number, without a trailing ``.0`` on a whole value."""
+    if isinstance(n, float) and n.is_integer():
+        return str(int(n))
+    return str(n)
+
+
+@checked
 def val2str(v : Any) -> str:
     """Convert a value to its XML / settings text form."""
     t = type(v).__name__
@@ -206,11 +214,11 @@ def val2str(v : Any) -> str:
         case "bytes"             : s = v.hex()
         case "str"               : s = v # TODO escape special characters
         case "int"               : s = str(v)
-        case "float"             : s = str(int(v)) if v.is_integer() else str(v)
+        case "float"             : s = numtrim(v)
         case "bool"              : s = str(v)
-        case "QPointF"           : s = f"{v.x()},{v.y()}"
-        case "QRectF"            : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
-        case "QSizeF"            : s = f"{v.width()},{v.height()}"
+        case "QPointF"           : s = f"{numtrim(v.x())},{numtrim(v.y())}"
+        case "QRectF"            : s = f"{numtrim(v.x())},{numtrim(v.y())},{numtrim(v.width())},{numtrim(v.height())}"
+        case "QSizeF"            : s = f"{numtrim(v.width())},{numtrim(v.height())}"
         case "QColor"            : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
         case "Display"           : s = v.value
         case "PenStyle"          : s = str(v).replace("PenStyle.", "")

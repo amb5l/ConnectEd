@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 from ....app import logger
 
 from ....core.check import checked
+from ....core.utils import val2str
 
 from ..scenes import withScene
 
@@ -96,8 +97,8 @@ class NodeItem(
         xw.writeStartElement(self.settingsName())
         if id is not None:
             xw.writeAttribute("ID", str(id))
-        xw.writeAttribute("X", str(self.scenePos().x()))
-        xw.writeAttribute("Y", str(self.scenePos().y()))
+        xw.writeAttribute("X", val2str(self.scenePos().x()))
+        xw.writeAttribute("Y", val2str(self.scenePos().y()))
         xw.writeEndElement()
 
     @classmethod
