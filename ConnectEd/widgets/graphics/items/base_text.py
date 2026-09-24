@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing      import Self, Any
+from typing      import Self, Any, Callable
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
@@ -429,41 +429,35 @@ class BaseTextItem(
             pd = parent.mapFromScene(d) - parent.mapFromScene(zero)
         ld = self.mapFromScene(d) - self.mapFromScene(zero)
         origin_name = self.origin().value
-        match id:
-            case RectHandleId.TOP_LEFT:
-                if "Left" in origin_name: self.moveByX(pd.x())
-                self.resizeX(-ld.x())
-                if "Top" in origin_name: self.moveByY(pd.y())
-                self.resizeY(-ld.y())
-            case RectHandleId.TOP_CENTER:
-                if "Top" in origin_name: self.moveByY(pd.y())
-                self.resizeY(-ld.y())
-            case RectHandleId.TOP_RIGHT:
-                if "Right" in origin_name: self.moveByX(pd.x())
-                self.resizeX(ld.x())
-                if "Top" in origin_name: self.moveByY(pd.y())
-                self.resizeY(-ld.y())
-            case RectHandleId.MIDDLE_LEFT:
-                if "Left" in origin_name: self.moveByX(pd.x())
-                self.resizeX(-ld.x())
-            case RectHandleId.MIDDLE_CENTER:
-                self.moveBy(pd.x(), pd.y())
-            case RectHandleId.MIDDLE_RIGHT:
-                if "Right" in origin_name: self.moveByX(pd.x())
-                self.resizeX(ld.x())
-            case RectHandleId.BOTTOM_LEFT:
-                if "Left" in origin_name: self.moveByX(pd.x())
-                self.resizeX(-ld.x())
-                if "Bottom" in origin_name: self.moveByY(pd.y())
-                self.resizeY(ld.y())
-            case RectHandleId.BOTTOM_CENTER:
-                if "Bottom" in origin_name: self.moveByY(pd.y())
-                self.resizeY(ld.y())
-            case RectHandleId.BOTTOM_RIGHT:
-                if "Right" in origin_name: self.moveByX(pd.x())
-                self.resizeX(ld.x())
-                if "Bottom" in origin_name: self.moveByY(pd.y())
-                self.resizeY(ld.y())
+        name = id.value
+        if name == RectHandleId.MIDDLE_CENTER.value:
+            self.moveBy(pd.x(), pd.y())
+            return
+
+        def _nudge(
+            edge   : str,
+            center : str,
+            delta  : float,
+            move   : Callable[[float], None],
+        ) -> None:
+            """Shift the origin so the far edge stays put."""
+            if edge in origin_name:
+                move(delta)
+            elif center in origin_name:
+                move(delta / 2)
+
+        if "Left" in name or "Right" in name:
+            sign = -1.0 if "Left" in name else 1.0
+            _nudge(
+                "Left" if sign < 0 else "Right", "Center", pd.x(), self.moveByX
+            )
+            self.resizeX(sign * ld.x())
+        if "Top" in name or "Bottom" in name:
+            sign = -1.0 if "Top" in name else 1.0
+            _nudge(
+                "Top" if sign < 0 else "Bottom", "Middle", pd.y(), self.moveByY
+            )
+            self.resizeY(sign * ld.y())
 
     def moveByX(self : Self, dx : float) -> None:
         self.setX(self.pos().x() + dx)

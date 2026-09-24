@@ -99,9 +99,12 @@ class DiagramViewStateIdle(DiagramViewState):
                         self.view.stateEditAdjustPolySeg
                     )
                 elif isinstance(grip, MoveGripItem | ResizeGripItem):
-                    self.interact(MoveGripInteraction(
-                        self.view, grip, grip.scenePos()
-                    ))
+                    self.interact(
+                        MoveGripInteraction(
+                            self.view, grip, grip.scenePos()
+                        ),
+                        self.view.stateEditMoveGrip
+                    )
             return
         # Check for CTRL+drag duplication when starting on an item
         if (modifiers & MouseModifier.CTRL) and raw_items_at:
