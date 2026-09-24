@@ -195,8 +195,13 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     # mobile segment, 2 static nodes
                     filtered_items.append(item)
                     for node in (node1, node2):
+                        other = self._slideSegment(item, node) if slide else None
                         if isinstance(node, FreeNodeItem) and node.degree() == 1:
                             filtered_items.append(node)
+                        elif other is not None:
+                            # junction slides; the perpendicular wire changes length
+                            filtered_items.append(node)
+                            self._rubber(other, node)
                         else:
                             free_node = self._detachSegmentNode(item, node)
                             filtered_items.append(free_node)
@@ -379,6 +384,28 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         state  : QPointF
     ) -> None:
         target.setPos(state)
+
+    def _slideSegment(
+        self    : Self,
+        segment : SegmentItem,
+        node    : NodeItem,
+    ) -> SegmentItem | None:
+        """
+        The other wire at a degree-2 free node, when it is perpendicular to
+        ``segment`` and can absorb a slide by changing length.
+        """
+        if not isinstance(node, FreeNodeItem) or node.degree() != 2:
+            return None
+        if not segment.isOrthogonal():
+            return None
+        axis = segment.axis()
+        others = [s for s in node.segments() if s is not segment]
+        if len(others) != 1:
+            return None
+        other = others[0]
+        if not other.isOrthogonal() or other.axis() == axis:
+            return None
+        return other
 
     @checked
     def _rubber(
