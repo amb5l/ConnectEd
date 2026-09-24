@@ -181,8 +181,9 @@ class SymbolDefinitionItem(SymbolBaseItem):
 
 class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     # class attributes
-    _PROPERTIIES = \
-        SymbolDefinitionItem._PROPERTIES | \
+    _PROPERTIES = \
+        SymbolBaseItem._PROPERTIES | \
+        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _XML_CHILDREN = frozenset({"PropertyText"})
 
