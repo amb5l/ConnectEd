@@ -71,7 +71,10 @@ class DiagramViewStateIdle(DiagramViewState):
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
-        raw_items_at = self.view._itemsAt(spos)
+        # The cursor has already moved by the drag threshold. Hit-test the
+        # press, or a thin segment is no longer under the pointer.
+        press_spos = self.view.mapToScene(self.view._mouse_press_vpos)
+        raw_items_at = self.view._itemsAt(press_spos)
         grips_at : list[GripItem] = []
         top_items_at = []
         for item in raw_items_at:
@@ -124,7 +127,7 @@ class DiagramViewStateIdle(DiagramViewState):
         and not (modifiers & (MouseModifier.CTRL | MouseModifier.SHIFT)):
             self.scene.clearSelection()
             items = []
-        self.view._selectDrag(spos, modifiers)
+        self.view._selectDrag(press_spos, modifiers)
         items = self.scene.selectedItems()
         if items: # slide/move
             pins = self.view._siblingBlockPins(items)

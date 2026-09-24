@@ -143,11 +143,13 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase[RubberJogItem]):
     @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._rubber)
-        if self._segment_or_static is not None:
+        # A jog that stands in for a segment removes that segment. A jog
+        # between a fixed node and a mobile node must leave the node in place.
+        if isinstance(self._segment_or_static, SegmentItem):
             self._scene.removeItem(self._segment_or_static)
 
     @checked
     def undo(self : Self) -> None:
-        if self._segment_or_static is not None:
+        if isinstance(self._segment_or_static, SegmentItem):
             self._scene.addItem(self._segment_or_static)
         self._scene.removeItem(self._rubber)

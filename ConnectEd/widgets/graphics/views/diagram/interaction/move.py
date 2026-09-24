@@ -287,6 +287,11 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         if offset == QPointF(0, 0):
             self._cancel()
             return True  # no change so skip command push
+        # Capture jog geometry at the drop. Cancel puts nodes back and would
+        # otherwise rebuild these lines at the original positions.
+        rubber_lines = [
+            line for rubber in self._rubbers for line in rubber.geometry()
+        ]
         # revert preview movement, undo rubber/float operations
         self._cancel()
         # for segments to be moved (not rubberized):
@@ -337,11 +342,9 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             p1 = segment_line.p1() + offset
             p2 = segment_line.p2() + offset
             self._scene.addSegment(p1, p2, undoable=True)
-        # materialize segments from rubber
-        self._updateJogs()  # others will update b/c subscribed to moved nodes
-        for rubber in self._rubbers:
-            for line in rubber.geometry():
-                self._scene.addSegment(line.p1(), line.p2(), undoable=True)
+        # materialize segments from rubber captured at the drop
+        for line in rubber_lines:
+            self._scene.addSegment(line.p1(), line.p2(), undoable=True)
         # end undoable sequence (macro)
         self._scene.undo_stack.endMacro()
         return True
