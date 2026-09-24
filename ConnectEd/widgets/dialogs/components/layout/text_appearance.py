@@ -65,7 +65,7 @@ class TextAppearanceLayout(QVBoxLayout):
         dialog : BaseTextItemDialog,
         view   : DiagramView
     ):
-        super().__init__(dialog)
+        super().__init__()
         state = BaseTextAppearanceState.fromItem(item)
         theme = _textTheme(item, view)
         override = TextOverride(

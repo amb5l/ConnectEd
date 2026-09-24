@@ -44,7 +44,6 @@ class BaseTextItemDialog(QDialog, Generic[T]):
         self.initTopSection(item)
         self._main_layout = TextAppearanceLayout(item, self, view)
         self._layout.addLayout(self._main_layout)
-        self.setLayout(self._layout)
 
     def initTopSection(self : Self, item) -> None:
         raise NotImplementedError("subclass must implement initTopSection()")
