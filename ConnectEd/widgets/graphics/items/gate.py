@@ -436,6 +436,7 @@ class LogicGateItem(GateItem):
                 path.moveTo(-30, y)
                 path.lineTo(-30, 10)
                 self.setPath(path)
+                self.updateHandlePositions()
         self.properties["Inputs"].notify()
 
 
