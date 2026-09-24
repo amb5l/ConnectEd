@@ -175,7 +175,10 @@ class PropertyTextItem(TextItem):
         kind = self._property.kind()
         if kind in (DataKind.STR, DataKind.TEXT):
             super().setBlock(kind == DataKind.TEXT)
-        super().setText(val2str(self._property.value()))
+        text = val2str(self._property.value())
+        if text == "":
+            text = f"<{self.name()}>"
+        super().setText(text)
 
     def property(self : Self) -> Property:
         return self._property

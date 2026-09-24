@@ -5,7 +5,7 @@ import ConnectEd.scripting as cs
 from integration.gui.specs import MAIN_WIDGETS, MENUS_STARTUP
 
 from integration.gui.validators import (
-    validateDrawing,
+    validateDiagram,
     validateHelpAbout,
     validateMainWindow,
     validateMainWidgets,
@@ -23,7 +23,7 @@ def test(app : cs.App) -> None:
     validateMainWidgets(window, MAIN_WIDGETS)
     validateMenus(window, MENUS_STARTUP)
     validateHelpAbout(window)
-    validateDrawing(window)
+    validateDiagram(window)
 
     print("test finished")
 
