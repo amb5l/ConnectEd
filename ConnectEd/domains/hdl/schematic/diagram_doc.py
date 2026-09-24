@@ -451,14 +451,15 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         clean   : bool
     ) -> None:
         from ....widgets.graphics.items.symbol import SymbolDefinitionItem
-        if not isinstance(subject, SymbolDefinitionItem):
+        if isinstance(subject, SymbolDefinitionItem):
+            if not clean:
+                if subject not in self._modified:
+                    self._modified.append(subject)
+            else:
+                if subject in self._modified:
+                    self._modified.remove(subject)
+        elif subject is not self._object:
             raise TypeError("Bad subject")
-        if not clean:
-            if subject not in self._modified:
-                self._modified.append(subject)
-        else:
-            if subject in self._modified:
-                self._modified.remove(subject)
         self.onChanged()
 
 
