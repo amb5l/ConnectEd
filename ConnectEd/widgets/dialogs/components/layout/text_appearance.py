@@ -3,14 +3,13 @@ from __future__ import annotations
 from typing import Self
 
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
-from PyQt6.QtGui     import QColor
 
 from .....core.check import checked
 from .....core.types import RectHandleId
 
-from ....graphics.quill import Quill
-
-from ....graphics.items.text import TextAppearanceState, BaseTextItem
+from ....graphics.items.text       import BaseTextItem
+from ....graphics.items.base_text  import BaseTextAppearanceState
+from ....graphics.presentation     import TextTheme, TextOverride
 
 from ..group_box.text_orientation import TextOrientationGroupBox
 from ..group_box.text_align       import TextAlignGroupBox
@@ -22,9 +21,29 @@ from .ok_cancel  import OkCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....graphics.views.diagram  import DiagramView
-    from ....graphics.items.base_text import BaseTextAppearanceState
+    from ....graphics.views.diagram import DiagramView
     from ...items.text import BaseTextItemDialog
+
+
+@checked
+def _textTheme(item : BaseTextItem, view : DiagramView) -> TextTheme:
+    color     = item.themeTextColor(view)
+    font      = item.themeTextFont(view)
+    size      = item.themeTextSize(view)
+    bold      = item.themeTextBold(view)
+    italic    = item.themeTextItalic(view)
+    underline = item.themeTextUnderline(view)
+    if color is None or font is None or size is None \
+    or bold is None or italic is None or underline is None:
+        raise ValueError("Text theme is incomplete")
+    return TextTheme(
+        color     = color,
+        font      = font,
+        size      = size,
+        bold      = bold,
+        italic    = italic,
+        underline = underline
+    )
 
 
 class TextAppearanceLayout(QVBoxLayout):
@@ -42,21 +61,21 @@ class TextAppearanceLayout(QVBoxLayout):
     @checked
     def __init__(
         self   : Self,
-        source : BaseTextItem | tuple[BaseTextAppearanceState, Quill],
+        item   : BaseTextItem,
         dialog : BaseTextItemDialog,
         view   : DiagramView
     ):
-        # superclass init
         super().__init__(dialog)
-
-        # get state
-        if isinstance(source, BaseTextItem):
-            state = BaseTextAppearanceState.fromItem(source)
-            scene = view.scene()
-            if scene is None:
-                raise ValueError("Scene is None")
-        else:
-           state, _theme = source
+        state = BaseTextAppearanceState.fromItem(item)
+        theme = _textTheme(item, view)
+        override = TextOverride(
+            color     = state.color,
+            font      = state.font,
+            size      = state.size,
+            bold      = state.bold,
+            italic    = state.italic,
+            underline = state.underline
+        )
         self._enabled = True
         # middle left - rotation, alignment and origin
         self._left_layout = QVBoxLayout()
@@ -77,19 +96,7 @@ class TextAppearanceLayout(QVBoxLayout):
         )
         self._right_layout.addWidget(self._padding_group_box)
         self._typography_group_box = TextTypographyPreviewGroupBox(
-
-            item.textColor(),
-            item.textFont(),
-            item.textSize(),
-            item.textBold(),
-            item.textItalic(),
-            item.textUnderline(),
-            default_color,
-            default_font,
-            default_size,
-            default_bold,
-            default_italic,
-            default_underline
+            theme, override
         )
         self._right_layout.addWidget(self._typography_group_box)
         # middle left and right combined

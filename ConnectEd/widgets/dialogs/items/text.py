@@ -19,7 +19,6 @@ from ..components.layout.text_appearance import TextAppearanceLayout
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...graphics.views.diagram import DiagramView
-    from ...graphics.items.text import TextState
 
 
 T = TypeVar("T", bound=BaseTextItem)
@@ -35,7 +34,7 @@ class BaseTextItemDialog(QDialog, Generic[T]):
     @checked
     def __init__(
         self : Self,
-        source : T | TextState,
+        item : T,
         view : DiagramView
     ):
         super().__init__(view)

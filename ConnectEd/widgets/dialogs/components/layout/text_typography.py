@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self
+from typing import Self, TypeVar
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QVBoxLayout, QGridLayout, QLabel, QWidget
@@ -96,6 +96,21 @@ class TextTypographyLayout(QVBoxLayout):
         return self._underline_combo.value()
 
 
+_T = TypeVar("_T")
+
+
+def _previewValue(
+    value    : _T | None | NoChange,
+    override : _T | None,
+    theme    : _T
+) -> _T | NoChange:
+    if isinstance(value, NoChange):
+        value = override
+    if value is None:
+        value = theme
+    return value
+
+
 class TextTypographyPreviewLayout(TextTypographyLayout):
     _preview : QLabel
 
@@ -118,26 +133,14 @@ class TextTypographyPreviewLayout(TextTypographyLayout):
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        if isinstance(font := self._font_combo.value(), NoChange):
-            font = self._override.font
-        if font is None:
-            font = self._default_font
-        if isinstance(bold := self._bold_combo.value(), NoChange):
-            bold = self._initial_bold
-        if bold is None:
-            bold = self._default_bold
-        if isinstance(italic := self._italic_combo.value(), NoChange):
-            italic = self._initial_italic
-        if italic is None:
-            italic = self._default_italic
-        if isinstance(underline := self._underline_combo.value(), NoChange):
-            underline = self._initial_underline
-        if underline is None:
-            underline = self._default_underline
-        if isinstance(font, NoChange) \
-        or isinstance(bold, NoChange) \
-        or isinstance(italic, NoChange) \
-        or isinstance(underline, NoChange):
+        font      = _previewValue(self._font_combo.value(),      self._override.font,      self._theme.font)
+        bold      = _previewValue(self._bold_combo.value(),      self._override.bold,      self._theme.bold)
+        italic    = _previewValue(self._italic_combo.value(),    self._override.italic,    self._theme.italic)
+        underline = _previewValue(self._underline_combo.value(), self._override.underline, self._theme.underline)
+        if not isinstance(font, str) \
+        or not isinstance(bold, bool) \
+        or not isinstance(italic, bool) \
+        or not isinstance(underline, bool):
             self._preview.setText("") # options are ambiguous
             return
         qfont = QFont()
