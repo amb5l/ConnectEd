@@ -87,6 +87,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
     # instance attributes
     _name  : str
     _value : str
+    _defer : bool  # defer netlist notification when true (for move preview)
 
     @checked
     def __init__(
@@ -142,6 +143,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         )
         self._name  = name
         self._value = value
+        self._defer = False
         self.onTextChanged()
 
     def onPositionChanged(
@@ -149,7 +151,8 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         pos  : QPointF | None = None
     ) -> None:
         ItemTransformMixin.onPositionChanged(self, pos)
-        self._notifyNetlist()
+        if not self._defer:
+            self._notifyNetlist()
 
     @checked
     def setOrigin(self : Self, id : HandleId) -> None:
@@ -195,6 +198,11 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self.onTextChanged()
         self._notifyNetlist()
         self.properties["Value"].notify()
+
+    def setDefer(self : Self, defer : bool) -> None:
+        self._defer = defer
+        if not defer:
+            self._notifyNetlist()
 
     @checked
     def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]

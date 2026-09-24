@@ -23,6 +23,7 @@ from ....items.gate      import GateItem
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 from ....items.symbol    import SymbolInstanceItem
+from ....items.net_label import NetLabelItem
 from ....items.rubber    import RubberItem, RubberJogItem
 
 from ....items.mixin.move import ItemMoveMixin
@@ -250,6 +251,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         super().__init__(view, filtered_items)
         # save initial positions
         self._previewSave()
+        self._deferNetLabels(True)
 
     def valid(self : Self) -> bool:
         return bool(self._items)
@@ -265,9 +267,16 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         self._pos = pos
 
     @checked
+    def _deferNetLabels(self : Self, deferred : bool) -> None:
+        for item in self._items:
+            if isinstance(item, NetLabelItem):
+                item._defer = deferred
+
+    @checked
     def _cancel(self : Self) -> None:
         # revert movement
         self._previewRestore()
+        self._deferNetLabels(False)
         # undo rubber replacements/additions and segment floatations
         self._undo_stack.setIndex(0)
 
