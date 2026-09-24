@@ -13,9 +13,10 @@ from ....core.utils import numtrim, pascal2proper, str2val
 
 from ...utils import kind2dialogEditor
 
-from ...graphics.properties import PropertiesMixin
+from ...graphics.properties import PropertiesMixin, PropertyChange, \
+                                   PropertyAndTextsEdit
 
-from ...graphics.items.property_text import PropertyTextItem
+from ...graphics.items.property_text import PropertyTextItem, PropertyTextChange
 
 from ...graphics.items.mixin.edge_loc import ItemEdgeLocMixin
 
@@ -197,14 +198,54 @@ class PropertyGroupBox(QGroupBox):
 class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
     _TITLE = "Property Text"
 
+    _item        : PropertyTextItem
     _top_section : PropertyGroupBox
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
         if not isinstance(name := item.name(), str):
             raise TypeError("Bad name")
+        self._item = item
         self._top_section = PropertyGroupBox(item, name)
         self._layout.addWidget(self._top_section)
+
+    @checked
+    def getEdits(self : Self) -> list[PropertyAndTextsEdit]:
+        item = self._item
+        owner = item.owner()
+        if not isinstance(owner, PropertiesMixin):
+            raise TypeError("Bad owner")
+        change = PropertyChange(
+            name  = self.getName(),
+            kind  = self.getKind(),
+            value = self.getValue()
+        )
+        text = PropertyTextChange(
+            item       = item,
+            cleat      = self.getCleat(),
+            rotation   = self.getRotation(),
+            mirror_h   = self.getMirrorH(),
+            mirror_v   = self.getMirrorV(),
+            autoflip   = self.getAutoflip(),
+            origin     = self.getOrigin(),
+            align_h    = self.getAlignH(),
+            align_v    = self.getAlignV(),
+            pad_left   = self.getPadLeft(),
+            pad_right  = self.getPadRight(),
+            pad_top    = self.getPadTop(),
+            pad_bottom = self.getPadBottom(),
+            color      = self.getColor(),
+            font       = self.getFont(),
+            size       = self.getSize(),
+            bold       = self.getBold(),
+            italic     = self.getItalic(),
+            underline  = self.getUnderline()
+        )
+        edit = None if change.noop() else change
+        texts = [] if text.noop() else [text]
+        if edit is None and len(texts) == 0:
+            return []
+        return [PropertyAndTextsEdit(owner, item.property(), edit, texts)]
 
     @checked
     def getName(self : Self) -> str | NoChange:

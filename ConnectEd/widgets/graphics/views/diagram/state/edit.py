@@ -318,35 +318,7 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
         if isinstance(item := self._requireOneItemNoSpos(items, spos), PropertyTextItem):
             dialog = PropertyTextItemDialog(item, self.view)
             if dialog.exec():
-                owner = item.owner()
-                if not isinstance(owner, PropertiesMixin):
-                    raise ValueError("Owner is not a PropertiesMixin")
-                self.scene.editProperty(
-                    owner    = owner,
-                    property = item.property(),
-                    name     = dialog.getName(),
-                    kind     = dialog.getKind(),
-                    value    = dialog.getValue(),
-                    undoable = True
-                )
-                self.scene.editPropertyText(
-                    item       = item,
-                    cleat      = dialog.getCleat(),
-                    rotation   = dialog.getRotation(),
-                    mirror_h   = dialog.getMirrorH(),
-                    mirror_v   = dialog.getMirrorV(),
-                    autoflip   = dialog.getAutoflip(),
-                    origin     = dialog.getOrigin(),
-                    align_h    = dialog.getAlignH(),
-                    align_v    = dialog.getAlignV(),
-                    color      = dialog.getColor(),
-                    font       = dialog.getFont(),
-                    size       = dialog.getSize(),
-                    bold       = dialog.getBold(),
-                    italic     = dialog.getItalic(),
-                    underline  = dialog.getUnderline(),
-                    undoable   = True
-                )
+                self.scene.editProperties(dialog.getEdits(), undoable=True)
         else:
             logger().warning("No property text selected")
         self.view.state.go(self.view.stateIdle)

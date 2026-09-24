@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 
 from typing          import Self, Any, TypeVar, Generic
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses     import dataclass, field, fields
 
 from PyQt6.QtCore    import QObject, pyqtSignal
@@ -341,7 +341,7 @@ class PropertyAndTextsEdit:
     owner    : PropertiesMixin
     property : Property    | None
     edit     : PropertyAdd | PropertyDelete | PropertyChange | None
-    texts    : list[PropertyTextEdit]
+    texts    : Sequence[PropertyTextEdit]
 
 
 class PropertiesMixin:

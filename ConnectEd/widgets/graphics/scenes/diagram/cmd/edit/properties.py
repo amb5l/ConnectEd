@@ -6,6 +6,7 @@ from .......app import logger
 
 from .......core.check import checked
 from .......core.types import NoChange, DataKind
+from .......core.utils import camel2proper
 
 from .....properties import PropertiesMixin, Property, PropertyState, \
                             PropertyChange
@@ -26,6 +27,8 @@ class CmdPropertyBase(CmdBase):
         self  : Self,
         owner : PropertiesMixin
     ) -> None:
+        text = camel2proper(self.__class__.__name__.replace("Cmd", ""))
+        super().__init__(text)
         self._owner = owner
 
 
