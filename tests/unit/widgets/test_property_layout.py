@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QLabel
 
 from ConnectEd.app import ConnectEdApp
 from ConnectEd.widgets.dialogs.components.edit import StrEditor
-from ConnectEd.widgets.dialogs.components.layout.property import PropertyLayout
+from ConnectEd.widgets.dialogs.items.property_text import PropertyLayout
 from ConnectEd.widgets.graphics.items.block import BlockItem
 
 
