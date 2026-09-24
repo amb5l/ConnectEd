@@ -141,7 +141,7 @@ class DiagramScene(
     @checked
     def setName(self : Self, name : str, notify : bool = True) -> None:
         self._name = name
-        self.properties[name].notify()
+        self.properties["Name"].notify()
         if notify and self._doc is not None and self.propertiesLive():
             self._doc.onChanged()
 
