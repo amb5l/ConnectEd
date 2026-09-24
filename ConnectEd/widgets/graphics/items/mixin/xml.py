@@ -69,7 +69,6 @@ class ItemXmlMixin:
     @checked
     def fromXmlChild(self : Self, xr : QXmlStreamReader) -> bool:
         """Handle one child start element. Returns True if consumed."""
-        from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
         from ...items.line       import LineItem
@@ -80,7 +79,6 @@ class ItemXmlMixin:
         # dict[str, type] — typeguard Protocol check rejects classmethod fromXml
         # as an "instance method" when values are annotated as type[FromXmlProtocol].
         _child_items_xref : dict[str, type] = {
-            "GatePin"   : GatePinItem,
             "BlockPin"  : BlockPinItem,
             "SymbolPin" : SymbolPinItem,
             "Line"      : LineItem,
@@ -93,6 +91,9 @@ class ItemXmlMixin:
         or not isinstance(self, PropertiesMixin):
             raise TypeError("Bad host")
         tag = xr.name()
+        if tag in ("GatePin", "BufGatePin", "OrGatePin"):
+            _skipXmlElement(xr, tag)
+            return True
         if tag == "PropertyText":
             name = next(
                 (

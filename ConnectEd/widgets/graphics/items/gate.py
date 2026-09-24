@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Self
 from enum import Enum
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
@@ -59,7 +59,9 @@ class GateItem(
         )
     }
     _PIN_CLS : type[GatePinItem]
-    _XML_CHILDREN = frozenset({"PropertyText"})
+    _XML_CHILDREN = frozenset({
+        "PropertyText", "GatePin", "BufGatePin", "OrGatePin",
+    })
 
     @classmethod
     def settingsName(cls : type[Self]) -> str:
@@ -78,6 +80,15 @@ class GateItem(
         self.initItem(fresh)
         self.initPath()
         self.updateHandlePositions()
+
+    def toXmlChildren(
+        self : Self,
+        xw   : QXmlStreamWriter,
+        *,
+        pins : bool = True
+    ) -> None:
+        del pins
+        super().toXmlChildren(xw, pins=False)
 
     def handleRect(self : Self) -> QRectF:
         return self.path().controlPointRect()
