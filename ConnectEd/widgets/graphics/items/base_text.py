@@ -794,15 +794,13 @@ class TextRendererMixin(ItemShapeMixin):
         """
         Paint method override for selected state.
         """
-        if not isinstance(painter, QPainter) \
+        if not isinstance(self, QGraphicsItem) \
+        or not isinstance(painter, QPainter) \
         or not isinstance(option, QStyleOptionGraphicsItem) \
         or not isinstance(widget, QWidget):
             raise TypeError("Bad arguments")
         option.state &= ~QStyle.StateFlag.State_Selected
-        super = qtItemClass(self)
-        if not isinstance(super, QGraphicsItem):
-            raise TypeError("Bad super")
-        super.paint(painter, option, widget)
+        qtItemClass(self).paint(self, painter, option, widget)
 
 
 class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):

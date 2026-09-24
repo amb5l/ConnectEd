@@ -87,7 +87,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
     # instance attributes
     _name  : str
     _value : str
-    _defer : bool  # defer netlist notification when true (for move preview)
+    _defer : bool = False  # defer netlist notification when true (for move preview)
 
     @checked
     def __init__(
@@ -143,7 +143,6 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         )
         self._name  = name
         self._value = value
-        self._defer = False
         self.onTextChanged()
 
     def onPositionChanged(
