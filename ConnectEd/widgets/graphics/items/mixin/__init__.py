@@ -59,7 +59,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         if isinstance(self, ItemShapeMixin):
             self.initShape()
         if isinstance(self, PropertiesMixin):
-            self.initProperties(fresh)
+            self.setPropertiesLive(fresh)
 
     def __hash__(self : Self):
         return hash(self._uuid)

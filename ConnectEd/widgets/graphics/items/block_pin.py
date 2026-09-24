@@ -30,7 +30,7 @@ class BlockPinItem(ItemEdgeLocMixin, PortPinLineItem):
     _ARROW_CLS  = BlockPinArrowItem
     _ARROW_POS  = 0
     _PROPERTIES = PortPinLineItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
-    _PROPERTY_DISPLAY_SPECS = {
+    _PROPERTY_TEXTS = {
         "Name" : PropertyTextSpec(
             cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )

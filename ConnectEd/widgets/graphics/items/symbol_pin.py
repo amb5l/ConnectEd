@@ -33,7 +33,7 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     _ARROW_CLS  = SymbolPinArrowItem
     _ARROW_POS  = 0
     _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
-    _PROPERTY_DISPLAY_SPECS = {
+    _PROPERTY_TEXTS = {
         "Name" : PropertyTextSpec(
             cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )

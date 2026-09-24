@@ -53,7 +53,7 @@ class GateItem(
             setter = lambda self, value: self.setLabel(value)
         )
     }
-    _PROPERTY_DISPLAY_SPECS = {
+    _PROPERTY_TEXTS = {
         "Label" : PropertyTextSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         )

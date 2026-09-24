@@ -33,7 +33,7 @@ class PortItem(ItemTransformMixin, PortPinLineItem):
     _PROPERTIES = \
         PortPinLineItem._PROPERTIES | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN
-    _PROPERTY_DISPLAY_SPECS = {
+    _PROPERTY_TEXTS = {
         "Name" : PropertyTextSpec(
             cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
         )

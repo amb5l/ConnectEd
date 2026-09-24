@@ -46,7 +46,7 @@ class TapItem(
         )
     }
     _PROPERTIES =_PROPERTIES_SUFFIX | ItemTransformMixin._PROPERTIES_NO_ORIGIN
-    _PROPERTY_DISPLAY_SPECS = {
+    _PROPERTY_TEXTS = {
         "Suffix" : PropertyTextSpec(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
         )
