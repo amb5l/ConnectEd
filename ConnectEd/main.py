@@ -15,8 +15,7 @@ from .core.session  import Session
 
 from .resources  import getIconPath, initResources
 
-from .widgets.splash import Splash
-from .widgets.window import Window
+from .widgets.splash import Splash, progress
 
 
 def main(func : Callable | None = None) -> int:
@@ -50,13 +49,21 @@ def main(func : Callable | None = None) -> int:
             raise RuntimeError("No color scheme")
         splash = Splash(scheme == Qt.ColorScheme.Light)
         splash.show()
+    # The window module imports most of the UI. Show the splash first.
+    window_cls = None
+    if not known_args.cli:
+        progress("Loading interface...", 0.05)
+        from .widgets.window import Window
+        window_cls = Window
     app.setLogger(logger)
+    progress("Loading settings...", 0.15)
     app.setSettings(Settings())
     if known_args.reset:
         app.settings().reset()
     app.settings().load()
     if known_args.dump:
         print(app.settings().dump())
+    progress("Loading resources...", 0.35)
     if not known_args.cli:
         icon = QIcon(getIconPath("ConnectEd.png"))
         app.setWindowIcon(icon)
@@ -69,16 +76,20 @@ def main(func : Callable | None = None) -> int:
             except Exception:
                 pass
         initResources()
+    progress("Starting session...", 0.5)
     app.setSession(Session())
 
     # side effect imports to register document types
+    progress("Registering documents...", 0.65)
     import ConnectEd.domains.hdl.schematic.diagram_doc  # noqa: F401
     import ConnectEd.domains.hdl.schematic.library_doc  # noqa: F401
     import ConnectEd.domains.hdl.schematic.design_doc   # noqa: F401
     import ConnectEd.domains.hdl.fsm.diagram_doc        # noqa: F401
 
-    if not known_args.cli:
-        Window() # create window
+    if window_cls is not None:
+        progress("Creating window...", 0.8)
+        window_cls()
+    progress("Ready", 1.0)
     app.processEvents()
     if not (known_args.cli or known_args.nosplash) and splash is not None:
         splash.finish(app.window())

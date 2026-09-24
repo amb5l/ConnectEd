@@ -4,7 +4,7 @@ import time
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QRectF, QTimer
+from PyQt6.QtCore    import Qt, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication, QWidget
 from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
@@ -19,14 +19,28 @@ if TYPE_CHECKING:
     from ..widgets.window import Window
 
 
+_splash : Splash | None = None
+
+
+def progress(message : str, fraction : float) -> None:
+    """Update the splash, if one is showing. Safe when it is not."""
+    if _splash is not None:
+        _splash.progress(message, fraction)
+
+
 class Splash(QSplashScreen):
     _SIZE             = 0.25   # fraction of screen size
     _BITMAP_SIZE      = 0.1    # fraction of screen size
     _TEXT_SIZE        = 0.05   # fraction of screen size
     _GAP              = 0.025  # fraction of screen size
     _MIN_DISPLAY_TIME = 1500   # milliseconds
+    _BAR_MARGIN       = 0.06   # fraction of splash width
+    _BAR_HEIGHT       = 0.028  # fraction of splash height
 
     _start_time : float | None = None
+    _message    : str = "Initialising..."
+    _progress   : float = 0.0
+    _light      : bool = True
 
     def __init__(self : Self, light : bool, parent=None):
         if (screen := QApplication.primaryScreen()) is None:
@@ -38,7 +52,9 @@ class Splash(QSplashScreen):
             splash_width, splash_height, screen_geometry.width(), light
         )
         super().__init__(pixmap)
+        self._light = light
         self.setWindowFlags(
+            Qt.WindowType.SplashScreen |
             Qt.WindowType.WindowStaysOnTopHint |
             Qt.WindowType.FramelessWindowHint
         )
@@ -92,8 +108,45 @@ class Splash(QSplashScreen):
         return pixmap
 
     def show(self : Self):
+        global _splash
+        _splash = self
         super().show()
+        self.raise_()
         self._start_time = time.time()
+        self.progress(self._message, self._progress)
+
+    def progress(self : Self, message : str, fraction : float) -> None:
+        self._message = message
+        self._progress = min(1.0, max(0.0, fraction))
+        self.raise_()
+        self.repaint()
+        QApplication.processEvents()
+
+    def drawContents(self : Self, painter : QPainter | None) -> None:
+        if painter is None:
+            return
+        width = self.width()
+        height = self.height()
+        margin = max(16, int(width * self._BAR_MARGIN))
+        bar_height = max(8, int(height * self._BAR_HEIGHT))
+        bar = QRect(margin, height - margin - bar_height, width - 2 * margin, bar_height)
+        track = QColor("#d0d0d0") if self._light else QColor("#404040")
+        fill = QColor("#3d7ab5") if self._light else QColor("#6aa6e0")
+        fg = Qt.GlobalColor.black if self._light else Qt.GlobalColor.lightGray
+        painter.fillRect(bar, track)
+        done = bar.adjusted(0, 0, int(bar.width() * self._progress) - bar.width(), 0)
+        if done.width() > 0:
+            painter.fillRect(done, fill)
+        font = QFont()
+        font.setPixelSize(max(12, bar_height))
+        painter.setFont(font)
+        painter.setPen(fg)
+        text = QRect(margin, bar.top() - bar_height * 2, bar.width(), bar_height * 2)
+        painter.drawText(
+            text,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            self._message,
+        )
 
     def finish(self : Self, w : QWidget | None):
         from .window import Window
@@ -108,6 +161,8 @@ class Splash(QSplashScreen):
         self._actually_finish(w)
 
     def _actually_finish(self : Self, window : Window):
+        global _splash
+        _splash = None
         super().finish(window)
         window.show()
         window.raise_()

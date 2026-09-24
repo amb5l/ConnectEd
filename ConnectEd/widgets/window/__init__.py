@@ -13,10 +13,13 @@ from PyQt6.QtGui     import QIcon, QCloseEvent
 
 from ...app import app, logger, settings
 
+from ...core.args  import known_args
 from ...core.check import checked
 from ...core.defs  import APP_NAME
 
 from ...resources import getIconPath
+
+from ..splash import progress
 
 from ...ai.lock import AiEditLock
 
@@ -78,10 +81,12 @@ class Window(QMainWindow):
         self._mdi_area.subWindowActivated.connect(self._onSubWindowActivated)
 
         # menu bar
+        progress("Building menus...", 0.84)
         self._menu_bar = MenuBar(self)
         self.setMenuBar(self._menu_bar)
 
         # status bar
+        progress("Building status bar...", 0.88)
         self._status_bar = StatusBar(self)
         self.setStatusBar(self._status_bar)
 
@@ -100,6 +105,7 @@ class Window(QMainWindow):
         self._messages_dock.raise_()
         self._menu_bar.updateAiMenu()
         self._ai_manager.scheduleStartup()
+        progress("Building panels...", 0.92)
         self._navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self._navigator_dock)
         self._netlist_dock = NetlistBrowserDock(self)
@@ -113,8 +119,8 @@ class Window(QMainWindow):
         # central widget
         self.setCentralWidget(self._mdi_area)
 
-        # ready
-        if not app().cli():
+        # ready — the splash shows this window when it finishes
+        if not app().cli() and known_args.nosplash:
             self.show()
             self.raise_()
             self.activateWindow()
