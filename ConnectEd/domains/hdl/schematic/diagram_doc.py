@@ -468,6 +468,6 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
 Session.registerDocType(DocType(
     name  = "HDL Schematic Diagram",
     group = "HDL Schematic Diagrams",
-    ext   = "hdl_sch",
+    ext   = "sch.hdl",
     cls   = HdlSchematicDiagramDoc,
 ))

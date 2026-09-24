@@ -438,6 +438,6 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
 Session.registerDocType(DocType(
     name  = "HDL Schematic Library",
     group = "HDL Schematic Libraries",
-    ext   = "hdl_lib",
+    ext   = "lib.hdl",
     cls   = HdlSchematicLibraryDoc,
 ))

@@ -11,7 +11,7 @@ class HdlFsmDiagramDoc(Doc):
 DOC_TYPE = DocType(
     name  = "HDL State Diagram",
     group = "HDL State Diagrams",
-    ext   = "hdl_fsm",
+    ext   = "fsm.hdl",
     cls   = HdlFsmDiagramDoc,
 )
 

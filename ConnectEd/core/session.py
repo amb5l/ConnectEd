@@ -19,7 +19,7 @@ class DocType:
     """A document type."""
     name  : str        # friendly document type name
     group : str        # friendly document group name
-    ext   : str        # extension suffix, e.g. ``hdl_sch``
+    ext   : str        # kind.domain, e.g. ``sch.hdl`` → ``.sch.hdl.ce``
     cls   : type[Doc]  # class to instantiate
 
     @property
@@ -28,7 +28,7 @@ class DocType:
 
     @property
     def fileExt(self : Self) -> str:
-        return f"{APP_EXT}_{self.ext}"
+        return f".{self.ext}{APP_EXT}"
 
 
 class Session(QObject):
@@ -142,12 +142,15 @@ class Session(QObject):
         return None
 
     def docTypeForExt(self : Self, ext : str) -> DocType | None:
-        if not ext.startswith("."):
-            ext = f".{ext}"
+        """Match a suffix or a path. The whole tail counts, not only ``.ce``."""
+        name = ext if ext.startswith(".") else f".{ext}"
+        found : DocType | None = None
         for doc_type in self._doc_types.values():
-            if doc_type.fileExt == ext:
-                return doc_type
-        return None
+            file_ext = doc_type.fileExt
+            if name == file_ext or name.endswith(file_ext):
+                if found is None or len(file_ext) > len(found.fileExt):
+                    found = doc_type
+        return found
 
     def docTypeForTag(self : Self, tag : str) -> DocType | None:
         return self._doc_types.get(tag)
@@ -172,7 +175,7 @@ class Session(QObject):
         """``QFileDialog`` name filters for open."""
         if doc_type is not None:
             return [f"{doc_type.name} (*{doc_type.fileExt})"]
-        filters = [f"ConnectEd Documents (*{APP_EXT}*)"]
+        filters = [f"ConnectEd Documents (*{APP_EXT})"]
         for registered in self.docTypes():
             filters.append(f"{registered.name} (*{registered.fileExt})")
         filters.append("All Files (*.*)")
