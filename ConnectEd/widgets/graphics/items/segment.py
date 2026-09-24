@@ -150,6 +150,22 @@ class SegmentItem(
             return None
         return Axis.H if self.line().dy() == 0.0 else Axis.V
 
+    @checked
+    def onSelectionChanged(self : Self, selected : bool) -> None:
+        super().onSelectionChanged(selected)
+        from ..scenes.diagram import DiagramScene
+        if not isinstance(scene := self.scene(), DiagramScene):
+            return
+        for label in scene.netlist.labelsTouchingSegment(self):
+            kept = not selected and any(
+                other is not self
+                and isinstance(other, SegmentItem)
+                and label in scene.netlist.labelsTouchingSegment(other)
+                for other in scene.selectedItems()
+            )
+            if not kept:
+                label.setSelected(selected)
+
     def sceneMidpoint(self : Self) -> QPointF:
         return self.scenePos() + self.line().p2() / 2
 
