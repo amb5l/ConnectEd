@@ -70,7 +70,6 @@ def withMdiWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None
             if (current_subwindow := window().mdiArea().currentSubWindow()) is None:
                 return
             if isinstance(current_widget := current_subwindow.widget(), widget_type):
-                # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget))
             else:
                 raise ValueError(f"{current_widget} is not a {widget_type} or subclass")

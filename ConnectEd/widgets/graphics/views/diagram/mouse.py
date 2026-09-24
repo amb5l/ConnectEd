@@ -118,6 +118,13 @@ class DiagramViewMouseMixin:
             logger().warning("No event")
             return
         host._updateMousePos(event)
+        # A menu or shortcut can leave BAD_PRESS set after a press whose release
+        # never reached this view. A lone left or middle press starts a new gesture.
+        if (
+            host._mouse_state == MouseState.BAD_PRESS
+            and app().mouseButtons() in (Qt.MouseButton.NoButton, event.button())
+        ):
+            host._mouse_state = MouseState.IDLE
         if host._mouse_state == MouseState.IDLE:
             host._mouse_press_vpos = host._mouse_vpos
             host._mouse_press_modifiers = MouseModifier(

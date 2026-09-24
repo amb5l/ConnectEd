@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-from PyQt6.QtCore import QPoint, QPointF
-from PyQt6.QtWidgets import QListWidget, QMdiSubWindow
+from enum import Enum
+
+from PyQt6.QtCore import Qt, QPoint, QPointF
+from PyQt6.QtTest import QTest
+from PyQt6.QtWidgets import QListWidget, QMdiSubWindow, QMenu
 
 from ConnectEd.app import settings
 from ConnectEd.core.types import RectHandleId
 from ConnectEd.scripting import Window, gui
+from ConnectEd.scripting.gui import Gui
 from ConnectEd.scripting.qt.modal import activeModal, withModal
 from ConnectEd.widgets.dialogs.file import FileNewDialog
 from ConnectEd.widgets.graphics.items.block import BlockItem
@@ -15,8 +19,16 @@ from ConnectEd.widgets.graphics.items.grip import GripItem
 from ConnectEd.widgets.graphics.items.handle import HandleItem
 from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
 from ConnectEd.widgets.graphics.views.diagram import DiagramView
+from ConnectEd.widgets.graphics.views.diagram.mouse import MouseState
 
 from integration.gui.text_theme import assert_text_theme
+
+
+class CommandInput(Enum):
+    """How the diagram test issues menu commands."""
+
+    SHORTCUT = "shortcut"
+    MENU     = "menu"
 
 
 _DOC_TYPE = "HDL Schematic Diagram"
@@ -28,17 +40,74 @@ _PROPERTY_TEXTS : dict[str, tuple[RectHandleId, RectHandleId]] = {
 }
 
 
-def _menu_action(menu, name : str):
-    for action in menu.actions():
-        if action.isSeparator() or action.menu() is not None:
-            continue
-        text = action.text().replace("&", "").replace("...", "")
-        if text == name:
-            return action
-    return None
+def _status(window : Window) -> str:
+    bar = window.statusBar()
+    assert bar is not None
+    return bar.status.text()
 
 
-def _new_diagram(driver, window : Window) -> None:
+def _menu_named(driver : Gui, window : Window, title : str) -> QMenu:
+    connected_bar = window.menuBar()
+    assert connected_bar is not None
+    menu = driver.menu(connected_bar, title)
+    assert menu is not None, f"no {title} menu"
+    return menu
+
+
+def _open_menu(driver : Gui, window : Window, menu : str) -> QMenu:
+    """Click the menu bar so the popup is open before a modal command."""
+    connected_menu = _menu_named(driver, window, menu)
+    connected_bar = window.menuBar()
+    assert connected_bar is not None
+    bar_action = next(
+        candidate for candidate in connected_bar.actions()
+        if candidate.menu() is connected_menu
+    )
+    driver.mouseClick(
+        connected_bar, connected_bar.actionGeometry(bar_action).center()
+    )
+    assert connected_menu.isVisible(), f"{menu} menu did not open"
+    return connected_menu
+
+
+def _fire(
+    driver : Gui,
+    window : Window,
+    menu   : str,
+    name   : str,
+    mode   : CommandInput,
+) -> None:
+    """Send the shortcut, or click an item in a menu that is already open."""
+    connected_menu = _menu_named(driver, window, menu)
+    action = driver.action(connected_menu, name)
+    assert action is not None and action.isEnabled(), f"{menu} / {name} is not enabled"
+    if mode is CommandInput.SHORTCUT:
+        sequence = action.shortcut()
+        assert not sequence.isEmpty(), f"{menu} / {name} has no shortcut"
+        QTest.keySequence(window, sequence)
+        driver.processEvents()
+        return
+    assert connected_menu.isVisible(), f"{menu} menu is not open"
+    driver.mouseClick(
+        connected_menu, connected_menu.actionGeometry(action).center()
+    )
+    driver.processEvents()
+
+
+def _invoke(
+    driver : Gui,
+    window : Window,
+    menu   : str,
+    name   : str,
+    mode   : CommandInput,
+) -> None:
+    """Issue a menu command by shortcut or by clicking the open menu."""
+    if mode is CommandInput.MENU:
+        _open_menu(driver, window, menu)
+    _fire(driver, window, menu, name, mode)
+
+
+def _new_diagram(driver : Gui, window : Window, mode : CommandInput) -> None:
     def choose() -> None:
         modal = activeModal()
         assert isinstance(modal, FileNewDialog), (
@@ -67,15 +136,13 @@ def _new_diagram(driver, window : Window) -> None:
             if modal.isVisible():
                 modal.reject()
 
-    connected_bar = window.menuBar()
-    assert connected_bar is not None
-    new = _menu_action(connected_bar.getMenus()["File"], "New")
-    assert new is not None
-    withModal(new.trigger, choose)
+    if mode is CommandInput.MENU:
+        _open_menu(driver, window, "File")
+    withModal(lambda: _fire(driver, window, "File", "New", mode), choose)
     driver.processEvents()
 
 
-def _active_diagram_view(driver) -> DiagramView:
+def _active_diagram_view(driver : Gui) -> DiagramView:
     mdi = driver.window().mdiArea()
     assert mdi is not None
     sub = mdi.activeSubWindow()
@@ -87,20 +154,17 @@ def _active_diagram_view(driver) -> DiagramView:
     return view
 
 
-def _place_block(driver, window : Window, view : DiagramView) -> None:
-    sub = driver.window().mdiArea().activeSubWindow()
-    assert isinstance(sub, QMdiSubWindow)
-    driver.window().mdiArea().activateSubWindow(sub)
-    view.setFocus()
+def _place_block(
+    driver : Gui,
+    window : Window,
+    view   : DiagramView,
+    mode   : CommandInput,
+) -> None:
     view.viewZoomAll()
     driver.processEvents()
 
-    place = window.menuBar()
-    assert place is not None
-    block_action = _menu_action(place.getMenus()["Place"], "Block")
-    assert block_action is not None and block_action.isEnabled()
-    block_action.trigger()
-    driver.processEvents()
+    _invoke(driver, window, "Place", "Block", mode)
+    assert _status(window) == "Place Block: pick the first point", _status(window)
 
     p1 = QPointF(100.0, 100.0)
     p2 = QPointF(300.0, 200.0)
@@ -108,7 +172,26 @@ def _place_block(driver, window : Window, view : DiagramView) -> None:
     v2 = driver.viewPos(view, p2)
     drag = settings().get("prefs/mouse/drag") or 5
     assert (v2 - v1).manhattanLength() > drag
-    driver.mouseDrag(view, v1, v2)
+    # A menu or shortcut can leave the view in BAD_PRESS. The next left click
+    # must still start placement.
+    view._mouse_state = MouseState.BAD_PRESS
+    _click_canvas(driver, view, v1)
+    assert _status(window) == "Place Block: pick the second point", (
+        f"first click left status {_status(window)!r}"
+    )
+    _click_canvas(driver, view, v2)
+    driver.processEvents()
+
+
+def _click_canvas(driver : Gui, view : DiagramView, pos : QPoint) -> None:
+    viewport = view.viewport()
+    assert viewport is not None
+    QTest.mouseClick(
+        viewport,
+        Qt.MouseButton.LeftButton,
+        Qt.KeyboardModifier.NoModifier,
+        pos,
+    )
     driver.processEvents()
 
 
@@ -164,10 +247,19 @@ def _assert_block_texts(block : BlockItem) -> None:
         assert_text_theme(text, f"<{name}>")
 
 
-def validateDiagram(window : Window) -> None:
-    """Create a schematic and place one block."""
-    driver = gui(window)
-    _new_diagram(driver, window)
-    view = _active_diagram_view(driver)
-    _place_block(driver, window, view)
-    _assert_block_texts(_block_on_scene(view))
+def validateDiagram(
+    window        : Window,
+    command_input : CommandInput | None = None,
+) -> None:
+    """Create a schematic and place one block.
+
+    ``command_input`` selects shortcuts or menu clicks. The default runs the
+    check once with each.
+    """
+    modes = (command_input,) if command_input is not None else tuple(CommandInput)
+    for mode in modes:
+        driver = gui(window)
+        _new_diagram(driver, window, mode)
+        view = _active_diagram_view(driver)
+        _place_block(driver, window, view, mode)
+        _assert_block_texts(_block_on_scene(view))
