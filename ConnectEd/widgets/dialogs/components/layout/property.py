@@ -32,8 +32,8 @@ class PropertyLayout(QGridLayout):
     _cleat_value        : EnumComboBox
     _name_label         : QLabel
     _name_value         : QLabel | StrEditor
-    _provenance_label   : QLabel
-    _provenance_value   : QLabel
+    _nature_label       : QLabel
+    _nature_value       : QLabel
     _kind_label         : QLabel
     _kind_value_layout  : QHBoxLayout
     _kind_value         : QLabel | EnumComboBox
@@ -83,11 +83,11 @@ class PropertyLayout(QGridLayout):
         self._name_value = name_value_widget(name)
         self.addWidget(self._name_value, row, 1)
         row += 1
-        # provenance
-        self._provenance_label = QLabel("Provenance:")
-        self.addWidget(self._provenance_label, row, 0)
-        self._provenance_value = QLabel("Inherent" if inherent else "Custom")
-        self.addWidget(self._provenance_value, row, 1)
+        # nature
+        self._nature_label = QLabel("Nature:")
+        self.addWidget(self._nature_label, row, 0)
+        self._nature_value = QLabel("Inherent" if inherent else "Custom")
+        self.addWidget(self._nature_value, row, 1)
         row += 1
         # kind - static for inherent, combo for custom
         self._kind_label = QLabel("Type:")
