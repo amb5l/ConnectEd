@@ -11,7 +11,9 @@ from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange
 
-from ....properties import PropertiesMixin
+from ....properties   import PropertiesMixin
+
+from ....presentation import FillTheme, FillOverride
 
 from ....scenes import withScene
 
@@ -85,6 +87,20 @@ class ItemPresentationFillMixin:
         key = self._resourceNormalKey()
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.style()
+
+    @checked
+    def fillTheme(self : Self, view : DiagramView | None = None) -> FillTheme:
+        color = self.themeFillColor(view)
+        style = self.themeFillStyle(view)
+        if color is None or style is None:
+            raise ValueError("Fill theme is incomplete")
+        return FillTheme(color = color, style = style)
+
+    def fillOverride(self : Self) -> FillOverride:
+        return FillOverride(
+            color = self.fillColor(),
+            style = self.fillStyle()
+        )
 
     @checked
     def setFillStyle(

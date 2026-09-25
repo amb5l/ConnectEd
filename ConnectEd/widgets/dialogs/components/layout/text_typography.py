@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QColor, QFont
 from .....core.check import checked
 from .....core.types import NoChange
 
-from ....graphics.presentation import TextTheme, TextOverride
+from ....graphics.presentation import TextTheme, TextOverrides
 
 from ..combo.color       import ColorComboBox
 from ..combo.font_family import FontFamilyComboBox
@@ -19,7 +19,7 @@ from ..combo.font_bool   import FontBoolComboBox
 
 class TextTypographyLayout(QVBoxLayout):
     _theme           : TextTheme
-    _override        : TextOverride
+    _overrides       : TextOverrides
     _options_layout  : QGridLayout
     _color_label     : QLabel
     _color_combo     : ColorComboBox
@@ -38,12 +38,12 @@ class TextTypographyLayout(QVBoxLayout):
     def __init__(
         self     : Self,
         theme    : TextTheme,
-        override : TextOverride,
+        override : TextOverrides,
         parent   : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self._theme    = theme
-        self._override = override
+        self._overrides = override
         self._options_layout = QGridLayout()
         self._color_label = QLabel("Color:")
         self._options_layout.addWidget(self._color_label, 0, 0)
@@ -72,27 +72,27 @@ class TextTypographyLayout(QVBoxLayout):
         self.addLayout(self._options_layout)
 
     @checked
-    def getColor(self : Self) -> QColor | NoChange:
+    def getColor(self : Self) -> QColor | None | NoChange:
         return self._color_combo.value()
 
     @checked
-    def getFont(self : Self) -> str | NoChange:
+    def getFont(self : Self) -> str | None | NoChange:
         return self._font_combo.value()
 
     @checked
-    def getSize(self : Self) -> float | NoChange:
+    def getSize(self : Self) -> float | None | NoChange:
         return self._size_combo.value()
 
     @checked
-    def getBold(self : Self) -> bool | NoChange:
+    def getBold(self : Self) -> bool | None | NoChange:
         return self._bold_combo.value()
 
     @checked
-    def getItalic(self : Self) -> bool | NoChange:
+    def getItalic(self : Self) -> bool | None | NoChange:
         return self._italic_combo.value()
 
     @checked
-    def getUnderline(self : Self) -> bool | NoChange:
+    def getUnderline(self : Self) -> bool | None | NoChange:
         return self._underline_combo.value()
 
 
@@ -100,12 +100,12 @@ _T = TypeVar("_T")
 
 
 def _previewValue(
-    value    : _T | None | NoChange,
-    override : _T | None,
-    theme    : _T
+    value     : _T | None | NoChange,
+    overrides : _T | None | NoChange,
+    theme     : _T
 ) -> _T | NoChange:
     if isinstance(value, NoChange):
-        value = override
+        value = overrides
     if value is None:
         value = theme
     return value
@@ -118,7 +118,7 @@ class TextTypographyPreviewLayout(TextTypographyLayout):
     def __init__(
         self     : Self,
         theme    : TextTheme,
-        override : TextOverride,
+        override : TextOverrides,
         parent   : QWidget | None = None
     ) -> None:
         super().__init__(theme, override, parent)
@@ -133,10 +133,10 @@ class TextTypographyPreviewLayout(TextTypographyLayout):
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        font      = _previewValue(self._font_combo.value(),      self._override.font,      self._theme.font)
-        bold      = _previewValue(self._bold_combo.value(),      self._override.bold,      self._theme.bold)
-        italic    = _previewValue(self._italic_combo.value(),    self._override.italic,    self._theme.italic)
-        underline = _previewValue(self._underline_combo.value(), self._override.underline, self._theme.underline)
+        font      = _previewValue(self._font_combo.value(),      self._overrides.font,      self._theme.font)
+        bold      = _previewValue(self._bold_combo.value(),      self._overrides.bold,      self._theme.bold)
+        italic    = _previewValue(self._italic_combo.value(),    self._overrides.italic,    self._theme.italic)
+        underline = _previewValue(self._underline_combo.value(), self._overrides.underline, self._theme.underline)
         if not isinstance(font, str) \
         or not isinstance(bold, bool) \
         or not isinstance(italic, bool) \

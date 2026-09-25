@@ -10,7 +10,9 @@ from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange
 
-from ....quill  import Quill
+from ....quill import Quill
+
+from ....presentation import TextTheme, TextOverride
 
 from ....properties import PropertiesMixin
 
@@ -232,6 +234,36 @@ class ItemPresentationTextMixin:
         key = self._resourceNormalKey()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.underline()
+
+    @checked
+    def textTheme(self : Self, view : DiagramView | None = None) -> TextTheme:
+        color     = self.themeTextColor(view)
+        font      = self.themeTextFont(view)
+        size      = self.themeTextSize(view)
+        bold      = self.themeTextBold(view)
+        italic    = self.themeTextItalic(view)
+        underline = self.themeTextUnderline(view)
+        if color is None or font is None or size is None \
+        or bold is None or italic is None or underline is None:
+            raise ValueError("Text theme is incomplete")
+        return TextTheme(
+            color     = color,
+            font      = font,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline
+        )
+
+    def textOverride(self : Self) -> TextOverride:
+        return TextOverride(
+            color     = self.textColor(),
+            font      = self.textFont(),
+            size      = self.textSize(),
+            bold      = self.textBold(),
+            italic    = self.textItalic(),
+            underline = self.textUnderline()
+        )
 
     @checked
     def setTextUnderline(self : Self, underline: bool | None | NoChange) -> None:

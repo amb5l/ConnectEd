@@ -9,7 +9,7 @@ from .....core.types import RectHandleId
 
 from ....graphics.items.text       import BaseTextItem
 from ....graphics.items.base_text  import BaseTextAppearanceState
-from ....graphics.presentation     import TextTheme, TextOverride
+from ....graphics.presentation     import TextOverrides
 
 from ..group_box.text_orientation import TextOrientationGroupBox
 from ..group_box.text_align       import TextAlignGroupBox
@@ -23,27 +23,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....graphics.views.diagram import DiagramView
     from ...items.text import BaseTextItemDialog
-
-
-@checked
-def _textTheme(item : BaseTextItem, view : DiagramView) -> TextTheme:
-    color     = item.themeTextColor(view)
-    font      = item.themeTextFont(view)
-    size      = item.themeTextSize(view)
-    bold      = item.themeTextBold(view)
-    italic    = item.themeTextItalic(view)
-    underline = item.themeTextUnderline(view)
-    if color is None or font is None or size is None \
-    or bold is None or italic is None or underline is None:
-        raise ValueError("Text theme is incomplete")
-    return TextTheme(
-        color     = color,
-        font      = font,
-        size      = size,
-        bold      = bold,
-        italic    = italic,
-        underline = underline
-    )
 
 
 class TextAppearanceLayout(QVBoxLayout):
@@ -67,14 +46,15 @@ class TextAppearanceLayout(QVBoxLayout):
     ):
         super().__init__()
         state = BaseTextAppearanceState.fromItem(item)
-        theme = _textTheme(item, view)
-        override = TextOverride(
-            color     = state.color,
-            font      = state.font,
-            size      = state.size,
-            bold      = state.bold,
-            italic    = state.italic,
-            underline = state.underline
+        theme = item.textTheme(view)
+        item_override = item.textOverride()
+        overrides = TextOverrides(
+            color     = item_override.color,
+            font      = item_override.font,
+            size      = item_override.size,
+            bold      = item_override.bold,
+            italic    = item_override.italic,
+            underline = item_override.underline
         )
         self._enabled = True
         # middle left - rotation, alignment and origin
@@ -96,7 +76,7 @@ class TextAppearanceLayout(QVBoxLayout):
         )
         self._right_layout.addWidget(self._padding_group_box)
         self._typography_group_box = TextTypographyPreviewGroupBox(
-            theme, override
+            theme, overrides
         )
         self._right_layout.addWidget(self._typography_group_box)
         # middle left and right combined

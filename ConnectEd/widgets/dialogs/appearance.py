@@ -14,7 +14,9 @@ from .components.layout.fill_appearance import FillAppearanceLayout
 from .components.layout.text_typography import TextTypographyPreviewLayout
 from .components.layout.ok_cancel       import OkCancelLayout
 
-from .private import _combinedValue
+from .private import _lineTheme, _lineOverrides, \
+                     _fillTheme, _fillOverrides, \
+                     _textTheme, _textOverrides
 
 
 class AppearanceDialog(QDialog):
@@ -43,12 +45,7 @@ class AppearanceDialog(QDialog):
         if line_count > 0:
             self._line_group_box = QGroupBox("Line") if category_count > 1 else None
             self._line_layout = LineAppearanceLayout(
-                _combinedValue(items, "lineColor"),
-                _combinedValue(items, "lineWidth"),
-                _combinedValue(items, "lineStyle"),
-                _combinedValue(items, "defaultLineColor"),
-                _combinedValue(items, "defaultLineWidth"),
-                _combinedValue(items, "defaultLineStyle")
+                _lineTheme(items), _lineOverrides(items)
             )
             if category_count > 1:
                 if self._line_group_box is None:
@@ -63,10 +60,7 @@ class AppearanceDialog(QDialog):
         if fill_count > 0:
             self._fill_group_box = QGroupBox("Fill") if category_count > 1 else None
             self._fill_layout = FillAppearanceLayout(
-                _combinedValue(items, "fillColor"),
-                _combinedValue(items, "fillStyle"),
-                _combinedValue(items, "defaultFillColor"),
-                _combinedValue(items, "defaultFillStyle")
+                _fillTheme(items), _fillOverrides(items)
             )
             if category_count > 1:
                 if self._fill_group_box is None:
@@ -81,18 +75,7 @@ class AppearanceDialog(QDialog):
         if text_count > 0:
             self._text_group_box = QGroupBox("Text") if category_count > 1 else None
             self._text_layout = TextTypographyPreviewLayout(
-                _combinedValue(items, "textColor"),
-                _combinedValue(items, "textFont"),
-                _combinedValue(items, "textSize"),
-                _combinedValue(items, "textBold"),
-                _combinedValue(items, "textItalic"),
-                _combinedValue(items, "textUnderline"),
-                _combinedValue(items, "themeTextColor"),
-                _combinedValue(items, "themeTextFont"),
-                _combinedValue(items, "themeTextSize"),
-                _combinedValue(items, "themeTextBold"),
-                _combinedValue(items, "themeTextItalic"),
-                _combinedValue(items, "themeTextUnderline")
+                _textTheme(items), _textOverrides(items)
             )
             if category_count > 1:
                 if self._text_group_box is None:

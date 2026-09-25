@@ -11,7 +11,9 @@ from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange
 
-from ....properties import PropertiesMixin
+from ....properties   import PropertiesMixin
+
+from ....presentation import LineTheme, LineOverride
 
 from ....scenes import withScene
 
@@ -120,6 +122,22 @@ class ItemPresentationLineMixin:
         key = self._resourceNormalKey()
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.style()
+
+    @checked
+    def lineTheme(self : Self, view : DiagramView | None = None) -> LineTheme:
+        color = self.themeLineColor(view)
+        width = self.themeLineWidth(view)
+        style = self.themeLineStyle(view)
+        if color is None or width is None or style is None:
+            raise ValueError("Line theme is incomplete")
+        return LineTheme(color = color, width = width, style = style)
+
+    def lineOverride(self : Self) -> LineOverride:
+        return LineOverride(
+            color = self.lineColor(),
+            width = self.lineWidth(),
+            style = self.lineStyle()
+        )
 
     @checked
     def setLineStyle(
