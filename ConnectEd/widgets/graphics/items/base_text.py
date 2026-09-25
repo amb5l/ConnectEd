@@ -429,8 +429,8 @@ class BaseTextItem(
             pd = parent.mapFromScene(d) - parent.mapFromScene(zero)
         ld = self.mapFromScene(d) - self.mapFromScene(zero)
         origin_name = self.origin().value
-        name = id.value
-        if name == RectHandleId.MIDDLE_CENTER.value:
+        handle_name = id.value
+        if handle_name == RectHandleId.MIDDLE_CENTER.value:
             self.moveBy(pd.x(), pd.y())
             return
 
@@ -446,14 +446,14 @@ class BaseTextItem(
             elif center in origin_name:
                 move(delta / 2)
 
-        if "Left" in name or "Right" in name:
-            sign = -1.0 if "Left" in name else 1.0
+        if "Left" in handle_name or "Right" in handle_name:
+            sign = -1.0 if "Left" in handle_name else 1.0
             _nudge(
                 "Left" if sign < 0 else "Right", "Center", pd.x(), self.moveByX
             )
             self.resizeX(sign * ld.x())
-        if "Top" in name or "Bottom" in name:
-            sign = -1.0 if "Top" in name else 1.0
+        if "Top" in handle_name or "Bottom" in handle_name:
+            sign = -1.0 if "Top" in handle_name else 1.0
             _nudge(
                 "Top" if sign < 0 else "Bottom", "Middle", pd.y(), self.moveByY
             )
