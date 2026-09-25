@@ -249,6 +249,7 @@ class DiagramViewStateEditDiagramProperties(DiagramViewState):
             self.scene.editProperties(dialog.getEdits(), undoable=True)
         self.view.state.go(self.view.stateIdle)
 
+
 class DiagramViewStateEditQuery(DiagramViewState):
     STATUS = "Query: pick an item"
 
