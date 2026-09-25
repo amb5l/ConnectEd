@@ -97,9 +97,10 @@ class DiagramViewStateEditPaste(ClickMixin, DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         self.view.state.interact(EditPasteInteraction(
             self.view, self.view._snap(spos)
         ))
@@ -176,11 +177,9 @@ class DiagramViewStateEditAppearance(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        items = self._requireItemOrItemsElseNoSpos(
-            items, self.view._selectedItems(), spos
-        )
+        items = items if items else self.view._selectedItems()
         dialog_items : list[ItemPresentationMixin] = [
             item for item in items
             if isinstance(item, ItemPresentationMixin)
@@ -215,11 +214,9 @@ class DiagramViewStateEditItemProperties(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        items = self._requireItemOrItemsElseNoSpos(
-            items, self.view._selectedItems(), spos
-        )
+        items = items if items else self.view._selectedItems()
         dialog_items : list[PropertiesMixin] = [
             item for item in items
             if isinstance(item, PropertiesMixin)
@@ -241,9 +238,10 @@ class DiagramViewStateEditDiagramProperties(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        self._requireNoItemsNoSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         dialog = PropertiesDialog(self.scene, self.view)
         if dialog.exec():
             self.scene.editProperties(dialog.getEdits(), undoable=True)
@@ -270,11 +268,9 @@ class DiagramViewStateEditText(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        items = self._requireItemOrItemsElseNoSpos(
-            items, self.view._selectedItems(), spos
-        )
+        items = items if items else self.view._selectedItems()
         dialog_items = [item for item in items if isinstance(item, TextItem)]
         if len(dialog_items) == 1:
             dialog_item = dialog_items[0]
@@ -314,9 +310,11 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        if isinstance(item := self._requireOneItemNoSpos(items, spos), PropertyTextItem):
+        if len(items) != 1:
+            raise ValueError("Expected one item")
+        if isinstance(item := items[0], PropertyTextItem):
             dialog = PropertyTextItemDialog(item, self.view)
             if dialog.exec():
                 self.scene.editProperties(dialog.getEdits(), undoable=True)
@@ -332,9 +330,11 @@ class DiagramViewStateEditPort(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        if isinstance(item := self._requireOneItemNoSpos(items, spos), PortItem):
+        if len(items) != 1:
+            raise ValueError("Expected one item")
+        if isinstance(item := items[0], PortItem):
             dialog = PortPinItemDialog("Port", item, self.view)
             if dialog.exec():
                 name = dialog.getName()
@@ -352,9 +352,11 @@ class DiagramViewStateEditBlockPin(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        if isinstance(item := self._requireOneItemNoSpos(items, spos), BlockPinItem):
+        if len(items) != 1:
+            raise ValueError("Expected one item")
+        if isinstance(item := items[0], BlockPinItem):
             dialog = PortPinItemDialog("Block Pin", item, self.view)
             if dialog.exec():
                 name = dialog.getName()

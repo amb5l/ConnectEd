@@ -34,9 +34,9 @@ class DiagramViewStateIdle(DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
-        items : QGraphicsItem | Sequence[QGraphicsItem] | None = None,
-        spos  : QPointF | None = None
+        self  : Self,
+        items : Sequence[QGraphicsItem],
+        spos  : QPointF
     ) -> None:
         self.view.interaction = None
 

@@ -45,7 +45,7 @@ class DiagramViewState:
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
         """Override when the state needs setup beyond go()'s interaction install."""
         pass
@@ -55,8 +55,7 @@ class DiagramViewState:
         self        : Self,
         state       : DiagramViewState,
         items       : QGraphicsItem | Sequence[QGraphicsItem] | None = None,
-        interaction : DiagramInteraction | None = None,
-        spos        : QPointF | None = None
+        interaction : DiagramInteraction | None = None
     ) -> None:
         if items is None:
             items = []
@@ -73,7 +72,7 @@ class DiagramViewState:
             "{Diagram}", self.scene.__class__.__name__.replace("Scene", "")
         )
         window().statusBar().status.setText(state.STATUS)
-        state.entry(items, spos or self.view._mouse_spos)
+        state.entry(items, self.view._mouse_spos)
 
     @checked
     def interact(
@@ -215,52 +214,3 @@ class DiagramViewState:
             self.view.interaction.complete(self.view._snap(s))
             return True
         return False
-
-    def _requireNoItemsNoSpos(
-        self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
-    ) -> None:
-        del spos  # dialogs do not use the position go() always supplies
-        if len(items) > 0:
-            raise ValueError("Expected no items")
-
-    def _requireNoItemsSpos(
-        self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
-    ) -> QPointF:
-        if len(items) > 0:
-            raise ValueError("Expected no items")
-        if spos is None:
-            raise ValueError("Expected spos")
-        return spos
-
-    def _requireOneItem(
-        self : Self, items : Sequence[QGraphicsItem]
-    ) -> QGraphicsItem:
-        if len(items) != 1:
-            raise ValueError("Expected one item")
-        return items[0]
-
-    def _requireOneItemNoSpos(
-        self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
-    ) -> QGraphicsItem:
-        del spos  # dialogs do not use the position go() always supplies
-        if len(items) != 1:
-            raise ValueError("Expected one item")
-        return items[0]
-
-    def _requireOneItemSpos(
-        self : Self, items : Sequence[QGraphicsItem], spos : QPointF | None
-    ) -> tuple[QGraphicsItem, QPointF]:
-        if len(items) != 1:
-            raise ValueError("Expected one item")
-        if spos is None:
-            raise ValueError("Expected spos")
-        return (items[0], spos)
-
-    def _requireItemOrItemsElseNoSpos(
-        self       : Self,
-        items      : Sequence[QGraphicsItem],
-        else_items : Sequence[QGraphicsItem],
-        spos       : QPointF | None
-    ) -> list[QGraphicsItem]:
-        del spos  # dialogs do not use the position go() always supplies
-        return list(else_items) if len(items) == 0 else list(items)

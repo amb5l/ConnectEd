@@ -169,11 +169,12 @@ class DiagramViewStatePlaceText(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         item = TextItem(pos=self.view._snap(spos))
         dialog = TextItemDialog(item, self.view)
         if dialog.exec():
@@ -190,11 +191,12 @@ class DiagramViewStatePlacePort(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         item = PortItem()
         item.setPos(self.view._snap(spos))
         dialog = PortPinItemDialog("Port", item, self.view)
@@ -218,9 +220,10 @@ class DiagramViewStatePlaceGate(ClickMixin, DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         dialog = GateItemDialog(self.view)
         if dialog.exec():
             match dialog.getFunction():
@@ -272,9 +275,11 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
     def entry(
         self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        block, spos = self._requireOneItemSpos(items, spos)
+        if len(items) != 1:
+            raise ValueError("Expected one item")
+        block = items[0]
         if isinstance(block, BlockItem):
             pin = BlockPinItem() # don't parent to block yet
             dialog = PortPinItemDialog("Block Pin", pin, self.view)
@@ -317,11 +322,12 @@ class DiagramViewStatePlaceSymbolPin(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         pin = SymbolPinItem()
         pin.setPos(self.view._snap(spos))
         dialog = PortPinItemDialog("Pin", pin, self.view)
@@ -413,11 +419,12 @@ class DiagramViewStatePlaceTap(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         self._interact(spos)
 
     def mouseLeftClick(
@@ -440,11 +447,12 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        spos = self._requireNoItemsSpos(items, spos)
+        if len(items) > 0:
+            raise ValueError("Expected no items")
         item = NetLabelItem(name="Name", pos=self.view._snap(spos))
         dialog = NetLabelItemDialog(item, self.view)
         if dialog.exec():
@@ -461,13 +469,14 @@ class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DiagramViewState):
 
     @checked
     def entry(
-        self : Self,
+        self  : Self,
         items : Sequence[QGraphicsItem],
-        spos  : QPointF | None = None
+        spos  : QPointF
     ) -> None:
-        if isinstance(segment := self._requireOneItem(items), SegmentItem):
-            snap   = segment.sceneMidpoint() if spos is None \
-                     else self.view._snap(spos)
+        if len(items) != 1:
+            raise ValueError("Expected one item")
+        if isinstance(segment := items[0], SegmentItem):
+            snap = self.view._snap(spos)
             item   = NetLabelItem(name="Name")
             dialog = NetLabelItemDialog(item, self.view)
             if not dialog.exec():
