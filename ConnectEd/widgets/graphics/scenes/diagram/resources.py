@@ -52,7 +52,7 @@ class DiagramSceneResources:
         self.update()
         settings().changed.connect(self.update)
 
-    def update(self : Self):
+    def update(self : Self) -> None:
         """Typically called after a settings change."""
         # pens
         for item_name in self._PEN_ITEMS:
@@ -121,26 +121,28 @@ class DiagramSceneResources:
             hotspot = hotspot.united(rotated)
         self._paths["Grip"][GripShape.HOTSPOT] = hotspot
         # symbol body
-        self._pens["Symbol"] = {}
+        symbol_pens : PenTable = {}
+        self._pens["Symbol"] = symbol_pens
         pen_normal, pen_selected = self._getPens(
             "Symbol", "theme/items/SymbolBody/line"
         )
         pen_none = QPen(pen_normal)
         pen_none.setStyle(Qt.PenStyle.NoPen)
-        self._pens["Symbol"][(False, False)] = pen_none
-        self._pens["Symbol"][(False, True)] = pen_selected
-        self._pens["Symbol"][(True, False)] = pen_normal
-        self._pens["Symbol"][(True, True)] = pen_selected
-        self._brushes["Symbol"] = {}
+        symbol_pens[(False, False)] = pen_none
+        symbol_pens[(False, True)]  = pen_selected
+        symbol_pens[(True, False)]  = pen_normal
+        symbol_pens[(True, True)]   = pen_selected
+        symbol_brushes : BrushTable = {}
+        self._brushes["Symbol"] = symbol_brushes
         brush_normal, brush_selected = self._getBrushes(
             "Symbol", "theme/items/SymbolBody/fill"
         )
         brush_none = QBrush(brush_normal)
         brush_none.setStyle(Qt.BrushStyle.NoBrush)
-        self._brushes["Symbol"][(False, False)] = brush_none
-        self._brushes["Symbol"][(False, True)] = brush_selected
-        self._brushes["Symbol"][(True, False)] = brush_normal
-        self._brushes["Symbol"][(True, True)] = brush_selected
+        symbol_brushes[(False, False)] = brush_none
+        symbol_brushes[(False, True)]  = brush_selected
+        symbol_brushes[(True, False)]  = brush_normal
+        symbol_brushes[(True, True)]   = brush_selected
         # tether pen
         self._pens["Tether"] = self._getPen("theme/tether/line")
         # pin pens
@@ -234,19 +236,21 @@ class DiagramSceneResources:
             self._pens[item_name] = item_pens
             self._brushes[item_name] = item_brushes
         # GateRound
-        self._pens["GateRound"] = {}
-        self._brushes["GateRound"] = {}
+        round_pens    : PenTable   = {}
+        round_brushes : BrushTable = {}
+        self._pens["GateRound"] = round_pens
+        self._brushes["GateRound"] = round_brushes
         for selected in [False, True]:
             if not isinstance(gate_pens := self._pens["Gate"], dict):
                 raise TypeError("Bad gate pens")
             gate_pen = QPen(gate_pens[selected])
             gate_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             gate_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-            self._pens["GateRound"][selected] = gate_pen
+            round_pens[selected] = gate_pen
             if not isinstance(gate_brushes := self._brushes["Gate"], dict):
                 raise TypeError("Bad gate brushes")
             gate_brush = QBrush(gate_brushes[selected])
-            self._brushes["GateRound"][selected] = gate_brush
+            round_brushes[selected] = gate_brush
         # BufGatePinItem and OrGatePinItem
         for item_name in ["BufGatePin", "OrGatePin"]:
             self._pens[item_name] = {}
@@ -270,17 +274,19 @@ class DiagramSceneResources:
                 self._paths[item_name][key] = path
         # tap pen and line
         settings_path = "theme/items/Tap"
-        self._pens["Tap"] = {}
+        tap_pens : PenTable = {}
+        self._pens["Tap"] = tap_pens
         for kind in NetKind:
             pen_normal, pen_selected = self._getPens(
                 "Tap",
                 f"{settings_path}/line/{kind.value}",
             )
-            self._pens["Tap"][(kind, False)] = pen_normal
-            self._pens["Tap"][(kind, True)]  = pen_selected
+            tap_pens[(kind, False)] = pen_normal
+            tap_pens[(kind, True)]  = pen_selected
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
         # Segment
-        self._pens["Segment"] = {}
+        segment_pens : PenTable = {}
+        self._pens["Segment"] = segment_pens
         for kind in NetKind:
             settings_path = f"theme/items/Segment/line/{kind.value}"
             pen_normal, pen_selected = self._getPens(
@@ -288,8 +294,8 @@ class DiagramSceneResources:
                 settings_path,
                 cap_style=Qt.PenCapStyle.RoundCap,
             )
-            self._pens["Segment"][(kind, False)] = pen_normal
-            self._pens["Segment"][(kind, True)]  = pen_selected
+            segment_pens[(kind, False)] = pen_normal
+            segment_pens[(kind, True)]  = pen_selected
         # SegmentPreview1 and SegmentPreview2
         self._pens["SegmentPreview1"] = self._getPen(
             "theme/items/SegmentPreview1/line", Qt.PenCapStyle.RoundCap
