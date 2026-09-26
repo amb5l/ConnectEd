@@ -900,9 +900,9 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         parent = self.parentItem()
         if isinstance(parent, BaseTextItem) and parent.isSelected():
             if self._clip_rect is not None:
-                self.paint = self._paint_selected_clipped
+                self.__dict__["paint"] = self._paint_selected_clipped
             else:
-                self.paint = self._paint_selected
+                self.__dict__["paint"] = self._paint_selected
         else:
             if "paint" in self.__dict__:
                 self.__dict__.pop("paint")
@@ -1032,7 +1032,7 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     def _paint_override(self : Self) -> None:
         parent = self.parentItem()
         if parent is not None and parent.isSelected():
-            self.paint = self._paint_selected
+            self.__dict__["paint"] = self._paint_selected
         else:
             if "paint" in self.__dict__:
                 self.__dict__.pop("paint")
