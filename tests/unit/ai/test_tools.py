@@ -63,46 +63,6 @@ def test_get_diagram_sheet_missing_view() -> None:
     assert result == {"ok": False, "error": "view is required"}
 
 
-import pytest
-
-
-@pytest.mark.skip(reason="set_sheet tool not implemented")
-def test_set_sheet_updates_dimensions(monkeypatch) -> None:
-    scene = MagicMock()
-    scene.getSheetWidth.return_value = 400.0
-    scene.getSheetHeight.return_value = 300.0
-
-    monkeypatch.setattr(
-        "ConnectEd.ai.tools.get._drawingSceneFromViewRef",
-        lambda registry, view: (scene, None),
-    )
-
-    result = json.loads(set_sheet(
-        MagicMock(),
-        RefRegistry(),
-        {"view": "view:1", "width": 400.0, "height": 300.0},
-    ))
-    scene.setSheetWidth.assert_called_once_with(400.0)
-    scene.setSheetHeight.assert_called_once_with(300.0)
-    assert result == {"ok": True, "width": 400.0, "height": 300.0}
-
-
-@pytest.mark.skip(reason="set_sheet tool not implemented")
-def test_set_sheet_rejects_non_positive_size(monkeypatch) -> None:
-    scene = MagicMock()
-    monkeypatch.setattr(
-        "ConnectEd.ai.tools.get._drawingSceneFromViewRef",
-        lambda registry, view: (scene, None),
-    )
-    result = json.loads(set_sheet(
-        MagicMock(),
-        RefRegistry(),
-        {"view": "view:1", "width": 0.0, "height": 100.0},
-    ))
-    assert result["ok"] is False
-    scene.setSheetWidth.assert_not_called()
-
-
 def test_get_items_returns_ref_only(monkeypatch) -> None:
     item = MagicMock()
     item.parentItem.return_value = None

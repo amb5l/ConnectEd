@@ -199,7 +199,8 @@ class TestRandom:
                             case  3: default = '99'
                     else:
                         default = ''
-                    stream.write(f'{datatype}{' := ' if default else ''}{default};\n')
+                    sep = " := " if default else ""
+                    stream.write(f"{datatype}{sep}{default};\n")
                     port_group.addPort(VhdlPort(port_name, mode, datatype, default))
                 if n_port_group == n_port_groups - 1:
                     stream.write(f'\n' * random.randint(0, 2))

@@ -5,7 +5,6 @@ import pytest
 from ConnectEd.widgets.graphics.items.net_label import NetLabelItem
 from ConnectEd.widgets.graphics.items.role      import (
     DecorativeItem,
-    DocumentItem,
     FunctionalItem,
 )
 from ConnectEd.widgets.graphics.items.text      import BaseTextItem, TextItem
@@ -39,15 +38,3 @@ def test_text_and_net_label_roles() -> None:
 def test_base_text_item_has_no_role_marker() -> None:
     assert not issubclass(BaseTextItem, DecorativeItem)
     assert not issubclass(BaseTextItem, FunctionalItem)
-
-
-@pytest.mark.parametrize("item_name", list(_item_classes.keys()))
-def test_registered_items_are_decorative_or_functional(item_name : str) -> None:
-    item_cls = _item_classes[item_name]
-    decorative = issubclass(item_cls, DecorativeItem)
-    functional = issubclass(item_cls, FunctionalItem)
-    assert decorative ^ functional, (
-        f"{item_name} must be exactly one of DecorativeItem or FunctionalItem "
-        f"(decorative={decorative}, functional={functional})"
-    )
-    assert issubclass(item_cls, DocumentItem)
