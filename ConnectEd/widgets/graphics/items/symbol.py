@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QGraphicsRectItem
 from ....core.check      import checked
 from ....core.types      import RectHandleId, DataKind
 
-from ..properties        import PropertySpec, PropertiesMixin
+from ..properties        import PropertySpec, PropertiesMixin, propertySpecs
 
 from .part               import PartItemMixin
 from .role               import DecorativeItem, FunctionalItem
@@ -170,9 +170,9 @@ class SymbolDefinitionItem(SymbolBaseItem):
 class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     # class attributes
     _PROPERTIES = \
-        SymbolBaseItem._PROPERTIES | \
-        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
-        ItemTransformMixin._PROPERTIES_NO_ORIGIN
+        propertySpecs(SymbolBaseItem._PROPERTIES) | \
+        propertySpecs(ItemTransformMixin._PROPERTIES_RECT_ORIGIN) | \
+        propertySpecs(ItemTransformMixin._PROPERTIES_NO_ORIGIN)
     _XML_CHILDREN = frozenset({"PropertyText"})
 
     # instance attributes

@@ -11,7 +11,7 @@ from ....core.check   import checked
 from ....core.types   import AlignH, AlignV, HandleId, RectHandleId, DataKind
 from ....core.utils   import val2str
 
-from ..properties     import PropertySpec
+from ..properties     import PropertySpec, propertySpecs
 
 from .role            import FunctionalItem
 from .text            import BaseTextItem
@@ -42,7 +42,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
             setter = lambda self, value: self.setValue(value)
         )
     }
-    _PROPERTIES_ALIGN = {
+    _PROPERTIES_LABEL_ALIGN = {
         "AlignH" : PropertySpec["NetLabelItem"](
             kind   = DataKind.ALIGN_H,
             worthy = lambda self: self.alignH() != AlignH.LEFT,
@@ -57,7 +57,7 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
             setter  = lambda self, value: self.setAlignV(value)
         )
     }
-    _PROPERTIES_SIZE = {
+    _PROPERTIES_LABEL_SIZE = {
         "Width" : PropertySpec["NetLabelItem"](
             kind   = DataKind.SIZE,
             worthy = lambda self: self.width() >= 0.0,
@@ -73,15 +73,15 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         )
     }
     _PROPERTIES = \
-        _PROPERTIES_NAME_VALUE               | \
-        BaseTextItem._PROPERTIES_POS         | \
-        BaseTextItem._PROPERTIES_ROTATE      | \
-        BaseTextItem._PROPERTIES_MIRROR      | \
-        BaseTextItem._PROPERTIES_RECT_ORIGIN | \
-        _PROPERTIES_ALIGN                    | \
-        _PROPERTIES_SIZE                     | \
-        BaseTextItem._PROPERTIES_PADDING     | \
-        BaseTextItem._PROPERTIES_TYPOGRAPHY
+        propertySpecs(_PROPERTIES_NAME_VALUE)               | \
+        propertySpecs(BaseTextItem._PROPERTIES_POS)         | \
+        propertySpecs(BaseTextItem._PROPERTIES_ROTATE)      | \
+        propertySpecs(BaseTextItem._PROPERTIES_MIRROR)      | \
+        propertySpecs(BaseTextItem._PROPERTIES_RECT_ORIGIN) | \
+        propertySpecs(_PROPERTIES_LABEL_ALIGN)              | \
+        propertySpecs(_PROPERTIES_LABEL_SIZE)               | \
+        propertySpecs(BaseTextItem._PROPERTIES_PADDING)     | \
+        propertySpecs(BaseTextItem._PROPERTIES_TYPOGRAPHY)
 
     # instance attributes
     _name  : str

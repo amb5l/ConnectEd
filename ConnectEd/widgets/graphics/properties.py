@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from typing          import Self, Any, TypeVar, Generic
+from typing          import Self, Any, TypeVar, Generic, cast
 from collections.abc import Callable, Sequence
 from dataclasses     import dataclass, field, fields
 
@@ -220,6 +220,11 @@ class PropertySpec(Generic[T]):
     tip     : str                                | None = None
 
 
+def propertySpecs(specs : object) -> dict[str, PropertySpec[Any]]:
+    """Drop the owner type so tables from different classes can merge."""
+    return cast(dict[str, PropertySpec[Any]], specs)
+
+
 @dataclass
 class PropertyState:
     """Used to capture property states in editor dialogs."""
@@ -355,12 +360,12 @@ class PropertiesMixin:
         for name, spec in self._PROPERTIES.items():
             self.properties[name] = Property.fromSpec(self, spec)
         if live and hasattr(self, "_PROPERTY_TEXTS"):
-            for name, spec in self._PROPERTY_TEXTS.items():
+            for name, text_spec in self._PROPERTY_TEXTS.items():
                 if name not in self.properties:
                     logger().error(f"Property {name} does not exist")
                     continue
                 text = self.propertyTextAdd(self.properties[name])
-                text.apply(spec)
+                text.apply(text_spec)
 
     def propertiesLive(self : Self) -> bool:
         return self._live
