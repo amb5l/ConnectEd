@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
     from ..                 import DiagramView
-    from .                  import DiagramInteraction
 
 
 class DiagramInteraction:
