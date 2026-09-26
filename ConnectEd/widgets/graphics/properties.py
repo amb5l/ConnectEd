@@ -211,13 +211,13 @@ T = TypeVar("T")
 class PropertySpec(Generic[T]):
     """Used to create a property in owner definitions."""
 
-    kind    : DataKind                           | Callable[[T], DataKind]
-    value   : Any                                | None = None
-    getter  : Callable[[T], Any]                 | None = None
-    setter  : Callable[[T, Any], None]           | None = None
-    default : Callable[[T], Any]                 | None = None
-    worthy  : Callable[[T], bool]                | None = None
-    tip     : str                                | None = None
+    kind    : DataKind                             | Callable[[Any], DataKind]
+    value   : Any                                  | None = None
+    getter  : Callable[[Any], Any]                 | None = None
+    setter  : Callable[[Any, Any], None]           | None = None
+    default : Callable[[Any], Any]                 | None = None
+    worthy  : Callable[[Any], bool]                | None = None
+    tip     : str                                  | None = None
 
 
 def propertySpecs(specs : object) -> dict[str, PropertySpec[Any]]:
