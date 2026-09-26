@@ -75,18 +75,20 @@ class NodeItem(
     def degree(self : Self) -> int:
         from ..scenes.diagram import DiagramScene
         scene = self.scene()
-        if scene is None or not isinstance(scene, DiagramScene):
+        if not isinstance(scene, DiagramScene):
             return 0
-        return 0 if not scene.netlist.hasNode(self) \
-            else scene.netlist.nodeDegree(self)
+        if not scene.netlist.hasNode(self):
+            return 0
+        return scene.netlist.nodeDegree(self)
 
     def segments(self : Self) -> list[SegmentItem]:
         from ..scenes.diagram import DiagramScene
         scene = self.scene()
-        if scene is None or not isinstance(scene, DiagramScene):
+        if not isinstance(scene, DiagramScene):
             return []
-        return [] if not scene.netlist.hasNode(self) \
-            else scene.netlist.nodeSegments(self)
+        if not scene.netlist.hasNode(self):
+            return []
+        return scene.netlist.nodeSegments(self)
 
     @checked
     def toXml(

@@ -414,8 +414,9 @@ class DiagramPlaceConnInteraction(DiagramInteraction):
 
     def _cleanup(self : Self) -> None:
         for item in [self._seg1, self._seg2]:
-            if item.scene() is not None:
-                item.scene().removeItem(item)
+            scene = item.scene()
+            if scene is not None:
+                scene.removeItem(item)
 
 
 class DiagramPlaceTapInteraction(DiagramPlaceBase1PosInteraction):
