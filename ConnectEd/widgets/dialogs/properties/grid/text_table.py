@@ -14,7 +14,7 @@ from ....graphics.items.property_text import PropertyTextPending, PropertyTextEd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....graphics.items.property_text import PropertyTextItem
+    pass
 
 
 _COLUMNS = [

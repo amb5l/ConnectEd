@@ -6,7 +6,6 @@ from PyQt6.QtGui  import QStandardItem, QStandardItemModel
 
 from pyTooling.Decorators import export
 
-from .vhdl                import VhdlDocument
 
 T = TypeVar("T")
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing          import Self
 from collections.abc import Sequence
-from math            import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QGraphicsItem

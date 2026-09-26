@@ -17,7 +17,7 @@ from ...resources             import getIconPath
 from ...core.args             import known_args
 from ...core.check            import checked
 from ...core.defs             import APP_NAME
-from ...ai.lock               import AiEditLock
+from ...ai.lock               import AiEditLock as AiEditLock
 
 from ..splash                 import progress
 
@@ -32,7 +32,7 @@ from .text_view               import TextView
 from .messages_view           import MessagesViewDock
 from .transcript_view         import TranscriptViewDock
 from .log_view                import LogViewDock
-from .ai                      import AiChatDock, AiChatManager, AiManager
+from .ai                      import AiChatDock as AiChatDock, AiChatManager, AiManager
 
 
 class Window(QMainWindow):

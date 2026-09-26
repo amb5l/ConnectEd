@@ -4,9 +4,6 @@ from PyQt6.QtCore import QPointF, QSizeF
 
 from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 
-from ConnectEd.core.db import DesignDbNode, DiagramNode
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
-from ConnectEd.widgets.graphics.items import DEFAULT
 
 
 def test(app : cs.ConnectEdApp):

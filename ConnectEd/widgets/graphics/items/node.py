@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Self
 from enum   import StrEnum
-from math   import atan2, degrees
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
@@ -14,7 +13,6 @@ from ....core.utils      import val2str
 
 from ..scenes            import withScene
 
-from .net_label          import NetLabelItem
 from .mixin              import ItemMixin
 
 from .mixin.settings     import ItemSettingsMixin

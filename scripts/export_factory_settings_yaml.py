@@ -6,7 +6,6 @@ Run from repo root:
 """
 from __future__ import annotations
 
-import os
 import sys
 import yaml
 
@@ -14,7 +13,6 @@ from typing      import Any
 from dataclasses import fields
 from pathlib     import Path
 
-from PyQt6.QtCore import Qt, QPointF, QSizeF
 from PyQt6.QtGui  import QColor
 
 ROOT = Path(__file__).resolve().parents[1]

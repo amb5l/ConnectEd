@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import Self
 
 from PyQt6.QtCore    import QRectF
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, \
-                            QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QWidget, QVBoxLayout, QLabel
 from PyQt6.QtGui     import QPainter
 
 from ...app                           import settings

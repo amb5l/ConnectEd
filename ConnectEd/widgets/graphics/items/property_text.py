@@ -14,7 +14,6 @@ from ....core.types    import NoChange, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
 from ....core.utils    import val2str
 
-from ...graphics.quill import Quill
 
 from ..properties      import Property, PropertiesMixin, PropertySpec
 
@@ -29,7 +28,6 @@ from .mixin.handle     import ItemHandlesMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.diagram  import DiagramView
-    from ..scenes.diagram import DiagramScene
 
 
 class PropertyTextTetherItem(TextTetherItem):

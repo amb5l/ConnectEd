@@ -1,7 +1,7 @@
 from typing import Self, Any, TypeAlias
 
 from PyQt6.QtCore import Qt, QPointF, QLineF, QRectF
-from PyQt6.QtGui  import QPolygonF, QTransform, QPainterPath, QColor, QPen, QBrush
+from PyQt6.QtGui  import QPolygonF, QTransform, QPainterPath, QPen, QBrush
 
 from .....app        import settings
 

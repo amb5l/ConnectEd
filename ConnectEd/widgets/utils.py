@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from ..core.check                            import checked
 from ..core.types                            import (
     DataKind, AlignH, AlignV, Edge, Direction,
     RectHandleId, LineHandleId, PortHandleId,

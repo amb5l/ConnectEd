@@ -3,7 +3,6 @@
 Test Runner for ConnectEd Tests
 """
 
-import unittest
 import sys
 import os
 

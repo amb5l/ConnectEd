@@ -1,3 +1,3 @@
-from .hdl_model import HdlCollection
-from .vhdl      import VhdlDocument
+from .hdl_model import HdlCollection as HdlCollection
+from .vhdl      import VhdlDocument as VhdlDocument
 

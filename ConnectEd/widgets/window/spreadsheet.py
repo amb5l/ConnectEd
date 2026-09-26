@@ -26,7 +26,6 @@ from .sub_window   import DocSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..graphics.items.mixin   import ItemMixin
     from ..graphics.views.diagram import DiagramScene
 
 

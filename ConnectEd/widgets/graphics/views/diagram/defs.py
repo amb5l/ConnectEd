@@ -1,7 +1,7 @@
 from typing import Self
-from enum   import Enum, auto
+from enum   import Enum
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF
+from PyQt6.QtCore    import QPointF
 
 from .....app        import settings
 
