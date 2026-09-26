@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self, overload
 
@@ -7,15 +7,15 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.defs  import PITCH
-from ....core.types import RectHandleId, DataKind
+from ....core.check   import checked
+from ....core.defs    import PITCH
+from ....core.types   import RectHandleId, DataKind
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties     import PropertySpec, PropertiesMixin
 
-from .mixin.transform  import ItemTransformMixin
-from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ class BaseRectangleMixin(
     def __init__(
         self  : Self,
         pos   : QPointF | None = None,
-        size  : QSizeF | None = None,
+        size  : QSizeF  | None = None,
         fresh : bool = True
     ) -> None:
         ...
@@ -74,7 +74,7 @@ class BaseRectangleMixin(
     @checked
     def __init__(  # pyright: ignore[reportInconsistentOverload]
         self       : Self,
-        p1_or_pos  : QPointF | None = None,
+        p1_or_pos  : QPointF          | None = None,
         p2_or_size : QPointF | QSizeF | None = None,
         fresh      : bool = True
     ) -> None:
@@ -103,19 +103,19 @@ class BaseRectangleMixin(
     @overload
     def setRect(
         self : Self,
-        ax : float | int,
-        ay : float | int,
-        w  : float | int,
-        h  : float | int
+        ax   : float | int,
+        ay   : float | int,
+        w    : float | int,
+        h    : float | int
     ) -> None:
         ...
 
     def setRect(  # pyright: ignore[reportInconsistentOverload]
-        self : Self,
+        self       : Self,
         rect_or_ax : QRectF | float | int,
-        ay         : float | int | None = None,
-        w          : float | int | None = None,
-        h          : float | int | None = None
+        ay         : float  | int   | None = None,
+        w          : float  | int   | None = None,
+        h          : float  | int   | None = None
     ) -> None:
         if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
             raise TypeError("Bad host")
@@ -191,11 +191,11 @@ class BaseRectangleMixin(
 
     @checked
     def setPoints(  # pyright: ignore[reportInconsistentOverload]
-        self : Self,
+        self  : Self,
         p1_x1 : QPointF | float | int,
         p2_y1 : QPointF | float | int,
-        x2    : float | int | None = None,
-        y2    : float | int | None = None
+        x2    : float   | int   | None = None,
+        y2    : float   | int   | None = None
     ) -> None:
         if not isinstance(self, QGraphicsRectItem | QGraphicsEllipseItem):
             raise TypeError("Bad host")

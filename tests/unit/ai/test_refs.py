@@ -1,7 +1,6 @@
 """Unit tests for AI ref registry."""
 
 import json
-
 import pytest
 
 from ConnectEd.ai.refs import RefRegistry, refKind, toolError, toolOk

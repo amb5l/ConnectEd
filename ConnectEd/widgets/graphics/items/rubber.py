@@ -13,10 +13,10 @@ from PyQt6.QtGui     import QPainterPath
 from ....core.check import checked
 from ....core.types import Axis, Polarity
 
-from .segment import SegmentItem
-from .node    import NodeItem
-from .role    import ChromeItem
-from .mixin   import ItemNamesMixin
+from .segment       import SegmentItem
+from .node          import NodeItem
+from .role          import ChromeItem
+from .mixin         import ItemNamesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -253,7 +253,7 @@ class RubberJogItem(ChromeItem, RubberItem):
         self              : Self,
         segment_or_static : SegmentItem | NodeItem,
         mobile            : NodeItem,
-        axis              : Axis | None = None
+        axis              : Axis        | None = None
     ) -> None:
         """
         Rubber jog (step) item between a static and mobile node.

@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.utils import qtItemClass
 
-from ..protocols import (
+from ..protocols     import (
     OnSceneChangedProtocol,
     OnParentChangedProtocol,
     OnScenePositionChangedProtocol,

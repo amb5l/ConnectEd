@@ -1,12 +1,12 @@
-from enum   import Enum
 from typing import Optional, Iterable, Self
+from enum   import Enum
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QStandardItem, QStandardItemModel
 
 from pyTooling.Decorators import export
 
-from .vhdl import VhdlDocument
+from .vhdl                import VhdlDocument
 
 
 @export
@@ -348,10 +348,10 @@ class HdlGate(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     _pins       : HdlPinContainer
 
     def __init__(
-        self       : Self,
-        name       : str,
-        notes      : str = "",
-        pins       : Iterable[HdlPin] = []
+        self  : Self,
+        name  : str,
+        notes : str = "",
+        pins  : Iterable[HdlPin] = []
     ):
         super().__init__()
         self.name = name

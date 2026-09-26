@@ -18,7 +18,7 @@ class CustomSpinBox(QSpinBox):
     @checked
     def __init__(
         self   : Self,
-        value  : int | None = None,
+        value  : int     | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

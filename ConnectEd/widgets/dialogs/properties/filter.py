@@ -4,9 +4,9 @@ from typing import Self
 
 from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout
 
-from ...graphics.properties import PropertiesMixin
+from ...graphics.properties        import PropertiesMixin
 
-from ..components.check_list import CheckList
+from ..components.check_list       import CheckList
 
 from ..components.layout.ok_cancel import OkCancelLayout
 

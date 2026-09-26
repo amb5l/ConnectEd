@@ -2,7 +2,7 @@ from PyQt6.QtCore import QSize
 
 from ...core.icon import SvgIconSingleton
 
-from .. import getIconPath
+from ..           import getIconPath
 
 
 class SvgIcon16x16(SvgIconSingleton):

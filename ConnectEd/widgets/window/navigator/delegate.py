@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QStyledItemDelegate, QWidget, QLineEdit
 
 from ....core.doc import DocBinding
 
-from .types import NavItem, NavModel
+from .types       import NavItem, NavModel
 
 
 class NavItemDelegate(QStyledItemDelegate):
@@ -13,7 +13,7 @@ class NavItemDelegate(QStyledItemDelegate):
 
     def setModelData(
         self   : Self,
-        editor : QWidget | None,
+        editor : QWidget            | None,
         model  : QAbstractItemModel | None,
         index  : QModelIndex,
     ) -> None:

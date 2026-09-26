@@ -2,14 +2,14 @@ from typing import Self
 
 from PyQt6.QtCore import Qt
 
-from ....core.check import checked
-from ....core.types import NoChange
+from ....core.check                   import checked
+from ....core.types                   import NoChange
 
-from ...graphics.items.net_label import NetLabelItem
+from ...graphics.items.net_label      import NetLabelItem
 
 from ..components.group_box.net_label import NetLabelItemGroupBox
 
-from .text import BaseTextItemDialog
+from .text                            import BaseTextItemDialog
 
 
 class NetLabelItemDialog(BaseTextItemDialog[NetLabelItem]):

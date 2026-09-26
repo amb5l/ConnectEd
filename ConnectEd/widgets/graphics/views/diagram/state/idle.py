@@ -4,29 +4,28 @@ from collections.abc import Sequence
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ......core.check import checked
+from ......core.check        import checked
 
 from ....items.grip          import GripItem, MoveGripItem, ResizeGripItem
 from ....items.polyline      import PolySegItem, PolylineItem
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
 from ....items.block         import BlockItem
-
 from ....items.mixin         import ItemMixin
 
-from ..mouse import MouseModifier
+from ..mouse                 import MouseModifier
 
-from ..interaction.edit import (
+from ..interaction.edit      import (
     EditAdjustPolySegInteraction,
     EditDuplicateInteraction
 )
-from ..interaction.move import (
+from ..interaction.move      import (
     MoveInteraction,
     MoveBlockPinsInteraction,
     MoveGripInteraction
 )
 
-from .base import DiagramViewState
+from .base                   import DiagramViewState
 
 
 class DiagramViewStateIdle(DiagramViewState):

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self
 from enum   import StrEnum
@@ -7,16 +7,16 @@ from math   import atan2, degrees
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
-from ....app import logger
+from ....app             import logger
 
-from ....core.check import checked
-from ....core.utils import val2str
+from ....core.check      import checked
+from ....core.utils      import val2str
 
-from ..scenes import withScene
+from ..scenes            import withScene
 
-from .net_label import NetLabelItem
-
+from .net_label          import NetLabelItem
 from .mixin              import ItemMixin
+
 from .mixin.settings     import ItemSettingsMixin
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
@@ -26,7 +26,7 @@ from .mixin.subscribe    import ItemSubscribeMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.diagram import DiagramScene
-    from .segment  import SegmentItem
+    from .segment         import SegmentItem
 
 
 SCENE_POS_CHANGE = "scenePos"

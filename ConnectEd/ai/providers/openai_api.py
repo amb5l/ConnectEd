@@ -16,7 +16,7 @@ class OpenAiProvider(OpenAiCompatibleProvider):
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",
-        **_kwargs : Any,
+       **_kwargs : Any,
     ) -> None:
         super().__init__(
             api_key  = api_key,

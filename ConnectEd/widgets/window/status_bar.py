@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from PyQt6.QtWidgets import QStatusBar, QLabel
-
 from typing import Self
+
+from PyQt6.QtWidgets import QStatusBar, QLabel
 
 from ...core.check import checked
 

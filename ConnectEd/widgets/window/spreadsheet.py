@@ -15,14 +15,14 @@ from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QStandardItemModel, QStandardItem, QFontMetrics, \
                             QShowEvent
 
-from ...app import logger, settings, window
+from ...app        import logger, settings, window
 
 from ...core.check import checked
 from ...core.icon  import getCharIcon
 
-from ..menu import Menu
+from ..menu        import Menu
 
-from .sub_window import DocSubWindow
+from .sub_window   import DocSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -90,9 +90,9 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
 
     def setModelData(
         self   : Self,
-        editor : QWidget | None,
+        editor : QWidget            | None,
         model  : QAbstractItemModel | None,
-        index : QModelIndex
+        index  : QModelIndex
     ):
         if not isinstance(editor, QComboBox):
             raise ValueError("Editor is not a QComboBox")
@@ -150,7 +150,7 @@ class SpreadsheetHeader(QHeaderView):
 
     @checked
     def __init__(
-            self : Self,
+            self        : Self,
             table       : SpreadsheetTable,
             orientation : Qt.Orientation,
             len         : int,
@@ -280,7 +280,7 @@ class SpreadsheetTable(QTableView):
             return
         modifiers = a0.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
-            widget : SpreadsheetWidget = self._parent
+            widget     : SpreadsheetWidget = self._parent
             tab_widget : SpreadsheetTabWidget = widget._parent
             delta = a0.angleDelta().y()
             if delta > 0:
@@ -333,10 +333,10 @@ class SpreadsheetWidget(QWidget):
 
     @checked
     def __init__(
-        self     : Self,
-        model    : QStandardItemModel,
-        proxy    : QTransposeProxyModel,
-        parent   : QWidget | None = None
+        self   : Self,
+        model  : QStandardItemModel,
+        proxy  : QTransposeProxyModel,
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         if not isinstance(parent, SpreadsheetTabWidget):

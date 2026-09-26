@@ -1,17 +1,17 @@
-﻿from typing import Self, cast, overload
+from typing import Self, cast, overload
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.types import DataKind, EdgeLoc, Edge
 from .....core.utils import qtItemClass
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties   import PropertySpec, PropertiesMixin
 
-from ..protocols import (
+from ..protocols     import (
     OnSceneChangedProtocol,
     OnSceneOrientationChangedProtocol
 )

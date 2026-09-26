@@ -2,11 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QButtonGroup
 
-from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE, RectHandleId
-
-from ..tool_button import ToolButton
-
+from .....core.check      import checked
+from .....core.types      import NoChange, NO_CHANGE, RectHandleId
 from .....resources.icons import AnchorTopLeftIcon,   \
                                  AnchorTopCenterIcon, \
                                  AnchorTopRightIcon,  \
@@ -16,6 +13,8 @@ from .....resources.icons import AnchorTopLeftIcon,   \
                                  AnchorBottomLeftIcon, \
                                  AnchorBottomCenterIcon, \
                                  AnchorBottomRightIcon
+
+from ..tool_button        import ToolButton
 
 
 class OriginLayout(QGridLayout):

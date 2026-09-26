@@ -7,22 +7,20 @@ from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem, QGraphicsItem
 from PyQt6.QtGui     import QAction, QPen
 
-from ....app import settings
+from ....app          import settings
 
-from ....core.check import checked
+from ....core.check   import checked
 
-from ..scenes import withScene
+from ..scenes         import withScene
 
-from .role import ChromeItem
-
-from .protocols import MoveHandleByProtocol
+from .role            import ChromeItem
+from .protocols       import MoveHandleByProtocol
 
 from .mixin.move      import ItemMoveMixin
 from .mixin.scene     import ItemSceneMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.change    import ItemChangeMixin
 from .mixin.menu      import ItemMenuMixin
-
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

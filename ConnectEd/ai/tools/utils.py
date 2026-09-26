@@ -3,16 +3,17 @@ from __future__ import annotations
 import json
 import sys
 
-from functools       import wraps
-from typing          import TYPE_CHECKING, Any, cast
-from collections.abc import Callable
+from typing          import Any, cast
 from types           import ModuleType
+from collections.abc import Callable
+from functools       import wraps
 
 from ...core.check import checked
 
-from ..types import ToolSpec, ToolEntry
-from ..refs  import RefRegistry
+from ..types       import ToolSpec, ToolEntry
+from ..refs        import RefRegistry
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.window import Window
 
@@ -147,10 +148,10 @@ def toolOk(**fields : Any) -> str:
 
 @checked
 def callTool(
-    name       : str,
-    window     : Window,
-    registry   : RefRegistry,
-    arguments  : dict[str, Any],
+    name      : str,
+    window    : Window,
+    registry  : RefRegistry,
+    arguments : dict[str, Any],
 ) -> str:
     from . import _TOOLS
     for entry in _TOOLS:

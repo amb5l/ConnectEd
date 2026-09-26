@@ -2,17 +2,18 @@
 
 import builtins
 import json
-from types import UnionType
+
+from types         import UnionType
 from unittest.mock import MagicMock
 
 from PyQt6.QtCore import QPointF, QRectF
 
-from ConnectEd.ai.refs import RefRegistry
-from ConnectEd.ai.tools.get import get_items, get_sheet
-from ConnectEd.widgets.graphics.items.mixin import ItemMixin
-from ConnectEd.widgets.graphics.items.node import NodeItem
+from ConnectEd.ai.refs                        import RefRegistry
+from ConnectEd.ai.tools.get                   import get_items, get_sheet
+from ConnectEd.widgets.graphics.properties    import PropertiesMixin
+from ConnectEd.widgets.graphics.items.mixin   import ItemMixin
+from ConnectEd.widgets.graphics.items.node    import NodeItem
 from ConnectEd.widgets.graphics.items.segment import SegmentItem
-from ConnectEd.widgets.graphics.properties import PropertiesMixin
 
 _real_isinstance = builtins.isinstance
 

@@ -1,16 +1,15 @@
 import os
+import ConnectEd.scripting as cs
 
 from typing import Self
 
-import ConnectEd.scripting as cs
-
 from PyQt6.QtCore import QPointF, QSizeF
 
-from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
+from ConnectEd.core.db                          import DesignDbNode, DiagramNode
+from ConnectEd.widgets.graphics.items           import DEFAULT
 
-from ConnectEd.core.db import DesignDbNode, DiagramNode
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
-from ConnectEd.widgets.graphics.items import DEFAULT
+from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 
 TEST_DESIGN = "test_scripted_cli_design"

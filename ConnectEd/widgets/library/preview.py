@@ -7,16 +7,16 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, \
                             QWidget, QVBoxLayout, QLabel
 from PyQt6.QtGui     import QPainter
 
-from ...app import settings
+from ...app                           import settings
 
-from ...core.check import checked
+from ...core.check                    import checked
 
 from ...domains.hdl.schematic.library import HdlSchematicLibrary
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.graphics.items.symbol import SymbolDefinitionItem
-    from .browser import LibraryBrowser
+    from .browser                         import LibraryBrowser
 
 
 _MARGIN = 5

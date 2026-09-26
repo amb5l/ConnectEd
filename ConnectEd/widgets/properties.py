@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from .table.row import TableRow
-
-from .graphics.properties import PropertyPending
+from .table.row                    import TableRow
+from .graphics.properties          import PropertyPending
 
 from .graphics.items.property_text import PropertyTextPending
 

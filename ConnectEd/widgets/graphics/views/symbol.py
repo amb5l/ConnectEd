@@ -1,18 +1,18 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF,QRectF
-from PyQt6.QtGui     import QColor, QPainter, QPen
+from PyQt6.QtCore import Qt, QPoint, QPointF,QRectF
+from PyQt6.QtGui  import QColor, QPainter, QPen
 
-from ....app import settings
+from ....app            import settings
 
-from ....core.check import checked
-from ....core.doc   import DocBinding
+from ....core.check     import checked
+from ....core.doc       import DocBinding
 
 from ...window.mdi_area import MdiArea
 
-from ..scenes.symbol import SymbolScene
+from ..scenes.symbol    import SymbolScene
 
-from .diagram import DiagramView, DiagramSubWindow
+from .diagram           import DiagramView, DiagramSubWindow
 
 
 class SymbolView(DiagramView):
@@ -53,7 +53,7 @@ class SymbolSubWindow(DiagramSubWindow):
     @checked
     def __init__(
         self        : Self,
-        parent      : MdiArea | None = None,
+        parent      : MdiArea    | None = None,
         doc_binding : DocBinding | None = None,
     ) -> None:
         super().__init__(parent, doc_binding)

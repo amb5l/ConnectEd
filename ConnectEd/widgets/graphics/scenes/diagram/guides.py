@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QPen
 
 from .....app import settings
 
-from .host import asDiagramScene
+from .host    import asDiagramScene
 
 
 class DiagramSceneGuidesMixin:

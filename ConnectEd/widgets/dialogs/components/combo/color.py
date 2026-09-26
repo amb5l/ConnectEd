@@ -8,9 +8,9 @@ from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
 from .....core.utils import val2str
 
-from .. import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
+from ...color        import ColorDialog
 
-from ...color import ColorDialog
+from ..              import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
 
 
 class ColorComboBox(QComboBox):
@@ -43,7 +43,7 @@ class ColorComboBox(QComboBox):
         self    : Self,
         value   : QColor | None | NoChange,
         default : QColor | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget       | None = None
     ) -> None:
         super().__init__(parent)
         self._initial = value

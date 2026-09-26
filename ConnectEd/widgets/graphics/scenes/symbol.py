@@ -4,17 +4,17 @@ import weakref
 
 from typing import Self
 
-from PyQt6.QtCore    import QRectF
-from PyQt6.QtGui     import QPainter
+from PyQt6.QtCore import QRectF
+from PyQt6.QtGui  import QPainter
 
-from ....app import settings
+from ....app                           import settings
 
-from ....core.check import checked
+from ....core.check                    import checked
 
 from ....widgets.graphics.items.symbol import \
     SymbolDefinitionItem, SymbolInstanceItem
 
-from .diagram import DiagramScene
+from .diagram                          import DiagramScene
 
 
 class SymbolScene(DiagramScene):
@@ -66,7 +66,7 @@ class SymbolScene(DiagramScene):
     def drawBackground(
         self    : Self,
         painter : QPainter | None,
-        rect    : QRectF | None
+        rect    : QRectF   | None
     ) -> None:
         if painter is None or rect is None:
             return

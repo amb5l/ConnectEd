@@ -3,14 +3,15 @@
 import logging
 import sys
 import types
+import pytest
+
 from pathlib import Path
 
-import pytest
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
+from ConnectEd.app                             import ConnectEdApp
+from ConnectEd.core.settings                   import Settings
 from ConnectEd.widgets.graphics.scenes.drawing import DrawingScene
 
 

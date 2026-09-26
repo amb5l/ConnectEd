@@ -4,13 +4,13 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QBrush
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
-from .....core.icon import getFgBgColors
+from .....core.icon  import getFgBgColors
 
-from .. import customIconSize, NoChangeIcon, DefaultIcon
+from ..              import customIconSize, NoChangeIcon, DefaultIcon
 
 
 class FillStyleComboBox(QComboBox):
@@ -41,7 +41,7 @@ class FillStyleComboBox(QComboBox):
         self    : Self,
         value   : Qt.BrushStyle | None | NoChange,
         default : Qt.BrushStyle | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget              | None = None
     ) -> None:
         super().__init__(parent)
         self._initial = value

@@ -8,11 +8,10 @@ from PyQt6.QtCore    import Qt, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication, QWidget
 from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
-from ..app import app
+from ..app       import app
+from ..resources import getIconPath
 
 from ..core.defs import APP_NAME
-
-from ..resources import getIconPath
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

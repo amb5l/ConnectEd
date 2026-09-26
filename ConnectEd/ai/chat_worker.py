@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
+from typing    import Self
+from copy      import deepcopy
 from threading import Lock
-from typing import Self
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from ..core.check import checked
 
-from .profiles import getProfile
-from .providers import createProviderForProfile
-from .types import ChatEventType, ChatMessage, ToolCall, ToolSpec
+from .profiles    import getProfile
+from .providers   import createProviderForProfile
+from .types       import ChatEventType, ChatMessage, ToolCall, ToolSpec
 
 
 def copyMessages(messages : list[ChatMessage]) -> list[ChatMessage]:

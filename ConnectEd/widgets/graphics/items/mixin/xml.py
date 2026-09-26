@@ -1,21 +1,20 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self, Any
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.utils import underscore2space
 from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
 
-from ...properties import PropertiesMixin
+from ...properties   import PropertiesMixin
+from ...xml          import toXmlProperties, fromXmlProperties
 
-from ...xml import toXmlProperties, fromXmlProperties
-
-from ..protocols import (
+from ..protocols     import (
     OnGeometryChangedProtocol,
     OnTextChangedProtocol,
     OnSceneOrientationChangedProtocol

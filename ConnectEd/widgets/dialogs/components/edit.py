@@ -5,7 +5,6 @@ from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QWidget
 from PyQt6.QtGui     import QFontMetrics, QIntValidator, QDoubleValidator, QValidator
 
 from ....core.check import checked
-
 from ....core.types import NoChange, NO_CHANGE
 
 
@@ -39,7 +38,7 @@ class StrEditor(QLineEdit):
     @checked
     def __init__(
         self   : Self,
-        value  : str | None = None,
+        value  : str     | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -61,7 +60,7 @@ class TextEditor(QTextEdit):
     @checked
     def __init__(
         self   : Self,
-        value  : str | None = None,
+        value  : str     | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -87,7 +86,7 @@ class IntEditor(QLineEdit):
     @checked
     def __init__(
         self   : Self,
-        value  : int | None = None,
+        value  : int     | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -114,7 +113,7 @@ class FloatEditor(QLineEdit):
     @checked
     def __init__(
         self   : Self,
-        value  : float | None = None,
+        value  : float   | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -171,7 +170,7 @@ class SizeEditor(QLineEdit):
     @checked
     def __init__(
         self   : Self,
-        value  : float | None = None,
+        value  : float   | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -198,7 +197,7 @@ class BoolEditor(QCheckBox):
     @checked
     def __init__(
         self   : Self,
-        value  : bool | None = None,
+        value  : bool    | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

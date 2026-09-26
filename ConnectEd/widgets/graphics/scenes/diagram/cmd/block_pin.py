@@ -1,12 +1,12 @@
 from typing import Self
 
-from ......core.check import checked
-from ......core.types import EdgeLoc
+from ......core.check    import checked
+from ......core.types    import EdgeLoc
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ..cmd import CmdBase
+from ..cmd               import CmdBase
 
 
 class CmdBlockPinBase(CmdBase):
@@ -18,7 +18,7 @@ class CmdBlockPinBase(CmdBase):
 
     @checked
     def __init__(
-        self : Self,
+        self   : Self,
         parent : BlockItem,
         pin    : BlockPinItem
     ) -> None:
@@ -40,7 +40,7 @@ class CmdBlockPinsBase(CmdBase):
 
     @checked
     def __init__(
-        self : Self,
+        self   : Self,
         parent : BlockItem,
         pins   : list[BlockPinItem]
     ) -> None:

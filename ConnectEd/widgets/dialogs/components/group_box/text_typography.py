@@ -3,12 +3,12 @@ from typing import Self
 from PyQt6.QtWidgets import QGroupBox, QWidget
 from PyQt6.QtGui     import QColor
 
-from .....core.check import checked
-from .....core.types import NoChange
+from .....core.check           import checked
+from .....core.types           import NoChange
 
 from ....graphics.presentation import TextTheme, TextOverrides
 
-from ..layout.text_typography import TextTypographyPreviewLayout
+from ..layout.text_typography  import TextTypographyPreviewLayout
 
 
 class TextTypographyPreviewGroupBox(QGroupBox):

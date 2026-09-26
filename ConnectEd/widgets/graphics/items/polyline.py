@@ -8,28 +8,27 @@ from PyQt6.QtCore    import QPointF, QRectF, \
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu, QGraphicsItem
 from PyQt6.QtGui     import QAction
 
-from ....app import logger
+from ....app          import logger
 
-from ....core.check import checked
-from ....core.defs  import PITCH
-from ....core.types import DataKind, RectHandleId
-from ....core.utils import val2str
+from ....core.check   import checked
+from ....core.defs    import PITCH
+from ....core.types   import DataKind, RectHandleId
+from ....core.utils   import val2str
 
-from ...dialogs.arc import ArcDialog
+from ...dialogs.arc   import ArcDialog
 
-from ..properties   import PropertySpec
-from ..xml          import fromXmlProperties
-from ..painter_path import PainterPath
+from ..properties     import PropertySpec
+from ..xml            import fromXmlProperties
+from ..painter_path   import PainterPath
 
-from .grip import GripShape, GripShapeMixin, GripItem, ResizeGripItem
+from .grip            import GripShape, GripShapeMixin, GripItem, ResizeGripItem
+from .role            import DecorativeItem
 
-from .role import DecorativeItem
-
-from .mixin.transform  import ItemTransformMixin
-from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -235,7 +234,7 @@ class PolylineItem(
     @checked
     def __init__(
         self     : Self,
-        pos      : QPointF | None = None,
+        pos      : QPointF       | None = None,
         vertices : list[QPointF] | None = None,
         closed   : bool = False,
         parent   : QGraphicsItem | None = None,
@@ -287,7 +286,7 @@ class PolylineItem(
 
     @checked
     def addVertex(
-        self   : Self,
+        self  : Self,
         pos   : QPointF,
         sweep : float | None = None
     ) -> PolyVtxItem:
@@ -381,11 +380,11 @@ class PolylineItem(
 
     @checked
     def setPoints(
-        self  : Self,
-        p1    : QPointF | float | int,
-        p2    : QPointF | float | int,
-        x2    : float | int | None = None,
-        y2    : float | int | None = None
+        self : Self,
+        p1   : QPointF | float | int,
+        p2   : QPointF | float | int,
+        x2   : float   | int   | None = None,
+        y2   : float   | int   | None = None
     ) -> None:
         # normalise arguments
         if isinstance(p1, QPointF) and isinstance(p2, QPointF):

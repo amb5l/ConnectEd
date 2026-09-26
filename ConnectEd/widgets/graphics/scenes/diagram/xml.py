@@ -5,30 +5,27 @@ from typing          import Self, cast
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app import logger
+from .....app           import logger
 
-from .....core.check import checked
-from .....core.utils import val2str
-from .....core.xml   import toXmlStartElement, toXmlEndElement, \
+from .....core.check    import checked
+from .....core.utils    import val2str
+from .....core.xml      import toXmlStartElement, toXmlEndElement, \
                             fromXml, copyXml, pasteXml, XmlProtocol
 
-from ...xml import toXmlProperties, fromXmlProperties
+from ...xml             import toXmlProperties, fromXmlProperties
 
 from ...items.role      import DocumentItem
-
 # decorative items
 from ...items.line      import LineItem
 from ...items.rectangle import RectangleItem
 from ...items.ellipse   import EllipseItem
 from ...items.polyline  import PolylineItem
 from ...items.text      import TextItem
-
 # functional items
 from ...items.port      import PortItem
 from ...items.gate      import BufGateItem, AndGateItem, OrGateItem, XorGateItem
 from ...items.block     import BlockItem
 from ...items.symbol    import SymbolDefinitionItem, SymbolInstanceItem
-
 # connectivity items
 from ...items.segment   import SegmentItem
 from ...items.node      import NodeItem, FreeNodeItem, FixedNodeItem
@@ -36,9 +33,8 @@ from ...items.net_label import NetLabelItem
 
 from ...items.mixin.xml import ItemXmlMixin
 
-from .netlist import _netNameAndSuffix
-
-from .host import asDiagramScene
+from .netlist           import _netNameAndSuffix
+from .host              import asDiagramScene
 
 
 class DiagramSceneXmlMixin:
@@ -90,7 +86,7 @@ class DiagramSceneXmlMixin:
     def copy(
         self  : Self,
         items : QGraphicsItem | list[QGraphicsItem],
-        pos   : QPointF | None = None
+        pos   : QPointF       | None = None
     ) -> None:
         host = asDiagramScene(self)
         items = host._topItems(items)
@@ -191,8 +187,8 @@ class DiagramSceneXmlMixin:
         xr   : QXmlStreamReader
     ) -> None:
         host = asDiagramScene(self)
-        node_by_id : dict[int, NodeItem] = {}
-        id_by_node : dict[NodeItem, int] = {}
+        node_by_id          : dict[int, NodeItem] = {}
+        id_by_node          : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
 
         def fromXmlFixedNode(xr : QXmlStreamReader) -> None:

@@ -7,20 +7,20 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
-from ....app import settings
+from ....app           import settings
 
-from ....core.check import checked
-from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ....core.check    import checked
+from ....core.types    import NoChange, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
-from ....core.utils import val2str
+from ....core.utils    import val2str
 
 from ...graphics.quill import Quill
 
-from ..properties import Property, PropertiesMixin, PropertySpec
+from ..properties      import Property, PropertiesMixin, PropertySpec
 
-from .text   import TextItem
-from .handle import HandleItem
-from .tether import TextTetherItem
+from .text             import TextItem
+from .handle           import HandleItem
+from .tether           import TextTetherItem
 
 from .mixin.names      import ItemNamesMixin
 from .mixin.transform  import ItemTransformMixin
@@ -78,7 +78,7 @@ class PropertyTextItem(TextItem):
 
     # instance attributes
     _property : Property
-    _cleat    : HandleId | None
+    _cleat    : HandleId               | None
     _tether   : PropertyTextTetherItem | None
 
     def settingsName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]

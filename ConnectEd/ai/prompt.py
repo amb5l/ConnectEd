@@ -7,7 +7,7 @@ import re
 from functools import lru_cache
 from pathlib   import Path
 
-from ..app import settings
+from ..app  import settings
 
 from .types import ToolSpec
 
@@ -74,8 +74,8 @@ def _loadSystemTemplate() -> str:
 
 
 def formatToolsForPrompt(
-    tools           : list[ToolSpec],
-    write_tool_names: frozenset[str] | None = None,
+    tools            : list[ToolSpec],
+    write_tool_names : frozenset[str] | None = None,
 ) -> str:
     if not tools:
         return "- (none)"

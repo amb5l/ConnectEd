@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from PyQt6.QtCore import QTransposeProxyModel, QObject
 from PyQt6.QtGui  import QStandardItemModel
 
-from ...app import logger
+from ...app        import logger
 
 from ...core.check import checked
 

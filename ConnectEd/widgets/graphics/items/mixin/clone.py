@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from typing import Self, cast, TYPE_CHECKING
+from typing import Self, cast
 
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.check import checked
 
-from ...properties import PropertiesMixin
+from ...properties   import PropertiesMixin
 
-from ..protocols import FreshItemConstructor
+from ..protocols     import FreshItemConstructor
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..property_text import PropertyTextItem
 

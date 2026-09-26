@@ -6,13 +6,13 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.defs  import PITCH
-from ....core.types import GatePinHandleId, HandleId, DataKind
+from ....core.check   import checked
+from ....core.defs    import PITCH
+from ....core.types   import GatePinHandleId, HandleId, DataKind
 
-from .port_pin import PortPinArrowItem, PortPinPathItem
-from .handle   import HandleItem
-from .grip     import GripItem, FixedGripItem
+from .port_pin        import PortPinArrowItem, PortPinPathItem
+from .handle          import HandleItem
+from .grip            import GripItem, FixedGripItem
 
 from .mixin.transform import ItemTransformMixin
 

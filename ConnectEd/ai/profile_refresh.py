@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore    import QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
-from ..core.check import checked
+from ..core.check    import checked
 
 from .profile_models import refreshAllProfileModels
-from .profiles import AiProfile
+from .profiles       import AiProfile
 
 
 class ProfileModelsRefreshWorker(QThread):

@@ -1,10 +1,11 @@
+import pytest
+
 from pathlib import Path
 
-import pytest
 from PyQt6.QtGui import QColor
 
 from ConnectEd.core.settings import loadFactorySettings
-from ConnectEd.core.themes import loadTheme, resolvePresets
+from ConnectEd.core.themes   import loadTheme, resolvePresets
 
 
 def _writeTheme(path : Path, text : str) -> None:
@@ -114,9 +115,9 @@ def test_factory_settings_loads_both_paletted_themes() -> None:
 def test_resolve_presets_palette_and_preset_refs() -> None:
     palette = {"black": "#000000", "accent": "#FF00FF"}
     presets = {
-        "Background": "black",
+        "Background"  : "black",
         "SelectedLine": "accent",
-        "Grip": "@SelectedLine",
+        "Grip"        : "@SelectedLine",
     }
     resolved = resolvePresets(presets, palette, "test")
     assert resolved["Background"] == "#000000"

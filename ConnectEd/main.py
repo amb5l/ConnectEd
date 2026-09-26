@@ -3,18 +3,16 @@ import sys
 
 from collections.abc import Callable
 
-from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtGui     import QIcon, QUndoStack
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui  import QIcon, QUndoStack
 
-from .app import ConnectEdApp
+from .app            import ConnectEdApp
+from .resources      import getIconPath, initResources
 
-from .core.log      import logger
-from .core.args     import known_args
-from .core.settings import Settings
-from .core.session  import Session
-
-from .resources  import getIconPath, initResources
-
+from .core.log       import logger
+from .core.args      import known_args
+from .core.settings  import Settings
+from .core.session   import Session
 from .widgets.splash import Splash, progress
 
 

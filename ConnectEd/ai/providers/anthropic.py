@@ -42,7 +42,7 @@ def _toolDefinitions(tools : list[ToolSpec]) -> list[dict[str, Any]] | None:
 def _toAnthropicMessages(
     messages : list[ChatMessage],
 ) -> tuple[str | None, list[dict[str, Any]]]:
-    system_parts : list[str] = []
+    system_parts       : list[str] = []
     anthropic_messages : list[dict[str, Any]] = []
 
     for message in messages:
@@ -81,7 +81,7 @@ class AnthropicProvider:
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",
-        **_kwargs : Any,
+       **_kwargs : Any,
     ) -> None:
         if not api_key:
             raise ValueError("api_key is required for Anthropic")

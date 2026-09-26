@@ -4,9 +4,9 @@ import pytest
 
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.ai.prompt import connectionReadyMessage
 from ConnectEd.ai.profiles import AiProfile
-from ConnectEd.ai.session import AiChatSession
+from ConnectEd.ai.prompt   import connectionReadyMessage
+from ConnectEd.ai.session  import AiChatSession
 
 
 @pytest.fixture

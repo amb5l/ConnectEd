@@ -1,10 +1,11 @@
 """Regression: moveRestore must round-trip moveSave for origin-pivot items."""
 
 import pytest
+
 from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
+from ConnectEd.app                          import ConnectEdApp
 from ConnectEd.widgets.graphics.items.block import BlockItem
 
 

@@ -1,6 +1,7 @@
 from typing          import Any, TypeVar, overload
 from collections.abc import Callable
-from typeguard       import typechecked
+
+from typeguard import typechecked
 
 
 T = TypeVar("T", bound=Callable[..., Any])

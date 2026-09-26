@@ -4,26 +4,25 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
-from ....app import settings
+from ....app          import settings
 
-from ....core.check import checked
-from ....core.defs  import WIDTH
-from ....core.types import Direction, DataKind
-from ....core.utils import qtItemClass
+from ....core.check   import checked
+from ....core.defs    import WIDTH
+from ....core.types   import Direction, DataKind
+from ....core.utils   import qtItemClass
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties     import PropertySpec, PropertiesMixin
+from ..scenes         import withScene
 
-from ..scenes import withScene
+from .role            import FunctionalItem
+from .node            import FixedNodeItem
+from .protocols       import SetPenProtocol
 
-from .role      import FunctionalItem
-from .node      import FixedNodeItem
-from .protocols import SetPenProtocol
-
-from .mixin.names      import ItemNamesMixin
-from .mixin.transform  import ItemTransformMixin
-from .mixin.paint      import ItemPaintMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.names     import ItemNamesMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

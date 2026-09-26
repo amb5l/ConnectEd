@@ -10,9 +10,9 @@ from .....core.utils import qtItemClass
 class ItemPaintMixin:
     def paint(
         self    : Self,
-        painter : QPainter | None = None,
+        painter : QPainter                 | None = None,
         option  : QStyleOptionGraphicsItem | None = None,
-        widget  : QWidget | None = None
+        widget  : QWidget                  | None = None
     ) -> None:
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")

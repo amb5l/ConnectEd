@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import ast
+
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib     import Path
 
 ROOT = Path("ConnectEd")
 
@@ -260,7 +261,7 @@ def scan_file(path: Path) -> tuple[list[Hit], str | None]:
 
 
 def main() -> None:
-    all_hits: list[Hit] = []
+    all_hits    : list[Hit] = []
     parse_errors: list[tuple[str, str]] = []
     for path in sorted(ROOT.rglob("*.py")):
         if skip_path(path):

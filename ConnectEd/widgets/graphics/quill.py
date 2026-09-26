@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Self
 
-from ...core.check import checked
 from PyQt6.QtGui import QColor, QFont
+
+from ...core.check import checked
 
 
 class Quill:

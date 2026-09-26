@@ -8,8 +8,7 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....app import app, logger, settings, window
 
-
-from .host import asDiagramView
+from .host    import asDiagramView
 
 
 class MouseState(Enum):

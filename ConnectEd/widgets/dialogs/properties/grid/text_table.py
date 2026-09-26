@@ -4,11 +4,11 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
-from ....table.row   import TableRow
-from ....table.model import TableModel
-from ....table.view  import TableView
+from ....properties                   import populatePropertyText
 
-from ....properties import populatePropertyText
+from ....table.row                    import TableRow
+from ....table.model                  import TableModel
+from ....table.view                   import TableView
 
 from ....graphics.items.property_text import PropertyTextPending, PropertyTextEdit
 

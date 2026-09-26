@@ -4,7 +4,7 @@ from enum   import Enum
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QComboBox, QWidget
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
@@ -23,7 +23,7 @@ class EnumComboBox(QComboBox, Generic[T]):
         self   : Self,
         value  : T,
         subset : tuple[T, ...] | None = None,
-        parent : QWidget | None = None
+        parent : QWidget       | None = None
     ) -> None:
         super().__init__(parent)
         self._type = type(value)

@@ -4,24 +4,24 @@ from __future__ import annotations
 
 from enum import Enum
 
-from PyQt6.QtCore import Qt, QPoint, QPointF
-from PyQt6.QtTest import QTest
+from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QListWidget, QMdiSubWindow, QMenu
+from PyQt6.QtTest    import QTest
 
-from ConnectEd.app import settings
-from ConnectEd.core.types import RectHandleId
-from ConnectEd.scripting import Window, gui
-from ConnectEd.scripting.gui import Gui
-from ConnectEd.scripting.qt.modal import activeModal, withModal
-from ConnectEd.widgets.dialogs.file import FileNewDialog
-from ConnectEd.widgets.graphics.items.block import BlockItem
-from ConnectEd.widgets.graphics.items.grip import GripItem
-from ConnectEd.widgets.graphics.items.handle import HandleItem
+from ConnectEd.app                                  import settings
+from ConnectEd.scripting                            import Window, gui
+from ConnectEd.core.types                           import RectHandleId
+from ConnectEd.scripting.gui                        import Gui
+from integration.gui.text_theme                     import assert_text_theme
+from ConnectEd.scripting.qt.modal                   import activeModal, withModal
+from ConnectEd.widgets.dialogs.file                 import FileNewDialog
+from ConnectEd.widgets.graphics.items.block         import BlockItem
+from ConnectEd.widgets.graphics.items.grip          import GripItem
+from ConnectEd.widgets.graphics.items.handle        import HandleItem
 from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.views.diagram import DiagramView
-from ConnectEd.widgets.graphics.views.diagram.mouse import MouseState
+from ConnectEd.widgets.graphics.views.diagram       import DiagramView
 
-from integration.gui.text_theme import assert_text_theme
+from ConnectEd.widgets.graphics.views.diagram.mouse import MouseState
 
 
 class CommandInput(Enum):

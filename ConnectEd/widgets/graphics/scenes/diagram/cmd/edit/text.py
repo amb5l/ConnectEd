@@ -8,9 +8,9 @@ from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE, \
                               AlignH, AlignV, RectHandleId
 
-from .....items.text import TextItem, TextState, TextChange
+from .....items.text   import TextItem, TextState, TextChange
 
-from .. import CmdSceneItem
+from ..                import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

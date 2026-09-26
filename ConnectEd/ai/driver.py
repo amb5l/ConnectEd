@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Self
+
+from typing import Any, Self
 
 from ..core.check import checked
 
-from .refs  import RefRegistry
-from .tools import allToolSpecs, callTool, writeToolNames
-from .types import ToolSpec
+from .refs        import RefRegistry
+from .tools       import allToolSpecs, callTool, writeToolNames
+from .types       import ToolSpec
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..widgets.window import Window
-    from .session import AiChatSession
+    from .session         import AiChatSession
 
 _PING_MESSAGE = "ConnectEd AI chat client"
 
@@ -50,10 +52,10 @@ class AiDriver:
 
     @checked
     def call(
-        self       : Self,
-        name       : str,
-        arguments  : dict[str, Any],
-        session    : AiChatSession | None = None,
+        self      : Self,
+        name      : str,
+        arguments : dict[str, Any],
+        session   : AiChatSession | None = None,
     ) -> str:
         if name in self.writeToolNames():
             edit_lock = self._editLock()

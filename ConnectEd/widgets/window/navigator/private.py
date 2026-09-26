@@ -5,11 +5,11 @@ from collections.abc import Callable
 
 from PyQt6.QtCore import Qt
 
-from ....app import logger, session
+from ....app      import logger, session
 
 from ....core.doc import NavItemSpec, Doc, DocBinding
 
-from .types import NavItem, NavDummyItem, NavModel
+from .types       import NavItem, NavDummyItem, NavModel
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -145,7 +145,7 @@ class NavigatorPrivateMixin:
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")
         def _addRows(
-            parent : NavItem | NavModel,
+            parent : NavItem     | NavModel,
             specs  : NavItemSpec | list[NavItemSpec],
         ) -> NavItem | None:
             if not isinstance(specs, list):

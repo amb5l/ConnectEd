@@ -4,14 +4,15 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ......app import settings
+from ......app        import settings
 
 from ......core.check import checked
 
-from ....scenes import withScene
+from ....scenes       import withScene
+
+from ..host           import asDiagramView
 
 from typing import TYPE_CHECKING
-from ..host import asDiagramView
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
 

@@ -1,20 +1,20 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self
 
 from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsRectItem
 
-from ....core.check import checked
-from ....core.types import RectHandleId, DataKind
+from ....core.check      import checked
+from ....core.types      import RectHandleId, DataKind
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties        import PropertySpec, PropertiesMixin
 
-from .part              import PartItemMixin
-from .role              import DecorativeItem, FunctionalItem
-from .symbol_pin import SymbolPinItem
-
+from .part               import PartItemMixin
+from .role               import DecorativeItem, FunctionalItem
+from .symbol_pin         import SymbolPinItem
 from .mixin              import ItemMixin
+
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.handle       import ItemRectHandlesMixin

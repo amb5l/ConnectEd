@@ -28,13 +28,12 @@ from ....core.utils   import cleanPath
 from ....widgets.dialogs.unsaved_changes import UnsavedChangesDialog
 
 from ....widgets.graphics.scenes.diagram import DiagramScene
+from ....widgets.graphics.items.symbol   import SymbolDefinitionItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....widgets.window.sub_window       import DocSubWindow
-    from ....widgets.graphics.scenes.symbol  import SymbolScene
-
-from ....widgets.graphics.items.symbol import SymbolDefinitionItem
+    from ....widgets.window.sub_window      import DocSubWindow
+    from ....widgets.graphics.scenes.symbol import SymbolScene
 
 
 class SchematicIcon(SvgIconSingleton):
@@ -357,7 +356,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         #self._scene.purgeSymbols()  # scene API (undoable)
 
     def duplicateSymbolHandler(
-        self : Self,
+        self    : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # duplicate symbol definition in scene and navigator
@@ -365,7 +364,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         #self._scene.duplicateSymbol(subject)  # scene API (undoable)
 
     def deleteSymbolHandler(
-        self : Self,
+        self    : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # delete symbol definition from scene and navigator
@@ -373,7 +372,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         #self._scene.deleteSymbol(subject)  # scene API (undoable)
 
     def refreshSymbolHandler(
-        self : Self,
+        self    : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # refresh symbol definition in scene and navigator
@@ -381,7 +380,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         #self._scene.refreshSymbol(subject)  # scene API (undoable)
 
     def replaceSymbolHandler(
-        self : Self,
+        self    : Self,
         subject : DocSubjectProtocol
     ) -> None:
         # replace symbol definition in scene and navigator

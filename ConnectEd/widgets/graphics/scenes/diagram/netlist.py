@@ -7,12 +7,12 @@ from dataclasses import dataclass, field
 
 from PyQt6.QtCore import QPointF, QLineF
 
-from .....app import logger
+from .....app            import logger
 
-from .....core.defs  import PITCH
-from .....core.types import Direction, NetKind
-from .....core.expr  import evaluate
-from .....core.check import checked
+from .....core.defs      import PITCH
+from .....core.types     import Direction, NetKind
+from .....core.expr      import evaluate
+from .....core.check     import checked
 
 from ...items.node       import NodeItem, FreeNodeItem, FixedNodeItem, \
                                 TapMajorNodeItem, TapMinorNodeItem
@@ -25,7 +25,7 @@ from ...items.symbol_pin import SymbolPinItem
 from ...items.gate       import GateItem
 from ...items.block      import BlockItem
 from ...items.symbol     import SymbolInstanceItem
-from ...items.segment  import SegmentItem
+from ...items.segment    import SegmentItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -419,11 +419,11 @@ class Netlist:
 
     @checked
     def labelsTouchingSubnet(
-        self       : Self,
-        nodes      : set[NodeItem],
+        self  : Self,
+        nodes : set[NodeItem],
     ) -> list[NetLabelItem]:
-        labels : list[NetLabelItem] = []
-        seen   : set[NetLabelItem]  = set()
+        labels   : list[NetLabelItem] = []
+        seen     : set[NetLabelItem]  = set()
         seen_seg : set[SegmentItem] = set()
         for node in nodes:
             for seg in self.nodeSegments(node):
@@ -522,9 +522,9 @@ class Netlist:
 
     @checked
     def _addNodesToSubnet(
-        self : Self,
+        self   : Self,
         subnet : Subnet,
-        nodes : NodeItem | set[NodeItem]
+        nodes  : NodeItem | set[NodeItem]
     ) -> None:
         if isinstance(nodes, NodeItem):
             nodes = {nodes}

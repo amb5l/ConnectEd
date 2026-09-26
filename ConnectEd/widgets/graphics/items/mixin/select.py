@@ -1,13 +1,13 @@
 from typing import Self
 
-from PyQt6.QtGui     import QPainter
 from PyQt6.QtWidgets import QGraphicsItem, \
                             QStyleOptionGraphicsItem, QWidget, QStyle
+from PyQt6.QtGui     import QPainter
 
 from .....core.check import checked
 from .....core.utils import qtItemClass
 
-from ..protocols import SetPenProtocol, SetBrushProtocol, SetQuillProtocol
+from ..protocols     import SetPenProtocol, SetBrushProtocol, SetQuillProtocol
 
 
 class ItemSelectMixin:
@@ -43,7 +43,7 @@ class ItemSelectMixin:
 
     @checked
     def onSelectionChanged(
-        self : Self,
+        self     : Self,
         selected : bool
     ) -> None:
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
@@ -62,9 +62,9 @@ class ItemSelectMixin:
 
     def paint(
         self    : Self,
-        painter : QPainter | None,
+        painter : QPainter                 | None,
         option  : QStyleOptionGraphicsItem | None,
-        widget  : QWidget | None = None
+        widget  : QWidget                  | None = None
     ) -> None:
         """Suppress Qt's built-in selected appearance."""
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")

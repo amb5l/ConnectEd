@@ -1,10 +1,10 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import \
     QWidget, QTextEdit, QPlainTextEdit, \
     QHBoxLayout, QLabel, QComboBox, QToolButton, QCheckBox
-from PyQt6.QtGui import QIcon, QTextDocument
+from PyQt6.QtGui     import QIcon, QTextDocument
 
 from ...core.check import checked
 

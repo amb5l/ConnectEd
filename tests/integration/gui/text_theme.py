@@ -5,7 +5,7 @@ from __future__ import annotations
 from PyQt6.QtWidgets import QGraphicsScene
 
 from ConnectEd.widgets.graphics.items.base_text import BaseTextItem
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 
 def assert_text_theme(

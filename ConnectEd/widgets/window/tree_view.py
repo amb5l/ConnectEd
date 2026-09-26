@@ -4,11 +4,10 @@ from PyQt6.QtCore    import Qt, QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QShortcut, QKeySequence, QWheelEvent
 
-from ...app       import logger, settings
+from ...app               import logger, settings
+from ...resources         import getIconPath
 
-from ...resources import getIconPath
-
-from ...core.check import checked
+from ...core.check        import checked
 
 from ..mixin.ui_font_size import UiFontSizeMixin
 

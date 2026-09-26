@@ -2,12 +2,12 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
-from ...app import logger
+from ...app        import logger
 
 from ...core.check import checked
 from ...core.log   import LOG_FILENAME, addLogViewerHandler, LogViewerHandler
 
-from .text_view  import TextView, TextViewDockWidget
+from .text_view    import TextView, TextViewDockWidget
 
 
 class LogView(TextView):

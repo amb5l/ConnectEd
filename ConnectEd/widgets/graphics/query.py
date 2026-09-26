@@ -1,4 +1,4 @@
-from typing import Self
+from typing      import Self
 from collections import defaultdict
 
 from PyQt6.QtCore    import Qt, QTimer, QEvent
@@ -6,13 +6,13 @@ from PyQt6.QtWidgets import QGraphicsItem, QWidget, QVBoxLayout
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem, \
                             QEnterEvent, QCloseEvent
 
-from ...app import logger
+from ...app             import logger
 
 from ..window.tree_view import TreeView
 
-from .items.grip import GripItem
+from .properties        import PropertiesMixin
 
-from .properties import PropertiesMixin
+from .items.grip        import GripItem
 
 
 class QueryWindow(QWidget):
@@ -58,14 +58,14 @@ class QueryWindow(QWidget):
         self._timer.timeout.connect(self.close)
 
     def _getHDict(
-        self: Self,
-        items: list[QGraphicsItem]
+        self  : Self,
+        items : list[QGraphicsItem]
     ) -> dict[QGraphicsItem, dict]:
         if not items:
             return {}
         item_set = set(items)
         child_map: defaultdict[QGraphicsItem, list[QGraphicsItem]] = defaultdict(list)
-        roots: list[QGraphicsItem] = []
+        roots    : list[QGraphicsItem] = []
         for item in items:
             parent = item.parentItem()
             if parent in item_set:

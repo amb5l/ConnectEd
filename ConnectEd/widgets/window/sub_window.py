@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QMdiSubWindow, QWidget
 from PyQt6.QtGui     import QCloseEvent
 
-from ...app import logger
+from ...app        import logger
 
 from ...core.check import checked
 from ...core.doc   import DocBinding

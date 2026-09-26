@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from ..core.check import checked
-from ..core.types import (
+from ..core.check                            import checked
+from ..core.types                            import (
     DataKind, AlignH, AlignV, Edge, Direction,
     RectHandleId, LineHandleId, PortHandleId,
     GatePinHandleId, BlockPinHandleId, SymbolPinHandleId, TapHandleId,
 )
 
-from .dialogs.components.edit import (
+from .dialogs.components.edit                import (
     StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor,
 )
+
 from .dialogs.components.check_box.font_bool import FontBoolCheckBox
 from .dialogs.components.combo.enum          import EnumComboBox
 from .dialogs.components.combo.rotation      import RotationComboBox

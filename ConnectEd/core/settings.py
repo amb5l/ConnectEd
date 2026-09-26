@@ -9,22 +9,21 @@ including loading, saving, and accessing configuration values.
 # persistant settings for application
 # session settings for diagram and library
 
-from types  import SimpleNamespace
-from typing import Self, Any
-
-from importlib.resources import files
-from pathlib import Path
-
 import yaml
+
+from typing              import Self, Any
+from types               import SimpleNamespace
+from importlib.resources import files
+from pathlib             import Path
 
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QPointF
 
-from ..app import logger
+from ..app   import logger
 
-from .check   import checked
-from .defs    import ORG_NAME, APP_NAME, DEFS
-from .themes  import BUILTIN_THEMES, loadTheme
-from .utils   import getDefaultPath, val2str, str2val
+from .check  import checked
+from .defs   import ORG_NAME, APP_NAME, DEFS
+from .themes import BUILTIN_THEMES, loadTheme
+from .utils  import getDefaultPath, val2str, str2val
 
 
 # Leaf path -> type name for app settings (from export of FACTORY_SETTINGS).

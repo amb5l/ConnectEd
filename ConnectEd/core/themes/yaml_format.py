@@ -7,10 +7,10 @@ with colons vertically aligned per block.
 """
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
 import yaml
+
+from typing  import Any
+from pathlib import Path
 
 
 def _yamlScalar(value : Any) -> str:
@@ -27,9 +27,9 @@ def _yamlScalar(value : Any) -> str:
 
 
 def _flushLeaves(
-    lines     : list[str],
-    indent    : int,
-    leaf_run  : list[tuple[str, Any]],
+    lines    : list[str],
+    indent   : int,
+    leaf_run : list[tuple[str, Any]],
 ) -> None:
     if not leaf_run:
         return

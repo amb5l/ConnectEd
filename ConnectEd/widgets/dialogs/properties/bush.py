@@ -5,17 +5,16 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QShowEvent
 
-from ...table.row   import TableRow
-from ...table.model import TableModel
-from ...table.view  import TableView
+from ...properties           import populateProperty, populatePropertyText
 
-from ...graphics.properties import PropertiesMixin
+from ...table.row            import TableRow
+from ...table.model          import TableModel
+from ...table.view           import TableView
+from ...graphics.properties  import PropertiesMixin
 
 from ...graphics.items.mixin import ItemMixin
 
-from ...properties import populateProperty, populatePropertyText
-
-from .item import PropertiesItem, PropertiesExpanderItem
+from .item                   import PropertiesItem, PropertiesExpanderItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -114,7 +113,7 @@ class PropertiesBushWidget(TableView):
         if not isinstance(model, TableModel):
             raise ValueError("Bad model")
         # capture expander states
-        property_expanders : dict[PropertiesMixin, bool] = {}
+        property_expanders      : dict[PropertiesMixin, bool] = {}
         property_text_expanders : dict[object, bool] = {}
         if (row_count := model.rowCount()) > 0:
             p_exp_idx = self._header_names.index("Property Expander")

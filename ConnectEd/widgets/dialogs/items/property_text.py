@@ -7,43 +7,43 @@ from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGroupBox, \
                             QLabel, QLineEdit, QTextEdit, \
                             QGraphicsItem
 
-from ....core.check import checked
-from ....core.types import NoChange, NO_CHANGE, HandleId, DataKind
-from ....core.utils import numtrim, pascal2proper, str2val
+from ....core.check                   import checked
+from ....core.types                   import NoChange, NO_CHANGE, HandleId, DataKind
+from ....core.utils                   import numtrim, pascal2proper, str2val
 
-from ...utils import kind2dialogEditor
+from ...utils                         import kind2dialogEditor
 
-from ...graphics.properties import PropertiesMixin, PropertyChange, \
+from ...graphics.properties           import PropertiesMixin, PropertyChange, \
                                    PropertyAndTextsEdit
 
-from ...graphics.items.property_text import PropertyTextItem, PropertyTextChange
+from ...graphics.items.property_text  import PropertyTextItem, PropertyTextChange
 
 from ...graphics.items.mixin.edge_loc import ItemEdgeLocMixin
 
-from ..components.edit import StrEditor
+from ..components.edit                import StrEditor
 
-from ..components.combo.enum import EnumComboBox
+from ..components.combo.enum          import EnumComboBox
 
-from .text import BaseTextItemDialog
+from .text                            import BaseTextItemDialog
 
 
 class PropertyLayout(QVBoxLayout):
     _NOT_FOUND = "<not found>"
 
-    _top_layout         : QHBoxLayout
-    _name_layout        : QHBoxLayout
-    _name_label         : QLabel
-    _name_value         : QLabel | StrEditor
-    _kind_layout        : QHBoxLayout
-    _kind_label         : QLabel
-    _kind_value         : QLabel | EnumComboBox
+    _top_layout          : QHBoxLayout
+    _name_layout         : QHBoxLayout
+    _name_label          : QLabel
+    _name_value          : QLabel             | StrEditor
+    _kind_layout         : QHBoxLayout
+    _kind_label          : QLabel
+    _kind_value          : QLabel             | EnumComboBox
     _cleat_layout        : QHBoxLayout
-    _cleat_label        : QLabel
-    _cleat_value_layout : QHBoxLayout
-    _cleat_value        : EnumComboBox
-    _bottom_layout      : QHBoxLayout
-    _value_label        : QLabel
-    _value_value        : QLabel | QLineEdit | QTextEdit
+    _cleat_label         : QLabel
+    _cleat_value_layout  : QHBoxLayout
+    _cleat_value         : EnumComboBox
+    _bottom_layout       : QHBoxLayout
+    _value_label         : QLabel
+    _value_value         : QLabel | QLineEdit | QTextEdit
 
     @checked
     def __init__(self : Self, item : PropertyTextItem, name : str) -> None:

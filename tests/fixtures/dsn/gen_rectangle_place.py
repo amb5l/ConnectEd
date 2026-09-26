@@ -1,12 +1,12 @@
 """Generate rectangle_place.dsn (run from repo root with venv Python)."""
 
-from pathlib import Path
-
 import ConnectEd.scripting as cs
+
+from pathlib import Path
 
 from PyQt6.QtCore import QPointF
 
-from ConnectEd.core.db import DesignDbNode
+from ConnectEd.core.db                          import DesignDbNode
 from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 
 OUT = Path(__file__).resolve().parent / "rectangle_place.dsn"

@@ -1,7 +1,7 @@
 from typing import Self
 
-from PyQt6.QtGui     import QIcon
 from PyQt6.QtWidgets import QToolButton, QWidget
+from PyQt6.QtGui     import QIcon
 
 from ....core.check import checked
 
@@ -24,7 +24,7 @@ class ToolButton(QToolButton):
     @checked
     def __init__(
         self   : Self,
-        icon   : QIcon | None   = None,
+        icon   : QIcon   | None   = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

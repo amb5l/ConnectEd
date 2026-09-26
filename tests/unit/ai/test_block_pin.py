@@ -1,9 +1,11 @@
 """Unit tests for block pin AI tools."""
 
 import json
+
 from unittest.mock import MagicMock
 
-from ConnectEd.ai.refs import RefRegistry
+from ConnectEd.ai.refs            import RefRegistry
+from ConnectEd.core.types         import Direction, Edge
 from ConnectEd.ai.tools.block_pin import (
     _directionFromTool,
     _edgeFromTool,
@@ -11,7 +13,6 @@ from ConnectEd.ai.tools.block_pin import (
     add_block_pin,
     add_block_pins,
 )
-from ConnectEd.core.types import Direction, Edge
 
 
 def test_edge_from_tool() -> None:

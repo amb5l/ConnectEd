@@ -4,15 +4,14 @@ from PyQt6.QtCore    import QSize
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox
 
-from ....core.check import checked
+from ....resources                 import getIconPath
 
-from ....resources import getIconPath
+from ....core.check                import checked
+from ....core.icon                 import SvgIconSingleton
 
-from ....core.icon import SvgIconSingleton
+from ...graphics.items.gate        import GateFunc
 
-from ...graphics.items.gate import GateFunc
-
-from ..components.spin import CustomSpinBox
+from ..components.spin             import CustomSpinBox
 
 from ..components.layout.ok_cancel import OkCancelLayout
 

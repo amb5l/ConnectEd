@@ -8,17 +8,17 @@ from PyQt6.QtCore import QPointF
 
 from ...core.check import checked
 
-from ..refs  import RefRegistry
-from ..types import ToolEntry
+from ..refs        import RefRegistry
+from ..types       import ToolEntry
 
-from .params import _VIEW_PARAM
-from .utils  import aitool, toolError, toolOk
-from .private import _drawingSceneFromViewRef
+from .params       import _VIEW_PARAM
+from .utils        import aitool, toolError, toolOk
+from .private      import _drawingSceneFromViewRef
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...widgets.window                  import Window
     from ...widgets.graphics.scenes.diagram import DiagramScene
-    from ...widgets.window import Window
 
 ################################################################################
 

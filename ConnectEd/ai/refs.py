@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+
+from typing      import Any, Self
 from dataclasses import dataclass, field
-from typing import Any, Self
 
 from PyQt6.QtCore import QObject
 
@@ -35,9 +36,9 @@ class RefRegistry:
 
     @checked
     def resolve(
-        self    : Self,
-        ref     : str,
-        kind    : str | None = None,
+        self : Self,
+        ref  : str,
+        kind : str | None = None,
     ) -> Any | None:
         ref_kind = refKind(ref)
         if ref_kind is None:

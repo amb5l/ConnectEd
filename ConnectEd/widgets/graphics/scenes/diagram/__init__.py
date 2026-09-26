@@ -8,28 +8,27 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack, QPainter, QPen, QBrush
 
-from .....app import settings
+from .....app                           import settings
 
-from .....core.check import checked
-from .....core.types import DataKind
+from .....core.check                    import checked
+from .....core.types                    import DataKind
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties                      import PropertySpec, PropertiesMixin
 
-from .api        import DiagramSceneApiMixin
-from .grips      import DiagramSceneGripsMixin
-from .guides     import DiagramSceneGuidesMixin
-from .xml        import DiagramSceneXmlMixin
-from .private    import DiagramScenePrivateMixin
-from .resources  import DiagramSceneResources
-
-from .netlist import Netlist
+from .api                               import DiagramSceneApiMixin
+from .grips                             import DiagramSceneGripsMixin
+from .guides                            import DiagramSceneGuidesMixin
+from .xml                               import DiagramSceneXmlMixin
+from .private                           import DiagramScenePrivateMixin
+from .resources                         import DiagramSceneResources
+from .netlist                           import Netlist
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....domains.hdl.schematic.diagram_doc import HdlSchematicDiagramDoc
-    from ...items.symbol import SymbolInstanceItem
+    from ...items.symbol                        import SymbolInstanceItem
 
 
 class DiagramScene(
@@ -172,7 +171,7 @@ class DiagramScene(
     def drawBackground(
         self    : Self,
         painter : QPainter | None,
-        rect    : QRectF | None
+        rect    : QRectF   | None
     ) -> None:
         if painter is None or rect is None:
             return

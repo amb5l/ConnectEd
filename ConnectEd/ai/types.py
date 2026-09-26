@@ -48,4 +48,4 @@ class ChatEvent:
     type      : ChatEventType
     content   : str             = ""
     tool_call : ToolCall | None = None
-    error     : str | None      = None
+    error     : str      | None = None

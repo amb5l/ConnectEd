@@ -5,7 +5,7 @@ from typing import Self, Any
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QStandardItem, QBrush
 
-from ...app import settings
+from ...app        import settings
 
 from ...core.check import checked
 from ...core.types import NoChange

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from ..app import logger
+from ..app  import logger
 
 from .check import checked
 from .defs  import APP_EXT

@@ -5,20 +5,17 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from ......app import logger
+from ......app        import logger
 
 from ......core.check import checked
 from ......core.types import NoChange
 
-from ....quill import Quill
-
+from ....quill        import Quill
 from ....presentation import TextTheme, TextOverride
+from ....properties   import PropertiesMixin
+from ....scenes       import withScene
 
-from ....properties import PropertiesMixin
-
-from ....scenes import withScene
-
-from ...protocols import SetQuillProtocol
+from ...protocols     import SetQuillProtocol
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

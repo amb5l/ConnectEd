@@ -1,7 +1,7 @@
 """Unit tests for OpenAI-compatible message conversion."""
 
+from ConnectEd.ai.types                       import ChatMessage, ToolCall
 from ConnectEd.ai.providers.openai_compatible import _toOpenaiMessages
-from ConnectEd.ai.types import ChatMessage, ToolCall
 
 
 def test_assistant_tool_calls_round_trip() -> None:

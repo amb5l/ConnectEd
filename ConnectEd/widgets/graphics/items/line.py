@@ -6,18 +6,17 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.types import HandleId, LineHandleId, DataKind
+from ....core.check   import checked
+from ....core.types   import HandleId, LineHandleId, DataKind
 
-from ..properties import PropertySpec
+from ..properties     import PropertySpec
 
-from .role import DecorativeItem
+from .role            import DecorativeItem
+from .handle          import HandleItem
+from .grip            import GripItem, ResizeGripItem
 
-from .handle import HandleItem
-from .grip   import GripItem, ResizeGripItem
-
-from .mixin.transform  import ItemTransformMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -3,17 +3,17 @@ from __future__ import annotations
 from typing      import Self
 from dataclasses import dataclass
 
-from .......core.check import checked
+from .......core.check     import checked
 
 from .....items.port_pin   import PortPinMixin, PortPinPathItem
 from .....items.symbol_pin import SymbolPinItem
 
-from .. import CmdSceneItem
+from ..                    import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .......core.types     import Direction
-    from .....scenes.diagram   import DiagramScene
+    from .......core.types   import Direction
+    from .....scenes.diagram import DiagramScene
 
 
 class CmdEditPortPin(CmdSceneItem[PortPinMixin]):

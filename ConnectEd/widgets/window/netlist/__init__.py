@@ -3,11 +3,11 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QStandardItem, QStandardItemModel
 
-from ....core.check import checked
+from ....core.check             import checked
 
 from ...graphics.scenes.diagram import DiagramScene
 
-from ..tree_view import TreeView, TreeViewDock
+from ..tree_view                import TreeView, TreeViewDock
 
 
 _HEADERS = ["Name", "Suffix", "Type"]
@@ -75,8 +75,8 @@ class NetlistBrowser(TreeView):
     @staticmethod
     def _appendRow(
         parent : QStandardItem | QStandardItemModel,
-        name   : str | None,
-        suffix : str | None,
+        name   : str           | None,
+        suffix : str           | None,
         type_  : str,
     ) -> QStandardItem:
         row = [

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .profiles import AiProfile
+from .profiles  import AiProfile
 from .providers import listModelsForProfile
 
 

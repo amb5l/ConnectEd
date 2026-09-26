@@ -7,17 +7,17 @@ from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox, QWidget
 
-from ....app import logger, settings, window
+from ....app                            import logger, settings, window
 
-from ....core.check import checked
-from ....core.defs  import APP_NAME
+from ....core.check                     import checked
+from ....core.defs                      import APP_NAME
 
-from ....widgets.window.navigator import Navigator
+from ....widgets.window.navigator       import Navigator
 
 from ....widgets.graphics.views.diagram import DiagramView
 from ....widgets.graphics.views.symbol  import SymbolView
 
-from ..sub_window import DocSubWindow
+from ..sub_window                       import DocSubWindow
 
 
 T = TypeVar("T")

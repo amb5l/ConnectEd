@@ -6,18 +6,16 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QPen, QColor
 
-from ......app import logger
+from ......app        import logger
 
 from ......core.check import checked
 from ......core.types import NoChange
 
 from ....properties   import PropertiesMixin
-
 from ....presentation import LineTheme, LineOverride
+from ....scenes       import withScene
 
-from ....scenes import withScene
-
-from ...protocols import SetPenProtocol
+from ...protocols     import SetPenProtocol
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

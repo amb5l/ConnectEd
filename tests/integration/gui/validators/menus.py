@@ -1,8 +1,8 @@
 """Menu tree validation: ConnectEd API (contract) and QMenuBar walk (Qt)."""
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMenu, QMenuBar, QWidget
+from PyQt6.QtGui     import QAction
 
 from ConnectEd.scripting import Menu, MenuBar, Window
 

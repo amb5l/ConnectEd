@@ -8,8 +8,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.check import checked
 from .....core.defs  import Z_DRAWING
 
-from .names        import ItemNamesMixin
-from .move         import ItemMoveMixin
+from .names          import ItemNamesMixin
+from .move           import ItemMoveMixin
 
 
 class ItemMixin(ItemNamesMixin, ItemMoveMixin):

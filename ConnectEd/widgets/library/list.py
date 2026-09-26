@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...domains.hdl.schematic.library import HdlSchematicLibrary
     from ...widgets.graphics.items.symbol import SymbolDefinitionItem
-    from .browser import LibraryBrowser
+    from .browser                         import LibraryBrowser
 
 
 class LibraryListPane(QWidget):

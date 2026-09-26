@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from ..core.check import checked
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .session import AiChatSession
 

@@ -1,9 +1,8 @@
-from typing import Self
-
 import ConnectEd.scripting as cs
 
-from integration.gui.specs import MAIN_WIDGETS, MENUS_STARTUP
+from typing import Self
 
+from integration.gui.specs      import MAIN_WIDGETS, MENUS_STARTUP
 from integration.gui.validators import (
     validateDiagram,
     validateHelpAbout,

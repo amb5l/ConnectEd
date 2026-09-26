@@ -2,20 +2,20 @@
 
 from typing import Self
 
-from PyQt6.QtCore import QPoint, QPointF, Qt
-from PyQt6.QtTest import QTest
+from PyQt6.QtCore    import QPoint, QPointF, Qt
 from PyQt6.QtWidgets import QGraphicsView, QWidget
+from PyQt6.QtTest    import QTest
 
 from .core import CoreMixin
 
 
 class MouseMixin:
     def mousePress(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
-        modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = Qt.MouseButton.LeftButton,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
         if not isinstance(self, CoreMixin):
             raise TypeError("Bad host")
@@ -24,11 +24,11 @@ class MouseMixin:
         self.processEvents()
 
     def mouseMove(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
-        modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = Qt.MouseButton.LeftButton,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
         if not isinstance(self, CoreMixin):
             raise TypeError("Bad host")
@@ -37,11 +37,11 @@ class MouseMixin:
         self.processEvents()
 
     def mouseRelease(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
-        modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = Qt.MouseButton.LeftButton,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
         if not isinstance(self, CoreMixin):
             raise TypeError("Bad host")
@@ -50,11 +50,11 @@ class MouseMixin:
         self.processEvents()
 
     def mouseClick(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
-        modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = Qt.MouseButton.LeftButton,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
         if not isinstance(self, CoreMixin):
             raise TypeError("Bad host")
@@ -63,12 +63,12 @@ class MouseMixin:
         self.processEvents()
 
     def mouseDrag(
-        self       : Self,
-        widget     : QWidget,
-        pos1       : QPoint,
-        pos2       : QPoint | None = None,
-        button     : Qt.MouseButton = Qt.MouseButton.LeftButton,
-        modifiers  : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
+        self      : Self,
+        widget    : QWidget,
+        pos1      : QPoint,
+        pos2      : QPoint | None = None,
+        button    : Qt.MouseButton = Qt.MouseButton.LeftButton,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier,
     ) -> None:
         self.mousePress(widget, pos1, button, modifiers)
         if pos2 is None:

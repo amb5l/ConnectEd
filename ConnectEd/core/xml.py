@@ -1,11 +1,11 @@
-from typing import Self, Protocol, Any, cast, runtime_checkable
+from typing          import Self, Protocol, Any, cast, runtime_checkable
 from collections.abc import Callable
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QByteArray, QMimeData
 from PyQt6.QtWidgets import QApplication
 
-from ..app import logger
+from ..app  import logger
 
 from .check import checked
 from .defs  import APP_NAME, MIME_TYPE
@@ -185,7 +185,7 @@ def loadXml(
 
 
 def copyXml(
-    items    : XmlProtocol | list[XmlProtocol],
+    items    : XmlProtocol    | list[XmlProtocol],
     metadata : dict[str, str] | None = None
 ) -> None:
     """

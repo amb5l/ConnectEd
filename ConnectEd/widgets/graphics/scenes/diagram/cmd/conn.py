@@ -4,16 +4,15 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ......app import logger
+from ......app         import logger
 
-from ......core.check import checked
+from ......core.check  import checked
 
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
 
-from ..cmd import CmdSceneBase
-
-from ..netlist import Net
+from ..cmd             import CmdSceneBase
+from ..netlist         import Net
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -89,17 +88,17 @@ class CmdReplaceSegmentNode(CmdDiagramSceneBase):
     Updates both graphics and graph.
     """
 
-    _segment : SegmentItem
+    _segment  : SegmentItem
     _node_old : NodeItem
     _node_new : NodeItem
 
     @checked
     def __init__(
-        self    : Self,
-        scene     : DiagramScene,
-        segment   : SegmentItem,
-        node_old  : NodeItem,
-        node_new  : NodeItem
+        self     : Self,
+        scene    : DiagramScene,
+        segment  : SegmentItem,
+        node_old : NodeItem,
+        node_new : NodeItem
     ) -> None:
         super().__init__(scene)
         self._segment = segment

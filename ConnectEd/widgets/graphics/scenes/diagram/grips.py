@@ -4,8 +4,9 @@ from typing import Self
 
 from .....app import settings
 
+from .host    import asDiagramScene
+
 from typing import TYPE_CHECKING
-from .host import asDiagramScene
 if TYPE_CHECKING:
     from ...items.mixin.handle import ItemHandlesMixin
 

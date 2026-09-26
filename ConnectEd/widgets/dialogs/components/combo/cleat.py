@@ -1,12 +1,12 @@
-from typing          import Self
-from enum            import Enum
+from typing import Self
+from enum   import Enum
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QComboBox, QWidget
 
-from .....core.check import checked
-from .....core.types import HandleId, NoChange, NO_CHANGE
-from .....core.utils import val2str
+from .....core.check                 import checked
+from .....core.types                 import HandleId, NoChange, NO_CHANGE
+from .....core.utils                 import val2str
 
 from ....graphics.items.mixin.handle import ItemHandlesMixin
 

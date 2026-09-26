@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import Self
 
-from ....app import logger, session, settings
+from ....app          import logger, session, settings
 
 from ....core.session import DocType
 from ....core.doc     import Doc
 from ....core.utils   import cleanPath
 
-from ...dialogs.file import FileNewDialog, FileOpenDialog, FileSaveAsDialog
+from ...dialogs.file  import FileNewDialog, FileOpenDialog, FileSaveAsDialog
 
-from ..sub_window import DocSubWindow
+from ..sub_window     import DocSubWindow
 
 
 class NavigatorApiMixin:

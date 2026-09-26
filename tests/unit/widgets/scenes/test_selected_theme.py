@@ -1,12 +1,13 @@
 """Selected appearance: global defaults and sparse per-item overrides."""
 
 import pytest
+
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
-from ConnectEd.widgets.graphics.items.node import NodeState
+from ConnectEd.app                                       import ConnectEdApp
+from ConnectEd.core.settings                             import Settings
+from ConnectEd.widgets.graphics.items.node               import NodeState
 from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 
 

@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....app import logger
+from ....app        import logger
 
 from ....core.check import checked
 
@@ -33,8 +33,8 @@ class NullItem(QGraphicsItem):
 
     def paint(
         self    : Self,
-        painter : QPainter | None,
+        painter : QPainter                 | None,
         option  : QStyleOptionGraphicsItem | None,
-        widget  : QWidget | None = None
+        widget  : QWidget                  | None = None
     ) -> None:
         logger().error("Paint should never be called")

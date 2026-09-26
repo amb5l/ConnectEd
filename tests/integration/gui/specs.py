@@ -1,7 +1,7 @@
 """GUI integration test data (menu trees, main-window shell)."""
 
+from typing          import Any
 from collections.abc import Callable
-from typing import Any
 
 from ConnectEd.scripting import (
     AiChatDock,

@@ -1,11 +1,12 @@
-from typing import Optional, Self, TYPE_CHECKING
+import re
+
+from typing import Optional, Self
 
 from antlr4 import ParseTreeVisitor, ParserRuleContext
 
-import re
-
 from .vhdl_parser import vhdl_parser as vhp
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .vhdl_model import *
 

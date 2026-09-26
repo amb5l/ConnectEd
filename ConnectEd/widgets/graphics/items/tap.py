@@ -1,26 +1,26 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QLineF
-from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
+from PyQt6.QtGui     import QAction
 
-from ....core.defs  import PITCH
-from ....core.types import NetKind, DataKind, RectHandleId, TapHandleId
-from ....core.check import checked
+from ....core.defs    import PITCH
+from ....core.types   import NetKind, DataKind, RectHandleId, TapHandleId
+from ....core.check   import checked
 
-from ..properties import PropertySpec
+from ..properties     import PropertySpec
 
-from .property_text import PropertyTextSpec
-from .role          import FunctionalItem
-from .handle        import HandleItem
-from .grip          import MoveGripItem
-from .node          import TapMajorNodeItem, TapMinorNodeItem
+from .property_text   import PropertyTextSpec
+from .role            import FunctionalItem
+from .handle          import HandleItem
+from .grip            import MoveGripItem
+from .node            import TapMajorNodeItem, TapMinorNodeItem
 
-from .mixin.transform  import ItemTransformMixin
-from .mixin.paint      import ItemPaintMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

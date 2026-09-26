@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QAction
 from ..core.check import checked
 from ..core.types import MenuAction, MenuSub, MenuSeparator, MenuEntry
 
-from .action import Action
+from .action      import Action
 
 
 class Menu(QMenu):
@@ -23,7 +23,7 @@ class Menu(QMenu):
     @overload
     def __init__(
         self   : Self,
-        title  : str | None = None,
+        title  : str     | None = None,
         parent : QWidget | None = None
     ) -> None:
         ...
@@ -32,7 +32,7 @@ class Menu(QMenu):
     def __init__(  # pyright: ignore[reportInconsistentOverload]
         self            : Self,
         title_or_parent : str | QWidget | None = None,
-        parent_or_none  : QWidget | None = None
+        parent_or_none  : QWidget       | None = None
     ) -> None:
         if isinstance(title_or_parent, str):
             title = title_or_parent

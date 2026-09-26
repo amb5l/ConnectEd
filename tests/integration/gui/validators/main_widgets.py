@@ -1,9 +1,9 @@
 """Main window chrome: ConnectEd accessors vs Qt tree (typed chrome only)."""
 
+from typing          import Any
 from collections.abc import Callable
-from typing import Any
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QDockWidget, QMenuBar, QMdiArea, QStatusBar, QWidget
 
 from ConnectEd.scripting import AiChatDock, Window

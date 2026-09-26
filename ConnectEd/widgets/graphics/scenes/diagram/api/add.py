@@ -5,18 +5,17 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ......core.check import checked
+from ......core.check    import checked
 
 from ....items.polyline  import PolylineItem, PolyVtxItem
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ..cmd import cmdExec, CmdAdd
+from ..cmd               import cmdExec, CmdAdd
+from ..host              import asDiagramScene
 
-from ..cmd.polyline  import CmdAddPolyVtx
-from ..cmd.block_pin import CmdAddBlockPin
-
-from ..host import asDiagramScene
+from ..cmd.polyline      import CmdAddPolyVtx
+from ..cmd.block_pin     import CmdAddBlockPin
 
 
 class DiagramSceneApiAddMixin:

@@ -10,7 +10,7 @@ from ...core.check import checked
 from ...core.types import DataKind
 from ...core.utils import space2underscore, underscore2space, val2str, str2val
 
-from .properties import PropertiesMixin
+from .properties   import PropertiesMixin
 
 
 @checked

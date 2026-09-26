@@ -9,14 +9,14 @@ from PyQt6.QtWidgets import QWidget, QLineEdit, QApplication, QStyle, \
                             QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QPainter, QMouseEvent, QStandardItemModel
 
-from ....core.check import checked
-from ....core.types import DataKind
+from ....core.check                 import checked
+from ....core.types                 import DataKind
 
-from ...table.item import TableItem
+from ...utils                       import kind2dialogEditor
 
-from ...utils import kind2dialogEditor
+from ...table.item                  import TableItem
 
-from ..components.edit import \
+from ..components.edit              import \
     StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
 
 from ..components.combo.enum        import EnumComboBox
@@ -28,7 +28,7 @@ from ..components.combo.font_family import FontFamilyComboBox
 from ..components.combo.font_size   import FontSizeComboBox
 from ..components.combo.font_bool   import FontBoolComboBox
 
-from .item import PropertiesItem
+from .item                          import PropertiesItem
 
 EditorType = (
     StrEditor,
@@ -97,7 +97,7 @@ class PropertiesDelegate(QStyledItemDelegate):
     @checked
     def setModelData(
         self   : Self,
-        editor : QWidget | None,
+        editor : QWidget            | None,
         model  : QAbstractItemModel | None,
         index  : QModelIndex
     ) -> None:

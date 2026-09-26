@@ -13,15 +13,15 @@ from __future__ import annotations
 
 import logging
 import tempfile
+import pytest
+
 from pathlib import Path
 
-import pytest
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.db import DesignDbNode
-from ConnectEd.core.settings import Settings
-
+from ConnectEd.app                            import ConnectEdApp
+from ConnectEd.core.db                        import DesignDbNode
+from ConnectEd.core.settings                  import Settings
 from tests.unit.widgets.text_geometry_helpers import (
     CAPTION,
     GRID,

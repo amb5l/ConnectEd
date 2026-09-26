@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Self
 
@@ -6,14 +6,15 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check import checked
-from ....core.types import RectHandleId, DataKind
+from ....core.check  import checked
+from ....core.types  import RectHandleId, DataKind
 
-from ..properties import PropertySpec
+from ..properties    import PropertySpec
 
-from .role          import FunctionalItem
-from .base_rect     import BaseRectangleItem
-from .part          import PartItemMixin
+from .role           import FunctionalItem
+from .base_rect      import BaseRectangleItem
+from .part           import PartItemMixin
+
 from .mixin.edge_loc import ItemLocParentMixin
 
 from typing import TYPE_CHECKING

@@ -7,9 +7,9 @@ from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
 from .....core.utils import val2str
 
-from ...float import FloatDialog
+from ...float        import FloatDialog
 
-from .. import customIconSize
+from ..              import customIconSize
 
 
 class FontSizeComboBox(QComboBox):
@@ -24,7 +24,7 @@ class FontSizeComboBox(QComboBox):
         self    : Self,
         value   : float | int | None | NoChange,
         default : float | int | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget            | None = None
     ) -> None:
         super().__init__(parent)
         if isinstance(value, int): value = float(value)

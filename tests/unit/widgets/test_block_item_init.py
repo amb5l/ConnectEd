@@ -1,10 +1,11 @@
 """Regression: BlockItem property texts must not read mirror state before init."""
 
 import pytest
+
 from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
+from ConnectEd.app                          import ConnectEdApp
 from ConnectEd.widgets.graphics.items.block import BlockItem
 
 

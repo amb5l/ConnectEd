@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from ConnectEd.core.utils import val2str
+from ConnectEd.core.utils                       import val2str
+from ConnectEd.widgets.graphics.properties      import PropertiesMixin
+from ConnectEd.widgets.graphics.items.node      import NodeItem
+from ConnectEd.widgets.graphics.items.segment   import SegmentItem
+from ConnectEd.widgets.graphics.scenes.drawing  import DrawingScene
 from ConnectEd.widgets.graphics.items.mixin.xml import ItemXmlMixin
-from ConnectEd.widgets.graphics.items.node import NodeItem
-from ConnectEd.widgets.graphics.items.segment import SegmentItem
-from ConnectEd.widgets.graphics.properties import PropertiesMixin
-from ConnectEd.widgets.graphics.scenes.drawing import DrawingScene
 
 SIGNATURE_EXTRAS: dict[type, Callable[..., Any]] = {}
 

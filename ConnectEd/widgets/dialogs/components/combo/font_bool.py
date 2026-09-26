@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
@@ -18,7 +18,7 @@ class FontBoolComboBox(QComboBox):
         self    : Self,
         value   : bool | None | NoChange,
         default : bool | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget     | None = None
     ) -> None:
         super().__init__(parent)
         self._initial = value

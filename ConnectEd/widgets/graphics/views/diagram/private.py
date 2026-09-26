@@ -2,30 +2,27 @@ from __future__ import annotations
 
 from typing          import Self
 from collections.abc import Sequence
-
-from math  import sqrt
+from math            import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QPainterPath, QAction, QCursor
 
-from .....app import settings, window, logger
+from .....app              import settings, window, logger
 
-from .....core.check import checked
+from .....core.check       import checked
 
-from ....menu import Menu
+from ....menu              import Menu
 
-from ...items.block     import BlockItem
-from ...items.block_pin import BlockPinItem, BlockPinArrowItem
-from ...items.node      import FixedNodeItem
+from ...items.block        import BlockItem
+from ...items.block_pin    import BlockPinItem, BlockPinArrowItem
+from ...items.node         import FixedNodeItem
 
 from ...items.mixin.select import ItemSelectMixin
 
-from .defs import DiagramViewLayer
-
-from .mouse import MouseModifier
-
-from .host import asDiagramView
+from .defs                 import DiagramViewLayer
+from .mouse                import MouseModifier
+from .host                 import asDiagramView
 
 
 

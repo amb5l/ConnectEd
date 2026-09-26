@@ -1,27 +1,25 @@
 from __future__ import annotations
 
 from typing import Self
-
 from math   import isclose
 
 from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
-from ......core.check import checked
+from ......core.check  import checked
 
-from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
-from ....items.segment   import SegmentItem
+from ....items.node    import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.segment import SegmentItem
 
-from ..cmd import cmdExec
+from ..cmd             import cmdExec
+from ..host            import asDiagramScene
 
-from ..cmd.conn import (
+from ..cmd.conn        import (
     CmdAddFreeNode, CmdRemoveFreeNode,
     CmdReplaceSegmentNode, CmdDetachSegmentNode,
     CmdAddSegment, CmdRemoveSegment,
     CmdSplitSegment, CmdUnsplitSegment
 )
-
-from ..host import asDiagramScene
 
 
 class DiagramSceneApiConnMixin:

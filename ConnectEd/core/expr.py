@@ -43,8 +43,8 @@ class SafeExpressionEvaluator:
 
     @checked
     def __init__(
-        self      : Self,
-        variables : dict[str, int | float] | None = None,
+        self               : Self,
+        variables          : dict[str, int | float] | None = None,
         *,
         allow_bitwise      : bool = True,
         allow_power        : bool = True,

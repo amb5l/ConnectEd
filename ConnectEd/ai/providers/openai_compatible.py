@@ -104,7 +104,7 @@ class OpenAiCompatibleProvider:
         api_key  : str = "",
         base_url : str = "",
         model    : str = "",
-        **_kwargs : Any,
+       **_kwargs : Any,
     ) -> None:
         if not base_url:
             raise ValueError("base_url is required for OpenAI-compatible providers")

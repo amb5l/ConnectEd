@@ -2,9 +2,9 @@
 
 from typing import Any, Self
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtTest import QTest
+from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt6.QtTest    import QTest
 
 
 class CoreMixin:

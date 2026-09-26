@@ -2,10 +2,10 @@ from typing import Self
 
 from PyQt6.QtCore import QSize
 
-from ....core.check import checked
-from ....core.icon import getDefaultIconSize, SvgIconSingleton
+from ....resources  import getIconPath
 
-from ....resources import getIconPath
+from ....core.check import checked
+from ....core.icon  import getDefaultIconSize, SvgIconSingleton
 
 
 _custom_icon_size : QSize | None = None

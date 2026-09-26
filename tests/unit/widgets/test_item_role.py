@@ -2,13 +2,13 @@
 
 import pytest
 
-from ConnectEd.widgets.graphics.items.role import (
+from ConnectEd.widgets.graphics.items.net_label import NetLabelItem
+from ConnectEd.widgets.graphics.items.role      import (
     DecorativeItem,
     DocumentItem,
     FunctionalItem,
 )
-from ConnectEd.widgets.graphics.items.net_label import NetLabelItem
-from ConnectEd.widgets.graphics.items.text import BaseTextItem, TextItem
+from ConnectEd.widgets.graphics.items.text      import BaseTextItem, TextItem
 
 
 def test_decorative_and_functional_are_mutually_exclusive() -> None:

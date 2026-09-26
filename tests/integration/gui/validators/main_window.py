@@ -1,7 +1,7 @@
 """Main window shell validation."""
 
-from ConnectEd.core.defs import APP_NAME
 from ConnectEd.scripting import App, Window
+from ConnectEd.core.defs import APP_NAME
 
 
 def validateMainWindow(app : App) -> Window:

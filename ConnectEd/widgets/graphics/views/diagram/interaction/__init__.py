@@ -6,20 +6,19 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QUndoStack, QUndoCommand
 
-from ......core.check import checked
+from ......core.check    import checked
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
+from ....items.mixin     import ItemMoveMixin
 
-from ....items.mixin import ItemMoveMixin
-
-from .host import asDiagramInteraction, asDiagramItemInteraction
+from .host               import asDiagramInteraction, asDiagramItemInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
-    from .. import DiagramView
-    from . import DiagramInteraction
+    from ..                 import DiagramView
+    from .                  import DiagramInteraction
 
 
 class DiagramInteraction:

@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QFontDatabase
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
@@ -19,7 +19,7 @@ class FontFamilyComboBox(QComboBox):
         self    : Self,
         value   : str | None | NoChange,
         default : str | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget    | None = None
     ) -> None:
         super().__init__(parent)
         self._initial = value

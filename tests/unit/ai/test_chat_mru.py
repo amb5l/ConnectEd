@@ -1,12 +1,11 @@
 """Unit tests for AI chat MRU."""
 
 import json
-
 import pytest
 
 from ConnectEd.ai.chat_mru import recordChatConnection
 from ConnectEd.ai.profiles import AiProfile
-from ConnectEd.ai.welcome import welcomeHtml
+from ConnectEd.ai.welcome  import welcomeHtml
 
 
 class _FakeSettings:

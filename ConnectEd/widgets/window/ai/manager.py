@@ -1,19 +1,20 @@
 """Window-level AI subsystem — edit lock, chat docks, profile model refresh."""
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from PyQt6.QtCore import QObject, QTimer
 
-from ....ai.lock import AiEditLock
-from ....ai.profile_models import anyProfileMissingModels
+from ....ai.lock            import AiEditLock
+from ....ai.profile_models  import anyProfileMissingModels
 from ....ai.profile_refresh import ProfileModelsRefreshWorker
-from ....ai.profiles import loadProfiles, saveProfiles
-from ....core.check import checked
+from ....ai.profiles        import loadProfiles, saveProfiles
+from ....core.check         import checked
 
-from .chat import AiChatManager
+from .chat                  import AiChatManager
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Window
+    from ..              import Window
     from ..messages_view import MessagesViewDock
 
 

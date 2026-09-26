@@ -6,15 +6,13 @@ from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ....core.check import checked
-from ....core.types import NoChange, AlignH, AlignV, RectHandleId
+from ....core.check                      import checked
+from ....core.types                      import NoChange, AlignH, AlignV, RectHandleId
 
-from ...graphics.items.text import BaseTextItem, TextItem
+from ...graphics.items.text              import BaseTextItem, TextItem
 
-from ..components.layout.text_value import TextValueLayout
-
+from ..components.layout.text_value      import TextValueLayout
 from ..components.layout.text_appearance import TextAppearanceLayout
-
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

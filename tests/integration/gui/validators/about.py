@@ -2,8 +2,8 @@
 
 from PyQt6.QtWidgets import QMessageBox
 
-from ConnectEd.core.defs import APP_NAME
-from ConnectEd.scripting import Action, Menu, MenuBar, Window
+from ConnectEd.scripting          import Action, Menu, MenuBar, Window
+from ConnectEd.core.defs          import APP_NAME
 from ConnectEd.scripting.qt.modal import activeModal, modalBodyText, withModal
 
 

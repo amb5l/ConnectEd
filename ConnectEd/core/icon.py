@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPixmap, \
                             QIcon, QFont, QFontMetrics
 from PyQt6.QtSvg     import QSvgRenderer
 
-from ..app import logger, settings
+from ..app  import logger, settings
 
 from .check import checked
 

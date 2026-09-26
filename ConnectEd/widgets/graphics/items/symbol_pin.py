@@ -6,14 +6,14 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.defs  import PITCH
-from ....core.types import RectHandleId, SymbolPinHandleId, HandleId, DataKind
-from ....core.check import checked
+from ....core.defs   import PITCH
+from ....core.types  import RectHandleId, SymbolPinHandleId, HandleId, DataKind
+from ....core.check  import checked
 
-from .property_text import PropertyTextSpec
-from .handle        import HandleItem
-from .grip          import GripItem, MoveGripItem
-from .port_pin      import PortPinArrowItem, PortPinPathItem
+from .property_text  import PropertyTextSpec
+from .handle         import HandleItem
+from .grip           import GripItem, MoveGripItem
+from .port_pin       import PortPinArrowItem, PortPinPathItem
 
 from .mixin.edge_loc import ItemEdgeLocMixin
 

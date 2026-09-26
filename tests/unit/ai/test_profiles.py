@@ -1,11 +1,11 @@
 """Unit tests for AI model profiles and env key resolution."""
 
 import json
-
 import pytest
+
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.ai.profiles import (
+from ConnectEd.ai.profiles   import (
     AiProfile,
     ProviderPreset,
     defaultProfilesJson,
@@ -131,10 +131,10 @@ def test_profile_from_preset() -> None:
 
 def test_from_dict_migrates_legacy_fields() -> None:
     profile = AiProfile.fromDict({
-        "id"       : "1",
-        "provider" : "xai",
-        "api_key"  : "$XAI_API_KEY",
-        "base_url" : "https://api.x.ai/v1",
+        "id"            : "1",
+        "provider"      : "xai",
+        "api_key"       : "$XAI_API_KEY",
+        "base_url"      : "https://api.x.ai/v1",
         "cached_models" : ["grok-3", "grok-2"],
     })
     assert profile.api_key_name == "$XAI_API_KEY"

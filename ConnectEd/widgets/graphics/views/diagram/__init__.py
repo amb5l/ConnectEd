@@ -8,28 +8,28 @@ from PyQt6.QtWidgets import QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPen, QPainter, \
                             QKeyEvent, QShowEvent, QResizeEvent, QCloseEvent
 
-from .....app import logger, settings
+from .....app                     import logger, settings
 
-from .....core.check import checked
-from .....core.doc   import DocBinding
+from .....core.check              import checked
+from .....core.doc                import DocBinding
 
-from ....window.mdi_area   import MdiArea
-from ....window.sub_window import DocSubWindow
+from ....marquee                  import Marquee
 
-from ....marquee import Marquee
+from ....window.mdi_area          import MdiArea
+from ....window.sub_window        import DocSubWindow
+
+from ...scenes.diagram            import DiagramScene
 
 from ...views.diagram.interaction import DiagramInteraction
 
-from ...scenes.diagram import DiagramScene
+from .api                         import DiagramViewApiMixin
+from .mouse                       import DiagramViewMouseMixin
+from .state                       import DiagramViewStateMixin
+from .menu                        import DiagramViewMenuMixin
+from .private                     import DiagramViewPrivateMixin
+from .defs                        import DiagramViewLayer, DiagramViewGrid
 
-from .api     import DiagramViewApiMixin
-from .mouse   import DiagramViewMouseMixin
-from .state   import DiagramViewStateMixin
-from .menu    import DiagramViewMenuMixin
-from .private import DiagramViewPrivateMixin
-from .defs    import DiagramViewLayer, DiagramViewGrid
-
-from .state.base import DiagramViewState
+from .state.base                  import DiagramViewState
 
 
 class DiagramView(
@@ -43,7 +43,7 @@ class DiagramView(
     _shown      : bool
     _zoomed     : bool
     _zoom       : float
-    _pan_pos    : QPoint | None
+    _pan_pos    : QPoint             | None
     marquee     : Marquee
     layer       : DiagramViewLayer
     grid        : DiagramViewGrid
@@ -101,7 +101,7 @@ class DiagramView(
     def drawForeground(
         self    : Self,
         painter : QPainter | None,
-        rect : QRectF
+        rect    : QRectF
     ) -> None:
         if painter is None:
             return
@@ -176,7 +176,7 @@ class DiagramSubWindow(DocSubWindow):
     @checked
     def __init__(
         self    : Self,
-        parent  : MdiArea | None = None,
+        parent  : MdiArea    | None = None,
         binding : DocBinding | None = None,
     ) -> None:
         super().__init__(parent, binding)

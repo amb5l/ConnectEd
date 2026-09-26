@@ -3,14 +3,14 @@
 import pytest
 
 from PyQt6.QtCore    import QBuffer, QIODevice, QPointF, QSizeF
-from PyQt6.QtGui     import QImage
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui     import QImage
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
+from ConnectEd.app                              import ConnectEdApp
+from ConnectEd.core.settings                    import Settings
 from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
-from ConnectEd.widgets.graphics.scenes.drawing import DrawingScene
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
+from ConnectEd.widgets.graphics.scenes.drawing  import DrawingScene
 
 
 @pytest.fixture

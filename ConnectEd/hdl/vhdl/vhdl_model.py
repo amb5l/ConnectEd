@@ -2,14 +2,14 @@ from typing import Self, TextIO, Optional
 
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 
-from antlr4 import InputStream, CommonTokenStream
+from antlr4                     import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
 from pyTooling.Decorators import export
 
-from .vhdl_lexer   import vhdl_lexer as vhl
-from .vhdl_parser  import vhdl_parser as vhp
-from .vhdl_visitor import VhdlVisitor
+from .vhdl_lexer          import vhdl_lexer as vhl
+from .vhdl_parser         import vhdl_parser as vhp
+from .vhdl_visitor        import VhdlVisitor
 
 
 class VhdlItemWithNameMixin:
@@ -133,10 +133,10 @@ class VhdlPortGroup(
     _ports : list[VhdlPort]
 
     def __init__(
-        self     : Self,
-        name     : str,
-        ports    : list[VhdlPort] = [],
-        notes    : str = ""
+        self  : Self,
+        name  : str,
+        ports : list[VhdlPort] = [],
+        notes : str = ""
     ) -> None:
         super().__init__(name)
         self.name = name

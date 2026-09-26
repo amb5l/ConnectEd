@@ -1,5 +1,6 @@
 """Scratch: XOR gate jog staircase lane ordering."""
 import traceback
+
 from pathlib import Path
 
 from PyQt6.QtCore import QPointF

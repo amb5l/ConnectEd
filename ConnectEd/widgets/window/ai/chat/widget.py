@@ -1,8 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from PyQt6.QtCore    import QEvent, QObject, Qt, QTimer, QUrl
+from PyQt6.QtWidgets import (
+    QHBoxLayout,
+    QPlainTextEdit,
+    QPushButton,
+    QTextBrowser,
+    QVBoxLayout,
+    QWidget,
+)
 from PyQt6.QtGui     import (
     QDesktopServices,
     QFont,
@@ -15,29 +23,20 @@ from PyQt6.QtGui     import (
     QTextCursor,
     QWheelEvent,
 )
-from PyQt6.QtWidgets import (
-    QHBoxLayout,
-    QPlainTextEdit,
-    QPushButton,
-    QTextBrowser,
-    QVBoxLayout,
-    QWidget,
-)
 
-from .....app import logger, settings
+from .....app                import logger, settings
 
-from .....core.check import checked
-
-from .....ai.chat_mru import recordChatConnection
-from .....ai.html     import escape, historyStyleSheet, linkify, userMessageHtml
-from .....ai.session  import AiChatSession
-from .....ai.welcome  import parseChatLink, welcomeHtml
+from .....core.check         import checked
+from .....ai.chat_mru        import recordChatConnection
+from .....ai.html            import escape, historyStyleSheet, linkify, userMessageHtml
+from .....ai.session         import AiChatSession
+from .....ai.welcome         import parseChatLink, welcomeHtml
 
 from ....dialogs.ai_profiles import AiProfilesDialog
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ... import Window
-
+    from ...   import Window
     from .dock import AiChatDock
 
 _CONNECTED_PLACEHOLDER    = "Message…"
@@ -117,9 +116,9 @@ class AiChatHistoryBrowser(QTextBrowser):
         viewport.installEventFilter(self)
 
     def eventFilter(
-        self    : Self,
-        a0      : QObject | None,
-        a1      : QEvent | None,
+        self : Self,
+        a0   : QObject | None,
+        a1   : QEvent  | None,
     ) -> bool:
         if a0 is None or a1 is None:
             return False
@@ -157,10 +156,10 @@ class AiChatMessageEdit(QPlainTextEdit):
 
     @checked
     def __init__(
-        self         : Self,
-        host         : _AiChatFontZoomHost,
-        chat_widget  : AiChatWidget,
-        parent       : QWidget | None = None,
+        self        : Self,
+        host        : _AiChatFontZoomHost,
+        chat_widget : AiChatWidget,
+        parent      : QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self._zoom_host   = host

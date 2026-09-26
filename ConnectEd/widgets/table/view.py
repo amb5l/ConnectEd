@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing          import Self
-from types           import SimpleNamespace
+from typing import Self
+from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QRect, QSize, QAbstractItemModel
 from PyQt6.QtWidgets import QWidget, QHeaderView, QTableView, \
@@ -9,11 +9,11 @@ from PyQt6.QtWidgets import QWidget, QHeaderView, QTableView, \
                             QStyle, QStyleOptionHeader
 from PyQt6.QtGui     import QAction, QWheelEvent, QFont, QPainter, QMouseEvent
 
-from ...app import settings
+from ...app        import settings
 
 from ...core.check import checked
 
-from .model import TableModel
+from .model        import TableModel
 
 
 class TableHeaderView(QHeaderView):

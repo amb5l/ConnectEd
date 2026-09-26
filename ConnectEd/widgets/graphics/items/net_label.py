@@ -6,24 +6,23 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QColor
 
-from ....core.defs  import PITCH, WIDTH
-from ....core.check import checked
-from ....core.types import AlignH, AlignV, HandleId, RectHandleId, DataKind
-from ....core.utils import val2str
+from ....core.defs    import PITCH, WIDTH
+from ....core.check   import checked
+from ....core.types   import AlignH, AlignV, HandleId, RectHandleId, DataKind
+from ....core.utils   import val2str
 
-from ..properties import PropertySpec
+from ..properties     import PropertySpec
 
-from .role import FunctionalItem
-
-from .text import BaseTextItem
-from .grip import GripShape
+from .role            import FunctionalItem
+from .text            import BaseTextItem
+from .grip            import GripShape
 
 from .mixin.transform import ItemTransformMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...dialogs.items.net_label import NetLabelItemDialog
-    from ..views.diagram import DiagramView
+    from ..views.diagram            import DiagramView
 
 
 class NetLabelItem(FunctionalItem, BaseTextItem):

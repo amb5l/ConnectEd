@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from typing import Self, TypeAlias
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui  import QKeyEvent, QMouseEvent
-
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QAbstractItemView
+from PyQt6.QtGui     import QKeyEvent, QMouseEvent
 
-from ....app import logger
+from ....app     import logger
 
 from ..tree_view import TreeView
 
-from .types import NavItem
+from .types      import NavItem
 
 
 class NavigatorEventsMixin:

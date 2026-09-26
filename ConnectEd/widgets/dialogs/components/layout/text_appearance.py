@@ -4,12 +4,13 @@ from typing import Self
 
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
 
-from .....core.check import checked
-from .....core.types import RectHandleId
+from .....core.check              import checked
+from .....core.types              import RectHandleId
 
-from ....graphics.items.text       import BaseTextItem
-from ....graphics.items.base_text  import BaseTextAppearanceState
-from ....graphics.presentation     import TextOverrides
+from ....graphics.presentation    import TextOverrides
+
+from ....graphics.items.text      import BaseTextItem
+from ....graphics.items.base_text import BaseTextAppearanceState
 
 from ..group_box.text_orientation import TextOrientationGroupBox
 from ..group_box.text_align       import TextAlignGroupBox
@@ -17,12 +18,12 @@ from ..group_box.text_padding     import TextPaddingGroupBox
 from ..group_box.origin           import OriginGroupBox
 from ..group_box.text_typography  import TextTypographyPreviewGroupBox
 
-from .ok_cancel  import OkCancelLayout
+from .ok_cancel                   import OkCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....graphics.views.diagram import DiagramView
-    from ...items.text import BaseTextItemDialog
+    from ...items.text              import BaseTextItemDialog
 
 
 class TextAppearanceLayout(QVBoxLayout):

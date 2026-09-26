@@ -5,10 +5,10 @@ from typing import Self
 from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QDialog
 
-from .....core.check import checked
-from .....core.types import NoChange
+from .....core.check     import checked
+from .....core.types     import NoChange
 
-from ..edit import StrEditor, TextEditor
+from ..edit              import StrEditor, TextEditor
 
 from ..combo.text_format import TextFormatComboBox
 

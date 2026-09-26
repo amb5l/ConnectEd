@@ -6,15 +6,15 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QVBoxLayout, QGridLayout, QLabel, QWidget
 from PyQt6.QtGui     import QColor, QFont
 
-from .....core.check import checked
-from .....core.types import NoChange
+from .....core.check           import checked
+from .....core.types           import NoChange
 
 from ....graphics.presentation import TextTheme, TextOverrides
 
-from ..combo.color       import ColorComboBox
-from ..combo.font_family import FontFamilyComboBox
-from ..combo.font_size   import FontSizeComboBox
-from ..combo.font_bool   import FontBoolComboBox
+from ..combo.color             import ColorComboBox
+from ..combo.font_family       import FontFamilyComboBox
+from ..combo.font_size         import FontSizeComboBox
+from ..combo.font_bool         import FontBoolComboBox
 
 
 class TextTypographyLayout(QVBoxLayout):

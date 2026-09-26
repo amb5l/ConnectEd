@@ -1,31 +1,31 @@
 from __future__ import annotations
 
 from typing      import Self, Protocol, TypeVar, Generic
-from dataclasses import dataclass
 from abc         import ABC, abstractmethod
+from dataclasses import dataclass
 
 from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QIcon
 
-from ..app import session
+from ..app        import session
 
 from ..core.types import MenuEntry, MenuAction
 from ..core.xml   import cleanPath, saveXml, FileXmlProtocol
 
-from .check import checked
+from .check       import checked
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .session import DocType
-    from ..widgets.window.navigator import Navigator
+    from ..widgets.window.navigator  import Navigator
     from ..widgets.window.sub_window import DocSubWindow
+    from .session                    import DocType
 
 
 @dataclass
 class NavItemSpec:
-    subject  : str | DocSubjectProtocol
-    icon     : QIcon | None = None
-    tip      : str | None = None
+    subject  : str               | DocSubjectProtocol
+    icon     : QIcon             | None = None
+    tip      : str               | None = None
     children : list[NavItemSpec] | None = None
 
 

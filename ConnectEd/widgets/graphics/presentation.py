@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui  import QColor
 
 from ...core.types import NoChange
 

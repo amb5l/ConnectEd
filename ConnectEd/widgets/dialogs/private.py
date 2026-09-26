@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from ...core.check import checked
-from ...core.types import NO_CHANGE
+from ...core.check           import checked
+from ...core.types           import NO_CHANGE
 
 from ..graphics.presentation import LineTheme, LineOverrides, \
                                     FillTheme, FillOverrides, \
                                     TextTheme, TextOverrides
-
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

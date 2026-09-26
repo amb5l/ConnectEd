@@ -1,9 +1,9 @@
 from PyQt6.QtCore import QPointF, Qt
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui  import QColor
 
-from ConnectEd.core.defs import DEFS
+from ConnectEd.core.defs     import DEFS
 from ConnectEd.core.settings import FACTORY_SETTINGS, Settings, loadFactorySettings
-from ConnectEd.core.themes import BUILTIN_THEMES, THEME_NAMES, resolveColor
+from ConnectEd.core.themes   import BUILTIN_THEMES, THEME_NAMES, resolveColor
 
 
 def test_load_factory_settings_top_level_keys() -> None:

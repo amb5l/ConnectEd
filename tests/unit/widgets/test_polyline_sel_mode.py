@@ -1,13 +1,13 @@
 """Polyline selection mode resets on select/deselect transitions."""
 
 import logging
-
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
+from ConnectEd.app                             import ConnectEdApp
+from ConnectEd.core.settings                   import Settings
 from ConnectEd.widgets.graphics.items.polyline import PolylineItem
 from ConnectEd.widgets.graphics.scenes.drawing import DrawingScene
 

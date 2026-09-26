@@ -3,19 +3,19 @@ from typing import Self, Any, TypeAlias
 from PyQt6.QtCore import Qt, QPointF, QLineF, QRectF
 from PyQt6.QtGui  import QPolygonF, QTransform, QPainterPath, QColor, QPen, QBrush
 
-from .....app import settings
+from .....app        import settings
 
 from .....core.check import checked
 from .....core.defs  import PITCH, WIDTH
 from .....core.types import NetKind, Direction
 
-from ...quill import Quill
+from ...quill        import Quill
 
-from ...items.grip import GripShape
-from ...items.node import NodeState
+from ...items.grip   import GripShape
+from ...items.node   import NodeState
 
 
-PenTable : TypeAlias = dict[Any, QPen]
+PenTable   : TypeAlias = dict[Any, QPen]
 BrushTable : TypeAlias = dict[Any, QBrush]
 QuillTable : TypeAlias = dict[Any, Quill]
 
@@ -209,7 +209,7 @@ class DiagramSceneResources:
             self._brushes[item_name] = {}
             self._paths[item_name] = {}
             size = settings().get(f"{settings_path}/size")
-            item_pens : dict[tuple[NodeState, bool], QPen] = {}
+            item_pens    : dict[tuple[NodeState, bool], QPen] = {}
             item_brushes : dict[tuple[NodeState, bool], QBrush] = {}
             for state in NodeState:
                 state_str = state.value

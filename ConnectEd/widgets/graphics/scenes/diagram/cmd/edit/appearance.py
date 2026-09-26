@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing      import Self
 from dataclasses import dataclass
@@ -7,14 +7,14 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from .......core.check import checked
-from .......core.types import NoChange, NO_CHANGE
+from .......core.check             import checked
+from .......core.types             import NoChange, NO_CHANGE
 
-from .....items.protocols import OnGeometryChangedProtocol
+from .....items.protocols          import OnGeometryChangedProtocol
 
 from .....items.mixin.presentation import ItemPresentationMixin
 
-from .. import CmdSceneItems
+from ..                            import CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -63,7 +63,7 @@ class CmdEditAppearance(CmdSceneItems):
     def __init__(
         self           : Self,
         scene          : DiagramScene,
-        items          : QGraphicsItem | list[QGraphicsItem],
+        items          : QGraphicsItem        | list[QGraphicsItem],
         line_color     : QColor        | None | NoChange = NO_CHANGE,
         line_width     : float         | None | NoChange = NO_CHANGE,
         line_style     : Qt.PenStyle   | None | NoChange = NO_CHANGE,

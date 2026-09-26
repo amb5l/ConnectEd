@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
-
-from ....core.check import checked
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
                             QGraphicsSceneMouseEvent
 
-from .role import ChromeItem
+from ....core.check  import checked
+
+from .role           import ChromeItem
 
 from .mixin.settings import ItemSettingsMixin
 from .mixin.change   import ItemChangeMixin

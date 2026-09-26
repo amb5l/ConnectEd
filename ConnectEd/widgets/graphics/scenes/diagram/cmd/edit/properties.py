@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from typing import Self
 
-from .......app import logger
+from .......app               import logger
 
-from .......core.check import checked
-from .......core.types import NoChange, DataKind
-from .......core.utils import camel2proper
+from .......core.check        import checked
+from .......core.types        import NoChange, DataKind
+from .......core.utils        import camel2proper
 
-from .....properties import PropertiesMixin, Property, PropertyState, \
+from .....properties          import PropertiesMixin, Property, PropertyState, \
                             PropertyChange
 
 from .....items.property_text import PropertyTextItem, PropertyTextState, \
                                      PropertyTextChange
 
-from .. import CmdBase
+from ..                       import CmdBase
 
 
 class CmdPropertyBase(CmdBase):

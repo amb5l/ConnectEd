@@ -1,19 +1,20 @@
 """connectFixedNode and detachFixedNode diagram connectivity."""
 
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
-from ConnectEd.core.types import Direction, Edge
-from ConnectEd.widgets.graphics.items.block import BlockItem
+from ConnectEd.app                              import ConnectEdApp
+from ConnectEd.core.settings                    import Settings
+from ConnectEd.core.types                       import Direction, Edge
+from ConnectEd.widgets.window.netlist           import NetlistBrowser
+from ConnectEd.widgets.graphics.items.block     import BlockItem
 from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
-from ConnectEd.widgets.graphics.items.node import FreeNodeItem
-from ConnectEd.widgets.graphics.items.port import PortItem
-from ConnectEd.widgets.graphics.items.segment import SegmentItem
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
-from ConnectEd.widgets.window.netlist import NetlistBrowser
+from ConnectEd.widgets.graphics.items.node      import FreeNodeItem
+from ConnectEd.widgets.graphics.items.port      import PortItem
+from ConnectEd.widgets.graphics.items.segment   import SegmentItem
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 
 @pytest.fixture

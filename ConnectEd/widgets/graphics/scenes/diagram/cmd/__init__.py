@@ -6,13 +6,12 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
-from ......core.check import checked
-from ......core.utils import camel2proper
+from ......core.check          import checked
+from ......core.utils          import camel2proper
 
-from ....items.grip    import GripItem
-from ....items.segment import SegmentItem
-
-from ....items.mixin import ItemMoveMixin
+from ....items.grip            import GripItem
+from ....items.segment         import SegmentItem
+from ....items.mixin           import ItemMoveMixin
 
 from ....items.mixin.transform import ItemTransformMixin
 

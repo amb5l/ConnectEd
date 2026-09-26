@@ -2,9 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QButtonGroup, QLabel
 
-from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE, AlignH, AlignV
-
+from .....core.check      import checked
+from .....core.types      import NoChange, NO_CHANGE, AlignH, AlignV
 from .....resources.icons import TextAlignLeftIcon,   \
                                  TextAlignCenterIcon, \
                                  TextAlignRightIcon,  \
@@ -12,7 +11,7 @@ from .....resources.icons import TextAlignLeftIcon,   \
                                  TextAlignMiddleIcon, \
                                  TextAlignBottomIcon
 
-from ..tool_button import ToolButton
+from ..tool_button        import ToolButton
 
 
 class TextAlignLayout(QGridLayout):

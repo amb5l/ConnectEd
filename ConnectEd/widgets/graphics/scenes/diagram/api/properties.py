@@ -5,32 +5,31 @@ from dataclasses import fields
 
 from PyQt6.QtGui import QColor
 
-from ......app import logger
+from ......app               import logger
 
-from ......core.check import checked
-from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check        import checked
+from ......core.types        import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId, DataKind
 
-from ....properties import PropertyState, \
+from ....properties          import PropertyState, \
                            PropertyAdd, PropertyDelete, PropertyChange, \
                            PropertyAndTextsEdit
 
 from ....items.property_text import PropertyTextState, PropertyTextChange, \
                                     PropertyTextAdd, PropertyTextDelete
 
-from ..cmd import cmdExec
+from ..cmd                   import cmdExec
+from ..host                  import asDiagramScene
 
-from ..cmd.edit.properties import (
+from ..cmd.edit.properties   import (
     CmdAddProperty, CmdEditProperty, CmdDelProperty,
     CmdAddPropertyText, CmdEditPropertyText, CmdDelPropertyText
 )
 
-from ..host import asDiagramScene
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ....properties          import PropertiesMixin, Property
     from ....items.property_text import PropertyTextItem
-    from ....properties import PropertiesMixin, Property
 
 
 def _textKwargs(

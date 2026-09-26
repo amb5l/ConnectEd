@@ -36,7 +36,7 @@ class PainterPath(QPainterPath):
     def lineTo(  # pyright: ignore[reportInconsistentOverload]
         self   : Self,
         p_or_x : QPointF | float,
-        y      : float | None = None
+        y      : float   | None = None
     ) -> None:
         """Override to store midpoint. Accepts QPointF or (x, y) coordinates."""
         if isinstance(p_or_x, QPointF):
@@ -52,10 +52,10 @@ class PainterPath(QPainterPath):
 
     @overload
     def arcTo(
-        self       : Self,
-        a0         : QRectF,
-        a1         : float,   # start angle
-        a2         : float    # span angle
+        self : Self,
+        a0   : QRectF,
+        a1   : float,   # start angle
+        a2   : float    # span angle
     ) -> None:
         ...
 
@@ -77,9 +77,9 @@ class PainterPath(QPainterPath):
         a0   : QRectF | float,       # rect or x
         a1   : float,                # start angle or y
         a2   : float,                # span angle or width
-        a3   : float | None = None,  # None or height
-        a4   : float | None = None,  # None or start angle
-        a5   : float | None = None   # None or span angle
+        a3   : float  | None = None,  # None or height
+        a4   : float  | None = None,  # None or start angle
+        a5   : float  | None = None   # None or span angle
     ) -> None:
         """Draw arc. Accepts QRectF or (x, y, width, height) coordinates."""
         if isinstance(a0, QRectF) and _isNum(a1) and _isNum(a2):
@@ -124,7 +124,7 @@ class PainterPath(QPainterPath):
         self : Self,
         a0   : QPointF | float,     # pos or x
         a1   : float,               # span angle or y
-        a2   : float | None = None  # None or span angle
+        a2   : float   | None = None  # None or span angle
     ) -> None:
         """Draw arc by span angle. Accepts QPointF or (x, y) coordinates."""
         if isinstance(a0, QPointF) and _isNum(a1):
@@ -196,7 +196,7 @@ class PainterPath(QPainterPath):
         self : Self,
         a0   : QPointF | float,     # pos or x
         a1   : float,               # sagitta or y
-        a2   : float | None = None  # None or sagitta
+        a2   : float   | None = None  # None or sagitta
     ) -> None:
         """Draw arc by sagitta. Accepts QPointF or (x, y) coordinates."""
         if isinstance(a0, QPointF) and _isNum(a1):

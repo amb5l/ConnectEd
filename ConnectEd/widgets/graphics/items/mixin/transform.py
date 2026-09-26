@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing      import Self
 from dataclasses import replace
@@ -10,9 +10,9 @@ from PyQt6.QtGui     import QTransform
 from .....core.check import checked
 from .....core.types import DataKind, HandleId
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties   import PropertySpec, PropertiesMixin
 
-from ..protocols import OnSceneOrientationChangedProtocol
+from ..protocols     import OnSceneOrientationChangedProtocol
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from PyQt6.QtCore    import pyqtSignal
 from PyQt6.QtWidgets import QDockWidget
 
-from .....core.check import checked
-
+from .....core.check  import checked
 from .....ai.profiles import getProfile, profileMenuLabel, providerPresetLabel
 
+from .widget          import AiChatWidget
+
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ... import Window
-
-from .widget import AiChatWidget
 
 
 class AiChatDock(QDockWidget):

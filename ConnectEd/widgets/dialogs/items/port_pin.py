@@ -5,8 +5,8 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QComboBox
 
-from ....core.check import checked
-from ....core.types import Direction
+from ....core.check                import checked
+from ....core.types                import Direction
 
 from ..components.layout.ok_cancel import OkCancelLayout
 
@@ -29,7 +29,7 @@ class PortPinItemDialog(QDialog):
         self   : Self,
         title  : str,
         item   : PortPinMixin | None = None,
-        parent : QWidget | None = None
+        parent : QWidget      | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)

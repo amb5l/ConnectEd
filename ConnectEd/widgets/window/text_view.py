@@ -6,13 +6,13 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
 from PyQt6.QtGui     import QTextOption, QContextMenuEvent, QWheelEvent
 
-from ...app import logger, settings
+from ...app        import logger, settings
 
 from ...core.check import checked
 
-from ..action import Action
+from ..action      import Action
 
-from .find_bar import FindBar
+from .find_bar     import FindBar
 
 
 class TextView(QPlainTextEdit):
@@ -102,7 +102,7 @@ class TextViewDockWidget(QDockWidget):
     def __init__(
         self     : Self,
         parent   : QWidget | None = None,
-        filename : str | None = None
+        filename : str     | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)

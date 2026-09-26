@@ -6,26 +6,25 @@ from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import logger, settings
+from ....app             import logger, settings
 
-from ....core.check import checked
-from ....core.defs  import Z_SEGMENT
-from ....core.types import Axis, NetKind
-from ....core.utils import val2str
+from ....core.check      import checked
+from ....core.defs       import Z_SEGMENT
+from ....core.types      import Axis, NetKind
+from ....core.utils      import val2str
 
-from ..scenes import withScene
+from ..scenes            import withScene
 
-from .role import FunctionalItem
-
+from .role               import FunctionalItem
 from .mixin              import ItemMixin
+from .node               import NodeItem
+
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.change       import ItemChangeMixin
 from .mixin.clone        import ItemCloneMixin
 from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
-
-from .node import NodeItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -190,9 +189,9 @@ class SegmentItem(
 
     @checked
     def ctxMenuItems(
-        self  : Self,
-        view  : DiagramView,
-        spos  : QPointF
+        self : Self,
+        view : DiagramView,
+        spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
             view.action(
@@ -265,9 +264,9 @@ class SegmentPreviewItem(QGraphicsLineItem):
         settings().changed.connect(self.onSettingsChanged)
 
     def itemChange(
-        self : Self,
+        self   : Self,
         change : QGraphicsItem.GraphicsItemChange,
-        value : Any
+        value  : Any
     ) -> Any:
         if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
             if value is not None:

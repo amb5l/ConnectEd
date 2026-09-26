@@ -9,7 +9,7 @@ from dataclasses     import dataclass, field, fields
 from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene
 
-from ...app import logger
+from ...app        import logger
 
 from ...core.check import checked
 from ...core.types import NoChange, NO_CHANGE, DataKind
@@ -32,7 +32,7 @@ class Property:
     """Object representing a property of a properties mixin."""
 
     _owner        : PropertiesMixin
-    _kind         : DataKind | Callable[[PropertiesMixin], DataKind]
+    _kind         : DataKind                               | Callable[[PropertiesMixin], DataKind]
     _value        : Any                                    | None
     _getter       : Callable[[PropertiesMixin], Any]       | None
     _setter       : Callable[[PropertiesMixin, Any], None] | None
@@ -44,7 +44,7 @@ class Property:
     def __init__(
         self    : Self,
         owner   : PropertiesMixin,
-        kind    : DataKind | Callable[[PropertiesMixin], DataKind],
+        kind    : DataKind                               | Callable[[PropertiesMixin], DataKind],
         value   : Any                                    | None = None,
         getter  : Callable[[PropertiesMixin], Any]       | None = None,
         setter  : Callable[[PropertiesMixin, Any], None] | None = None,
@@ -211,7 +211,7 @@ T = TypeVar("T")
 class PropertySpec(Generic[T]):
     """Used to create a property in owner definitions."""
 
-    kind    : DataKind | Callable[[T], DataKind]
+    kind    : DataKind                           | Callable[[T], DataKind]
     value   : Any                                | None = None
     getter  : Callable[[T], Any]                 | None = None
     setter  : Callable[[T, Any], None]           | None = None
@@ -339,7 +339,7 @@ class PropertyAndTextsEdit:
     """A property edit and the text edits that belong with it."""
 
     owner    : PropertiesMixin
-    property : Property    | None
+    property : Property                                      | None
     edit     : PropertyAdd | PropertyDelete | PropertyChange | None
     texts    : Sequence[PropertyTextEdit]
 

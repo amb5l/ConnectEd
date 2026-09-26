@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Self
+from typing      import Self
 from collections import Counter
 
-from PyQt6.QtCore import QObject, pyqtSignal, Qt
+from PyQt6.QtCore    import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QDockWidget
 
-from .....ai.lock import AiEditLock
+from .....ai.lock    import AiEditLock
 from .....core.check import checked
 
-from .dock import AiChatDock
+from .dock           import AiChatDock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ... import Window
+    from ...              import Window
     from ...messages_view import MessagesViewDock
 
 
@@ -29,7 +29,7 @@ def chatTitle(provider_label : str, index : int | None = None) -> str:
 def chatTitles(provider_labels : list[str]) -> list[str]:
     counts = Counter(provider_labels)
     indices : Counter[str] = Counter()
-    titles : list[str] = []
+    titles  : list[str] = []
     for label in provider_labels:
         indices[label] += 1
         if counts[label] > 1:

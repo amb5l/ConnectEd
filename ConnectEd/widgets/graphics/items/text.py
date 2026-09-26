@@ -1,13 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing      import Self
 from dataclasses import dataclass
 
 from ....core.types import NoChange, NO_CHANGE
 
-from .role import DecorativeItem
-
-from .base_text import BaseTextItem, \
+from .role          import DecorativeItem
+from .base_text     import BaseTextItem, \
                        BaseTextAppearanceState, BaseTextAppearanceChange
 
 

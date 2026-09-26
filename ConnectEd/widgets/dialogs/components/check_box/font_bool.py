@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QWidget, QCheckBox
 class FontBoolCheckBox(QCheckBox):
     def __init__(
         self   : Self,
-        value  : bool | None,
+        value  : bool    | None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

@@ -1,6 +1,7 @@
 """Pytest path setup (integration package lives under tests/)."""
 
 import sys
+
 from pathlib import Path
 
 _tests_dir = Path(__file__).resolve().parent

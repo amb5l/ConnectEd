@@ -1,15 +1,14 @@
-from typing  import Self, TextIO
-from pathlib import Path
-from io      import StringIO
-
 import random
 
-from ConnectEd.hdl.vhdl import VhdlDocument, VhdlEntity, \
+from typing  import Self, TextIO
+from io      import StringIO
+from pathlib import Path
+
+from tests.utils                     import MinMax
+from ConnectEd.hdl.vhdl              import VhdlDocument, VhdlEntity, \
                                VhdlGeneric, VhdlPortGroup, VhdlPort
 
 from ConnectEd.hdl.vhdl.vhdl_visitor import VhdlVisitor
-
-from tests.utils import MinMax
 
 
 class TestFixtures:

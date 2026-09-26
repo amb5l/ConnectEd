@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing          import Self, TYPE_CHECKING
+from typing          import Self
 from collections.abc import Callable
 
 from PyQt6.QtCore    import QPoint, QPointF
@@ -9,7 +9,9 @@ from PyQt6.QtGui     import QAction
 
 from ..mouse import MouseModifier
 
-from .host import asDiagramViewState
+from .host   import asDiagramViewState
+
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..            import DiagramView
     from ..interaction import DiagramInteraction

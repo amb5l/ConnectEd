@@ -1,13 +1,14 @@
 """ItemSubscribeMixin event registry."""
 
 import pytest
+
 from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.widgets.graphics.items.mixin.subscribe import ItemSubscribeMixin
+from ConnectEd.app                                    import ConnectEdApp
 from ConnectEd.widgets.graphics.items.node            import FreeNodeItem, SCENE_POS_CHANGE
 from ConnectEd.widgets.graphics.items.segment         import SegmentItem
+from ConnectEd.widgets.graphics.items.mixin.subscribe import ItemSubscribeMixin
 
 
 @pytest.fixture

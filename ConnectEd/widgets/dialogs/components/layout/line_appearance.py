@@ -4,14 +4,14 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
-from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE
+from .....core.check           import checked
+from .....core.types           import NoChange, NO_CHANGE
 
 from ....graphics.presentation import LineTheme, LineOverrides
 
-from ..combo.color      import ColorComboBox
-from ..combo.line_width import LineWidthComboBox
-from ..combo.line_style import LineStyleComboBox
+from ..combo.color             import ColorComboBox
+from ..combo.line_width        import LineWidthComboBox
+from ..combo.line_style        import LineStyleComboBox
 
 
 class LineAppearanceLayout(QVBoxLayout):

@@ -7,28 +7,26 @@ from PyQt6.QtCore    import QPointF, QLineF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoStack
 
-from ......core.check import checked
-from ......core.defs  import PITCH
-from ......core.types import Axis, Polarity, EdgeLoc
+from ......core.check              import checked
+from ......core.defs               import PITCH
+from ......core.types              import Axis, Polarity, EdgeLoc
+
+from ....items.grip                import GripItem
+from ....items.port_pin            import PortPinMixin
+from ....items.node                import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.segment             import SegmentItem
+from ....items.tap                 import TapItem
+from ....items.port                import PortItem
+from ....items.gate                import GateItem
+from ....items.block               import BlockItem
+from ....items.block_pin           import BlockPinItem
+from ....items.symbol              import SymbolInstanceItem
+from ....items.net_label           import NetLabelItem
+from ....items.rubber              import RubberItem, RubberJogItem
+from ....scenes.diagram            import DiagramScene
 
 from ....views.diagram.interaction import PreviewStateMixin
-
-from ....items.grip      import GripItem
-from ....items.port_pin  import PortPinMixin
-from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
-from ....items.segment   import SegmentItem
-from ....items.tap       import TapItem
-from ....items.port      import PortItem
-from ....items.gate      import GateItem
-from ....items.block     import BlockItem
-from ....items.block_pin import BlockPinItem
-from ....items.symbol    import SymbolInstanceItem
-from ....items.net_label import NetLabelItem
-from ....items.rubber    import RubberItem, RubberJogItem
-
-from ....items.mixin.move import ItemMoveMixin
-
-from ....scenes.diagram import DiagramScene
+from ....items.mixin.move          import ItemMoveMixin
 
 from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
 from ....scenes.diagram.cmd.rubber import (
@@ -37,7 +35,7 @@ from ....scenes.diagram.cmd.rubber import (
     CmdMovePreviewRubberJog
 )
 
-from . import DiagramInteraction, DiagramItemInteraction, \
+from .                             import DiagramInteraction, DiagramItemInteraction, \
               DiagramItemsInteraction, MoveItemMixin
 
 from typing import TYPE_CHECKING
@@ -101,14 +99,14 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     """
 
     # instance attributes
-    _undo_stack  : QUndoStack           # private undo stack for preview operations
-    _ipos        : QPointF              # initial position
-    _pos         : QPointF | None       # last position (filter redundant updates)
-    _slide       : bool                 # true => retain connections
-    _rubbers     : list[RubberItem]     # all rubber items
-    _rubber_jogs : list[RubberJogItem]  # rubber jog items
-    _rubber_segs : list[SegmentItem]    # rubberized segments
-    _move_segs   : list[SegmentItem]    # moved segments
+    _undo_stack    : QUndoStack           # private undo stack for preview operations
+    _ipos          : QPointF              # initial position
+    _pos           : QPointF | None       # last position (filter redundant updates)
+    _slide         : bool                 # true => retain connections
+    _rubbers       : list[RubberItem]     # all rubber items
+    _rubber_jogs   : list[RubberJogItem]  # rubber jog items
+    _rubber_segs   : list[SegmentItem]    # rubberized segments
+    _move_segs     : list[SegmentItem]    # moved segments
     _detached_segs : list[tuple[SegmentItem, FixedNodeItem]]
 
     @checked
@@ -245,7 +243,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     if isinstance(item, ItemMoveMixin) and item.movable():
                         filtered_items.append(item)
         # deduplicate items
-        seen : set[QGraphicsItem] = set()
+        seen         : set[QGraphicsItem] = set()
         unique_items : list[QGraphicsItem] = []
         for item in filtered_items:
             if item not in seen:
@@ -305,7 +303,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # - remove from item set along with any free nodes
         items = list(self._items)  # local copy
         segments_to_recreate : list[QLineF] = []
-        segments_to_delete : list[SegmentItem] = []
+        segments_to_delete   : list[SegmentItem] = []
         for item in list(items):  # iterate over copy of copy (b/c mutation)
             if isinstance(item, SegmentItem):
                 segments_to_recreate.append(item.sceneLine())
@@ -412,7 +410,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         self              : Self,
         segment_or_static : SegmentItem | NodeItem,  # segment or static node
         mobile            : NodeItem,                # mobile node
-        axis              : Axis | None = None       # (optional) jog inline axis
+        axis              : Axis        | None = None       # (optional) jog inline axis
     ) -> None:
         """
         Replace a segment with rubber, or add rubber between 2 nodes.
@@ -485,7 +483,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         }
 
         # --- 2. build clean conflict groups (connected components, same axis) --
-        groups: list[list[RubberJogItem]] = []
+        groups   : list[list[RubberJogItem]] = []
         processed: set[RubberJogItem] = set()
         jog_list = list(jog_rects.keys())
 
@@ -540,7 +538,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 continue
 
             group_axis = group[0].axis()
-            quad_to_jogs: dict[tuple[Polarity, Polarity], list[RubberJogItem]] = {}
+            quad_to_jogs     : dict[tuple[Polarity, Polarity], list[RubberJogItem]] = {}
             jog_across_center: dict[RubberJogItem, float] = {}
 
             for jog in group:
@@ -595,7 +593,7 @@ class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     _block      : BlockItem
     _pins       : list[BlockPinItem]  # first item is primary pin | None
     _loc_snap   : EdgeLoc | None
-    _corner     : int | None
+    _corner     : int     | None
 
     @checked
     def __init__(
@@ -693,10 +691,10 @@ class MoveGripInteraction(
 ):
     @checked
     def __init__(
-        self  : Self,
-        view  : DiagramView,
-        grip  : GripItem,
-        pos   : QPointF
+        self : Self,
+        view : DiagramView,
+        grip : GripItem,
+        pos  : QPointF
     ) -> None:
         super().__init__(view, grip)
         self._cpos  = self._ipos = pos

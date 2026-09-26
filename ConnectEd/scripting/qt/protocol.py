@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
+from typing          import Any, Protocol, Self, runtime_checkable
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Protocol, Self, runtime_checkable
 
-from PyQt6.QtCore import QPoint, QPointF, Qt
-from PyQt6.QtGui import QAction
+from PyQt6.QtCore    import QPoint, QPointF, Qt
 from PyQt6.QtWidgets import QDockWidget, QGraphicsView, QMenu, QMenuBar, QWidget
+from PyQt6.QtGui     import QAction
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...widgets.window import Window
+    from ...widgets.window          import Window
     from ...widgets.window.menu_bar import MenuBar
 
 
@@ -87,48 +88,48 @@ class GuiDriver(Protocol):
 
     # mouse
     def mousePress(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = ...,
-        modifiers  : Qt.KeyboardModifier = ...,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = ...,
+        modifiers : Qt.KeyboardModifier = ...,
     ) -> None:
         ...
 
     def mouseMove(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = ...,
-        modifiers  : Qt.KeyboardModifier = ...,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = ...,
+        modifiers : Qt.KeyboardModifier = ...,
     ) -> None:
         ...
 
     def mouseRelease(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = ...,
-        modifiers  : Qt.KeyboardModifier = ...,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = ...,
+        modifiers : Qt.KeyboardModifier = ...,
     ) -> None:
         ...
 
     def mouseClick(
-        self       : Self,
-        widget     : QWidget,
-        pos        : QPoint,
-        button     : Qt.MouseButton = ...,
-        modifiers  : Qt.KeyboardModifier = ...,
+        self      : Self,
+        widget    : QWidget,
+        pos       : QPoint,
+        button    : Qt.MouseButton = ...,
+        modifiers : Qt.KeyboardModifier = ...,
     ) -> None:
         ...
 
     def mouseDrag(
-        self       : Self,
-        widget     : QWidget,
-        pos1       : QPoint,
-        pos2       : QPoint | None = ...,
-        button     : Qt.MouseButton = ...,
-        modifiers  : Qt.KeyboardModifier = ...,
+        self      : Self,
+        widget    : QWidget,
+        pos1      : QPoint,
+        pos2      : QPoint | None = ...,
+        button    : Qt.MouseButton = ...,
+        modifiers : Qt.KeyboardModifier = ...,
     ) -> None:
         ...
 

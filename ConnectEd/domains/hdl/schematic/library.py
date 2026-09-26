@@ -2,7 +2,7 @@ from typing import Any, Self
 
 from ....core.types import DataKind
 
-from .symbols import SymbolsMixin
+from .symbols       import SymbolsMixin
 
 class HdlSchematicLibrary(SymbolsMixin):
     _name              : str
@@ -33,8 +33,8 @@ class HdlSchematicLibrary(SymbolsMixin):
         self._property_defaults[name] = (kind, value)
 
     def delPropertyDefault(
-        self  : Self,
-        name  : str
+        self : Self,
+        name : str
     ) -> None:
         if name not in self._property_defaults:
             raise ValueError(f"Property {name} does not have a default")

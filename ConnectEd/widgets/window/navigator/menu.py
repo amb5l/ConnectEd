@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt, QPoint
-
 from typing import Self
 
-from ....app import session
+from PyQt6.QtCore import Qt, QPoint
+
+from ....app        import session
 
 from ....core.doc   import DocBinding
 from ....core.types import MenuAction, MenuSeparator, MenuEntry
 
-from ...menu import Menu
+from ...menu        import Menu
 
 
 class NavigatorMenuMixin:

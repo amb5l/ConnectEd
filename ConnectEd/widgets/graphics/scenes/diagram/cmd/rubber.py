@@ -4,10 +4,10 @@ from typing import Self, TypeVar, Generic
 
 from PyQt6.QtGui import QUndoCommand
 
-from ......app import logger
+from ......app         import logger
 
-from ......core.check import checked
-from ......core.types import Axis
+from ......core.check  import checked
+from ......core.types  import Axis
 
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
@@ -121,7 +121,7 @@ class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase[RubberJogItem]):
         self              : Self,
         segment_or_static : SegmentItem | NodeItem,
         mobile            : NodeItem,
-        axis              : Axis | None = None
+        axis              : Axis        | None = None
     ) -> None:
         """
         Preview command: replace a segment with a rubber jog, or add one between

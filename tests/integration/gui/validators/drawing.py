@@ -3,24 +3,24 @@
 from __future__ import annotations
 
 import tempfile
+
 from pathlib import Path
 
 from PyQt6.QtWidgets import QMdiSubWindow
 
-from ConnectEd.app import app, settings
-from ConnectEd.core.db import DesignDbNode
-from ConnectEd.scripting import Window, gui
-from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
-from ConnectEd.widgets.graphics.views.diagram import DiagramView
-
-from integration.gui.drawing_specs import (
+from ConnectEd.app                              import app, settings
+from ConnectEd.scripting                        import Window, gui
+from ConnectEd.core.db                          import DesignDbNode
+from integration.gui.drawing_specs              import (
     DRAWING_CASES,
     DrawingCase,
     DrawingDragStep,
     DrawingPlaceModeStep,
     DrawingStep,
 )
-from integration.gui.scene_compare import compare_scenes
+from integration.gui.scene_compare              import compare_scenes
+from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
+from ConnectEd.widgets.graphics.views.diagram   import DiagramView
 
 
 def _active_diagram_view(driver) -> DiagramView:
@@ -111,7 +111,7 @@ def run_drawing_case(window: Window, case: DrawingCase) -> None:
 
     design = app().model().designDbNodes()[-1]
     tmp_path: Path | None = None
-    try:
+    try     :
         with tempfile.NamedTemporaryFile(
             suffix=".dsn", delete=False
         ) as tmp:

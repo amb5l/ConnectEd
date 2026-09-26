@@ -4,15 +4,15 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
-from .....app import logger
+from .....app                  import logger
 
-from .....core.check import checked
-from .....core.types import NoChange
+from .....core.check           import checked
+from .....core.types           import NoChange
 
 from ....graphics.presentation import FillTheme, FillOverrides
 
-from ..combo.color      import ColorComboBox
-from ..combo.fill_style import FillStyleComboBox
+from ..combo.color             import ColorComboBox
+from ..combo.fill_style        import FillStyleComboBox
 
 
 class FillAppearanceLayout(QVBoxLayout):

@@ -2,8 +2,8 @@
 
 from typing import Self
 
-from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QMenu, QMenuBar
+from PyQt6.QtGui     import QAction
 
 
 class MenusMixin:

@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ...items.role import ChromeItem
 
-from .host import asDiagramScene
+from .host         import asDiagramScene
 
 
 class DiagramScenePrivateMixin:

@@ -11,31 +11,28 @@ from PyQt6.QtCore    import Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMdiSubWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
-from ...app import app, logger, settings
+from ...app                   import app, logger, settings
+from ...resources             import getIconPath
 
-from ...core.args  import known_args
-from ...core.check import checked
-from ...core.defs  import APP_NAME
+from ...core.args             import known_args
+from ...core.check            import checked
+from ...core.defs             import APP_NAME
+from ...ai.lock               import AiEditLock
 
-from ...resources import getIconPath
-
-from ..splash import progress
-
-from ...ai.lock import AiEditLock
+from ..splash                 import progress
 
 from ..graphics.views.diagram import DiagramView
 
-from .menu_bar   import MenuBar
-from .status_bar import StatusBar
-from .mdi_area   import MdiArea
-
-from .navigator       import NavigatorDock, Navigator
-from .netlist         import NetlistBrowserDock, NetlistBrowser
-from .text_view       import TextView
-from .messages_view   import MessagesViewDock
-from .transcript_view import TranscriptViewDock
-from .log_view        import LogViewDock
-from .ai              import AiChatDock, AiChatManager, AiManager
+from .menu_bar                import MenuBar
+from .status_bar              import StatusBar
+from .mdi_area                import MdiArea
+from .navigator               import NavigatorDock, Navigator
+from .netlist                 import NetlistBrowserDock, NetlistBrowser
+from .text_view               import TextView
+from .messages_view           import MessagesViewDock
+from .transcript_view         import TranscriptViewDock
+from .log_view                import LogViewDock
+from .ai                      import AiChatDock, AiChatManager, AiManager
 
 
 class Window(QMainWindow):

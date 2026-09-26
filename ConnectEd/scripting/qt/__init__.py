@@ -1,10 +1,10 @@
 """Shared Qt interaction base for GUI scripting drivers."""
 
-from .core import CoreMixin
-from .menus import MenusMixin
-from .modal import ModalMixin
+from .core     import CoreMixin
+from .menus    import MenusMixin
+from .modal    import ModalMixin
 from .protocol import GuiDriver
-from .shell import ShellMixin
+from .shell    import ShellMixin
 
 
 class QtScripting(CoreMixin, MenusMixin, ModalMixin, ShellMixin):

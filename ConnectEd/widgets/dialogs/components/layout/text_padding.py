@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGridLayout, QLabel
 from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
 
-from ..edit import NaturalFloatEditor
+from ..edit          import NaturalFloatEditor
 
 
 class TextPaddingLayout(QGridLayout):
@@ -20,11 +20,11 @@ class TextPaddingLayout(QGridLayout):
 
     @checked
     def __init__(
-        self        : Self,
-        pad_top     : float,
-        pad_bottom  : float,
-        pad_left    : float,
-        pad_right   : float
+        self       : Self,
+        pad_top    : float,
+        pad_bottom : float,
+        pad_left   : float,
+        pad_right  : float
     ) -> None:
         super().__init__()
         # row 0 — horizontal padding

@@ -3,7 +3,7 @@
 import pytest
 
 from ConnectEd.ai.prompt import buildSystemPrompt, formatToolsForPrompt
-from ConnectEd.ai.types import ToolSpec
+from ConnectEd.ai.types  import ToolSpec
 
 
 def test_format_tools_for_prompt_lists_names() -> None:

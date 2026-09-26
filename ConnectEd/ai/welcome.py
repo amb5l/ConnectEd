@@ -5,7 +5,7 @@ from __future__ import annotations
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from .chat_mru import listChatMru
-from .html import escape
+from .html     import escape
 from .profiles import connectionLabel, connectionPrefix, loadProfiles
 
 _SETTINGS_LINK = "connected://ai/settings"

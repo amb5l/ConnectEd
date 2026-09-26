@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox
 
-from .....core.check import checked
-from .....core.types import NoChange, NO_CHANGE
+from .....core.check  import checked
+from .....core.types  import NoChange, NO_CHANGE
 
 from ..combo.rotation import RotationComboBox
 

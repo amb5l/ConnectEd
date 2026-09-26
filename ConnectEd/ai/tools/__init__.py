@@ -1,9 +1,8 @@
 from collections.abc import Iterator
 
-from ..types import ToolEntry, ToolSpec
+from ..types    import ToolEntry, ToolSpec
 
-from .utils import callTool
-
+from .utils     import callTool
 from .get       import _TOOLS as _GET_TOOLS
 from .block     import _TOOLS as _BLOCK_TOOLS
 from .block_pin import _TOOLS as _BLOCK_PIN_TOOLS

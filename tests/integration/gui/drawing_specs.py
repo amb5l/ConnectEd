@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from typing      import Literal
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Literal
+from pathlib     import Path
 
 from PyQt6.QtCore import QPointF
 
@@ -15,8 +15,8 @@ FIXTURES_DSN_DIR = _TESTS_DIR / "fixtures" / "dsn"
 @dataclass(frozen=True)
 class DrawingDragStep:
     kind: Literal["drag"] = "drag"
-    p1: QPointF = field(default_factory=QPointF)
-    p2: QPointF = field(default_factory=QPointF)
+    p1  : QPointF = field(default_factory=QPointF)
+    p2  : QPointF = field(default_factory=QPointF)
 
 
 @dataclass(frozen=True)
@@ -30,11 +30,11 @@ DrawingStep = DrawingDragStep | DrawingPlaceModeStep
 
 @dataclass(frozen=True)
 class DrawingCase:
-    id: str
-    fixture: Path
-    steps: tuple[DrawingStep, ...]
+    id        : str
+    fixture   : Path
+    steps     : tuple[DrawingStep, ...]
     new_design: bool = True
-    enabled: bool = True
+    enabled   : bool = True
 
 
 DRAWING_CASES: tuple[DrawingCase, ...] = (

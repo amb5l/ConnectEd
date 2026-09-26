@@ -1,16 +1,15 @@
 """Async send / cancel behaviour for AiChatSession."""
 
 import time
-
 import pytest
 
-from PyQt6.QtCore import QTimer
-from PyQt6.QtTest import QSignalSpy, QTest
+from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtTest    import QSignalSpy, QTest
 
 from ConnectEd.ai.profiles import AiProfile
-from ConnectEd.ai.session import AiChatSession
-from ConnectEd.ai.types import ChatEvent, ChatEventType, ChatMessage
+from ConnectEd.ai.session  import AiChatSession
+from ConnectEd.ai.types    import ChatEvent, ChatEventType, ChatMessage
 
 
 def _spy_strings(spy : QSignalSpy) -> str:

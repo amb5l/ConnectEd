@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Self
 
-from .......core.check import checked
-from .......core.types import HandleId
+from .......core.check          import checked
+from .......core.types          import HandleId
 
 from .....items.mixin.transform import ItemTransformMixin
 
-from .. import CmdSceneItem
+from ..                         import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

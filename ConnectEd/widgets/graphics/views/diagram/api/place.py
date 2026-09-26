@@ -6,7 +6,7 @@ from PyQt6.QtCore import QPointF
 
 from ......core.check import checked
 
-from ..host import asDiagramView
+from ..host           import asDiagramView
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -81,9 +81,9 @@ class DiagramViewApiPlaceMixin:
 
     @checked
     def placeNetLabelOnSegment(
-        self     : Self,
-        segment  : SegmentItem,
-        spos     : QPointF | None = None
+        self    : Self,
+        segment : SegmentItem,
+        spos    : QPointF | None = None
     ) -> None:
         host = asDiagramView(self)
         if spos is None:

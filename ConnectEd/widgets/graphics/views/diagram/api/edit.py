@@ -7,21 +7,20 @@ from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
-from ......core.check import checked
-from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check    import checked
+from ......core.types    import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId
 
-from ....query import QueryWindow
-
-from ....scenes import withScene
+from ....query           import QueryWindow
+from ....scenes          import withScene
 
 from ....items.port      import PortItem
 from ....items.block_pin import BlockPinItem
 
-from ..interaction      import RotateItemMixin
-from ..interaction.move import MoveInteraction, MoveGripInteraction
+from ..interaction       import RotateItemMixin
+from ..host              import asDiagramView
 
-from ..host import asDiagramView
+from ..interaction.move  import MoveInteraction, MoveGripInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -98,7 +97,7 @@ class DiagramViewApiEditMixin:
     def editSlide(
         self  : Self,
         items : QGraphicsItem | Sequence[QGraphicsItem],
-        pos   : QPointF | None = None
+        pos   : QPointF       | None = None
     ) -> None:
         host = asDiagramView(self)
         pos = pos or host._snap(host._itemsCenter(items))
@@ -110,7 +109,7 @@ class DiagramViewApiEditMixin:
     def editMove(
         self  : Self,
         items : QGraphicsItem | Sequence[QGraphicsItem],
-        pos   : QPointF | None = None
+        pos   : QPointF       | None = None
     ) -> None:
         host = asDiagramView(self)
         pos = pos or host._snap(host._itemsCenter(items))
@@ -135,7 +134,7 @@ class DiagramViewApiEditMixin:
         self  : Self,
         scene : DiagramScene,
         items : QGraphicsItem | list[QGraphicsItem] | None = None,
-        pos   : QPoint | QPointF | None = None
+        pos   : QPoint        | QPointF             | None = None
     ) -> None:
         host = asDiagramView(self)
         if host.interaction:  # interaction in progress
@@ -155,7 +154,7 @@ class DiagramViewApiEditMixin:
         self  : Self,
         scene : DiagramScene,
         items : QGraphicsItem | list[QGraphicsItem] | None = None,
-        pos   : QPoint | QPointF | None = None
+        pos   : QPoint        | QPointF             | None = None
     ) -> None:
         host = asDiagramView(self)
         if host.interaction:  # interaction in progress
@@ -172,10 +171,10 @@ class DiagramViewApiEditMixin:
     @withScene
     @checked
     def editAssignOrigin(
-        self    : Self,
-        scene   : DiagramScene,
-        item    : QGraphicsItem,
-        handle  : HandleId
+        self   : Self,
+        scene  : DiagramScene,
+        item   : QGraphicsItem,
+        handle : HandleId
     ) -> None:
         scene.editAssignOrigin(item, handle, undoable=True)
 
@@ -297,16 +296,16 @@ class DiagramViewApiEditMixin:
     @withScene
     @checked
     def editText(
-        self      : Self,
-        scene     : DiagramScene,
-        item      : TextItem,
-        mirror_h  : bool         | NoChange = NO_CHANGE,
-        mirror_v  : bool         | NoChange = NO_CHANGE,
-        origin    : RectHandleId | NoChange = NO_CHANGE,
-        align_h   : AlignH       | NoChange = NO_CHANGE,
-        align_v   : AlignV       | NoChange = NO_CHANGE,
-        width     : float        | NoChange = NO_CHANGE,
-        height    : float        | NoChange = NO_CHANGE,
+        self     : Self,
+        scene    : DiagramScene,
+        item     : TextItem,
+        mirror_h : bool         | NoChange = NO_CHANGE,
+        mirror_v : bool         | NoChange = NO_CHANGE,
+        origin   : RectHandleId | NoChange = NO_CHANGE,
+        align_h  : AlignH       | NoChange = NO_CHANGE,
+        align_v  : AlignV       | NoChange = NO_CHANGE,
+        width    : float        | NoChange = NO_CHANGE,
+        height   : float        | NoChange = NO_CHANGE,
     ) -> None:
         scene.editText(
             item     = item,

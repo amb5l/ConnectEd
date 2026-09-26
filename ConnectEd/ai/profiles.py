@@ -6,10 +6,12 @@ import json
 import os
 import re
 import uuid
-from dataclasses import asdict, dataclass, field
-from typing import Any, Self
 
-from ..app import settings
+from typing      import Any, Self
+from dataclasses import asdict, dataclass, field
+
+from ..app        import settings
+
 from ..core.check import checked
 
 _ENV_REF = re.compile(r"^\$[A-Za-z_][A-Za-z0-9_]*$")

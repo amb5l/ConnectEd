@@ -1,12 +1,11 @@
 from typing import Self
-from enum import Enum, auto
+from enum   import Enum, auto
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 
-from .....core.defs import LAYERS_SHEET, LAYERS_DRAWING
+from .....app        import settings
 
-from .....app import settings
-
+from .....core.defs  import LAYERS_SHEET, LAYERS_DRAWING
 from .....core.check import checked
 
 

@@ -1,62 +1,28 @@
 import sys
 
-
-
 from collections.abc import Callable
 
-
-
 # app
-
-from ..app import ConnectEdApp as App, app
-
-
-
+from ..app                            import ConnectEdApp as App, app
 # ConnectEd types — main window
-
-from ..widgets.window import Window
-
-
-
-# ConnectEd types — chrome
-
-from ..widgets.window.menu_bar import MenuBar
-
-from ..widgets.window.status_bar import StatusBar
-
-from ..widgets.window.mdi_area import MdiArea
-
-
-
-# ConnectEd types — docks
-
-from ..widgets.window.navigator import NavigatorDock
-
-from ..widgets.window.messages_view import MessagesViewDock
-
-from ..widgets.window.transcript_view import TranscriptViewDock
-
-from ..widgets.window.log_view import LogViewDock
-
-from ..widgets.window.ai import AiChatDock, AiChatManager, AiManager
-
-from ..widgets.window.netlist import NetlistBrowserDock
-
-
-
+from ..widgets.window                 import Window
 # ConnectEd types — menus
-
-from ..widgets.menu import Menu
-
-from ..widgets.action import Action
-
-
-
+from ..widgets.menu                   import Menu
+from ..widgets.action                 import Action
+# ConnectEd types — chrome
+from ..widgets.window.menu_bar        import MenuBar
+from ..widgets.window.status_bar      import StatusBar
+from ..widgets.window.mdi_area        import MdiArea
+# ConnectEd types — docks
+from ..widgets.window.navigator       import NavigatorDock
+from ..widgets.window.messages_view   import MessagesViewDock
+from ..widgets.window.transcript_view import TranscriptViewDock
+from ..widgets.window.log_view        import LogViewDock
+from ..widgets.window.ai              import AiChatDock, AiChatManager, AiManager
+from ..widgets.window.netlist         import NetlistBrowserDock
 # scripting
-
-from .qt import GuiDriver, QtScripting
-
-from .gui import Gui, gui
+from .qt                              import GuiDriver, QtScripting
+from .gui                             import Gui, gui
 
 
 

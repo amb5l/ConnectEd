@@ -1,25 +1,24 @@
 from __future__ import annotations
 
 from typing import Self
-from enum import Enum
+from enum   import Enum
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import logger
+from ....app          import logger
 
-from ....core.check import checked
-from ....core.types import Direction, DataKind, RectHandleId, HandleId
+from ....core.check   import checked
+from ....core.types   import Direction, DataKind, RectHandleId, HandleId
 
-from ..properties   import PropertySpec
-from ..painter_path import PainterPath
+from ..properties     import PropertySpec
+from ..painter_path   import PainterPath
 
-from .role import FunctionalItem
-
-from .property_text import PropertyTextSpec
-from .grip          import GripItem, MoveGripItem
-from .gate_pin      import GatePinItem, BufGatePinItem, OrGatePinItem
+from .role            import FunctionalItem
+from .property_text   import PropertyTextSpec
+from .grip            import GripItem, MoveGripItem
+from .gate_pin        import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from typing          import Self, Any
-from dataclasses     import dataclass
 from collections.abc import Callable
+from dataclasses     import dataclass
 
-from ....core.types import DataKind
+from ....core.types                  import DataKind
 
-from ...graphics.properties import Property
+from ...graphics.properties          import Property
 
 from ...graphics.items.property_text import PropertyTextItem
 

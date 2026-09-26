@@ -1,14 +1,14 @@
 """Net labels default to a PITCH height constraint on the handle rectangle."""
 
 import logging
-
 import pytest
+
 from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.defs import PITCH
-from ConnectEd.core.types import AlignV
+from ConnectEd.app                              import ConnectEdApp
+from ConnectEd.core.defs                        import PITCH
+from ConnectEd.core.types                       import AlignV
 from ConnectEd.widgets.graphics.items.net_label import NetLabelItem
 
 

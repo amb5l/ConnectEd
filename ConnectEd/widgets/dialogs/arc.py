@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGroupBox, \
                             QLabel, QComboBox, QRadioButton
 
-from ...core.check import checked
+from ...core.check                import checked
 
 from .components.layout.ok_cancel import OkCancelLayout
 
@@ -28,7 +28,7 @@ class ArcDialog(QDialog):
     @checked
     def __init__(
         self   : Self,
-        angle  : float | None,
+        angle  : float   | None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

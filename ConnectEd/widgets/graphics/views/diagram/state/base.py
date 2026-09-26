@@ -7,18 +7,17 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ......app import window
+from ......app        import window
 
 from ......core.check import checked
 
-from ..interaction import DiagramInteraction
-
-from ..mouse import MouseModifier
+from ..interaction    import DiagramInteraction
+from ..mouse          import MouseModifier
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
-    from .. import DiagramView
+    from ..                 import DiagramView
 
 
 qkm = Qt.KeyboardModifier
@@ -55,7 +54,7 @@ class DiagramViewState:
         self        : Self,
         state       : DiagramViewState,
         items       : QGraphicsItem | Sequence[QGraphicsItem] | None = None,
-        interaction : DiagramInteraction | None = None
+        interaction : DiagramInteraction                      | None = None
     ) -> None:
         if items is None:
             items = []

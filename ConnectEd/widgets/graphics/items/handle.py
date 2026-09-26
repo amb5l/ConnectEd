@@ -5,15 +5,13 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ....core.check import checked
-from ....core.types import HandleId
+from ....core.check   import checked
+from ....core.types   import HandleId
 
-from .role import ChromeItem
-
-from .null import NullItem
-from .grip import GripItem, MoveGripItem
-
-from .protocols import OnSceneOrientationChangedProtocol
+from .role            import ChromeItem
+from .null            import NullItem
+from .grip            import GripItem, MoveGripItem
+from .protocols       import OnSceneOrientationChangedProtocol
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.change    import ItemChangeMixin
@@ -28,7 +26,7 @@ class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
     def __init__(
         self     : Self,
         id       : HandleId,
-        pos      : QPointF | None = None,
+        pos      : QPointF       | None = None,
         grip_cls : type[GripItem] = MoveGripItem,
         parent   : QGraphicsItem | None = None
     ) -> None:

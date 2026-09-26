@@ -4,31 +4,32 @@ from collections.abc import Sequence
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ......app import logger
+from ......app                        import logger
 
-from ......core.check import checked
+from ......core.check                 import checked
+
+from .....dialogs.appearance          import AppearanceDialog
+from .....dialogs.properties          import PropertiesDialog
 
 from .....dialogs.items.text          import TextItemDialog
 from .....dialogs.items.property_text import PropertyTextItemDialog
 from .....dialogs.items.port_pin      import PortPinItemDialog
-from .....dialogs.appearance          import AppearanceDialog
-from .....dialogs.properties          import PropertiesDialog
 
-from ....properties import PropertiesMixin
+from ....properties                   import PropertiesMixin
 
-from ....items.text          import TextItem
-from ....items.property_text import PropertyTextItem
-from ....items.port          import PortItem
-from ....items.block_pin     import BlockPinItem
+from ....items.text                   import TextItem
+from ....items.property_text          import PropertyTextItem
+from ....items.port                   import PortItem
+from ....items.block_pin              import BlockPinItem
 
-from ....items.mixin.presentation import ItemPresentationMixin
+from ....items.mixin.presentation     import ItemPresentationMixin
 
-from ..mouse import MouseModifier
+from ..mouse                          import MouseModifier
 
-from ..interaction.edit import EditPasteInteraction
+from ..interaction.edit               import EditPasteInteraction
 
-from .base  import DiagramViewState
-from .mixin import ClickMixin, DragMixin
+from .base                            import DiagramViewState
+from .mixin                           import ClickMixin, DragMixin
 
 
 class DiagramViewStateEditSelectArea1(DiagramViewState):

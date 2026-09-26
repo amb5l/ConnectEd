@@ -1,5 +1,4 @@
-from .role import DecorativeItem
-
+from .role      import DecorativeItem
 from .base_rect import BaseRectangleItem
 
 

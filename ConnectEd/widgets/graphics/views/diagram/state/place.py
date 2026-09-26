@@ -4,32 +4,29 @@ from collections.abc import Sequence
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ......core.check import checked
+from ......app                    import logger
 
-from ......app import logger
-
-from ......core.types import Direction
+from ......core.check             import checked
+from ......core.types             import Direction
 
 from .....dialogs.items.text      import TextItemDialog
 from .....dialogs.items.port_pin  import PortPinItemDialog
 from .....dialogs.items.gate      import GateItemDialog
 from .....dialogs.items.net_label import NetLabelItemDialog
 
-from ....items.text       import TextItem
-from ....items.port       import PortItem
-from ....items.gate       import GateFunc, BufGateItem, \
+from ....items.text               import TextItem
+from ....items.port               import PortItem
+from ....items.gate               import GateFunc, BufGateItem, \
                                  AndGateItem, OrGateItem, XorGateItem
-from ....items.block      import BlockItem
-from ....items.block_pin  import BlockPinItem
-from ....items.symbol_pin import SymbolPinItem
-from ....items.segment    import SegmentItem
-from ....items.net_label  import NetLabelItem
+from ....items.block              import BlockItem
+from ....items.block_pin          import BlockPinItem
+from ....items.symbol_pin         import SymbolPinItem
+from ....items.segment            import SegmentItem
+from ....items.net_label          import NetLabelItem
 
-from ..mouse import MouseModifier
+from ..mouse                      import MouseModifier
 
-from .mixin import StartMixin, ClickMixin, DragMixin
-
-from ..interaction.place import (
+from ..interaction.place          import (
     DiagramPlaceLineInteraction,
     DiagramPlaceRectangleInteraction,
     DiagramPlaceEllipseInteraction,
@@ -45,7 +42,8 @@ from ..interaction.place import (
     DiagramPlaceNetLabelInteraction
 )
 
-from .base import DiagramViewState
+from .mixin                       import StartMixin, ClickMixin, DragMixin
+from .base                        import DiagramViewState
 
 
 class DiagramViewStatePlaceLine1(StartMixin, ClickMixin, DiagramViewState):
@@ -86,17 +84,17 @@ class DiagramViewStatePlaceRectangle1(StartMixin, DiagramViewState):
         return self.view.statePlaceRectangle2
 
     def mouseLeftClick(
-        self : Self,
-        vpos : QPoint,
-        spos : QPointF,
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
         self._start(self.view._snap(spos))
 
     def mouseLeftDragBegin(
-        self : Self,
-        vpos : QPoint,
-        spos : QPointF,
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
         self.mouseLeftClick(vpos, spos, modifiers)

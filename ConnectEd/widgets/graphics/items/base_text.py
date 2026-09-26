@@ -14,7 +14,6 @@ from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
 from ....core.utils      import qtItemClass
 from ....core.types      import NoChange, NO_CHANGE, \
                                 AlignH, AlignV, HandleId, RectHandleId, DataKind
-
 from ....resources.icons import AnchorTopLeftIcon,      \
                                 AnchorTopCenterIcon,    \
                                 AnchorTopRightIcon,     \
@@ -30,24 +29,22 @@ from ....resources.icons import AnchorTopLeftIcon,      \
                                 TextAlignTopIcon,       \
                                 TextAlignMiddleIcon,    \
                                 TextAlignBottomIcon
+from ....core.check      import checked
 
-from ....core.check import checked
+from ..properties        import PropertySpec
+from ..quill             import Quill
 
-from ..properties import PropertySpec
+from .grip               import ResizeGripItem
 
-from ..quill import Quill
-
-from .grip import ResizeGripItem
-
-from .mixin.transform  import ItemTransformMixin
-from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.shape      import ItemShapeMixin
-from .mixin.primary    import PrimaryItemMixin
+from .mixin.transform    import ItemTransformMixin
+from .mixin.handle       import ItemRectHandlesMixin
+from .mixin.shape        import ItemShapeMixin
+from .mixin.primary      import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...dialogs.items.text import BaseTextItemDialog, TextItemDialog
-    from ..views.diagram import DiagramView
+    from ..views.diagram       import DiagramView
 
 
 class TextResizeGripItem(ResizeGripItem):
@@ -769,9 +766,9 @@ class TextRendererMixin(ItemShapeMixin):
 
     @staticmethod
     def _autoflipPivot(
-        layout_w   : float,
-        layout_h   : float,
-        child_pos  : QPointF,
+        layout_w  : float,
+        layout_h  : float,
+        child_pos : QPointF,
     ) -> QPointF:
         """Centre of the layout rect, in child-item coordinates."""
         return QPointF(
@@ -781,9 +778,9 @@ class TextRendererMixin(ItemShapeMixin):
 
     def _paint_selected(
         self    : Self,
-        painter : QPainter | None,
+        painter : QPainter                 | None,
         option  : QStyleOptionGraphicsItem | None,
-        widget  : QWidget | None
+        widget  : QWidget                  | None
     ) -> None:
         """
         Paint method override for selected state.
@@ -912,9 +909,9 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
 
     def _paint_selected_clipped(
         self    : Self,
-        painter : QPainter | None,
+        painter : QPainter                 | None,
         option  : QStyleOptionGraphicsItem | None,
-        widget  : QWidget | None
+        widget  : QWidget                  | None
     ) -> None:
         """
         Paint method override for selected state with clipping.

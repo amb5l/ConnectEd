@@ -1,22 +1,20 @@
 from __future__ import annotations
 
 from typing          import Self
-
 from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QContextMenuEvent, QAction, QKeySequence, QIcon
 
-from .....app import logger
+from .....app      import logger
 
 from .....core.xml import clipboardHasData
 
-from ....menu import Menu
+from ....menu      import Menu
 
 from ...items.grip import GripItem
 
-
-from .host import asDiagramView
+from .host         import asDiagramView
 
 
 class DiagramViewMenuMixin:

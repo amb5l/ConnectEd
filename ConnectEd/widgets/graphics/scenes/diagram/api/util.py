@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QImage, QPainter
 
 from ......core.check import checked
 
-from ..host import asDiagramScene
+from ..host           import asDiagramScene
 
 
 _BITMAP_MAX_PX = 2048

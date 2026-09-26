@@ -1,20 +1,20 @@
 """Port name property text must grow away from the cleat when rotated 180°."""
 
 import logging
-
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsSimpleTextItem
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.db import DesignDbNode
-from ConnectEd.core.settings import Settings
-from ConnectEd.core.types import RectHandleId
-from ConnectEd.widgets.graphics.items.block import BlockItem
-from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
-from ConnectEd.widgets.graphics.items.port import PortItem
+from ConnectEd.app                                  import ConnectEdApp
+from ConnectEd.core.db                              import DesignDbNode
+from ConnectEd.core.settings                        import Settings
+from ConnectEd.core.types                           import RectHandleId
+from ConnectEd.widgets.graphics.items.block         import BlockItem
+from ConnectEd.widgets.graphics.items.block_pin     import BlockPinItem
+from ConnectEd.widgets.graphics.items.port          import PortItem
 from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
+from ConnectEd.widgets.graphics.scenes.diagram      import DiagramScene
 
 
 @pytest.fixture

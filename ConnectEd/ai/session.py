@@ -2,22 +2,24 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from PyQt6.QtCore import QObject, Q_ARG, QMetaObject, Qt, QThread, pyqtSignal, pyqtSlot
 
-from ..app import logger, settings
+from ..app        import logger, settings
+
 from ..core.check import checked
 
 from .chat_worker import AiChatProviderWorker, copyMessages
-from .driver import AiDriver
-from .lock import AiEditLock
-from .profiles import getProfile
-from .prompt import buildSystemPrompt, connectionReadyMessage
-from .types import ChatMessage, ToolCall
+from .driver      import AiDriver
+from .lock        import AiEditLock
+from .profiles    import getProfile
+from .prompt      import buildSystemPrompt, connectionReadyMessage
+from .types       import ChatMessage, ToolCall
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets.window import Window
+    from ..widgets.window              import Window
     from ..widgets.window.ai.chat.dock import AiChatDock
 
 
@@ -210,9 +212,9 @@ class AiChatSession(QObject):
 
     @pyqtSlot(str, list)
     def _onWorkerTurnFinished(
-        self            : Self,
-        assistant_text  : str,
-        tool_calls      : list,
+        self           : Self,
+        assistant_text : str,
+        tool_calls     : list,
     ) -> None:
         self._clearProviderTurnActive()
         if self._cancel_requested:

@@ -2,11 +2,13 @@
 
 from typing import Self
 
-from ..widgets.window import Window
+from ..widgets.window          import Window
+
 from ..widgets.window.menu_bar import MenuBar
 
-from .qt import QtScripting
-from .qt.mouse import MouseMixin
+from .qt                       import QtScripting
+
+from .qt.mouse                 import MouseMixin
 
 
 class Gui(QtScripting, MouseMixin):

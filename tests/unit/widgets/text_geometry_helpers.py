@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing      import Self
-
 import pytest
+
+from typing      import Self
+from dataclasses import dataclass
+
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsTextItem
 
-from ConnectEd.core.db import DesignDbNode
-from ConnectEd.core.types import AlignH, AlignV, DataKind, RectHandleId
-from ConnectEd.core.utils import val2str
-from ConnectEd.widgets.graphics.items.polyline import PolylineItem
+from ConnectEd.core.db                              import DesignDbNode
+from ConnectEd.core.types                           import AlignH, AlignV, DataKind, RectHandleId
+from ConnectEd.core.utils                           import val2str
+from ConnectEd.widgets.graphics.items.polyline      import PolylineItem
 from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.items.text import TextItem, TextLineRenderer
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
+from ConnectEd.widgets.graphics.items.text          import TextItem, TextLineRenderer
+from ConnectEd.widgets.graphics.scenes.diagram      import DiagramScene
 
 SHORT        = "short"
 LONG         = "longer"

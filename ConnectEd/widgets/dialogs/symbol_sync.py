@@ -2,9 +2,9 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QCheckBox
 
-from ...core.check import checked
+from ...core.check                import checked
 
-from ..graphics.items.symbol import SymbolInstanceItem
+from ..graphics.items.symbol      import SymbolInstanceItem
 
 from .components.layout.ok_cancel import OkCancelLayout
 
@@ -27,7 +27,7 @@ class SymbolSyncDialog(QDialog):
     def __init__(
         self    : Self,
         symbols : SymbolInstanceItem | list[SymbolInstanceItem],
-        parent  : QWidget | None = None
+        parent  : QWidget            | None = None
     ) -> None:
         super().__init__(parent)
         if isinstance(symbols, SymbolInstanceItem):

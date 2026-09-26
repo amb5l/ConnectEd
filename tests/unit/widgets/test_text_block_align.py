@@ -1,15 +1,15 @@
 """Block-format TextItem must honour horizontal alignment within a width constraint."""
 
 import logging
-
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsSimpleTextItem
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
-from ConnectEd.core.types import AlignH
-from ConnectEd.widgets.graphics.items.text import TextItem, TextBlockRenderer
+from ConnectEd.app                             import ConnectEdApp
+from ConnectEd.core.settings                   import Settings
+from ConnectEd.core.types                      import AlignH
+from ConnectEd.widgets.graphics.items.text     import TextItem, TextBlockRenderer
 from ConnectEd.widgets.graphics.scenes.drawing import DrawingScene
 
 

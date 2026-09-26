@@ -1,6 +1,6 @@
 from ...properties import PropertiesMixin
 
-from . import ItemMixin
+from .             import ItemMixin
 
 from .scene        import ItemSceneMixin
 from .handle       import ItemHandlesMixin

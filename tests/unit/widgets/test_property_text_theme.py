@@ -1,15 +1,16 @@
 """PropertyTextItem must resolve themed quills (e.g. BlockName → mid_cyan)."""
 
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
-from ConnectEd.core.types import DataKind
-from ConnectEd.core.palette import mid_cyan, mid_red
-from ConnectEd.widgets.graphics.items.block import BlockItem
-from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
+from ConnectEd.app                                       import ConnectEdApp
+from ConnectEd.core.palette                              import mid_cyan, mid_red
+from ConnectEd.core.settings                             import Settings
+from ConnectEd.core.types                                import DataKind
+from ConnectEd.widgets.graphics.items.block              import BlockItem
+from ConnectEd.widgets.graphics.items.property_text      import PropertyTextItem
 from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 
 

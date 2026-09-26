@@ -1,11 +1,12 @@
 """Unit tests for add_connection AI tool."""
 
 import json
+
 from unittest.mock import MagicMock
 
 from PyQt6.QtCore import QPointF
 
-from ConnectEd.ai.refs import RefRegistry
+from ConnectEd.ai.refs       import RefRegistry
 from ConnectEd.ai.tools.conn import add_connection
 
 

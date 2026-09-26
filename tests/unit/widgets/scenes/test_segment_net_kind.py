@@ -1,16 +1,18 @@
 """Segment appearance driven by NetKind from netlist resolution."""
 
 import pytest
+
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.app import ConnectEdApp
-from ConnectEd.core.settings import Settings
-from ConnectEd.core.types import NetKind
-from ConnectEd.widgets.graphics.items.node import FreeNodeItem
-from ConnectEd.widgets.graphics.items.segment import SegmentItem
-from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
-from ConnectEd.widgets.graphics.scenes.diagram.netlist import _netKindFromSuffix
+from ConnectEd.app                                       import ConnectEdApp
+from ConnectEd.core.settings                             import Settings
+from ConnectEd.core.types                                import NetKind
+from ConnectEd.widgets.graphics.items.node               import FreeNodeItem
+from ConnectEd.widgets.graphics.items.segment            import SegmentItem
+from ConnectEd.widgets.graphics.scenes.diagram           import DiagramScene
+
+from ConnectEd.widgets.graphics.scenes.diagram.netlist   import _netKindFromSuffix
 from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 
 

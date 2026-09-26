@@ -4,31 +4,25 @@ from typing import Self, cast
 
 from PyQt6.QtCore import QSize, QXmlStreamWriter, QXmlStreamReader
 
-from ....app import window
+from ....app                             import window
+from ....resources                       import getIconPath
 
-from ....resources import getIconPath
-
-from ....core.check   import checked
-from ....core.session import DocType, Session
-from ....core.types   import MenuSub, MenuAction, MenuSeparator, MenuEntry
-from ....core.doc     import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
-from ....core.icon    import SvgIconSingleton
-from ....core.xml     import toXmlStartElement, toXmlEndElement, fromXml, loadXml
-from ....core.utils   import space2underscore, cleanPath
+from ....core.check                      import checked
+from ....core.session                    import DocType, Session
+from ....core.types                      import MenuSub, MenuAction, MenuSeparator, MenuEntry
+from ....core.doc                        import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
+from ....core.icon                       import SvgIconSingleton
+from ....core.xml                        import toXmlStartElement, toXmlEndElement, fromXml, loadXml
+from ....core.utils                      import space2underscore, cleanPath
 
 from ....widgets.dialogs.unsaved_changes import UnsavedChangesDialog
+from ....widgets.window.sub_window       import DocSubWindow
+from ....widgets.library.sub_window      import LibrarySubWindow
 
-from ....widgets.window.sub_window import DocSubWindow
-
-from ....widgets.graphics.views.symbol import SymbolView
-
-from ....widgets.graphics.scenes.symbol import SymbolScene
-
-from ....widgets.graphics.items.symbol import SymbolDefinitionItem
-
-from ....widgets.library.sub_window import LibrarySubWindow
-
-from ....domains.hdl.schematic.library import HdlSchematicLibrary
+from ....widgets.graphics.views.symbol   import SymbolView
+from ....widgets.graphics.scenes.symbol  import SymbolScene
+from ....widgets.graphics.items.symbol   import SymbolDefinitionItem
+from ....domains.hdl.schematic.library   import HdlSchematicLibrary
 
 
 class BaseIcon(SvgIconSingleton):

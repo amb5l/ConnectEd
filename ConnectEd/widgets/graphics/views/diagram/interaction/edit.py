@@ -6,14 +6,13 @@ from math   import asin, degrees, copysign
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem
 
-from ......core.check import checked
+from ......core.check      import checked
 
-from ....items.polyline import PolylineItem, PolySegItem
+from ....items.polyline    import PolylineItem, PolySegItem
 
 from ....items.mixin.clone import ItemCloneMixin
 
-
-from . import (
+from .                     import (
     MoveItemsMixin,
     PreviewStateMixin,
     AddRemoveItemsMixin,

@@ -4,14 +4,13 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
-from .....app import logger
+from .....app        import logger
 
 from .....core.check import checked
 from .....core.icon  import getFgBgColors
-
 from .....core.types import NoChange, NO_CHANGE
 
-from .. import customIconSize, NoChangeIcon, DefaultIcon
+from ..              import customIconSize, NoChangeIcon, DefaultIcon
 
 
 class LineStyleComboBox(QComboBox):
@@ -33,7 +32,7 @@ class LineStyleComboBox(QComboBox):
         self    : Self,
         value   : Qt.PenStyle | None | NoChange,
         default : Qt.PenStyle | None | NoChange = None,
-        parent  : QWidget | None = None
+        parent  : QWidget            | None = None
     ) -> None:
         super().__init__(parent)
         self._initial = value

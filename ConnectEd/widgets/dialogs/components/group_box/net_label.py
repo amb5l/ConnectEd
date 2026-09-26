@@ -2,8 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGroupBox
 
-from .....core.check import checked
-from .....core.types import NoChange
+from .....core.check    import checked
+from .....core.types    import NoChange
 
 from ..layout.net_label import NetLabelItemLayout
 

@@ -7,6 +7,7 @@ Equivalent to::
 
 import subprocess
 import sys
+
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent / "text_permutations.dsn"

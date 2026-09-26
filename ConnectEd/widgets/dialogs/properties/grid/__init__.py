@@ -3,21 +3,21 @@ from __future__ import annotations
 from typing import Self
 
 from PyQt6.QtCore    import QItemSelection
-from PyQt6.QtGui     import QShowEvent
 from PyQt6.QtWidgets import QWidget, QCheckBox, QHeaderView
+from PyQt6.QtGui     import QShowEvent
+
+from ....table.row            import TableRow
+from ....table.model          import TableModel, TableProxy
+from ....table.view           import TableView
 
 from ....graphics.items.mixin import ItemMixin
 
-from ....table.row   import TableRow
-from ....table.model import TableModel, TableProxy
-from ....table.view  import TableView
-
-from ..item import PropertiesItem, PropertiesValueItem
+from ..item                   import PropertiesItem, PropertiesValueItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import OwnerStore
     from ....graphics.properties import PropertiesMixin
+    from ..                      import OwnerStore
 
 
 class PropertiesGridWidget(TableView):

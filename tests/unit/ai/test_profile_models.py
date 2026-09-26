@@ -7,7 +7,7 @@ from ConnectEd.ai.profile_models import (
     refreshAllProfileModels,
     refreshProfileModels,
 )
-from ConnectEd.ai.profiles import AiProfile
+from ConnectEd.ai.profiles       import AiProfile
 
 
 def test_refresh_profile_models_stores_list(monkeypatch : pytest.MonkeyPatch) -> None:

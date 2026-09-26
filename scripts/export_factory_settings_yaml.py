@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import os
 import sys
-from dataclasses import fields
-from pathlib import Path
-from typing import Any
-
 import yaml
+
+from typing      import Any
+from dataclasses import fields
+from pathlib     import Path
+
 from PyQt6.QtCore import Qt, QPointF, QSizeF
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui  import QColor
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -56,8 +57,8 @@ def _colorToken(value : Any, palette : ThemePalette) -> str:
 
 
 def _exportThemeValue(
-    value   : Any,
-    palette : ThemePalette,
+    value      : Any,
+    palette    : ThemePalette,
     parent_key : str | None = None,
 ) -> Any:
     if isinstance(value, dict):

@@ -6,11 +6,11 @@ from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ......core.check import checked
-from ......core.types import EdgeLoc
-from ......core.utils import sign
+from ......core.check     import checked
+from ......core.types     import EdgeLoc
+from ......core.utils     import sign
 
-from .....dialogs.arc import ArcDialog
+from .....dialogs.arc     import ArcDialog
 
 from ....items.line       import LineItem
 from ....items.rectangle  import RectangleItem
@@ -26,10 +26,9 @@ from ....items.node       import NodeItem
 from ....items.segment    import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
 from ....items.tap        import TapItem
 from ....items.net_label  import NetLabelItem
+from ....items.protocols  import SetPointsProtocol
 
-from ....items.protocols import SetPointsProtocol
-
-from . import (
+from .                    import (
     DiagramInteraction,
     DiagramItemInteraction,
     DiagramBlockPinInteraction,
@@ -49,7 +48,7 @@ class DiagramPlaceBaseInteraction(DiagramItemInteraction[TItem]):  # _view, _sce
 
     # class attributes
     _ITEM_TYPE : type[TItem]  # subclass to override with item class
-    _item : TItem
+    _item      : TItem
 
     # instance attributes
     _pos : QPointF | None

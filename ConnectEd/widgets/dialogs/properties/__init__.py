@@ -4,17 +4,17 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGraphicsItem
 
-from ....core.check import checked
+from ....core.check                  import checked
 
-from ...graphics.properties import (
+from ...graphics.properties          import (
     PropertyPending, PropertyAndTextsEdit, PropertiesMixin
 )
 
 from ...graphics.items.property_text import PropertyTextItem
 
-from ..components.layout.ok_cancel import OkCancelLayout
+from ..components.layout.ok_cancel   import OkCancelLayout
 
-from .editor import (
+from .editor                         import (
     PropertiesEditorWidget, PropertiesEditorTabWidget
 )
 
@@ -38,7 +38,7 @@ class PropertiesDialog(QDialog):
     def __init__(
         self   : Self,
         owners : list[QGraphicsItem] | list[DiagramScene],
-        parent : QWidget | None = None
+        parent : QWidget             | None = None
     ) -> None:
         # initialize dialog
         super().__init__(parent)

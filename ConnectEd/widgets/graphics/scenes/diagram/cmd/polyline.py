@@ -2,11 +2,11 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ......core.check import checked
+from ......core.check   import checked
 
 from ....items.polyline import PolylineItem, PolyVtxItem
 
-from . import CmdBase
+from .                  import CmdBase
 
 
 class CmdPolyVtxBase(CmdBase):

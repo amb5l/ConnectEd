@@ -6,7 +6,7 @@ from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QColor, QPaintEvent
 
-from ..app import logger
+from ..app        import logger
 
 from ..core.check import checked
 

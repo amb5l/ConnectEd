@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import Self
 
-from .idle  import DiagramViewStateIdle
-
 from ..host import asDiagramView
 
+from .idle  import DiagramViewStateIdle
 from .view  import (
     DiagramViewStateViewPan1,
     DiagramViewStateViewPan2,

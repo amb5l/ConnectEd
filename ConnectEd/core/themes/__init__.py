@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
 import yaml
+
+from typing  import Any
+from pathlib import Path
+
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui  import QColor
 
 from ..check import checked
+
 from .schema import (
     validatePalette,
     validatePresetSources,

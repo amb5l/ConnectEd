@@ -6,17 +6,16 @@ from typing import Any
 
 from ...core.check import checked
 
-from ..refs  import RefRegistry
-from ..types import ToolEntry
+from ..refs        import RefRegistry
+from ..types       import ToolEntry
 
-from .params import _VIEW_PARAM
-from .utils  import aitool, toolOk, toolError
-
-from .private import _drawingSceneFromViewRef
+from .params       import _VIEW_PARAM
+from .utils        import aitool, toolOk, toolError
+from .private      import _drawingSceneFromViewRef
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...widgets.window import Window
+    from ...widgets.window              import Window
     from ...widgets.graphics.properties import PropertiesMixin
 
 
@@ -193,8 +192,8 @@ def _parseStringListArg(
 
 
 def _itemPropertyValues(
-    item               : PropertiesMixin,
-    properties_filter  : list[str],
+    item              : PropertiesMixin,
+    properties_filter : list[str],
 ) -> dict[str, Any]:
     values : dict[str, Any] = {}
     for name in properties_filter:

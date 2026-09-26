@@ -1,9 +1,9 @@
 """Blocking modal dialogs (schedule + opener + onModal callback)."""
 
+from typing          import Any, Self
 from collections.abc import Callable
-from typing import Any, Self
 
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QWidget
 
 

@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QLineEdit, \
                             QVBoxLayout, QHBoxLayout, QLabel
 
-from ...core.check import checked
+from ...core.check                import checked
 
 from .components.layout.ok_cancel import OkCancelLayout
 
@@ -20,7 +20,7 @@ class FloatDialog(QDialog):
         self    : Self,
         initial : float | int | None = None,
         title   : str = "Value",
-        parent  : QWidget | None = None
+        parent  : QWidget     | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)

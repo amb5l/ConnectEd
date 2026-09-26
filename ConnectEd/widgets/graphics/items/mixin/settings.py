@@ -2,11 +2,11 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app import settings
+from .....app        import settings
 
 from .....core.check import checked
 
-from ..protocols import OnSceneChangedProtocol
+from ..protocols     import OnSceneChangedProtocol
 
 
 class ItemSettingsMixin:

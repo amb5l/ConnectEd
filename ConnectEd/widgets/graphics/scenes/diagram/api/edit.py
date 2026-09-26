@@ -7,44 +7,41 @@ from PyQt6.QtCore    import Qt, QPointF, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from ......app import logger
+from ......app                 import logger
 
-from ......core.check import checked
-from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check          import checked
+from ......core.types          import NoChange, NO_CHANGE, AlignH, AlignV, \
                              EdgeLoc, Direction, HandleId, RectHandleId
-from ......core.xml   import XmlProtocol
+from ......core.xml            import XmlProtocol
 
-from ....items.grip          import GripItem
-from ....items.polyline      import PolylineItem, PolySegItem
-from ....items.text          import TextItem
-from ....items.port_pin      import PortPinMixin, PortPinPathItem
-from ....items.block_pin     import BlockPinItem
-from ....items.symbol_pin    import SymbolPinItem
-from ....items.block         import BlockItem
-from ....items.symbol        import SymbolInstanceItem
-from ....items.property_text import PropertyTextItem
-from ....items.segment       import SegmentItem
-
-from ....items.mixin import ItemMixin
+from ....items.grip            import GripItem
+from ....items.polyline        import PolylineItem, PolySegItem
+from ....items.text            import TextItem
+from ....items.port_pin        import PortPinMixin, PortPinPathItem
+from ....items.block_pin       import BlockPinItem
+from ....items.symbol_pin      import SymbolPinItem
+from ....items.block           import BlockItem
+from ....items.symbol          import SymbolInstanceItem
+from ....items.property_text   import PropertyTextItem
+from ....items.segment         import SegmentItem
+from ....items.mixin           import ItemMixin
 
 from ....items.mixin.move      import ItemMoveMixin
 from ....items.mixin.transform import ItemTransformMixin
 
-from ..cmd import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
+from ..cmd                     import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
                   CmdDelete
+from ..xml                     import diagram_scene_xml_items
+from ..host                    import asDiagramScene
 
-from ..cmd.edit.pin        import CmdEditPortPin, \
+from ..cmd.block_pin           import CmdMoveBlockPins
+
+from ..cmd.edit.pin            import CmdEditPortPin, \
                                   CmdEditPinDot, CmdEditPinClk
-from ..cmd.edit.origin     import CmdEditOrigin
-from ..cmd.edit.polyline   import CmdEditPolylineClosed, CmdEditPolySeg
-from ..cmd.edit.text       import CmdEditText
-from ..cmd.edit.appearance import CmdEditAppearance
-
-from ..cmd.block_pin import CmdMoveBlockPins
-
-from ..xml import diagram_scene_xml_items
-
-from ..host import asDiagramScene
+from ..cmd.edit.origin         import CmdEditOrigin
+from ..cmd.edit.polyline       import CmdEditPolylineClosed, CmdEditPolySeg
+from ..cmd.edit.text           import CmdEditText
+from ..cmd.edit.appearance     import CmdEditAppearance
 
 
 class DiagramSceneApiEditMixin:
@@ -95,7 +92,7 @@ class DiagramSceneApiEditMixin:
     def editRotateCW(
         self     : Self,
         items    : QGraphicsItem | list[QGraphicsItem],
-        pos      : QPointF | None = None,  # individual if None, group otherwise
+        pos      : QPointF       | None = None,  # individual if None, group otherwise
         undoable : bool = False
     ) -> None:
         host = asDiagramScene(self)
@@ -108,7 +105,7 @@ class DiagramSceneApiEditMixin:
     def editRotateCCW(
         self     : Self,
         items    : QGraphicsItem | list[QGraphicsItem],
-        pos      : QPointF | None = None,  # individual if None, group otherwise
+        pos      : QPointF       | None = None,  # individual if None, group otherwise
         undoable : bool = False
     ) -> None:
         host = asDiagramScene(self)
@@ -303,21 +300,21 @@ class DiagramSceneApiEditMixin:
     def editText(
         self       : Self,
         item       : TextItem,
-        text       : str          | NoChange = NO_CHANGE,
-        block      : bool         | NoChange = NO_CHANGE,
-        rotation   : float        | NoChange = NO_CHANGE,
-        autoflip   : bool         | NoChange = NO_CHANGE,
-        mirror_h   : bool         | NoChange = NO_CHANGE,
-        mirror_v   : bool         | NoChange = NO_CHANGE,
-        origin     : RectHandleId | NoChange = NO_CHANGE,
-        align_h    : AlignH       | NoChange = NO_CHANGE,
-        align_v    : AlignV       | NoChange = NO_CHANGE,
-        width      : float        | NoChange = NO_CHANGE,
-        height     : float        | NoChange = NO_CHANGE,
-        pad_left   : float        | NoChange = NO_CHANGE,
-        pad_right  : float        | NoChange = NO_CHANGE,
-        pad_top    : float        | NoChange = NO_CHANGE,
-        pad_bottom : float        | NoChange = NO_CHANGE,
+        text       : str                 | NoChange = NO_CHANGE,
+        block      : bool                | NoChange = NO_CHANGE,
+        rotation   : float               | NoChange = NO_CHANGE,
+        autoflip   : bool                | NoChange = NO_CHANGE,
+        mirror_h   : bool                | NoChange = NO_CHANGE,
+        mirror_v   : bool                | NoChange = NO_CHANGE,
+        origin     : RectHandleId        | NoChange = NO_CHANGE,
+        align_h    : AlignH              | NoChange = NO_CHANGE,
+        align_v    : AlignV              | NoChange = NO_CHANGE,
+        width      : float               | NoChange = NO_CHANGE,
+        height     : float               | NoChange = NO_CHANGE,
+        pad_left   : float               | NoChange = NO_CHANGE,
+        pad_right  : float               | NoChange = NO_CHANGE,
+        pad_top    : float               | NoChange = NO_CHANGE,
+        pad_bottom : float               | NoChange = NO_CHANGE,
         color      : QColor       | None | NoChange = NO_CHANGE,
         font       : str          | None | NoChange = NO_CHANGE,
         size       : float        | None | NoChange = NO_CHANGE,
@@ -339,7 +336,7 @@ class DiagramSceneApiEditMixin:
     @checked
     def editAppearance(
         self           : Self,
-        items          : QGraphicsItem | list[QGraphicsItem],
+        items          : QGraphicsItem        | list[QGraphicsItem],
         line_color     : QColor        | None | NoChange = NO_CHANGE,
         line_width     : float         | None | NoChange = NO_CHANGE,
         line_style     : Qt.PenStyle   | None | NoChange = NO_CHANGE,

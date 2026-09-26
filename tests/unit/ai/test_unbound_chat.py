@@ -4,7 +4,7 @@ import pytest
 
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.ai.session import AiChatSession
+from ConnectEd.ai.session                  import AiChatSession
 from ConnectEd.widgets.window.ai.chat.dock import AiChatDock
 
 

@@ -5,14 +5,14 @@ from typing import Self
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget
 
-from ...app import window
+from ...app        import window
 
 from ...core.check import checked
 from ...core.doc   import Doc, DocSubjectProtocol
 
-from ..action import Action
+from ..action      import Action
 
-from .sub_window  import DocSubWindow
+from .sub_window   import DocSubWindow
 
 
 class MdiArea(QMdiArea):

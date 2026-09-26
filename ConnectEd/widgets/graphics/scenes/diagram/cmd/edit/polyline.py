@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Self
 
-from .......core.check import checked
+from .......core.check   import checked
 
 from .....items.polyline import PolylineItem, PolySegItem
 
-from .. import CmdSceneItem
+from ..                  import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

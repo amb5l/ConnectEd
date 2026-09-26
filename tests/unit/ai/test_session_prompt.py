@@ -5,7 +5,7 @@ import pytest
 from PyQt6.QtWidgets import QApplication
 
 from ConnectEd.ai.profiles import AiProfile
-from ConnectEd.ai.session import AiChatSession
+from ConnectEd.ai.session  import AiChatSession
 
 
 @pytest.fixture

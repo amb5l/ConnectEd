@@ -1,6 +1,6 @@
 from dataclasses import fields
 
-from ..check import checked
+from ..check   import checked
 from ..palette import ThemePalette
 
 

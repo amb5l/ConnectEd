@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ..mouse import MouseModifier
 
-from .base import DiagramViewState
+from .base   import DiagramViewState
 
 
 class DiagramViewStateViewPan1(DiagramViewState):

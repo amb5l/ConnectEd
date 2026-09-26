@@ -3,19 +3,19 @@ from typing import Self
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QAbstractItemView
 
-from ....app import session
+from ....app        import session
 
 from ....core.check import checked
 from ....core.doc   import Doc
 
-from ..tree_view import TreeView, TreeViewDock
+from ..tree_view    import TreeView, TreeViewDock
 
-from .types    import NavItem, NavModel
-from .delegate import NavItemDelegate
-from .private  import NavigatorPrivateMixin
-from .events   import NavigatorEventsMixin
-from .menu     import NavigatorMenuMixin
-from .api      import NavigatorApiMixin
+from .types         import NavItem, NavModel
+from .delegate      import NavItemDelegate
+from .private       import NavigatorPrivateMixin
+from .events        import NavigatorEventsMixin
+from .menu          import NavigatorMenuMixin
+from .api           import NavigatorApiMixin
 
 
 class Navigator(

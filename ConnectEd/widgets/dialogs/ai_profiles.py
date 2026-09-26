@@ -1,9 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import (
-    QBrush, QFont, QFontMetrics, QPalette, QShowEvent, QResizeEvent
-)
+from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -20,9 +17,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from PyQt6.QtGui     import (
+    QBrush, QFont, QFontMetrics, QPalette, QShowEvent, QResizeEvent
+)
 
-from ...ai.profile_refresh import ProfileModelsRefreshWorker
-from ...ai.profiles import (
+from ...ai.profile_refresh        import ProfileModelsRefreshWorker
+from ...ai.profiles               import (
     AiProfile,
     PROVIDER_PRESETS,
     ProviderPreset,
@@ -32,8 +32,8 @@ from ...ai.profiles import (
     providerShortName,
     saveProfiles,
 )
-from ...ai.providers import defaultApiKeyName, defaultBaseUrl
-from ...core.check import checked
+from ...ai.providers              import defaultApiKeyName, defaultBaseUrl
+from ...core.check                import checked
 
 from .components.layout.ok_cancel import OkCancelLayout
 
@@ -443,7 +443,7 @@ class AiProfilesDialog(QDialog):
         _refreshEnvKeyValueTableCells(self._table, self._profiles)
 
     def _onTableColumnResized(
-        self : Self,
+        self   : Self,
         column : int,
         _old   : int,
         _new   : int,

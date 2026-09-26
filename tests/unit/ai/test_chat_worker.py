@@ -1,16 +1,15 @@
 """Unit tests for async AI provider worker."""
 
 import time
-
 import pytest
 
-from PyQt6.QtCore import Q_ARG, QMetaObject, Qt, QThread, QTimer
-from PyQt6.QtTest import QSignalSpy, QTest
+from PyQt6.QtCore    import Q_ARG, QMetaObject, Qt, QThread, QTimer
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtTest    import QSignalSpy, QTest
 
 from ConnectEd.ai.chat_worker import AiChatProviderWorker, copyMessages
-from ConnectEd.ai.profiles import AiProfile
-from ConnectEd.ai.types import ChatEvent, ChatEventType, ChatMessage, ToolCall
+from ConnectEd.ai.profiles    import AiProfile
+from ConnectEd.ai.types       import ChatEvent, ChatEventType, ChatMessage, ToolCall
 
 
 def _spy_strings(spy : QSignalSpy) -> str:

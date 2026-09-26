@@ -2,7 +2,7 @@
 
 import pytest
 
-from ConnectEd.ai.profiles import AiProfile
+from ConnectEd.ai.profiles  import AiProfile
 from ConnectEd.ai.providers import (
     createProvider,
     createProviderForProfile,

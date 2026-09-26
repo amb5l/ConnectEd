@@ -6,15 +6,15 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.defs  import PITCH
-from ....core.types import HandleId, RectHandleId, PortHandleId, DataKind
-from ....core.check import checked
+from ....core.defs    import PITCH
+from ....core.types   import HandleId, RectHandleId, PortHandleId, DataKind
+from ....core.check   import checked
 
-from .property_text import PropertyTextSpec
-from .grip          import GripItem, MoveGripItem, ResizeGripItem
-from .port_pin      import PortPinArrowItem, PortPinLineItem
+from .property_text   import PropertyTextSpec
+from .grip            import GripItem, MoveGripItem, ResizeGripItem
+from .port_pin        import PortPinArrowItem, PortPinLineItem
 
-from .mixin.transform  import ItemTransformMixin
+from .mixin.transform import ItemTransformMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -1,5 +1,5 @@
-from pathlib import Path
 from os      import walk
+from pathlib import Path
 
 from PyQt6.QtCore import QDir
 from PyQt6.QtGui  import QFontDatabase

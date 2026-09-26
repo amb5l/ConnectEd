@@ -5,7 +5,7 @@ from typing import Self
 from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties   import PropertySpec, PropertiesMixin
 
 from .property_text import PropertyTextSpec
 
