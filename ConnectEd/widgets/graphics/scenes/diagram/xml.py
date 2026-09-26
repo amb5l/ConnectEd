@@ -177,9 +177,9 @@ class DiagramSceneXmlMixin:
         from . import DiagramScene
         if not issubclass(cls, DiagramScene):
             raise TypeError("Bad host")
-        scene = cls(doc=None, fresh=False)
+        scene = DiagramScene(doc=None, fresh=False)
         scene.loadFromXml(xr)
-        return scene
+        return cast(Self, scene)
 
     @checked
     def loadFromXml(
