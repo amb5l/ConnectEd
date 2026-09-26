@@ -124,10 +124,6 @@ class NodeItem(
     def _resourceKey(self : Self) -> tuple[NodeState, bool]:
         return (self._state, self.isSelected())
 
-    @classmethod
-    def _resourceKeyDefault(cls : type[Self]) -> tuple[NodeState, bool]:
-        return (NodeState.UNCONNECTED, False)
-
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         self.setPath(
             scene.resources.path(self.resourcesName(), self._state)
@@ -176,23 +172,6 @@ class FixedNodeItem(NodeItem):
         parent = self.parentItem()
         if parent is not None:
             parent.setSelected(selected)
-
-    @checked
-    def sceneEscapeAngle(self : Self) -> float:
-        """
-        Scene angle (degrees) from pin origin towards tip.
-        Allows for cumulative rotation and mirroring.
-        """
-        pin = self.parentItem()
-        if pin is None:
-            return 0.0
-        local = self.pos()
-        if local.x() == 0.0 and local.y() == 0.0:
-            return 0.0
-        escape = pin.mapToScene(local) - pin.mapToScene(QPointF())
-        if escape.x() == 0.0 and escape.y() == 0.0:
-            return 0.0
-        return degrees(atan2(escape.y(), escape.x())) % 360.0
 
 
 class TapMajorNodeItem(FixedNodeItem):

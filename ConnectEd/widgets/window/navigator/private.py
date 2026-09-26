@@ -107,20 +107,6 @@ class NavigatorPrivateMixin:
                 subwindows.append(subwindow)
         return subwindows
 
-    def _initGroups(self : Self) -> None:
-        from . import Navigator
-        if not isinstance(self, Navigator): raise TypeError("Bad host")
-        for doc_type in session().docTypes():
-            # row item
-            group_name = doc_type.group
-            group_item = NavItem(group_name)
-            group_item.setFlags(group_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            font = group_item.font()
-            font.setBold(True)
-            group_item.setFont(font)
-            self._model.appendRow(group_item)
-            self._group_items[group_name] = group_item
-
     def _updateGroups(self : Self) -> None:
         from . import Navigator
         if not isinstance(self, Navigator): raise TypeError("Bad host")

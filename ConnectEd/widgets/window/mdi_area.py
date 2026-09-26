@@ -78,15 +78,6 @@ class MdiArea(QMdiArea):
     def mruSubWindows(self : Self) -> list[DocSubWindow]:
         return list(self._mru)
 
-    def docSubWindows(self : Self, doc : Doc) -> list[DocSubWindow]:
-        subwindows = []
-        for subwindow in self.mruSubWindows():
-            if (doc_binding := subwindow.docBinding()) is None:
-                continue
-            if doc_binding.doc is doc:
-                subwindows.append(subwindow)
-        return subwindows
-
     def docSubjectSubWindows(
         self    : Self,
         doc     : Doc,

@@ -71,14 +71,6 @@ class DiagramViewApiViewMixin:
         host._pan(QPointF(0, -settings().get("display/pan/step") * n))
 
     @checked
-    def viewPrev(self : Self) -> None:
-        raise NotImplementedError("viewPrev not implemented")
-
-    @checked
-    def viewNext(self : Self) -> None:
-        raise NotImplementedError("viewNext not implemented")
-
-    @checked
     def viewGridDisplay(self : Self, checked : bool) -> None:
         host = asDiagramView(self)
         host.grid.display = checked
@@ -97,6 +89,3 @@ class DiagramViewApiViewMixin:
         if (viewport := host.viewport()) is not None:
             viewport.update()
 
-    @checked
-    def viewGridSettings(self : Self) -> None:
-        raise NotImplementedError("viewGridSettings not implemented")

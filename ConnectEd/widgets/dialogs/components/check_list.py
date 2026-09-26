@@ -57,26 +57,6 @@ class CheckList(QWidget):
         self._updateOk()
 
     @checked
-    def getItems(self : Self) -> list[str]:
-        return self._getItems(None)
-
-    @checked
-    def getEnabledItems(self : Self) -> list[str]:
-        return self._getItems(Qt.CheckState.Checked)
-
-    def getDisabledItems(self : Self) -> list[str]:
-        return self._getItems(Qt.CheckState.Unchecked)
-
-    def _getItems(self : Self, state : Qt.CheckState | None) -> list[str]:
-        items : list[str] = []
-        for i in range(self._list.count()):
-            entry = self._list.item(i)
-            if entry is not None \
-            and (state is None or entry.checkState() == state):
-                items.append(entry.text())
-        return items
-
-    @checked
     def _updateOk(self : Self) -> None:
         if self._ok_button is None:
             return

@@ -370,25 +370,6 @@ class PropertiesMixin:
         self._live = live
 
     @checked
-    def propertyInit(
-        self  : Self,
-        name  : str,
-        kind  : DataKind,
-        value : Any
-    ) -> Property | None:
-        """
-        Initialize a property. Creates if required, and sets the value;
-        for use in deserialization.
-        """
-        if name in self.properties:
-            property = self.properties[name]
-            property.setKind(kind)
-            property.setValue(value)
-        else:
-            property = self.propertyAdd(name, kind, value)
-        return property
-
-    @checked
     def propertyAdd(
         self  : Self,
         name  : str,

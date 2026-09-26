@@ -22,30 +22,3 @@ class HdlSchematicLibrary(SymbolsMixin):
     def getPropertyDefaults(self : Self) -> dict[str, tuple[DataKind, Any]]:
         return dict(self._property_defaults)
 
-    def addPropertyDefault(
-        self  : Self,
-        name  : str,
-        kind  : DataKind,
-        value : Any
-    ) -> None:
-        if name in self._property_defaults:
-            raise ValueError(f"Property {name} already has a default")
-        self._property_defaults[name] = (kind, value)
-
-    def delPropertyDefault(
-        self : Self,
-        name : str
-    ) -> None:
-        if name not in self._property_defaults:
-            raise ValueError(f"Property {name} does not have a default")
-        del self._property_defaults[name]
-
-    def setPropertyDefault(
-        self  : Self,
-        name  : str,
-        kind  : DataKind,
-        value : Any
-    ) -> None:
-        if name not in self._property_defaults:
-            raise ValueError(f"Property {name} does not have a default")
-        self._property_defaults[name] = (kind, value)

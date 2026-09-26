@@ -71,15 +71,6 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         """Scene unique identifier."""
         return self._uuid
 
-    def savePos(self : Self) -> QPointF:
-        if not isinstance(self, QGraphicsItem):
-            raise TypeError("Bad host")
-        return self.scenePos()
-
-    @checked
-    def restorePos(self : Self, pos : QPointF) -> None:
-        self.moveRestore(pos)
-
     def topParentItem(self : Self) -> QGraphicsItem | None:
         if not isinstance(self, QGraphicsItem):
             raise TypeError("Bad host")

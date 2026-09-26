@@ -141,24 +141,6 @@ class Session(QObject):
                 return doc_type
         return None
 
-    def docTypeForExt(self : Self, ext : str) -> DocType | None:
-        """Match a suffix or a path. The whole tail counts, not only ``.ce``."""
-        name = ext if ext.startswith(".") else f".{ext}"
-        found : DocType | None = None
-        for doc_type in self._doc_types.values():
-            file_ext = doc_type.fileExt
-            if name == file_ext or name.endswith(file_ext):
-                if found is None or len(file_ext) > len(found.fileExt):
-                    found = doc_type
-        return found
-
-    def docTypeForTag(self : Self, tag : str) -> DocType | None:
-        return self._doc_types.get(tag)
-
-    def openDocs(self : Self) -> list[Doc]:
-        """List of open documents."""
-        return self._open_docs
-
     def openDocForPath(self : Self, path : str) -> Doc | None:
         """Get document for a path, if already open."""
         for open_doc in self._open_docs:

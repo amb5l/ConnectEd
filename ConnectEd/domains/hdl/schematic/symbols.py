@@ -33,7 +33,3 @@ class SymbolsMixin:
         self._symbols[name] = symbol
         del self._symbols[symbol.name()]
 
-    def delSymbol(self : Self, definition: SymbolDefinitionItem) -> None:
-        if definition.name() not in self._symbols:
-            raise ValueError(f"Definition {definition.name()} not found")
-        del self._symbols[definition.name()]

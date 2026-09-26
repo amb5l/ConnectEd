@@ -170,9 +170,6 @@ class Actions:
         clipboard.dataChanged.connect(self.onClipboardDataChanged)
 
 
-    def actionEnable(self : Self, name : str, enable : bool) -> None:
-        getattr(self, name).setEnabled(enable)
-
     def onSubWindowActivated(
         self      : Self,
         subwindow : DocSubWindow | None

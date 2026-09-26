@@ -25,31 +25,7 @@ from .mouse                import MouseModifier
 from .host                 import asDiagramView
 
 
-
 class DiagramViewPrivateMixin:
-    @checked
-    def _allItemsRect(self : Self) -> QRectF | None:
-        host = asDiagramView(self)
-        if (scene := host.scene()) is None:
-            return None
-        items_rect = None
-        for item in scene.items():
-            item_rect = item.mapToScene(item.boundingRect()).boundingRect()
-            items_rect = item_rect if items_rect is None else \
-                items_rect.united(item_rect)
-        return items_rect
-
-    @checked
-    def _selectedItemsRect(self : Self) -> QRectF | None:
-        host = asDiagramView(self)
-        if (scene := host.scene()) is None:
-            return None
-        items_rect = None
-        for item in scene.selectedItems():
-            item_rect = item.mapToScene(item.boundingRect()).boundingRect()
-            items_rect = item_rect if items_rect is None else \
-                items_rect.united(item_rect)
-        return items_rect
 
     @checked
     def _itemsCenter(
@@ -147,10 +123,6 @@ class DiagramViewPrivateMixin:
             host._round2nearest(pos.x(), host.grid.pitch.x()),
             host._round2nearest(pos.y(), host.grid.pitch.y())
         ) if host.grid.snap else pos
-
-    @checked
-    def _distance(self : Self, cp1 : QPoint, cp2 : QPoint) -> int:
-        return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
     @checked
     def _setLayer(self : Self, layer : DiagramViewLayer) -> None:
@@ -354,11 +326,3 @@ class DiagramViewPrivateMixin:
             if item_types is None or isinstance(i, item_types)
         ]
 
-    @checked
-    def _selectedItem(
-        self       : Self,
-        item_types : type | tuple[type, ...] | None
-    ) -> QGraphicsItem | None:
-        host = asDiagramView(self)
-        items = host._selectedItems(item_types)
-        return items[0] if items else None

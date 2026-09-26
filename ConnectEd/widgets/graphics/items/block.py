@@ -86,9 +86,3 @@ class BlockItem(
             view.action("Properties...", lambda: view.editItemProperties(self))
         ]
 
-    def ctxMenuAddPin(
-        self    : Self,
-        checked : bool,
-        view    : DiagramView
-    ) -> None:
-        pass

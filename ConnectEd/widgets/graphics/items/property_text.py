@@ -378,18 +378,6 @@ class PropertyTextItem(TextItem):
         return items
 
     @classmethod
-    def themeQuillFor(
-        cls           : type[Self],
-        scene         : DiagramScene,
-        owner         : ItemNamesMixin | type[ItemNamesMixin],
-        property_name : str
-    ) -> Quill:
-        return scene.resources.quill(
-            cls._themeItemName(owner, property_name),
-            cls._resourceNormalKey(),
-        )
-
-    @classmethod
     def _themeItemName(
         cls       : type[Self],
         owner     : ItemNamesMixin | type[ItemNamesMixin],
@@ -429,16 +417,6 @@ class PropertyTextSpec:
     bold       : bool     | None = None
     italic     : bool     | None = None
     underline  : bool     | None = None
-
-    def astuple(self : Self) -> tuple:
-        return (
-            self.visible, self.cleat, self.x, self.y,
-            self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
-            self.origin, self.align_h, self.align_v, self.width, self.height,
-            self.pad_left, self.pad_right, self.pad_top, self.pad_bottom,
-            self.color,
-            self.font, self.size, self.bold, self.italic, self.underline
-        )
 
 
 @dataclass

@@ -176,10 +176,6 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         return (self.bus(), self.isSelected())
 
-    @classmethod
-    def _resourceKeyDefault(cls : type[Self]) -> tuple[bool, bool]:
-        return (False, False)
-
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 

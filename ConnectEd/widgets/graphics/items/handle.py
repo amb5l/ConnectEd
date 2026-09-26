@@ -40,10 +40,6 @@ class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
     def id(self : Self) -> HandleId:
         return self._id
 
-    @checked
-    def setId(self : Self, id : HandleId) -> None:
-        self._id = id
-
     def onSceneOrientationChanged(self : Self) -> None:
         for child in self.childItems():
             if isinstance(child, OnSceneOrientationChangedProtocol):

@@ -104,9 +104,3 @@ def formatThemeDoc(doc : dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def formatThemeFile(path : Path) -> None:
-    with path.open(encoding="utf-8") as f:
-        doc = yaml.safe_load(f)
-    if not isinstance(doc, dict):
-        raise ValueError(f"Theme file {path} must be a mapping")
-    path.write_text(formatThemeDoc(doc), encoding="utf-8")

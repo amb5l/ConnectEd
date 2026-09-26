@@ -68,6 +68,3 @@ _KIND_CELL_EDITORS : dict[DataKind, type] = {
 }
 
 
-@checked
-def kind2cellEditor(kind : DataKind) -> type:
-    return _KIND_CELL_EDITORS[kind]

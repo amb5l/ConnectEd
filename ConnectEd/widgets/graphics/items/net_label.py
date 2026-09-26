@@ -197,11 +197,6 @@ class NetLabelItem(FunctionalItem, BaseTextItem):
         self._notifyNetlist()
         self.properties["Value"].notify()
 
-    def setDefer(self : Self, defer : bool) -> None:
-        self._defer = defer
-        if not defer:
-            self._notifyNetlist()
-
     @checked
     def applyDialog(self : Self, dialog : NetLabelItemDialog) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         self._applyDialogCommon(dialog)

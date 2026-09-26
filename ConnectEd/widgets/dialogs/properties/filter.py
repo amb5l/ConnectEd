@@ -40,5 +40,3 @@ class PropertyNamesFilterDialog(QDialog):
         self._layout.addLayout(self._ok_cancel_layout)
         self.setLayout(self._layout)
 
-    def getNames(self : Self) -> list[str]:
-        return self._check_list.getEnabledItems()

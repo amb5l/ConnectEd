@@ -141,9 +141,6 @@ class SegmentItem(
     def isOrthogonal(self : Self) -> bool:
         return self._ortho
 
-    def isDiagonal(self : Self) -> bool:
-        return not self._ortho
-
     def axis(self : Self) -> Axis | None:
         if not self.isOrthogonal():
             return None
@@ -246,10 +243,6 @@ class SegmentItem(
 
     def _resourceKey(self : Self) -> tuple[NetKind, bool]:
         return (self._net_kind, self.isSelected())
-
-    @classmethod
-    def _resourceKeyDefault(cls : type[Self]) -> tuple[NetKind, bool]:
-        return (NetKind.UNRESOLVED, False)
 
 
 # TODO link to settings/resources

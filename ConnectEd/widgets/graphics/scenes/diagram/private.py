@@ -12,12 +12,6 @@ from .host         import asDiagramScene
 
 class DiagramScenePrivateMixin:
 
-    def _itemTypes(self : Self, pos : QPointF) -> list[type]:
-        host = asDiagramScene(self)
-        items = host.items(pos)
-        types = {item.__class__ for item in items}  # use a set to avoid duplicates
-        return list(types)
-
     def _topItems(
         self  : Self,
         items : QGraphicsItem | list[QGraphicsItem]

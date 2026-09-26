@@ -292,12 +292,6 @@ class PreviewJournalMixin:
     # instance attributes
     _preview_journal : QUndoStack
 
-    def _previewDo(self : Self, cmd : QUndoCommand) -> None:
-        self._preview_journal.push(cmd)
-
-    def _previewUndo(self : Self) -> None:
-        self._preview_journal.undo()
-
 
 class DiagramBlockPinInteraction(DiagramInteraction):
     """Base for all interactions that operate on a block pin."""

@@ -387,12 +387,6 @@ class DiagramSceneResources:
             join_style
         )
 
-    def _selectedColor(self : Self, part : str) -> QColor:
-        spec = settings().get(f"theme/selected/{part}")
-        if hasattr(spec, "color"):
-            return spec.color
-        return spec
-
     def _selectedItemPart(
         self      : Self,
         item_name : str,

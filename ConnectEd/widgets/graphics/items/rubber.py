@@ -375,10 +375,6 @@ class RubberJogItem(ChromeItem, RubberItem):
         return self.acrossDistance() == 0
 
     @checked
-    def isDegenerate(self: Self) -> bool:
-        return self._lane is None
-
-    @checked
     def prefLane(self: Self) -> float:
         """
         Midpoint lane the jog would like if unconstrained.

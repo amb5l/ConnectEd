@@ -345,14 +345,8 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         raise NotImplementedError("Not implemented")
         #self._scene.newSymbol()  # scene API (undoable)
 
-    def refreshSymbolsHandler(self : Self) -> None:
-        # refresh all symbol definitions in scene and navigator
-        raise NotImplementedError("Not implemented")
         #self._scene.refreshSymbols()  # scene API (undoable)
 
-    def purgeSymbolsHandler(self : Self) -> None:
-        # purge all symbol definitions from scene and navigator
-        raise NotImplementedError("Not implemented")
         #self._scene.purgeSymbols()  # scene API (undoable)
 
     def duplicateSymbolHandler(

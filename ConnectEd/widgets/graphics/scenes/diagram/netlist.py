@@ -107,11 +107,6 @@ class Netlist:
         return None if subnet_id is None else self._subnets[subnet_id]
 
     @checked
-    def nodeNet(self : Self, node : NodeItem) -> Net | None:
-        subnet = self.nodeSubnet(node)
-        return None if subnet is None else subnet.net
-
-    @checked
     def nodeNameSuffixType(self : Self, node : NodeItem) -> tuple[str, str, str]:
         full_name = None
         if isinstance(node, FreeNodeItem):
@@ -137,60 +132,6 @@ class Netlist:
         return base_name, suffix, "?"
 
     @checked
-    def adoptNode(self : Self, node : NodeItem) -> None:
-        """
-        Repair subnet membership for a node already in the graph.
-        Unwired scene-only nodes are not adopted until addSegment.
-        """
-        if node not in self._graph:
-            return
-        subnet_ids = self._subnetsContainingNode(node)
-        if node in self._node2subnet:
-            # node is already mapped to a subnet
-            subnet_id = self._node2subnet[node]
-            if subnet_ids != [subnet_id]:
-                # mapping does not match subnet(s)
-                subnet = self._subnets[subnet_id]
-                if len(subnet_ids) == 0:
-                    logger().warning(f"Node {node} mapped to subnet {subnet_id} which does not contain it.")
-                    self._addNodesToSubnet(subnet, node)
-                elif len(subnet_ids) == 1:
-                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but contained by subnet {subnet_ids[0]}.")
-                    self._node2subnet[node] = subnet_ids[0]
-                elif subnet_id in subnet_ids:
-                    other_subnet_ids = subnet_ids.copy()
-                    other_subnet_ids.remove(subnet_id)
-                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but also exists in subnets {other_subnet_ids}.")
-                    for other_subnet_id in other_subnet_ids:
-                        other_subnet = self._subnets[other_subnet_id]
-                        self._removeNodeFromSubnet(node, other_subnet)
-                else:
-                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but exists in subnets {subnet_ids}.")
-                    # map to first subnet
-                    self._node2subnet[node] = subnet_ids[0]
-                    # remove from other subnets
-                    for other_subnet_id in subnet_ids[1:]:
-                        other_subnet = self._subnets[other_subnet_id]
-                        self._removeNodeFromSubnet(node, other_subnet)
-        else:
-            # node is not mapped to any subnet
-            if len(subnet_ids) == 0:
-                logger().warning(
-                    f"Node {node} is in the graph but has no subnet mapping."
-                )
-            elif len(subnet_ids) == 1:
-                logger().warning(f"Node {node} has no subnet mapping but exists in subnet {subnet_ids[0]}.")
-                self._node2subnet[node] = subnet_ids[0]
-            else:
-                logger().warning(f"Node {node} has no subnet mapping but exists in {len(subnet_ids)} subnets.")
-                # map to first subnet
-                self._node2subnet[node] = subnet_ids[0]
-                # remove from other subnets
-                for other_subnet_id in subnet_ids[1:]:
-                    other_subnet = self._subnets[other_subnet_id]
-                    self._removeNodeFromSubnet(node, other_subnet)
-
-    @checked
     def removeNodes(self : Self, nodes : NodeItem | list[NodeItem]) -> None:
         if isinstance(nodes, NodeItem):
             nodes = [nodes]
@@ -208,22 +149,6 @@ class Netlist:
                     affected_subnets.add(subnet)
         self._resolveSubnets(affected_subnets)
 
-    @checked
-    def replaceNode(self : Self, node1 : NodeItem, node2 : NodeItem) -> None:
-        if node1 not in self._graph:
-            logger().error(f"Node {node1} is not in the graph.")
-            return
-        if node2 in self._graph:
-            logger().error(f"Node {node2} is already in the graph.")
-            return
-        if node1 == node2:
-            logger().warning("Specified nodes are the same.")
-            return
-        networkx.relabel_nodes(self._graph, {node1: node2})
-        self._node2subnet[node2] = self._node2subnet[node1]
-        self._node2subnet.pop(node1, None)
-        self._resolveSubnet(self._subnets[self._node2subnet[node2]])
-
     # -- segment methods ---------------------------------------------------
 
     @checked
@@ -233,22 +158,6 @@ class Netlist:
     @checked
     def hasSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
         return self._graph.has_edge(node1, node2)
-
-    @checked
-    def segmentSubnet(self : Self, seg : SegmentItem) -> Subnet | None:
-        if (node := seg.node1() or seg.node2()) is None:
-            return None
-        if (subnet := self.nodeSubnet(node)) is None:
-            return None
-        return subnet
-
-    @checked
-    def segmentNet(self : Self, seg : SegmentItem) -> Net | None:
-        if (node := seg.node1() or seg.node2()) is None:
-            return None
-        if (subnet := self.nodeSubnet(node)) is None:
-            return None
-        return subnet.net
 
     @checked
     def segmentNetKind(self : Self, seg : SegmentItem) -> NetKind:
@@ -385,13 +294,6 @@ class Netlist:
     @checked
     def subnets(self : Self) -> dict[int, Subnet]:
         return self._subnets
-
-    @checked
-    def subnetSegments(self : Self, subnet : Subnet) -> list[SegmentItem]:
-        return [
-            data["segment"] for _, _, data in \
-                self._graph.subgraph(subnet.nodes).edges(data=True)
-        ]
 
     # -- net methods -------------------------------------------------------
 
@@ -533,11 +435,6 @@ class Netlist:
             if subnet.id is None:
                 raise ValueError("Subnet ID is None")
             self._node2subnet[node] = subnet.id
-
-    def _removeNodeFromSubnet(self : Self, node : NodeItem, subnet : Subnet) -> None:
-        subnet.nodes.discard(node)
-        if not subnet.nodes:
-            self._removeSubnet(subnet)
 
     @checked
     def _resolveSubnets(

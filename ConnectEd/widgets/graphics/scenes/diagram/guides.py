@@ -18,9 +18,6 @@ class DiagramSceneGuidesMixin:
 
     _guides : list[QGraphicsLineItem] = []
 
-    def initGuides(self : Self) -> None:
-        self._guides = []
-
     def guide(self : Self, index : int) -> QGraphicsLineItem:
         while len(self._guides) <= index:
             self._guides.append(self._newGuide())

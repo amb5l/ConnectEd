@@ -27,84 +27,6 @@ def sign(x):
 
 
 @checked
-def trace(
-    depth  : int | None = None,
-    full   : bool = False,
-    module : bool = True,
-    indent : bool = False,
-    args   : bool = False
-) -> None:
-    """
-    Print the call chain that led to this point.
-
-    Args:
-        depth:   Maximum number of frames to show (from caller upward). None = all.
-        full:    Show full module path instead of just the last component.
-        module:  Include the module name at all.
-        indent:  If True, print vertically with increasing indentation instead of " <- ".
-        args:    If True, show function arguments and their values.
-    """
-    stack = inspect.stack()
-    # Skip this function itself
-    frames = stack[1:depth + 1 if depth is not None else None]
-
-    calls = []
-    for frame in frames:                              # deepest call first
-        func_name = frame.function
-        mod = inspect.getmodule(frame.frame)
-        mod_name = mod.__name__ if mod else "<unknown>"
-
-        if not full:
-            mod_name = mod_name.split(".")[-1]
-
-        if (self_obj := frame.frame.f_locals.get("self")) is not None:
-            cls_name = self_obj.__class__.__name__
-            func_part = f"{cls_name}.{func_name}"
-        # e.g. Processor.run
-        else:
-            func_part = func_name
-
-        if args:
-            # Get function arguments (excluding 'self')
-            code = frame.frame.f_code
-            arg_names = code.co_varnames[:code.co_argcount]
-            arg_strs = []
-            for name in arg_names:
-                if name == "self":
-                    continue
-                if name in frame.frame.f_locals:
-                    val = frame.frame.f_locals[name]
-                    val_repr = repr(val)
-                    if len(val_repr) > 50:
-                        val_repr = val_repr[:47] + "..."
-                    arg_strs.append(f"{name}={val_repr}")
-            if arg_strs:
-                func_part += f"({', '.join(arg_strs)})"
-            else:
-                func_part += "()"
-
-        if module:
-            calls.append(f"{mod_name}.{func_part}")
-        else:
-            calls.append(func_part)
-
-    if indent:
-        for i, call in enumerate(calls):
-            print(" " * i + call)
-    else:
-        print(" <- ".join(calls))
-
-
-@checked
-def itemsTypeDict(items : list[Any]) -> dict[type, list[Any]]:
-    """Group items by their type."""
-    result: defaultdict[type, list[Any]] = defaultdict(list)
-    for item in items:
-        result[type(item)].append(item)
-    return dict(result)
-
-
-@checked
 def space2underscore(s : str) -> str:
     """Foo Bar -> Foo_Bar"""
     return s.replace(" ", "_")
@@ -131,16 +53,6 @@ def camel2proper(s : str) -> str:
 
 
 @checked
-def pascal2snake(s : str) -> str:
-    """FooBar -> foo_bar"""
-    r = []
-    for i, char in enumerate(s):
-        if i > 0 and char.isupper():
-            r.append("_")
-        r.append(char.lower())
-    return "".join(r)
-
-@checked
 def pascal2proper(s : str) -> str:
     """FooBar -> Foo Bar"""
     r = []
@@ -149,17 +61,6 @@ def pascal2proper(s : str) -> str:
             r.append(" ")
         r.append(char)
     return "".join(r)
-
-@checked
-def proper2snake(s : str) -> str:
-    """Foo Bar -> foo_bar"""
-    return s.replace(" ", "_").lower()
-
-
-@checked
-def snake2proper(s : str) -> str:
-    """foo_bar -> Foo Bar"""
-    return s.replace("_", " ").title()
 
 
 def cleanPath(path: str) -> str:
@@ -188,13 +89,6 @@ def getDefaultPath() -> str:
         else:
             r = "~"
     return r
-
-
-@checked
-def removeSuffixes(s : str, *suffixes: str) -> str:
-    for suffix in suffixes:
-        s = s.removesuffix(suffix)
-    return s
 
 
 @checked
@@ -276,33 +170,3 @@ def str2val(s : str, t : str) -> Any:
             raise ValueError(f"Unsupported type: {t}")
 
 
-@checked
-def getCurlyBraceVariables(s : str) -> list[str]:
-    """
-    Get the substitution variables (names in curly braces) from a string.
-    Curly braces may be escaped with a backslash; they may not be nested.
-    """
-    # Match {variable} where { is not escaped
-    # The capture group handles escaped } inside by consuming \} as escaped char
-    pattern = r'(?<!\\)\{((?:[^}\\]|\\.)+)\}'
-    matches = re.findall(pattern, s)
-    return matches
-
-
-@checked
-def registerClass(
-    registry : dict[str, type[Any]],
-    cls_name : str,
-    mod_name : str | None = None,
-    pkg      : str | None = None
-) -> type[Any]:
-    """Import a class from a module and register it in registry."""
-    if mod_name is None:
-        mod_name = pascal2snake(cls_name).replace("_item", "")
-    if pkg is None:
-        caller_frame = inspect.stack()[1].frame
-        pkg = caller_frame.f_globals.get('__name__')
-    module = importlib.import_module(f".{mod_name}", package=pkg)
-    cls = getattr(module, cls_name)
-    registry[cls_name] = cls
-    return cls

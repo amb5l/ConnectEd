@@ -141,21 +141,9 @@ class SymbolBaseItem(
         if isinstance(self, PropertiesMixin):
             self.properties["VHDL Architecture"].notify()
 
-    def vhdlSelectedName(self : Self) -> str:
-        s = ""
-        if self._vhdl_package:
-            s = self._vhdl_package + "." + self.name()
-        if self._vhdl_library:
-            s = self._vhdl_library + "." + self.name()
-        return s
-
     def _resourceKey(self : Self) -> tuple[bool, bool]:
         from ..scenes.symbol import SymbolScene
         return (isinstance(self.scene(), SymbolScene), self.isSelected())
-
-    @classmethod
-    def _resourceKeyDefault(cls : type[Self]) -> tuple[bool, bool]:
-        return (False, False)
 
 
 class SymbolDefinitionItem(SymbolBaseItem):

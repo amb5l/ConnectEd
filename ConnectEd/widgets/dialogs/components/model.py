@@ -61,10 +61,6 @@ class BaseItem(QStandardItem):
     def setDefault(self : Self, default : Any) -> None:
         self.setData(default, Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
 
-    @checked
-    def getDefault(self : Self) -> Any:
-        return self.data(Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
-
 
 class BaseModel(QStandardItemModel):
     pass

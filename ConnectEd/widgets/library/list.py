@@ -70,5 +70,3 @@ class LibraryListPane(QWidget):
         self._delete_button.setEnabled(bool(self._list.selectedItems()))
         self.selectionChanged.emit(self.currentItem())
 
-    def _onNewButtonClicked(self : Self) -> None:
-        raise NotImplementedError("Not implemented")

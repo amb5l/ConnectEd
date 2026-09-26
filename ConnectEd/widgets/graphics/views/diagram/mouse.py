@@ -207,8 +207,3 @@ class DiagramViewMouseMixin:
     def _mouseArgs(self : Self) -> tuple[QPoint, QPointF, MouseModifier]:
         return self._mouse_vpos, self._mouse_spos, self._mouse_press_modifiers
 
-    def _mouseReleaseSync(self : Self):
-        if app().mouseButtons() == Qt.MouseButton.NoButton:
-            self._mouse_state = MouseState.IDLE
-        else:
-            self._mouse_state = MouseState.BAD_PRESS

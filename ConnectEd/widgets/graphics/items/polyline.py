@@ -117,16 +117,8 @@ class PolySegItem(GripShapeMixin, GripItem):
         return self._v1
 
     @checked
-    def setV1(self : Self, v1 : PolyVtxItem) -> None:
-        self._v1 = v1
-
-    @checked
     def v2(self : Self) -> PolyVtxItem:
         return self._v2
-
-    @checked
-    def setV2(self : Self, v2 : PolyVtxItem) -> None:
-        self._v2 = v2
 
     @checked
     def sweep(self : Self) -> float | None:
@@ -310,10 +302,6 @@ class PolylineItem(
         self.updatePath()
         # ensure grip visibility during interaction
         self.setGripsVisible(self.isSelected() and self.selectMode() == 1)
-
-    @checked
-    def lastVertexPos(self : Self) -> QPointF:
-        return self._vertices[-1].pos() + self.pos()
 
     @checked
     def setLastVertexPos(self : Self, pos : QPointF) -> None:

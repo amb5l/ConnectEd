@@ -230,12 +230,6 @@ class Window(QMainWindow):
         return self._transcript_dock
 
     @checked
-    def transcript(self : Self) -> TextView | None:
-        if (dock := self.transcriptDock()) is None:
-            return None
-        return dock._text_view
-
-    @checked
     def logDock(self : Self) -> LogViewDock | None:
         if not hasattr(self, "_log_dock"):
             return None
@@ -254,25 +248,10 @@ class Window(QMainWindow):
         return self._ai_manager
 
     @checked
-    def aiEditLock(self : Self) -> AiEditLock | None:
-        if (manager := self.aiManager()) is None:
-            return None
-        return manager.editLock()
-
-    @checked
     def aiChatManager(self : Self) -> AiChatManager | None:
         if (manager := self.aiManager()) is None:
             return None
         return manager.chatManager()
-
-    @checked
-    def aiChatDock(self : Self) -> AiChatDock | None:
-        if (manager := self.aiChatManager()) is None:
-            return None
-        chats = manager.chats()
-        if not chats:
-            return None
-        return chats[0]
 
     @checked
     def mdiArea(self : Self) -> MdiArea:

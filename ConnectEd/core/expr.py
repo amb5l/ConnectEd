@@ -58,11 +58,6 @@ class SafeExpressionEvaluator:
         self.case_sensitive = case_sensitive
 
     @checked
-    def set_variable(self : Self, name: str, value: int | float) -> None:
-        """Add or update a parameter value (triggers re-evaluation elsewhere)."""
-        self.variables[name] = value
-
-    @checked
     def evaluate(self : Self, expr: str) -> int:
         """
         Evaluate the expression string and return an integer.
