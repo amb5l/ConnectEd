@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import re
 
-from typing import Optional, Self
+from typing import Self, cast
 
 from antlr4 import ParseTreeVisitor, ParserRuleContext
 
@@ -8,21 +10,38 @@ from .vhdl_parser import vhdl_parser as vhp
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .vhdl_model import *
+    from .vhdl_model import (
+        VhdlArchitecture,
+        VhdlComponent,
+        VhdlDocument,
+        VhdlEntity,
+        VhdlGeneric,
+        VhdlPackage,
+        VhdlPort,
+        VhdlPortGroup,
+    )
+
+
+def _textOf(ctx : object) -> str:
+    text = getattr(ctx, "text", None)
+    if isinstance(text, str):
+        return text
+    raise AttributeError("text")
 
 class VhdlVisitor(ParseTreeVisitor):
     """Visitor to convert ANTLR4 parse tree to VHDL model objects."""
 
-    _model : 'VhdlDocument'
+    _model : VhdlDocument
 
     def __init__(self : Self):
         super().__init__()
         from .vhdl_model import VhdlDocument
         self._model = VhdlDocument()
 
-    def visit(self : Self, tree : ParserRuleContext):
+    def visit(self : Self, tree : ParserRuleContext) -> object | None:
         """Override to safely visit a tree and catch any errors during visiting."""
         try:
+            result : object | None
             if isinstance(tree, vhp.Rule_DesignFileContext):
                 result = self.visitDesignFile(tree)
             elif isinstance(tree, vhp.Rule_DesignUnitContext):
@@ -53,7 +72,7 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitDesignFile(
         self : Self,
         ctx  : vhp.Rule_DesignFileContext
-    ) -> 'VhdlDocument':
+    ) -> VhdlDocument:
         """Visit design file and populate the HDL model."""
         from .vhdl_model import VhdlEntity, VhdlArchitecture, VhdlPackage
 
@@ -71,48 +90,57 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitDesignUnit(
         self : Self,
         ctx  : vhp.Rule_DesignUnitContext
-    ) -> Optional['VhdlEntity | VhdlArchitecture | VhdlPackage']:
+    ) -> VhdlEntity | VhdlArchitecture | VhdlPackage | None:
         """Visit design unit and extract entity if present."""
-        if ctx.rule_LibraryUnit():
-            return self.visit(ctx.rule_LibraryUnit())
+        from .vhdl_model import VhdlArchitecture, VhdlEntity, VhdlPackage
+
+        library_unit = ctx.rule_LibraryUnit()
+        if library_unit is None:
+            return None
+        result = self.visit(library_unit)
+        if isinstance(result, (VhdlEntity, VhdlArchitecture, VhdlPackage)):
+            return result
         return None
 
     def visitLibraryUnit(
         self : Self,
         ctx  : vhp.Rule_LibraryUnitContext
-    ) -> Optional['VhdlEntity | VhdlArchitecture | VhdlPackage']:
+    ) -> VhdlEntity | VhdlArchitecture | VhdlPackage | None:
         """Visit library unit and extract entity, architecture, or package declaration if present."""
-        if ctx.rule_EntityDeclaration():
-            return self.visit(ctx.rule_EntityDeclaration())
-        elif ctx.rule_Architecture():
-            return self.visitArchitecture(ctx.rule_Architecture())
-        elif ctx.rule_PackageDeclaration():
-            return self.visitPackageDeclaration(ctx.rule_PackageDeclaration())
+        entity_ctx = ctx.rule_EntityDeclaration()
+        if entity_ctx is not None:
+            return self.visitEntityDeclaration(entity_ctx)
+        architecture_ctx = ctx.rule_Architecture()
+        if architecture_ctx is not None:
+            return self.visitArchitecture(architecture_ctx)
+        package_ctx = ctx.rule_PackageDeclaration()
+        if package_ctx is not None:
+            return self.visitPackageDeclaration(package_ctx)
         return None
 
     def visitEntityDeclaration(
         self : Self,
         ctx  : vhp.Rule_EntityDeclarationContext
-    ) -> 'VhdlEntity':
+    ) -> VhdlEntity:
         """Visit entity declaration and extract entity information."""
         from .vhdl_model import VhdlEntity
 
-        name = ctx.name.text
-        generics = self.visitGenericClause(ctx.rule_GenericClause()) \
-            if ctx.rule_GenericClause() else []
-        port_groups = self.visitPortClause(ctx.rule_PortClause()) \
-            if ctx.rule_PortClause() else []
+        name = _textOf(ctx.name)
+        generic_ctx = ctx.rule_GenericClause()
+        generics = self.visitGenericClause(generic_ctx) if generic_ctx is not None else []
+        port_ctx = ctx.rule_PortClause()
+        port_groups = self.visitPortClause(port_ctx) if port_ctx is not None else []
         return VhdlEntity(name, generics, port_groups)
 
     def visitArchitecture(
         self : Self,
         ctx  : vhp.Rule_ArchitectureContext
-    ) -> 'VhdlArchitecture':
+    ) -> VhdlArchitecture:
         """Visit architecture declaration and extract architecture information."""
         from .vhdl_model import VhdlArchitecture, VhdlComponent
 
-        name = ctx.name.text
-        entity_name = ctx.entityName.text
+        name = _textOf(ctx.name)
+        entity_name = _textOf(ctx.entityName)
         architecture = VhdlArchitecture(name, entity_name)
         for item in ctx.declarativeItems:
             item_node = self.visit(item)
@@ -123,25 +151,25 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitComponentDeclaration(
         self : Self,
         ctx  : vhp.Rule_ComponentDeclarationContext
-    ) -> 'VhdlComponent':
+    ) -> VhdlComponent:
         """Visit component declaration and extract component information."""
         from .vhdl_model import VhdlComponent
 
-        name = ctx.name.text
-        generics = self.visitGenericClause(ctx.rule_GenericClause()) \
-            if ctx.rule_GenericClause() else []
-        port_groups = self.visitPortClause(ctx.rule_PortClause()) \
-            if ctx.rule_PortClause() else []
+        name = _textOf(ctx.name)
+        generic_ctx = ctx.rule_GenericClause()
+        generics = self.visitGenericClause(generic_ctx) if generic_ctx is not None else []
+        port_ctx = ctx.rule_PortClause()
+        port_groups = self.visitPortClause(port_ctx) if port_ctx is not None else []
         return VhdlComponent(name, generics, port_groups)
 
     def visitPackageDeclaration(
         self : Self,
         ctx  : vhp.Rule_PackageDeclarationContext
-    ) -> 'VhdlPackage':
+    ) -> VhdlPackage:
         """Visit a package declaration."""
         from .vhdl_model import VhdlPackage, VhdlComponent
 
-        package_name = ctx.name.text
+        package_name = _textOf(ctx.name)
         package = VhdlPackage(package_name)
         for item in ctx.declarativeItems:
             item_node = self.visit(item)
@@ -152,7 +180,7 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitRule_PackageDeclarativeItem(
         self : Self,
         ctx  : vhp.Rule_PackageDeclarativeItemContext
-    ) -> Optional['VhdlComponent']:
+    ) -> VhdlComponent | None:
         """Visit items declared in a package, including component declarations."""
         if ctx.componentDeclaration:
             return self.visitComponentDeclaration(ctx.componentDeclaration)
@@ -161,7 +189,7 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitRule_BlockDeclarativeItem(
         self : Self,
         ctx  : vhp.Rule_BlockDeclarativeItemContext
-    ) -> Optional['VhdlComponent']:
+    ) -> VhdlComponent | None:
         """Visit items declared in an architecture block, including component declarations."""
         if ctx.rule_ComponentDeclaration():
             return self.visitComponentDeclaration(ctx.rule_ComponentDeclaration())
@@ -170,41 +198,44 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitGenericClause(
         self : Self,
         ctx  : vhp.Rule_GenericClauseContext
-    ) -> list['VhdlGeneric']:
+    ) -> list[VhdlGeneric]:
         """Extract generics from generic clause."""
-        generics = []
+        generics : list[VhdlGeneric] = []
         for element_ctx in ctx.rule_InterfaceElement():
-            generics.append(self.visitInterfaceElement(element_ctx))
+            generic = self.visitInterfaceElement(element_ctx)
+            if generic is not None:
+                generics.append(generic)
         return generics
 
     def visitInterfaceElement(
         self : Self,
         ctx  : vhp.Rule_InterfaceElementContext
-    ) -> Optional['VhdlGeneric']:
+    ) -> VhdlGeneric | None:
         """Extract generic."""
         from .vhdl_model import VhdlGeneric
 
-        if ctx.rule_InterfaceDeclaration():
-            ictx = ctx.rule_InterfaceDeclaration()
-            if ictx.rule_InterfaceConstantDeclaration():
-                pctx = ictx.rule_InterfaceConstantDeclaration()
-                identifiers = self.extractIdentifierList(pctx.constantNames)
-                type_ = self.extractSubtypeIndication(pctx.subtypeIndication)
-                default = None
-                if pctx.defaultValue:
-                    default = self.extractExpression(pctx.defaultValue)
-                return VhdlGeneric(identifiers[0], type_, default)
-        return None
+        declaration = ctx.rule_InterfaceDeclaration()
+        if declaration is None:
+            return None
+        constant = declaration.rule_InterfaceConstantDeclaration()
+        if constant is None:
+            return None
+        identifiers = self.extractIdentifierList(constant.constantNames)
+        type_ = self.extractSubtypeIndication(constant.subtypeIndication)
+        default = ""
+        if constant.defaultValue:
+            default = self.extractExpression(constant.defaultValue)
+        return VhdlGeneric(identifiers[0], type_, default)
 
     def visitPortClause(
         self : Self,
         ctx  : vhp.Rule_PortClauseContext
-    ) -> list['VhdlPortGroup']:
+    ) -> list[VhdlPortGroup]:
         """Extract ports from port clause and organize them into groups."""
         from .vhdl_model import VhdlPortGroup
 
-        port_groups = []
-        current_group = []
+        port_groups   : list[VhdlPortGroup] = []
+        current_group : list[VhdlPort] = []
         port_declarations = ctx.rule_InterfaceSignalDeclaration()
         prev_end_line = None
         for i, port_ctx in enumerate(port_declarations):
@@ -233,7 +264,7 @@ class VhdlVisitor(ParseTreeVisitor):
     def visitInterfaceSignalDeclaration(
         self : Self,
         ctx  : vhp.Rule_InterfaceSignalDeclarationContext
-    ) -> 'VhdlPort':
+    ) -> VhdlPort:
         """Extract port from interface signal declaration."""
         from .vhdl_model import VhdlPort
 
@@ -270,14 +301,14 @@ class VhdlVisitor(ParseTreeVisitor):
         start_index = ctx.start.start
         stop_index = ctx.stop.stop
         result = input_stream.getText(start_index, stop_index)
-        return result
+        return cast(str, result)
 
     def extractExpression(
         self : Self,
         ctx  : vhp.Rule_ExpressionContext
     ) -> str:
         """Extract expression as string."""
-        return ctx.getText()
+        return cast(str, ctx.getText())
 
     @staticmethod
     def extractConstraint(s : str) -> tuple[str, str, str] | None:
