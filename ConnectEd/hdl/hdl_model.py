@@ -1,5 +1,6 @@
-from typing import Optional, Iterable, Self, TypeVar, cast
-from enum   import Enum
+from typing          import Self, TypeVar, cast
+from collections.abc import Iterable
+from enum            import Enum
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QStandardItem, QStandardItemModel
@@ -136,7 +137,7 @@ class HdlParameter(
         self.default = expression
         self.notes = notes
 
-    def data(self, role: int) -> Optional[str]:  # type: ignore[override]
+    def data(self, role: int) -> str | None:  # type: ignore[override]
         index = self.index()
         column = index.column() if index.isValid() else 0
         if role == Qt.ItemDataRole.DisplayRole:
@@ -146,7 +147,7 @@ class HdlParameter(
                 case 2: return self._default
                 case 3: return self._notes
                 case _: return None
-        return cast(Optional[str], super().data(role))
+        return cast(str | None, super().data(role))
 
     def setData(self, value: str, role: int) -> bool:  # type: ignore[override]
         index = self.index()
@@ -186,7 +187,7 @@ class HdlPortOrPin(
         self.datatype = datatype
         self.notes = notes
 
-    def data(self, role: int) -> Optional[str]:  # type: ignore[override]
+    def data(self, role: int) -> str | None:  # type: ignore[override]
         index = self.index()
         column = index.column() if index.isValid() else 0
         if role == Qt.ItemDataRole.DisplayRole:
@@ -225,12 +226,12 @@ class HdlPortGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     def __init__(
         self  : Self,
         name  : str,
-        ports : Iterable[HdlPort] = [],
+        ports : Iterable[HdlPort] | None = None,
         notes : str = ""
     ) -> None:
         super().__init__()
         self.name = name
-        self.appendRows(ports)
+        self.appendRows(_empty(ports))
         self.notes = notes
 
 @export
@@ -247,12 +248,12 @@ class HdlPinGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     def __init__(
         self  : Self,
         name  : str,
-        pins  : Iterable[HdlPin] = [],
+        pins  : Iterable[HdlPin] | None = None,
         notes : str = ""
     ) -> None:
         super().__init__()
         self.name = name
-        self.appendRows(pins)
+        self.appendRows(_empty(pins))
         self.notes = notes
 
     @property
@@ -266,13 +267,13 @@ class HdlContainer(QStandardItem):
 
     _NAME : str | None = None
 
-    def __init__(self, items: Iterable[QStandardItem] = []):
+    def __init__(self, items: Iterable[QStandardItem] | None = None) -> None:
         super().__init__()
         if self._NAME is not None:
             self.setText(self._NAME)
         else:
             raise ValueError("HdlContainer._NAME is not set")
-        self.appendRows(items)
+        self.appendRows(_empty(items))
 
 
 @export
@@ -306,9 +307,9 @@ class HdlBlock(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     def __init__(
         self       : Self,
         name       : str,
-        parameters : Iterable[HdlParameter] = [],
-        pins       : Iterable[HdlPin] = [],
-        pin_groups : Iterable[HdlPinGroup] = [],
+        parameters : Iterable[HdlParameter] | None = None,
+        pins       : Iterable[HdlPin]       | None = None,
+        pin_groups : Iterable[HdlPinGroup]  | None = None,
         notes      : str = ""
     ) -> None:
         super().__init__()
@@ -373,12 +374,12 @@ class HdlGate(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
         self  : Self,
         name  : str,
         notes : str = "",
-        pins  : Iterable[HdlPin] = []
-    ):
+        pins  : Iterable[HdlPin] | None = None
+    ) -> None:
         super().__init__()
         self.name = name
         self.notes = notes
-        for pin in pins:
+        for pin in _empty(pins):
             self.appendRow(pin)
 
 
@@ -399,7 +400,7 @@ class HdlNet(
         name     : str,
         datatype : str,
         notes    : str = "",
-        output   : Optional[HdlPortOrPin] = None,
+        output   : HdlPortOrPin           | None = None,
         inputs   : Iterable[HdlPortOrPin] | None = None
     ) -> None:
         super().__init__()
@@ -418,12 +419,12 @@ class HdlNetGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
         self  : Self,
         name  : str,
         notes : str = "",
-        nets  : Iterable[HdlNet] = []
+        nets  : Iterable[HdlNet] | None = None
     ) -> None:
         super().__init__()
         self.name = name
         self.notes = notes
-        for net in nets:
+        for net in _empty(nets):
             self.appendRow(net)
 
 
@@ -461,14 +462,14 @@ class HdlCollection(QStandardItemModel):
 
     def __init__(
         self        : Self,
-        blocks      : Iterable[HdlBlock] = [],
-        port_groups : Iterable[HdlPortGroup] = [],
-        net_groups  : Iterable[HdlNetGroup] = []
+        blocks      : Iterable[HdlBlock]     | None = None,
+        port_groups : Iterable[HdlPortGroup] | None = None,
+        net_groups  : Iterable[HdlNetGroup]  | None = None
     ) -> None:
         super().__init__()
         root = self.invisibleRootItem()
         if root is not None:
-            root.appendRows(list(blocks))
+            root.appendRows(list(_empty(blocks)))
 
     def addBlock(self, block: HdlBlock) -> None:
         self._blocks.appendRow(block)
