@@ -10,6 +10,10 @@ from ConnectEd.hdl.vhdl              import VhdlDocument, VhdlEntity, \
 
 from ConnectEd.hdl.vhdl.vhdl_visitor import VhdlVisitor
 
+_DEFAULT_GENERICS    = MinMax(0, 5)
+_DEFAULT_PORT_GROUPS = MinMax(0, 5)
+_DEFAULT_PORTS       = MinMax(1, 5)
+
 
 class TestFixtures:
     def test_design_units(self : Self):
@@ -139,9 +143,9 @@ class TestRandom:
         self        : Self,
         stream      : TextIO,
         name        : str,
-        generics    : MinMax = MinMax(0, 5),
-        port_groups : MinMax = MinMax(0, 5),
-        ports       : MinMax = MinMax(1, 5)
+        generics    : MinMax = _DEFAULT_GENERICS,
+        port_groups : MinMax = _DEFAULT_PORT_GROUPS,
+        ports       : MinMax = _DEFAULT_PORTS
     ) -> VhdlEntity:
         stream.write(f'entity {name} is\n')
         entity = VhdlEntity(name)
