@@ -164,6 +164,6 @@ class PropertyDialog(QDialog):
         state = self._pending.state
         if state is None or not hasattr(self, "_value_value"):
             return
-        value = getattr(self._value_value, "value")()
+        value = self._value_value.value()
         if not isinstance(value, NoChange):
             state.value = value

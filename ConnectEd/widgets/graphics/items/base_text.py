@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing      import Self, Any, Callable
-from dataclasses import dataclass
+from typing          import Self, Any
+from collections.abc import Callable
+from dataclasses     import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu, \

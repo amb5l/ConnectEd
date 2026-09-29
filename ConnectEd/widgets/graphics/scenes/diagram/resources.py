@@ -116,7 +116,7 @@ class DiagramSceneResources:
         hotspot.addPolygon(quadrant)
         rotated = QPainterPath()
         rotated.addPolygon(quadrant)
-        for i in range(3):
+        for _i in range(3):
             rotated = QTransform().rotate(90).map(rotated)
             hotspot = hotspot.united(rotated)
         self._paths["Grip"][GripShape.HOTSPOT] = hotspot

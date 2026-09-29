@@ -35,8 +35,6 @@ class QueryWindow(QWidget):
         # populate model
         hdict = self._getHDict(items)
         self._populate(self._model, hdict)
-        for i in range(self._model.rowCount()):
-            item = self._model.item(i)
         # create table view
         self._view = TreeView(self._model, self)
         self._view._customizeAppearance()

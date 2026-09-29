@@ -5,7 +5,6 @@ parser = argparse.ArgumentParser(
     description="CONNECTion EDitor",
     epilog="See https://github.com/amb5l/ConnectEd"
     )
-modeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument("-c", "--cli", action="store_true", help="run in CLI mode")
 parser.add_argument("--nosplash", action="store_true", help="do not show splash screen")
 parser.add_argument("--reset", action="store_true", help="clear stored preferences")

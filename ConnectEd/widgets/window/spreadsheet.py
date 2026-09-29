@@ -531,7 +531,7 @@ class SpreadsheetWidget(QWidget):
                 row_data.append(item.text() if item else "")
             raw_rows.append(row_data)
         # create indexed rows for sorting
-        rows = {i: row_data for i, row_data in enumerate(raw_rows)}
+        rows = dict(enumerate(raw_rows))
         # sort the rows
         from functools import cmp_to_key
         sorted_rows = sorted(rows.items(), key=cmp_to_key(multi_column_compare))
@@ -549,7 +549,7 @@ class SpreadsheetWidget(QWidget):
             if header_item:
                 self._sorted_model.setVerticalHeaderItem(row, QStandardItem(header_item.text()))
         # populate sorted model with sorted data
-        for sorted_row, (original_row, row_data) in enumerate(sorted_rows):
+        for sorted_row, (original_row, _row_data) in enumerate(sorted_rows):
             for col in range(self._model.columnCount()):
                 original_item = self._model.item(original_row, col)
                 if original_item:
@@ -661,7 +661,7 @@ class SpreadsheetTabWidget(QTabWidget):
         settings().changed.connect(self.updateHighlight)
         # create tabs
         self._tabs = {}
-        for tab_name, tab_items in self._tab_items.items():
+        for tab_name, _tab_items in self._tab_items.items():
             self._tabs[tab_name] = SpreadsheetWidget(
                 model=self._tab_models[tab_name],
                 proxy=self._tab_proxies[tab_name],

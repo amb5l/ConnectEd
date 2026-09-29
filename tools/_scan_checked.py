@@ -302,7 +302,7 @@ def main() -> None:
 
     if parse_errors:
         print(f"\n=== Skipped (parse error — often UTF-8 BOM); re-scan manually ({len(parse_errors)}) ===")
-        for rel, err in parse_errors:
+        for rel, _err in parse_errors:
             print(f"  {rel}")
 
 

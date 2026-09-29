@@ -22,7 +22,7 @@ def _toolsForModule(module : ModuleType) -> list[ToolEntry]:
     tools = getattr(module, "_TOOLS", None)
     if tools is None:
         tools = []
-        setattr(module, "_TOOLS", tools)
+        cast(Any, module)._TOOLS = tools
     return cast(list[ToolEntry], tools)
 
 
