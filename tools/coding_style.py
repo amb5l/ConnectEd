@@ -966,7 +966,7 @@ def main(argv : Sequence[str] | None = None) -> int:
     for path in files:
         hits.extend(scan_file(path))
     hits.sort(key=lambda hit: (hit.path, hit.line, hit.kind))
-    counts = dict.fromkeys(_KINDS, 0)
+    counts : dict[str, int] = dict.fromkeys(_KINDS, 0)
     for hit in hits:
         counts[hit.kind] = counts.get(hit.kind, 0) + 1
     print(f"{len(hits)} issues in {len(files)} files")
