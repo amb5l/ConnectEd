@@ -187,14 +187,59 @@ class DiagramViewMouseMixin:
         modifiers = MouseModifier(
             event.modifiers().value & MouseModifier.MASK.value
         )
-        steps = event.angleDelta().y() / host._mouse_wheel_step
         match modifiers:
-            case MouseModifier.NONE:      # pan up/down
-                host.viewPanUp(steps) if steps >= 0 else host.viewPanDown(-steps)
-            case MouseModifier.SHIFT:   # pan left/right
-                host.viewPanLeft(steps) if steps >= 0 else host.viewPanRight(-steps)
-            case MouseModifier.CTRL: # zoom in/out
-                host.viewZoomIn(steps) if steps >= 0 else host.viewZoomOut(-steps)
+            case MouseModifier.NONE:
+                delta = self._wheelPanDelta(event)
+                if delta.x() != 0.0 or delta.y() != 0.0:
+                    host._pan(delta)
+                    event.accept()
+            case MouseModifier.SHIFT:
+                # Mouse-wheel / old-driver fallback: Shift+vertical → horizontal,
+                # but only when the event has no x of its own.
+                delta = self._wheelPanDelta(event)
+                if delta.x() == 0.0:
+                    delta = QPointF(delta.y(), 0.0)
+                if delta.x() != 0.0 or delta.y() != 0.0:
+                    host._pan(delta)
+                    event.accept()
+            case MouseModifier.CTRL:
+                steps = self._wheelZoomSteps(event)
+                if steps > 0.0:
+                    host.viewZoomIn(steps)
+                    event.accept()
+                elif steps < 0.0:
+                    host.viewZoomOut(-steps)
+                    event.accept()
+
+    def _wheelPanDelta(self : Self, event : QWheelEvent) -> QPointF:
+        """View-fraction pan. +x left, +y up (same as viewPanLeft / viewPanUp)."""
+        host  = asDiagramView(self)
+        pixel = event.pixelDelta()
+        angle = event.angleDelta()
+        step  = host._mouse_wheel_step or 120
+        pan   = settings().get("display/pan/step")
+        vw    = 1
+        vh    = 1
+        if (viewport := host.viewport()) is not None:
+            vw = max(viewport.width(),  1)
+            vh = max(viewport.height(), 1)
+        dx = pixel.x() / vw if pixel.x() else pan * angle.x() / step
+        dy = pixel.y() / vh if pixel.y() else pan * angle.y() / step
+        return QPointF(dx, dy)
+
+    def _wheelZoomSteps(self : Self, event : QWheelEvent) -> float:
+        """Notch units; 1.0 is prefs/mouse/wheel. Prefer y, then x."""
+        host  = asDiagramView(self)
+        step  = host._mouse_wheel_step or 120
+        angle = event.angleDelta()
+        if angle.y():
+            return angle.y() / step
+        if angle.x():
+            return angle.x() / step
+        pixel = event.pixelDelta()
+        if pixel.y():
+            return pixel.y() / step
+        return pixel.x() / step
 
     def _updateMousePos(
         self  : Self,
