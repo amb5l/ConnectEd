@@ -24,7 +24,7 @@ def test(app : cs.ConnectEdApp):
     assert isinstance(app, cs.ConnectEdApp)
 
     # verify we are running in CLI mode
-    assert app.cli() == True
+    assert app.cli()
 
     # create new design
     model = app.model()

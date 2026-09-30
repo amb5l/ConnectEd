@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Self
 from enum   import StrEnum
-from math   import atan2, degrees
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
@@ -14,7 +13,6 @@ from ....core.utils      import val2str
 
 from ..scenes            import withScene
 
-from .net_label          import NetLabelItem
 from .mixin              import ItemMixin
 
 from .mixin.settings     import ItemSettingsMixin
@@ -75,18 +73,20 @@ class NodeItem(
     def degree(self : Self) -> int:
         from ..scenes.diagram import DiagramScene
         scene = self.scene()
-        if scene is None or not isinstance(scene, DiagramScene):
+        if not isinstance(scene, DiagramScene):
             return 0
-        return 0 if not scene.netlist.hasNode(self) \
-            else scene.netlist.nodeDegree(self)
+        if not scene.netlist.hasNode(self):
+            return 0
+        return scene.netlist.nodeDegree(self)
 
     def segments(self : Self) -> list[SegmentItem]:
         from ..scenes.diagram import DiagramScene
         scene = self.scene()
-        if scene is None or not isinstance(scene, DiagramScene):
+        if not isinstance(scene, DiagramScene):
             return []
-        return [] if not scene.netlist.hasNode(self) \
-            else scene.netlist.nodeSegments(self)
+        if not scene.netlist.hasNode(self):
+            return []
+        return scene.netlist.nodeSegments(self)
 
     @checked
     def toXml(

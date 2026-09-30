@@ -47,10 +47,27 @@ python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+exclude = [
+    "vhdl_lexer\\.py$",
+    "vhdl_parser\\.py$",
+    "vhdl_parserListener\\.py$",
+    "vhdl_parserVisitor\\.py$",
+]
 
 [[tool.mypy.overrides]]
 module = ["antlr4.*", "openai.*", "anthropic.*", "yaml.*"]
 ignore_missing_imports = true
+
+# ANTLR output. Imported by the handwritten VHDL model, so path excludes
+# do not keep Mypy out. Same set as tools/coding_style.py SKIP_FILES.
+[[tool.mypy.overrides]]
+module = [
+    "ConnectEd.hdl.vhdl.vhdl_lexer",
+    "ConnectEd.hdl.vhdl.vhdl_parser",
+    "ConnectEd.hdl.vhdl.vhdl_parserListener",
+    "ConnectEd.hdl.vhdl.vhdl_parserVisitor",
+]
+ignore_errors = true
 
 [tool.setuptools.package-data]
 "ConnectEd.core" = ["settings.yaml", "themes/*.yaml"]
@@ -62,6 +79,20 @@ target-version = "py311"
 # Set the maximum line length
 line-length = 88
 
+# Exclude directories and ANTLR output (same set as tools/coding_style.py).
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    "ConnectEd/hdl/vhdl/vhdl_lexer.py",
+    "ConnectEd/hdl/vhdl/vhdl_parser.py",
+    "ConnectEd/hdl/vhdl/vhdl_parserListener.py",
+    "ConnectEd/hdl/vhdl/vhdl_parserVisitor.py",
+]
+
+[tool.ruff.lint]
 # Enable specific rule sets
 select = [
     "E",   # pycodestyle errors
@@ -73,23 +104,19 @@ select = [
     "C4",  # flake8-comprehensions
 ]
 
-# Ignore specific rules if needed
+# CamelCase is the project style (N802 was already ignored). E501 fights
+# the vertical alignment checked by tools/coding_style.py.
 ignore = [
+    "E501",  # line too long
     "E701",  # multiple statements on one line (colon)
+    "N801",  # class name should use CapWords
     "N802",  # function name should be lowercase
+    "N803",  # argument name should be lowercase
+    "N806",  # variable in function should be lowercase
+    "N815",  # mixedCase variable in class scope
     "N999",  # module names should be snake_case (ConnectEd is not)
-    "UP037"  # remove quotes from type annotation
+    "UP037", # remove quotes from type annotation
 ]
 
-# Exclude directories
-exclude = [
-    ".git",
-    "__pycache__",
-    "build",
-    "dist",
-    "*.egg-info",
-]
-
-[tool.ruff.lint]
 # Allow unused variables when underscore-prefixed
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"

@@ -1,4 +1,5 @@
-from typing import Self, TextIO, Optional
+from typing          import Self, TextIO, TypeVar, cast
+from collections.abc import Sequence
 
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 
@@ -12,14 +13,40 @@ from .vhdl_parser         import vhdl_parser as vhp
 from .vhdl_visitor        import VhdlVisitor
 
 
+T = TypeVar("T")
+
+
+def _item(obj : object) -> QStandardItem:
+    return cast(QStandardItem, obj)
+
+
+def _rows(parent : QStandardItem, cls : type[T]) -> list[T]:
+    found : list[T] = []
+    for row in range(parent.rowCount()):
+        child = parent.child(row)
+        if isinstance(child, cls):
+            found.append(child)
+    return found
+
+
+def _clear_rows(item : QStandardItem) -> None:
+    count = item.rowCount()
+    if count:
+        item.removeRows(0, count)
+
+
+def _list(items : Sequence[T] | None) -> list[T]:
+    return [] if items is None else list(items)
+
+
 class VhdlItemWithNameMixin:
     @property
     def name(self) -> str:
-        return self.text()
+        return _item(self).text()
 
     @name.setter
     def name(self, value: str) -> None:
-        self.setText(value)
+        _item(self).setText(value)
 
 class VhdlItemWithModeMixin:
     _mode : str
@@ -135,13 +162,13 @@ class VhdlPortGroup(
     def __init__(
         self  : Self,
         name  : str,
-        ports : list[VhdlPort] = [],
+        ports : Sequence[VhdlPort] | None = None,
         notes : str = ""
     ) -> None:
         super().__init__(name)
         self.name = name
         self.notes = notes
-        self.ports = ports
+        self.ports = _list(ports)
 
     def addPort(self, port: VhdlPort) -> None:
         self._ports.append(port)
@@ -165,13 +192,13 @@ class VhdlEntity(
     def __init__(
         self     : Self,
         name     : str,
-        generics : list[VhdlGeneric] = [],
-        ports    : list[VhdlPort | VhdlPortGroup] = []
+        generics : Sequence[VhdlGeneric]              | None = None,
+        ports    : Sequence[VhdlPort | VhdlPortGroup] | None = None
     ) -> None:
         super().__init__(name)
         self.name = name
-        self.generics = generics
-        self.ports = ports
+        self.generics = _list(generics)
+        self.ports = _list(ports)
 
     def addGeneric(self, generic: VhdlGeneric) -> None:
         self._generics.append(generic)
@@ -231,25 +258,25 @@ class VhdlArchitecture(
     VhdlItemWithNameMixin,
     VhdlItemWithComponentsMixin
 ):
-    _entity_name : Optional[str]
-    _entity      : Optional[VhdlEntity]
+    _entity_name : str        | None
+    _entity      : VhdlEntity | None
 
     def __init__(
         self       : Self,
         name       : str,
-        entity     : Optional[str | VhdlEntity] = None,
-        components : list[VhdlComponent] = []
+        entity     : str | VhdlEntity        | None = None,
+        components : Sequence[VhdlComponent] | None = None
     ) -> None:
         super().__init__(name)
         self.name = name
-        self.components = components
+        self.components = _list(components)
         if isinstance(entity, str):
             self.entity_name = entity
         else:
             self.entity = entity
 
     @property
-    def entity_name(self) -> str:
+    def entity_name(self) -> str | None:
         return self._entity_name
 
     @entity_name.setter
@@ -262,9 +289,10 @@ class VhdlArchitecture(
         return self._entity if isinstance(self._entity, VhdlEntity) else None
 
     @entity.setter
-    def entity(self, entity: VhdlEntity) -> None:
+    def entity(self, entity: VhdlEntity | None) -> None:
         self._entity = entity
-        self._entity_name = entity.name
+        if entity is not None:
+            self._entity_name = entity.name
 
 @export
 class VhdlPackage(
@@ -275,19 +303,20 @@ class VhdlPackage(
     def __init__(
         self       : Self,
         name       : str,
-        components : list[VhdlComponent] = []
+        components : Sequence[VhdlComponent] | None = None
     ) -> None:
         super().__init__(name)
         self.name = name
-        self.components = components
+        self.components = _list(components)
 
 @export
 class VhdlContainer(QStandardItem):
-    _NAME = None
+    _NAME : str | None = None
 
     def __init__(self) -> None:
         super().__init__()
-        self.setText(self._NAME)
+        if self._NAME is not None:
+            self.setText(self._NAME)
 
 @export
 class VhdlEntitiesContainer(VhdlContainer):
@@ -330,52 +359,60 @@ class VhdlDocument(
 
     @property
     def entities(self : Self) -> list[VhdlEntity]:
-        return [self._entities.child(i) for i in range(self._entities.rowCount())]
+        return _rows(self._entities, VhdlEntity)
 
     @entities.setter
     def entities(self : Self, items: list[VhdlEntity]) -> None:
-        self._entities.clear()
-        for item in items:
-            self._entities.appendRow(item)
+        _clear_rows(self._entities)
+        self._entities.appendRows(items)
 
     def addArchitecture(self : Self, architecture: VhdlArchitecture) -> None:
         self._architectures.appendRow(architecture)
 
     @property
     def architectures(self : Self) -> list[VhdlArchitecture]:
-        return [self._architectures.child(i) for i in range(self._architectures.rowCount())]
+        return _rows(self._architectures, VhdlArchitecture)
 
     @architectures.setter
     def architectures(self : Self, items: list[VhdlArchitecture]) -> None:
-        self._architectures.clear()
-        for item in items:
-            self._architectures.appendRow(item)
+        _clear_rows(self._architectures)
+        self._architectures.appendRows(items)
 
     def addPackage(self : Self, package: VhdlPackage) -> None:
         self._packages.appendRow(package)
 
     @property
     def packages(self : Self) -> list[VhdlPackage]:
-        return [self._packages.child(i) for i in range(self._packages.rowCount())]
+        return _rows(self._packages, VhdlPackage)
 
     @packages.setter
     def packages(self : Self, items: list[VhdlPackage]) -> None:
-        self._packages.clear()
-        for item in items:
-            self._packages.appendRow(item)
+        _clear_rows(self._packages)
+        self._packages.appendRows(items)
 
     def analyze(self : Self) -> None:
         for architecture in self.architectures:
-            if architecture.entity is None:
-                architecture.entity = self.getEntity(architecture.entity_name)
+            entity_name = architecture.entity_name
+            if architecture.entity is None and entity_name is not None:
+                architecture.entity = self.getEntity(entity_name)
 
     @classmethod
     def fromStream(cls, stream: TextIO) -> 'VhdlDocument':
         from . import VHDLSyntaxError
 
         class VHDLErrorListener(ErrorListener):
-            def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-                raise VHDLSyntaxError(f"Syntax error at line {line}, column {column}: {msg}")
+            def syntaxError(
+                self            : Self,
+                recognizer      : object,
+                offendingSymbol : object,
+                line            : int,
+                column          : int,
+                msg             : object,
+                e               : BaseException | None,
+            ) -> None:
+                raise VHDLSyntaxError(
+                    f"Syntax error at line {line}, column {column}: {msg}"
+                )
 
         input_stream = InputStream(stream.read())
         lexer = vhl(input_stream)
@@ -386,13 +423,15 @@ class VhdlDocument(
         try:
             tree = parser.rule_DesignFile()
         except Exception as e:
-            raise VHDLSyntaxError(f"Failed to parse VHDL code: {str(e)}")
+            raise VHDLSyntaxError(f"Failed to parse VHDL code: {str(e)}") from e
         visitor = VhdlVisitor()
         document = visitor.visit(tree)
+        if not isinstance(document, VhdlDocument):
+            raise VHDLSyntaxError("Failed to parse VHDL code")
         document.analyze()
         return document
 
     @classmethod
     def FromFile(cls, filename: str) -> 'VhdlDocument':
-        with open(filename, 'r') as file:
+        with open(filename) as file:
             return cls.fromStream(file)

@@ -35,8 +35,6 @@ class QueryWindow(QWidget):
         # populate model
         hdict = self._getHDict(items)
         self._populate(self._model, hdict)
-        for i in range(self._model.rowCount()):
-            item = self._model.item(i)
         # create table view
         self._view = TreeView(self._model, self)
         self._view._customizeAppearance()
@@ -101,7 +99,7 @@ class QueryWindow(QWidget):
                 ])
             elif isinstance(item, PropertiesMixin):
                 for prop_name in item.properties.keys():
-                    prop_value = item.propertyValue(prop_name)
+                    prop_value = item.properties[prop_name].value()
                     item_row.appendRow([
                         QStandardItem(),
                         QStandardItem(prop_name),

@@ -1,11 +1,7 @@
 import os
 import platform
-import inspect
-import importlib
-import re
 
 from typing      import Any
-from collections import defaultdict
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsItem

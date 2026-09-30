@@ -88,8 +88,5 @@ class DiagramViewApiPlaceMixin:
         host = asDiagramView(self)
         if spos is None:
             spos = segment.sceneMidpoint()
-        host.state.go(
-            host.statePlaceNetLabelOnSegment,
-            [segment],
-            spos=spos
-        )
+        host._mouse_spos = spos
+        host.state.go(host.statePlaceNetLabelOnSegment, [segment])

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing      import Self, Any, Callable
-from dataclasses import dataclass
+from typing          import Self, Any, Protocol
+from collections.abc import Callable
+from dataclasses     import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
@@ -43,8 +44,32 @@ from .mixin.primary      import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...dialogs.items.text import BaseTextItemDialog, TextItemDialog
-    from ..views.diagram       import DiagramView
+    from ..views.diagram import DiagramView
+
+
+class _TextAppearanceDialog(Protocol):
+    def getRotation(self : Self) -> float | NoChange: ...
+    def getMirrorH(self : Self) -> bool | NoChange: ...
+    def getMirrorV(self : Self) -> bool | NoChange: ...
+    def getAutoflip(self : Self) -> bool | NoChange: ...
+    def getAlignH(self : Self) -> AlignH | NoChange: ...
+    def getAlignV(self : Self) -> AlignV | NoChange: ...
+    def getOrigin(self : Self) -> RectHandleId | NoChange: ...
+    def getPadLeft(self : Self) -> float | NoChange: ...
+    def getPadRight(self : Self) -> float | NoChange: ...
+    def getPadTop(self : Self) -> float | NoChange: ...
+    def getPadBottom(self : Self) -> float | NoChange: ...
+    def getColor(self : Self) -> QColor | None | NoChange: ...
+    def getFont(self : Self) -> str | None | NoChange: ...
+    def getSize(self : Self) -> float | None | NoChange: ...
+    def getBold(self : Self) -> bool | None | NoChange: ...
+    def getItalic(self : Self) -> bool | None | NoChange: ...
+    def getUnderline(self : Self) -> bool | None | NoChange: ...
+
+
+class _TextItemDialog(_TextAppearanceDialog, Protocol):
+    def getText(self : Self) -> str | NoChange: ...
+    def getBlock(self : Self) -> bool | NoChange: ...
 
 
 class TextResizeGripItem(ResizeGripItem):
@@ -592,7 +617,7 @@ class BaseTextItem(
         return menu
 
     @checked
-    def _applyDialogCommon(self : Self, dialog : BaseTextItemDialog) -> None:
+    def _applyDialogCommon(self : Self, dialog : _TextAppearanceDialog) -> None:
         rotation   = dialog.getRotation()
         autoflip   = dialog.getAutoflip()
         mirror_h   = dialog.getMirrorH()
@@ -629,7 +654,7 @@ class BaseTextItem(
         if not isinstance( underline  , NoChange ): self.setTextUnderline(underline)
 
     @checked
-    def applyDialog(self : Self, dialog : TextItemDialog) -> None:
+    def applyDialog(self : Self, dialog : _TextItemDialog) -> None:
         self._applyDialogCommon(dialog)
         text  = dialog.getText()
         block = dialog.getBlock()
@@ -900,9 +925,9 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         parent = self.parentItem()
         if isinstance(parent, BaseTextItem) and parent.isSelected():
             if self._clip_rect is not None:
-                self.paint = self._paint_selected_clipped
+                self.__dict__["paint"] = self._paint_selected_clipped
             else:
-                self.paint = self._paint_selected
+                self.__dict__["paint"] = self._paint_selected
         else:
             if "paint" in self.__dict__:
                 self.__dict__.pop("paint")
@@ -1032,7 +1057,7 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     def _paint_override(self : Self) -> None:
         parent = self.parentItem()
         if parent is not None and parent.isSelected():
-            self.paint = self._paint_selected
+            self.__dict__["paint"] = self._paint_selected
         else:
             if "paint" in self.__dict__:
                 self.__dict__.pop("paint")

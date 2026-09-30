@@ -11,7 +11,7 @@ from .....core.types import HandleId, RectHandleId, DataKind
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..handle import HandleItem
-    from ..grip   import GripItem, MoveGripItem, ResizeGripItem
+    from ..grip   import GripItem
 
 
 class ItemHandlesMixin:

@@ -4,7 +4,7 @@ from typing import Self, Any, Protocol, cast, Generic, TypeVar
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QAction, QUndoStack, QUndoCommand
+from PyQt6.QtGui     import QAction, QUndoStack
 
 from ......core.check    import checked
 
@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.diagram import DiagramScene
     from ..                 import DiagramView
-    from .                  import DiagramInteraction
 
 
 class DiagramInteraction:

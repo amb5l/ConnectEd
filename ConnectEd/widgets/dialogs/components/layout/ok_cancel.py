@@ -1,4 +1,4 @@
-from typing import Self, Protocol
+from typing import Self
 
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QDialog
 

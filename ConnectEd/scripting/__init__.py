@@ -32,7 +32,7 @@ def run(
 
     func : Callable[[App], None],
 
-    argv : list[str] = []
+    argv : list[str] | None = None
 
 ) -> None:
 
@@ -40,7 +40,7 @@ def run(
 
         if App.instance() is None:
 
-            sys.argv = [sys.argv[0]] + argv + sys.argv[1:]
+            sys.argv = [sys.argv[0]] + (argv or []) + sys.argv[1:]
 
             from ..main import main
 

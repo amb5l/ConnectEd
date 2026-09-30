@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtCore    import QTimer
+from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QDialog
 
 from .....core.check     import checked
@@ -43,6 +43,11 @@ class TextValueLayout(QVBoxLayout):
     @checked
     def getBlock(self : Self) -> bool | NoChange:
         return self._text_format_combo.value()
+
+    @checked
+    def focusEditor(self : Self) -> None:
+        self._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
+        self._text_editor.selectAll()
 
     @checked
     def _onTextFormatChange(self : Self) -> None:

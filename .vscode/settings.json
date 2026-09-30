@@ -8,6 +8,7 @@
         "examples/**",
         "tests/**",
     ],
+    "files.eol": "\n",
     "files.trimTrailingWhitespace": true,
     "cursorpyright.analysis.inlayHints.genericTypes": false,
     "[markdown]": {

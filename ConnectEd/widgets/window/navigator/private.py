@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing          import Self, TypeAlias
+from typing          import Self
 from collections.abc import Callable
 
 from PyQt6.QtCore import Qt
 
-from ....app      import logger, session
+from ....app      import logger
 
 from ....core.doc import NavItemSpec, Doc, DocBinding
 

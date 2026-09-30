@@ -20,7 +20,7 @@ class TextState(BaseTextAppearanceState):
     block : bool
 
     @classmethod
-    def fromItem(cls, item : TextItem) -> Self:
+    def fromItem(cls, item : BaseTextItem) -> Self:
         inst = super().fromItem(item)
         inst.text = item.text()
         inst.block = item.block()

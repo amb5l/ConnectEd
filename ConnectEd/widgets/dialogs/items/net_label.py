@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, ClassVar
 
 from PyQt6.QtCore import Qt
 
@@ -13,7 +13,7 @@ from .text                            import BaseTextItemDialog
 
 
 class NetLabelItemDialog(BaseTextItemDialog[NetLabelItem]):
-    _TITLE = "Net Label"
+    _TITLE : ClassVar[str] = "Net Label"
 
     _top_section : NetLabelItemGroupBox
 

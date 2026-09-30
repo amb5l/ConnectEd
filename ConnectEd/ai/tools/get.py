@@ -199,7 +199,7 @@ def _itemPropertyValues(
     for name in properties_filter:
         if name not in item.properties:
             continue
-        values[name] = _jsonPropertyValue(item.propertyValue(name))
+        values[name] = _jsonPropertyValue(item.properties[name].value())
     return values
 
 

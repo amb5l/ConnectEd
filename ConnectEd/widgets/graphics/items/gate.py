@@ -7,7 +7,6 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app          import logger
 
 from ....core.check   import checked
 from ....core.types   import Direction, DataKind, RectHandleId, HandleId

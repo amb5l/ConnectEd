@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from PyQt6.QtGui import QColor, QColorConstants
+from PyQt6.QtGui import QColor
 
 
 @dataclass

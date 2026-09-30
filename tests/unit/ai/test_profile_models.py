@@ -4,7 +4,6 @@ import pytest
 
 from ConnectEd.ai.profile_models import (
     anyProfileMissingModels,
-    refreshAllProfileModels,
     refreshProfileModels,
 )
 from ConnectEd.ai.profiles       import AiProfile

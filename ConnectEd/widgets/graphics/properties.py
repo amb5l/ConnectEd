@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from typing          import Self, Any, TypeVar, Generic
+from typing          import Self, Any, TypeVar, Generic, cast
 from collections.abc import Callable, Sequence
 from dataclasses     import dataclass, field, fields
 
@@ -211,13 +211,18 @@ T = TypeVar("T")
 class PropertySpec(Generic[T]):
     """Used to create a property in owner definitions."""
 
-    kind    : DataKind                           | Callable[[T], DataKind]
-    value   : Any                                | None = None
-    getter  : Callable[[T], Any]                 | None = None
-    setter  : Callable[[T, Any], None]           | None = None
-    default : Callable[[T], Any]                 | None = None
-    worthy  : Callable[[T], bool]                | None = None
-    tip     : str                                | None = None
+    kind    : DataKind                             | Callable[[Any], DataKind]
+    value   : Any                                  | None = None
+    getter  : Callable[[Any], Any]                 | None = None
+    setter  : Callable[[Any, Any], None]           | None = None
+    default : Callable[[Any], Any]                 | None = None
+    worthy  : Callable[[Any], bool]                | None = None
+    tip     : str                                  | None = None
+
+
+def propertySpecs(specs : object) -> dict[str, PropertySpec[Any]]:
+    """Drop the owner type so tables from different classes can merge."""
+    return cast(dict[str, PropertySpec[Any]], specs)
 
 
 @dataclass
@@ -355,12 +360,12 @@ class PropertiesMixin:
         for name, spec in self._PROPERTIES.items():
             self.properties[name] = Property.fromSpec(self, spec)
         if live and hasattr(self, "_PROPERTY_TEXTS"):
-            for name, spec in self._PROPERTY_TEXTS.items():
+            for name, text_spec in self._PROPERTY_TEXTS.items():
                 if name not in self.properties:
                     logger().error(f"Property {name} does not exist")
                     continue
                 text = self.propertyTextAdd(self.properties[name])
-                text.apply(spec)
+                text.apply(text_spec)
 
     def propertiesLive(self : Self) -> bool:
         return self._live

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Self
+from typing          import Self
+from collections.abc import Sequence
 
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGraphicsItem
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
 
 from ....core.check                  import checked
 
@@ -17,10 +18,6 @@ from ..components.layout.ok_cancel   import OkCancelLayout
 from .editor                         import (
     PropertiesEditorWidget, PropertiesEditorTabWidget
 )
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...graphics.scenes.diagram import DiagramScene
 
 
 OwnerStore = dict[PropertiesMixin, list[PropertyPending]]
@@ -37,7 +34,7 @@ class PropertiesDialog(QDialog):
     @checked
     def __init__(
         self   : Self,
-        owners : list[QGraphicsItem] | list[DiagramScene],
+        owners : Sequence[PropertiesMixin],
         parent : QWidget             | None = None
     ) -> None:
         # initialize dialog

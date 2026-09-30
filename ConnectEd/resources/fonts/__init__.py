@@ -8,7 +8,7 @@ from ...app import logger
 
 def initFonts() -> None:
     module_dir = Path(__file__).parent
-    for root, dirs, files in walk(module_dir):
+    for root, _dirs, files in walk(module_dir):
         for file in files:
             if file.endswith(".ttf"):
                 font_path = QDir.fromNativeSeparators(str(Path(root) / file))

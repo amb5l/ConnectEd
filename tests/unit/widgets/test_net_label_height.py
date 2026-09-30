@@ -3,7 +3,7 @@
 import logging
 import pytest
 
-from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
+from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 from ConnectEd.app                              import ConnectEdApp

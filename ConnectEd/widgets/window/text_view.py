@@ -1,4 +1,3 @@
-import logging
 
 from typing import Self
 
@@ -34,7 +33,7 @@ class TextView(QPlainTextEdit):
         font.setPointSizeF(settings().get("display/font_size"))
         self.setFont(font)
         if filename:
-            with open(filename, "r") as f:
+            with open(filename) as f:
                 content = f.read()
                 if content.endswith("\n"):
                     content = content[:-1]

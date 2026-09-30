@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, TypeAlias
+from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QAbstractItemView
