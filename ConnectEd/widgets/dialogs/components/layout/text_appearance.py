@@ -2,15 +2,17 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QLayout, QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui     import QColor
+
+from typing_extensions import override
 
 from .....core.check              import checked
-from .....core.types              import RectHandleId
+from .....core.types              import NoChange, AlignH, AlignV, RectHandleId
 
 from ....graphics.presentation    import TextOverrides
 
-from ....graphics.items.text      import BaseTextItem
-from ....graphics.items.base_text import BaseTextAppearanceState
+from ....graphics.items.base_text import BaseTextItem, BaseTextAppearanceState
 
 from ..group_box.text_orientation import TextOrientationGroupBox
 from ..group_box.text_align       import TextAlignGroupBox
@@ -23,7 +25,6 @@ from .ok_cancel                   import OkCancelLayout
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....graphics.views.diagram import DiagramView
-    from ...items.text              import BaseTextItemDialog
 
 
 class TextAppearanceLayout(QVBoxLayout):
@@ -42,7 +43,7 @@ class TextAppearanceLayout(QVBoxLayout):
     def __init__(
         self   : Self,
         item   : BaseTextItem,
-        dialog : BaseTextItemDialog,
+        dialog : QDialog,
         view   : DiagramView
     ):
         super().__init__()
@@ -66,9 +67,7 @@ class TextAppearanceLayout(QVBoxLayout):
         self._left_layout.addWidget(self._orientation_group_box)
         self._align_group_box = TextAlignGroupBox(state.align_h, state.align_v)
         self._left_layout.addWidget(self._align_group_box)
-        if not isinstance(origin := state.origin, RectHandleId):
-            raise TypeError("Bad origin")
-        self._origin_group_box = OriginGroupBox(origin)
+        self._origin_group_box = OriginGroupBox(state.origin)
         self._left_layout.addWidget(self._origin_group_box)
         # middle right — padding and appearance
         self._right_layout = QVBoxLayout()
@@ -89,16 +88,69 @@ class TextAppearanceLayout(QVBoxLayout):
         self._ok_cancel_layout = OkCancelLayout(dialog)
         self.addLayout(self._ok_cancel_layout)
 
-    # override replaces normal layout enable behaviour
+    def getRotation(self : Self) -> float | NoChange:
+        return self._orientation_group_box.getRotation()
+
+    def getMirrorH(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getMirrorH()
+
+    def getMirrorV(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getMirrorV()
+
+    def getAutoflip(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getAutoflip()
+
+    def getAlignH(self : Self) -> AlignH | NoChange:
+        return self._align_group_box.getAlignH()
+
+    def getAlignV(self : Self) -> AlignV | NoChange:
+        return self._align_group_box.getAlignV()
+
+    def getOrigin(self : Self) -> RectHandleId | NoChange:
+        return self._origin_group_box.getOrigin()
+
+    def getPadLeft(self : Self) -> float | NoChange:
+        return self._padding_group_box.getPadLeft()
+
+    def getPadRight(self : Self) -> float | NoChange:
+        return self._padding_group_box.getPadRight()
+
+    def getPadTop(self : Self) -> float | NoChange:
+        return self._padding_group_box.getPadTop()
+
+    def getPadBottom(self : Self) -> float | NoChange:
+        return self._padding_group_box.getPadBottom()
+
+    def getColor(self : Self) -> QColor | None | NoChange:
+        return self._typography_group_box.getColor()
+
+    def getFont(self : Self) -> str | None | NoChange:
+        return self._typography_group_box.getFont()
+
+    def getSize(self : Self) -> float | None | NoChange:
+        return self._typography_group_box.getSize()
+
+    def getBold(self : Self) -> bool | None | NoChange:
+        return self._typography_group_box.getBold()
+
+    def getItalic(self : Self) -> bool | None | NoChange:
+        return self._typography_group_box.getItalic()
+
+    def getUnderline(self : Self) -> bool | None | NoChange:
+        return self._typography_group_box.getUnderline()
+
+    # replaces QLayout enable behaviour with this layout's own flag
+    @override
     def isEnabled(self : Self) -> bool:
         return self._enabled
 
-    # override replaces normal layout enable behaviour
+    # replaces QLayout enable behaviour with this layout's own flag
+    @override
     def setEnabled(self : Self, enabled : bool) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         self._enabled = enabled
         self._setItemsEnabled(self, enabled)
 
-    def _setItemsEnabled(self : Self, layout, enabled: bool) -> None:
+    def _setItemsEnabled(self : Self, layout : QLayout, enabled : bool) -> None:
         for i in range(layout.count()):
             item = layout.itemAt(i)
             if item is None:

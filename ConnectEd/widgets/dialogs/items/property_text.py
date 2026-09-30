@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing import Self, Any, ClassVar
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGroupBox, \
@@ -196,7 +196,7 @@ class PropertyGroupBox(QGroupBox):
 
 
 class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
-    _TITLE = "Property Text"
+    _TITLE : ClassVar[str] = "Property Text"
 
     _item        : PropertyTextItem
     _top_section : PropertyGroupBox

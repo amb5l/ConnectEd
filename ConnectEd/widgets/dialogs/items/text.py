@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from typing import Self, TypeVar, Generic
+from typing import Self, TypeVar, Generic, ClassVar
 
-from PyQt6.QtCore    import Qt, QTimer
+from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ....core.check                      import checked
-from ....core.types                      import NoChange, AlignH, AlignV, RectHandleId
+from typing_extensions import override
 
-from ...graphics.items.text              import BaseTextItem, TextItem
+from ....core.check import checked
+from ....core.types import NoChange, AlignH, AlignV, RectHandleId
+
+from ...graphics.items.base_text import BaseTextItem
+from ...graphics.items.text      import TextItem
 
 from ..components.layout.text_value      import TextValueLayout
 from ..components.layout.text_appearance import TextAppearanceLayout
@@ -23,7 +26,7 @@ T = TypeVar("T", bound=BaseTextItem)
 
 
 class BaseTextItemDialog(QDialog, Generic[T]):
-    _TITLE : str
+    _TITLE : ClassVar[str]
 
     # instance variables
     _layout      : QVBoxLayout
@@ -43,82 +46,83 @@ class BaseTextItemDialog(QDialog, Generic[T]):
         self._main_layout = TextAppearanceLayout(item, self, view)
         self._layout.addLayout(self._main_layout)
 
-    def initTopSection(self : Self, item) -> None:
+    def initTopSection(self : Self, _item : T) -> None:
         raise NotImplementedError("subclass must implement initTopSection()")
 
+    @override
     @checked
     def showEvent(self : Self, a0 : QShowEvent | None = None) -> None:
         """Override showEvent to focus and select all text."""
         super().showEvent(a0)
-        QTimer.singleShot(0, self._focusEditor)
+        QTimer.singleShot(0, self._focusEditor)  # pyright: ignore[reportUnknownMemberType]
 
     @checked
     def getRotation(self : Self) -> float | NoChange:
-        return self._main_layout._orientation_group_box.getRotation()
+        return self._main_layout.getRotation()
 
     @checked
     def getMirrorH(self : Self) -> bool | NoChange:
-        return self._main_layout._orientation_group_box.getMirrorH()
+        return self._main_layout.getMirrorH()
 
     @checked
     def getMirrorV(self : Self) -> bool | NoChange:
-        return self._main_layout._orientation_group_box.getMirrorV()
+        return self._main_layout.getMirrorV()
 
     @checked
     def getAutoflip(self : Self) -> bool | NoChange:
-        return self._main_layout._orientation_group_box.getAutoflip()
+        return self._main_layout.getAutoflip()
 
     @checked
     def getAlignH(self : Self) -> AlignH | NoChange:
-        return self._main_layout._align_group_box.getAlignH()
+        return self._main_layout.getAlignH()
 
     @checked
     def getAlignV(self : Self) -> AlignV | NoChange:
-        return self._main_layout._align_group_box.getAlignV()
+        return self._main_layout.getAlignV()
 
     @checked
     def getOrigin(self : Self) -> RectHandleId | NoChange:
-        return self._main_layout._origin_group_box.getOrigin()
+        return self._main_layout.getOrigin()
 
     @checked
     def getPadLeft(self : Self) -> float | NoChange:
-        return self._main_layout._padding_group_box.getPadLeft()
+        return self._main_layout.getPadLeft()
 
     @checked
     def getPadRight(self : Self) -> float | NoChange:
-        return self._main_layout._padding_group_box.getPadRight()
+        return self._main_layout.getPadRight()
 
     @checked
     def getPadTop(self : Self) -> float | NoChange:
-        return self._main_layout._padding_group_box.getPadTop()
+        return self._main_layout.getPadTop()
 
     @checked
     def getPadBottom(self : Self) -> float | NoChange:
-        return self._main_layout._padding_group_box.getPadBottom()
+        return self._main_layout.getPadBottom()
 
     @checked
-    def getColor(self : Self) -> QColor | NoChange:
-        return self._main_layout._typography_group_box.getColor()
+    def getColor(self : Self) -> QColor | None | NoChange:
+        return self._main_layout.getColor()
 
     @checked
-    def getFont(self : Self) -> str | NoChange:
-        return self._main_layout._typography_group_box.getFont()
+    def getFont(self : Self) -> str | None | NoChange:
+        return self._main_layout.getFont()
 
     @checked
-    def getSize(self : Self) -> float | NoChange:
-        return self._main_layout._typography_group_box.getSize()
+    def getSize(self : Self) -> float | None | NoChange:
+        return self._main_layout.getSize()
 
     @checked
-    def getBold(self : Self) -> bool | NoChange:
-        return self._main_layout._typography_group_box.getBold()
+    def getBold(self : Self) -> bool | None | NoChange:
+        return self._main_layout.getBold()
 
     @checked
-    def getItalic(self : Self) -> bool | NoChange:
-        return self._main_layout._typography_group_box.getItalic()
+    def getItalic(self : Self) -> bool | None | NoChange:
+        return self._main_layout.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> bool | NoChange:
-        return self._main_layout._typography_group_box.getUnderline()
+    def getUnderline(self : Self) -> bool | None | NoChange:
+        return self._main_layout.getUnderline()
 
     @checked
     def _focusEditor(self : Self) -> None:
@@ -126,12 +130,18 @@ class BaseTextItemDialog(QDialog, Generic[T]):
 
 
 class TextItemDialog(BaseTextItemDialog[TextItem]):
-    _TITLE = "Text"
+    _TITLE : ClassVar[str] = "Text"
 
     _top_section : TextValueLayout
 
-    def initTopSection(self : Self, item : TextItem) -> None:
+    @override
+    @checked
+    def __init__(self : Self, item : TextItem, view : DiagramView) -> None:
         self._top_section = TextValueLayout(item.text(), item.block(), self)
+        super().__init__(item, view)
+
+    @override
+    def initTopSection(self : Self, _item : TextItem) -> None:
         self._layout.addLayout(self._top_section)
 
     @checked
@@ -142,7 +152,7 @@ class TextItemDialog(BaseTextItemDialog[TextItem]):
     def getBlock(self : Self) -> bool | NoChange:
         return self._top_section.getBlock()
 
+    @override
     @checked
     def _focusEditor(self : Self) -> None:
-        self._top_section._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
-        self._top_section._text_editor.selectAll()
+        self._top_section.focusEditor()
