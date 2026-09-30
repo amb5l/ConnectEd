@@ -104,6 +104,7 @@ class TextViewDockWidget(QDockWidget):
         filename : str     | None = None
     ) -> None:
         super().__init__(parent)
+        self.setObjectName(self.WINDOW_TITLE)
         self.setWindowTitle(self.WINDOW_TITLE)
         self._text_view = TextView(self, filename)
         self._find_bar = FindBar(self, self._text_view)

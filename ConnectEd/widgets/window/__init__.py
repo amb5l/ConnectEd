@@ -35,6 +35,26 @@ from .log_view                import LogViewDock
 from .ai                      import AiChatDock as AiChatDock, AiChatManager, AiManager
 
 
+def _savedChatIds(state : bytes) -> list[int]:
+    """Object names ``AiChat<id>`` stored as UTF-16 in a QMainWindow state blob."""
+    token = "AiChat".encode("utf-16-be")
+    ids   : list[int] = []
+    start = 0
+    while True:
+        found = state.find(token, start)
+        if found < 0:
+            break
+        cursor = found + len(token)
+        digits : list[str] = []
+        while cursor + 1 < len(state) and state[cursor] == 0 and 48 <= state[cursor + 1] <= 57:
+            digits.append(chr(state[cursor + 1]))
+            cursor += 2
+        if digits:
+            ids.append(int("".join(digits)))
+        start = found + len(token)
+    return ids
+
+
 class Window(QMainWindow):
     # instance attributes
     _menu_bar        : MenuBar
@@ -54,6 +74,7 @@ class Window(QMainWindow):
     def __init__(self : Self) -> None:
         super().__init__()
         app().setWindow(self)
+
         # default position
         if (screen := self.screen()) is None:
             raise RuntimeError("No screen")
@@ -86,11 +107,16 @@ class Window(QMainWindow):
         self._status_bar = StatusBar(self)
         self.setStatusBar(self._status_bar)
 
-        # dock widgets — bottom: Messages/Transcript/Log (left tabs) | AI Chat (right)
+        # Split chat off Messages before tabifying, or the new dock joins that tab group.
         progress("Building messages...", 0.90)
         qd = Qt.DockWidgetArea
         self._messages_dock = MessagesViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._messages_dock)
+        progress("Building chat...", 0.93)
+        self._ai_manager = AiManager(self, self._messages_dock)
+        self._ai_manager.chatManager().newChat()
+        self._menu_bar.updateAiMenu()
+        self._ai_manager.scheduleStartup()
         self._transcript_dock = TranscriptViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._transcript_dock)
         self._log_dock = LogViewDock(self)
@@ -98,11 +124,6 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self._messages_dock, self._transcript_dock)
         self.tabifyDockWidget(self._messages_dock, self._log_dock)
         self._messages_dock.raise_()
-        progress("Building chat...", 0.93)
-        self._ai_manager = AiManager(self, self._messages_dock)
-        self._ai_manager.chatManager().newChat()
-        self._menu_bar.updateAiMenu()
-        self._ai_manager.scheduleStartup()
         progress("Building panels...", 0.96)
         self._navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self._navigator_dock)
@@ -114,8 +135,8 @@ class Window(QMainWindow):
             Qt.Orientation.Vertical,
         )
 
-        # central widget
         self.setCentralWidget(self._mdi_area)
+        self._restoreDockState()
 
         # ready — the splash shows this window when it finishes
         if not app().cli() and known_args.nosplash:
@@ -156,9 +177,18 @@ class Window(QMainWindow):
         except TypeError: # workaround for Qt cleanup
             pass
         settings().set("startup/geometry", self.saveGeometry().data())
+        settings().set("startup/state", self.saveState().data())
         if (ai := self.aiManager()) is not None:
             ai.shutdown()
         super().closeEvent(a0)
+
+    def _restoreDockState(self : Self) -> None:
+        state = settings().get("startup/state")
+        if not isinstance(state, bytes) or not state:
+            return
+        if (manager := self.aiChatManager()) is not None:
+            manager.ensureSavedChats(_savedChatIds(state))
+        self.restoreState(state)
 
     def _onSubWindowActivated(
         self      : Self,

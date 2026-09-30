@@ -1,5 +1,6 @@
 startup:
   geometry: ''
+  state: ''
 mru:
   '1': ''
   '2': ''

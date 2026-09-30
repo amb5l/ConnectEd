@@ -92,11 +92,7 @@ class AiChatManager(QObject):
             recordChatConnection(profile.id, model)
         else:
             dock = AiChatDock(self._window, chat_id)
-        dock.setFeatures(
-            QDockWidget.DockWidgetFeature.DockWidgetClosable
-            | QDockWidget.DockWidgetFeature.DockWidgetMovable
-        )
-        dock.chatClosed.connect(lambda d=dock : self._onChatClosed(d))
+        self._bindChat(dock)
 
         qd = Qt.DockWidgetArea
         if not self._chats:
@@ -116,6 +112,33 @@ class AiChatManager(QObject):
             self.focusChat(dock)
         self.chatsChanged.emit()
         return dock
+
+    @checked
+    def ensureSavedChats(self : Self, chat_ids : list[int]) -> None:
+        """Create chat docks named in a saved layout so restoreState can place them."""
+        have  = {dock.objectName() for dock in self._chats}
+        added = False
+        for chat_id in chat_ids:
+            self._next_chat_id = max(self._next_chat_id, chat_id + 1)
+            name = f"AiChat{chat_id}"
+            if name in have:
+                continue
+            dock = AiChatDock(self._window, chat_id)
+            self._bindChat(dock)
+            self._window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock)
+            self._chats.append(dock)
+            have.add(name)
+            added = True
+        if added:
+            self.refreshChatTitles()
+            self.chatsChanged.emit()
+
+    def _bindChat(self : Self, dock : AiChatDock) -> None:
+        dock.setFeatures(
+            QDockWidget.DockWidgetFeature.DockWidgetClosable
+            | QDockWidget.DockWidgetFeature.DockWidgetMovable
+        )
+        dock.chatClosed.connect(lambda d=dock : self._onChatClosed(d))
 
     @checked
     def refreshChatTitles(self : Self) -> None:

@@ -69,6 +69,7 @@ _APP_LEAF_KINDS : dict[str, str] = {
     "prefs/mouse/drag"               : "int",
     "prefs/mouse/wheel"              : "int",
     "startup/geometry"               : "bytes",
+    "startup/state"                  : "bytes",
     "ui/default/font/size"           : "int",
     "ui/navigator/font/size"         : "int",
 }
@@ -114,6 +115,7 @@ def _coerceAppLeaves(
 @checked
 def _applyRuntimeDefaults(settings : dict[str, Any]) -> None:
     settings["startup"]["geometry"] = b""
+    settings["startup"]["state"]    = b""
     settings["prefs"]["file"]["open"]["dir"] = getDefaultPath()
     settings["prefs"]["file"]["save"]["dir"] = getDefaultPath()
 

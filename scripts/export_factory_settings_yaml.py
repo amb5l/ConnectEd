@@ -77,7 +77,7 @@ def _exportThemeValue(
 
 
 def _exportAppValue(path : str, value : Any) -> Any:
-    if path == "startup/geometry":
+    if path in ("startup/geometry", "startup/state"):
         return ""
     if path in ("prefs/file/open/dir", "prefs/file/save/dir"):
         return ""

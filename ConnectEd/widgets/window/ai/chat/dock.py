@@ -65,6 +65,7 @@ class AiChatDock(QDockWidget):
         model      : str = "",
     ) -> None:
         super().__init__(parent)
+        self.setObjectName(f"AiChat{chat_id}")
         self._chat_id = chat_id
         self._profile_id = profile_id
         self._provider = provider

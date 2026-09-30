@@ -72,6 +72,7 @@ class TreeViewDock(QDockWidget):
         parent : QWidget
     ) -> None:
         super().__init__(parent)
+        self.setObjectName(self.WINDOW_TITLE)
         self.setWindowTitle(self.WINDOW_TITLE)
         if widget is not None:
             self.setWidget(widget)

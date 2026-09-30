@@ -36,6 +36,7 @@ def test_resolve_color_inline_hex() -> None:
 def test_runtime_defaults() -> None:
     settings = loadFactorySettings()
     assert settings["startup"]["geometry"] == b""
+    assert settings["startup"]["state"] == b""
     assert settings["prefs"]["file"]["open"]["dir"]
     sheet_name = settings["defaults"]["sheet"]["name"]
     assert settings["defaults"]["sheet"]["size"] == DEFS["sheets"][sheet_name]

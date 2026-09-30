@@ -1,0 +1,3 @@
+- ensure alt-move disconnects (does not rubber band) connections
+- review selection propagation especially for marquee selection
+- handle net labels during rubber banding
