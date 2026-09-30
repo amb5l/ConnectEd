@@ -43,6 +43,8 @@ python -m pytest tests/unit/
 python tests/integration/test_scripted_gui.py
 ```
 
+Scripted CLI/GUI tests use [`ConnectEd.scripting`](../ConnectEd/scripting/README.md).
+
 ## Drawing integration fixtures
 
 Golden designs live under `tests/fixtures/dsn/`. GUI drawing cases are declared in `tests/integration/gui/drawing_specs.py` (`DRAWING_CASES`).

@@ -1,3 +1,14 @@
+"""Runtime type checks at API boundaries.
+
+``@checked`` wraps typeguard ``typechecked``. It runs only when ``__debug__``
+is true (normal dev builds), unless ``always=True``.
+
+Decorate annotated boundary methods (``__init__``, scene and command APIs,
+getters/setters, ``fromXml`` / ``toXml``, netlist). Skip Qt overrides, untyped
+passthroughs, and inner hot loops. Widen hints to match real call shapes
+instead of removing the decorator.
+"""
+
 from typing          import Any, TypeVar, overload
 from collections.abc import Callable
 

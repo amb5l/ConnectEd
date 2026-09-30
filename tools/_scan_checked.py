@@ -1,4 +1,4 @@
-"""Find annotated boundary methods missing @checked (see doc/CHECKED.md)."""
+"""Find annotated boundary methods missing @checked (see core/check.py)."""
 from __future__ import annotations
 
 import ast
@@ -276,7 +276,7 @@ def main() -> None:
         by_reason.setdefault(hit.reason, []).append(hit)
 
     print(f"Missing @checked on annotated boundary methods: {len(all_hits)}")
-    print("(Scope: doc/CHECKED.md — __init__, cmd, set/get, fromXml/toXml, api/, netlist, doc/)")
+    print("(Scope: __init__, cmd, set/get, fromXml/toXml, api/, netlist)")
     print()
 
     order = [
