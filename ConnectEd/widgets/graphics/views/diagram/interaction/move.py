@@ -75,7 +75,197 @@ def _jogsShareStaircase(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
     return s1[0] < s2[1] and s2[0] < s1[1]
 
 
-class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
+class RubberPreviewMixin:
+    """
+    Preview undo stack and rubber-band items.
+    Host sets ``_scene`` before calling ``initRubber``.
+    """
+
+    _undo_stack  : QUndoStack
+    _scene       : DiagramScene
+    _rubbers     : list[RubberItem]
+    _rubber_jogs : list[RubberJogItem]
+    _rubber_segs : list[SegmentItem]
+
+    @checked
+    def initRubber(self : Self) -> None:
+        self._undo_stack  = QUndoStack()
+        self._rubbers     = []
+        self._rubber_jogs = []
+        self._rubber_segs = []
+
+    @checked
+    def _rubber(
+        self              : Self,
+        segment_or_static : SegmentItem | NodeItem,
+        mobile            : NodeItem,
+        axis              : Axis        | None = None
+    ) -> None:
+        """
+        Replace a segment with rubber, or add rubber between 2 nodes.
+        """
+        def _recordRubberSeg(segment : SegmentItem) -> None:
+            if segment not in self._rubber_segs:
+                self._rubber_segs.append(segment)
+
+        if isinstance(segment_or_static, SegmentItem):
+            segment = segment_or_static
+            if isinstance(static := segment.otherNode(mobile), FreeNodeItem):
+                # TODO: should never get here with degree == 1, but handle it anyway
+                if static.degree() == 2:
+                    s1, s2 = static.segments()
+                    segment2 = s1 if s2 is segment else s2
+                    cmd = CmdMovePreviewRubberCorner(segment, segment2, mobile)
+                    self._undo_stack.push(cmd)
+                    self._rubbers.append(cmd.rubber())
+                    _recordRubberSeg(segment)
+                    _recordRubberSeg(segment2)
+                else:
+                    cmd = CmdMovePreviewRubberTee(segment, mobile)
+                    self._undo_stack.push(cmd)
+                    self._rubbers.append(cmd.rubber())
+                    _recordRubberSeg(segment)
+            else:
+                cmd = CmdMovePreviewRubberJog(segment, mobile)
+                self._undo_stack.push(cmd)
+                rubber = cmd.rubber()
+                self._rubbers.append(rubber)
+                self._rubber_jogs.append(rubber)
+                _recordRubberSeg(segment)
+        elif isinstance(segment_or_static, NodeItem):
+            cmd = CmdMovePreviewRubberJog(segment_or_static, mobile, axis)
+            self._undo_stack.push(cmd)
+            self._rubbers.append(cmd.rubber())
+            self._rubber_jogs.append(cmd.rubber())
+
+    @checked
+    def _detachSegmentNode(
+        self    : Self,
+        segment : SegmentItem,
+        node    : NodeItem
+    ) -> FreeNodeItem:
+        """Detach segment from the specified node."""
+        cmd = CmdDetachSegmentNode(self._scene, segment, node)
+        self._undo_stack.push(cmd)
+        return cmd.freeNode()
+
+    def _updateJogs(self : Self) -> None:
+        """
+        Update rubber jogs to avoid shorts after mobile nodes have moved.
+        """
+        if not self._rubber_jogs:
+            return
+
+        jog_rects : dict[RubberJogItem, QRectF] = {
+            jog : jog.mapToScene(jog.boundingRect()).boundingRect()
+            for jog in self._rubber_jogs
+        }
+
+        groups    : list[list[RubberJogItem]] = []
+        processed : set[RubberJogItem] = set()
+        jog_list = list(jog_rects.keys())
+
+        def _conflict(rect1 : QRectF, rect2 : QRectF, axis : Axis) -> bool:
+            if rect1.intersects(rect2):
+                return True
+            if axis == Axis.H:
+                if (rect1.top() == rect2.bottom() or rect1.bottom() == rect2.top()) and\
+                   rect1.left() < rect2.right() and rect1.right() > rect2.left():
+                    return True
+            else:
+                if (rect1.left() == rect2.right() or rect1.right() == rect2.left()) and\
+                   rect1.top() < rect2.bottom() and rect1.bottom() > rect2.top():
+                    return True
+            return False
+
+        for i, jog1 in enumerate(jog_list):
+            if jog1 in processed:
+                continue
+            rect1 = jog_rects[jog1]
+            group : list[RubberJogItem] = [jog1]
+            processed.add(jog1)
+            for jog2 in jog_list[i + 1 :]:
+                if jog2 in processed:
+                    continue
+                if jog2.axis() != jog1.axis():
+                    continue
+                if (axis1 := jog1.axis()) is None:
+                    continue
+                if _jogsShareStaircase(jog1, jog2) \
+                or _conflict(rect1, jog_rects[jog2], axis1):
+                    group.append(jog2)
+                    processed.add(jog2)
+            groups.append(group)
+
+        for group in groups:
+            is_isolated = len(group) == 1
+            thresh = 2 * PITCH if is_isolated else 3 * PITCH
+            to_remove : list[RubberJogItem] = []
+            for jog in group:
+                if jog.inlineDistance() < thresh:
+                    jog.setLane(None)
+                    to_remove.append(jog)
+            for jog in to_remove:
+                group.remove(jog)
+
+        for group in groups:
+            if len(group) <= 1:
+                continue
+
+            group_axis = group[0].axis()
+            quad_to_jogs      : dict[tuple[Polarity, Polarity], list[RubberJogItem]] = {}
+            jog_across_center : dict[RubberJogItem, float] = {}
+
+            for jog in group:
+                q = (jog.inlinePolarity(), jog.acrossPolarity())
+                jog_across_center[jog] = jog.acrossCenter()
+                quad_to_jogs.setdefault(q, []).append(jog)
+
+            ordered_quads = sorted(
+                quad_to_jogs.keys(),
+                key=lambda q: (
+                    min(jog_across_center[j] for j in quad_to_jogs[q])
+                    if quad_to_jogs[q]
+                    else 0.0
+                ),
+            )
+
+            for q in ordered_quads:
+                jogs = quad_to_jogs[q]
+                jogs.sort(key=lambda j: jog_across_center[j])
+                n = len(jogs)
+                if n <= 1:
+                    continue
+
+                reverse = _staircaseReverse(group_axis or Axis.H, q[0], q[1])
+                prefs = [j.prefLane() for j in jogs]
+                base = sum(prefs) / n
+                total_grid_span = (n - 1) * PITCH
+                room = min(j.inlineDistance() for j in jogs)
+                margin = 2 * PITCH
+
+                if total_grid_span > room - margin:
+                    min_p = min(prefs)
+                    max_p = max(prefs)
+                    step = (max_p - min_p) / (n - 1) if n > 1 and max_p > min_p else 0.0
+                    for i, jog in enumerate(jogs):
+                        j = (n - 1 - i) if reverse else i
+                        jog.setLane(min_p + j * step)
+                else:
+                    start = round((base - total_grid_span / 2) / PITCH) * PITCH
+                    for i, jog in enumerate(jogs):
+                        j = (n - 1 - i) if reverse else i
+                        jog.setLane(start + j * PITCH)
+
+        for jog in self._rubber_jogs:
+            jog.updatePath()
+
+
+class MoveInteraction(
+    RubberPreviewMixin,
+    PreviewStateMixin,
+    DiagramItemsInteraction,
+):
     """
     Full-blown move with rubber band support. Uses private undo stack.
 
@@ -99,13 +289,9 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     """
 
     # instance attributes
-    _undo_stack    : QUndoStack           # private undo stack for preview operations
     _ipos          : QPointF              # initial position
     _pos           : QPointF | None       # last position (filter redundant updates)
     _slide         : bool                 # true => retain connections
-    _rubbers       : list[RubberItem]     # all rubber items
-    _rubber_jogs   : list[RubberJogItem]  # rubber jog items
-    _rubber_segs   : list[SegmentItem]    # rubberized segments
     _move_segs     : list[SegmentItem]    # moved segments
     _detached_segs : list[tuple[SegmentItem, FixedNodeItem]]
 
@@ -124,10 +310,7 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         self._ipos          = pos
         self._pos           = pos
         self._slide         = slide
-        self._undo_stack    = QUndoStack()
-        self._rubbers       = []
-        self._rubber_jogs   = []
-        self._rubber_segs   = []
+        self.initRubber()
         self._detached_segs = []
         # process items
         if not isinstance(items, Sequence):
@@ -405,195 +588,17 @@ class MoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             return None
         return other
 
-    @checked
-    def _rubber(
-        self              : Self,
-        segment_or_static : SegmentItem | NodeItem,  # segment or static node
-        mobile            : NodeItem,                # mobile node
-        axis              : Axis        | None = None       # (optional) jog inline axis
-    ) -> None:
-        """
-        Replace a segment with rubber, or add rubber between 2 nodes.
 
-        Args:
-            segment_or_node: Segment to rubberize or static node.
-            node:            Mobile node.
-            axis:            Jog inline axis (optional).
-        """
-        def _recordRubberSeg(segment : SegmentItem) -> None:
-            if segment not in self._rubber_segs:
-                self._rubber_segs.append(segment)
-
-        if isinstance(segment_or_static, SegmentItem):
-            segment = segment_or_static
-            if isinstance(static := segment.otherNode(mobile), FreeNodeItem):
-                # TODO: should never get here with degree == 1, but handle it anyway
-                if static.degree() == 2:
-                    s1, s2 = static.segments()
-                    segment2 = s1 if s2 is segment else s2
-                    cmd = CmdMovePreviewRubberCorner(segment, segment2, mobile)
-                    self._undo_stack.push(cmd)
-                    self._rubbers.append(cmd.rubber())
-                    _recordRubberSeg(segment)
-                    _recordRubberSeg(segment2)
-                else:
-                    cmd = CmdMovePreviewRubberTee(segment, mobile)
-                    self._undo_stack.push(cmd)
-                    self._rubbers.append(cmd.rubber())
-                    _recordRubberSeg(segment)
-            else:
-                cmd = CmdMovePreviewRubberJog(segment, mobile)
-                self._undo_stack.push(cmd)
-                rubber = cmd.rubber()
-                self._rubbers.append(rubber)
-                self._rubber_jogs.append(rubber)
-                _recordRubberSeg(segment)
-        elif isinstance(segment_or_static, NodeItem):
-            static = segment_or_static
-            cmd = CmdMovePreviewRubberJog(static, mobile, axis)
-            self._undo_stack.push(cmd)
-            self._rubbers.append(cmd.rubber())
-            self._rubber_jogs.append(cmd.rubber())
-
-    @checked
-    def _detachSegmentNode(
-        self    : Self,
-        segment : SegmentItem,
-        node    : NodeItem
-    ) -> FreeNodeItem:
-        """
-        Detach segment from specified node.
-        """
-        cmd = CmdDetachSegmentNode(self._scene, segment, node)
-        self._undo_stack.push(cmd)
-        return cmd.freeNode()
-
-    def _updateJogs(self: Self) -> None:
-        """
-        Update rubber jogs to avoid shorts after mobile nodes have moved.
-        External routing lane conflicts are still resolved by the caller.
-        """
-        if not self._rubber_jogs:
-            return
-
-        # --- 1. bounding rects -------------------------------------------------
-        jog_rects: dict[RubberJogItem, QRectF] = {
-            jog: jog.mapToScene(jog.boundingRect()).boundingRect()
-            for jog in self._rubber_jogs
-        }
-
-        # --- 2. build clean conflict groups (connected components, same axis) --
-        groups   : list[list[RubberJogItem]] = []
-        processed: set[RubberJogItem] = set()
-        jog_list = list(jog_rects.keys())
-
-        def _conflict(rect1: QRectF, rect2: QRectF, axis: Axis) -> bool:
-            if rect1.intersects(rect2):
-                return True
-            # inline edges touch (not just corner)
-            if axis == Axis.H:
-                if (rect1.top() == rect2.bottom() or rect1.bottom() == rect2.top()) and\
-                   rect1.left() < rect2.right() and rect1.right() > rect2.left():
-                    return True
-            else:
-                if (rect1.left() == rect2.right() or rect1.right() == rect2.left()) and\
-                   rect1.top() < rect2.bottom() and rect1.bottom() > rect2.top():
-                    return True
-            return False
-
-        for i, jog1 in enumerate(jog_list):
-            if jog1 in processed:
-                continue
-            rect1 = jog_rects[jog1]
-            group: list[RubberJogItem] = [jog1]
-            processed.add(jog1)
-            for jog2 in jog_list[i + 1 :]:
-                if jog2 in processed:
-                    continue
-                if jog2.axis() != jog1.axis():
-                    continue
-                if (axis1 := jog1.axis()) is None:
-                    continue
-                if _jogsShareStaircase(jog1, jog2) \
-                or _conflict(rect1, jog_rects[jog2], axis1):
-                    group.append(jog2)
-                    processed.add(jog2)
-            groups.append(group)
-
-        # --- 3. mark degenerates (isolated get 2×PITCH, clusters get 3×PITCH) --
-        for group in groups:
-            is_isolated = len(group) == 1
-            thresh = 2 * PITCH if is_isolated else 3 * PITCH
-            to_remove: list[RubberJogItem] = []
-            for jog in group:
-                if jog.inlineDistance() < thresh:
-                    jog.setLane(None)
-                    to_remove.append(jog)
-            for jog in to_remove:
-                group.remove(jog)
-
-        # --- 4. quadrant-aware lane resolution ---------------------------------
-        for group in groups:
-            if len(group) <= 1:
-                continue
-
-            group_axis = group[0].axis()
-            quad_to_jogs     : dict[tuple[Polarity, Polarity], list[RubberJogItem]] = {}
-            jog_across_center: dict[RubberJogItem, float] = {}
-
-            for jog in group:
-                q = (jog.inlinePolarity(), jog.acrossPolarity())
-                jog_across_center[jog] = jog.acrossCenter()
-                quad_to_jogs.setdefault(q, []).append(jog)
-
-            ordered_quads = sorted(
-                quad_to_jogs.keys(),
-                key=lambda q: (
-                    min(jog_across_center[j] for j in quad_to_jogs[q])
-                    if quad_to_jogs[q]
-                    else 0.0
-                ),
-            )
-
-            for q in ordered_quads:
-                jogs = quad_to_jogs[q]
-                jogs.sort(key=lambda j: jog_across_center[j])
-                n = len(jogs)
-                if n <= 1:
-                    continue
-
-                reverse = _staircaseReverse(group_axis or Axis.H, q[0], q[1])
-                prefs = [j.prefLane() for j in jogs]
-                base = sum(prefs) / n
-                total_grid_span = (n - 1) * PITCH
-                room = min(j.inlineDistance() for j in jogs)
-                margin = 2 * PITCH
-
-                if total_grid_span > room - margin:
-                    min_p = min(prefs)
-                    max_p = max(prefs)
-                    step = (max_p - min_p) / (n - 1) if n > 1 and max_p > min_p else 0.0
-                    for i, jog in enumerate(jogs):
-                        j = (n - 1 - i) if reverse else i
-                        jog.setLane(min_p + j * step)
-                else:
-                    start = round((base - total_grid_span / 2) / PITCH) * PITCH
-                    for i, jog in enumerate(jogs):
-                        j = (n - 1 - i) if reverse else i
-                        jog.setLane(start + j * PITCH)
-
-        # --- 5. final path update for everyone ---------------------------------
-        for jog in self._rubber_jogs:
-            jog.updatePath()
-
-
-class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
+class MoveBlockPinsInteraction(
+    RubberPreviewMixin,
+    PreviewStateMixin,
+    DiagramInteraction,
+):
     # instance attributes
-    _undo_stack : QUndoStack          # private undo stack for preview
-    _block      : BlockItem
-    _pins       : list[BlockPinItem]  # first item is primary pin | None
-    _loc_snap   : EdgeLoc | None
-    _corner     : int     | None
+    _block    : BlockItem
+    _pins     : list[BlockPinItem]  # first item is primary pin
+    _loc_snap : EdgeLoc | None
+    _corner   : int     | None
 
     @checked
     def __init__(
@@ -607,12 +612,18 @@ class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
         self._pins     = pins
         self._loc_snap = None
         self._corner   = None
-        self._undo_stack = QUndoStack()
+        self.initRubber()
+        mobile = {pin.node() for pin in self._pins}
         for pin in self._pins:
-            for seg in list(pin.node().segments()):
-                self._undo_stack.push(
-                    CmdDetachSegmentNode(self._scene, seg, pin.node())
-                )
+            node = pin.node()
+            for seg in list(node.segments()):
+                other = seg.otherNode(node)
+                if other in mobile:
+                    continue  # both ends are moving pins; the wire follows
+                if seg.isOrthogonal():
+                    self._rubber(seg, node)
+                else:
+                    self._detachSegmentNode(seg, node)
         self._previewSave()
 
     def valid(self : Self) -> bool:
@@ -635,6 +646,7 @@ class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
         self._pins[0].setLoc(loc_new_snap)
         for pin in self._pins[1:]:
             pin.setLoc(self._block.locOffset(pin.loc(), offset, corner))
+        self._updateJogs()
         self._loc_snap = loc_new_snap
         self._corner = corner
 
@@ -646,11 +658,23 @@ class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
         if after == before:
             self._cancel()
             return True  # no change so skip command push
+        rubber_lines = [
+            line for rubber in self._rubbers for line in rubber.geometry()
+        ]
+        rubber_segs = list(self._rubber_segs)
+        mobile = {pin.node() for pin in self._pins}
         self._previewRestore()
         self._undo_stack.setIndex(0)
         self._scene.undo_stack.beginMacro("editMoveBlockPins")
+        if rubber_segs:
+            self._scene.editDelete(rubber_segs, undoable=True)
         for pin in self._pins:
-            self._scene.detachFixedNode(pin.node(), undoable=True)
+            node = pin.node()
+            for seg in list(node.segments()):
+                other = seg.otherNode(node)
+                if other in mobile:
+                    continue
+                self._scene.detachSegmentNode(seg, node, undoable=True)
         self._scene.editMoveBlockPins(
             self._block,
             self._pins,
@@ -658,6 +682,8 @@ class MoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
             before,
             undoable=True
         )
+        for line in rubber_lines:
+            self._scene.addSegment(line.p1(), line.p2(), undoable=True)
         for pin in self._pins:
             self._scene.connectFixedNode(pin.node(), undoable=True)
         self._scene.undo_stack.endMacro()
