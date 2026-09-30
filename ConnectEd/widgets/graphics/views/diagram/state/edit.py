@@ -224,7 +224,7 @@ class DiagramViewStateEditItemProperties(DiagramViewState):
         ]
         if len(dialog_items) == 1:
             dialog_item = dialog_items[0]
-            dialog = PropertiesDialog(dialog_item, self.view)
+            dialog = PropertiesDialog([dialog_item], self.view)
             if dialog.exec():
                 self.scene.editProperties(dialog.getEdits(), undoable=True)
         else:
@@ -243,7 +243,7 @@ class DiagramViewStateEditDiagramProperties(DiagramViewState):
     ) -> None:
         if len(items) > 0:
             raise ValueError("Expected no items")
-        dialog = PropertiesDialog(self.scene, self.view)
+        dialog = PropertiesDialog([self.scene], self.view)
         if dialog.exec():
             self.scene.editProperties(dialog.getEdits(), undoable=True)
         self.view.state.go(self.view.stateIdle)

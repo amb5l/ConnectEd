@@ -20,7 +20,7 @@ from .mixin.select       import ItemSelectMixin
 from .mixin.handle       import ItemRectHandlesMixin
 from .mixin.transform    import ItemTransformMixin
 from .mixin.change       import ItemChangeMixin
-from .mixin.clone        import ItemCloneMixin
+from .mixin.clone        import ItemCloneMixin, _copyPropertyDisplay
 from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
 
@@ -189,6 +189,82 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
         self.toXmlBegin(xw)
         self.toXmlChildren(xw, pins=False)
         self.toXmlEnd(xw)
+
+    def propertySyncInherentFrom(
+        self       : Self,
+        definition : SymbolDefinitionItem,
+    ) -> None:
+        """Copy definition inherent values. Placement stays on the instance."""
+        skip = {"X", "Y", "Rotation", "MirrorH", "MirrorV", "Origin"}
+        for name, source in definition.properties.items():
+            if name in skip or not source.isInherent():
+                continue
+            dest = self.properties.get(name)
+            if dest is None or not dest.isInherent():
+                continue
+            dest.setValue(source.value())
+
+    def propertySyncCustomFrom(
+        self       : Self,
+        definition : SymbolDefinitionItem,
+    ) -> None:
+        """Replace instance custom properties with the definition's."""
+        for name, prop in list(self.properties.items()):
+            if prop.isCustom():
+                self.propertyDelete(name)
+        for name, source in definition.properties.items():
+            if not source.isCustom():
+                continue
+            added = self.propertyAdd(
+                name, source.kind(), source.value(raw = True)
+            )
+            if added is None:
+                continue
+            for source_text in definition.propertyTextItems(source):
+                dest_text = self.propertyTextAdd(added)
+                _copyPropertyDisplay(source_text, dest_text)
+
+    def addMissingPropertyTextsFrom(
+        self       : Self,
+        definition : SymbolDefinitionItem,
+    ) -> None:
+        """Add definition property texts the instance does not already have."""
+        for name, source in definition.properties.items():
+            dest = self.properties.get(name)
+            if dest is None:
+                continue
+            source_texts = definition.propertyTextItems(source)
+            dest_texts   = self.propertyTextItems(dest)
+            for source_text in source_texts[len(dest_texts):]:
+                dest_text = self.propertyTextAdd(dest)
+                _copyPropertyDisplay(source_text, dest_text)
+
+    def removePropertyTextsNotIn(
+        self       : Self,
+        definition : SymbolDefinitionItem,
+    ) -> None:
+        """Remove instance property texts whose property is not on the definition."""
+        defined = set(definition.properties)
+        for text in list(self.propertyTextItems()):
+            name = self.propertyName(text.property())
+            if name not in defined:
+                self.propertyTextRemove(text)
+
+    def syncPropertyTextFrom(
+        self       : Self,
+        definition : SymbolDefinitionItem,
+    ) -> None:
+        """Reset instance property-text placement to match the definition."""
+        for name, source in definition.properties.items():
+            dest = self.properties.get(name)
+            if dest is None:
+                continue
+            source_texts = definition.propertyTextItems(source)
+            dest_texts   = self.propertyTextItems(dest)
+            for source_text, dest_text in zip(
+                source_texts, dest_texts, strict = False
+            ):
+                _copyPropertyDisplay(source_text, dest_text)
 
     @checked
     def syncFromDefinition(

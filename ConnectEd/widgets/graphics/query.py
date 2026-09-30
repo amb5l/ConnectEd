@@ -99,7 +99,7 @@ class QueryWindow(QWidget):
                 ])
             elif isinstance(item, PropertiesMixin):
                 for prop_name in item.properties.keys():
-                    prop_value = item.propertyValue(prop_name)
+                    prop_value = item.properties[prop_name].value()
                     item_row.appendRow([
                         QStandardItem(),
                         QStandardItem(prop_name),

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing import Self, Any, Protocol, runtime_checkable
 
 from PyQt6.QtWidgets import QDialog, QWidget, \
                             QVBoxLayout, QHBoxLayout, \
@@ -19,6 +19,11 @@ from ...components.combo.enum       import EnumComboBox
 from ...components.layout.ok_cancel import OkCancelLayout
 
 from .text_table                    import PropertyTextTableWidget
+
+
+@runtime_checkable
+class _ValueEditor(Protocol):
+    def value(self) -> Any: ...
 
 
 class PropertyDialog(QDialog):
@@ -164,6 +169,9 @@ class PropertyDialog(QDialog):
         state = self._pending.state
         if state is None or not hasattr(self, "_value_value"):
             return
-        value = self._value_value.value()
+        editor = self._value_value
+        if not isinstance(editor, _ValueEditor):
+            return
+        value = editor.value()
         if not isinstance(value, NoChange):
             state.value = value

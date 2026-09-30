@@ -41,7 +41,6 @@ _FIELD_SPECS = [
     PropertyFieldSpec ( "Custom"  , DataKind.BOOL  , Property.isCustom ),
     PropertyFieldSpec ( "Kind"    , DataKind.KIND  , Property.kind     ),
     PropertyFieldSpec ( "Value"   , DataKind.DUMMY , Property.value    ),
-    PropertyFieldSpec ( "Display" , DataKind.BOOL  , Property.display  ),
 
     DisplayFieldSpec  ( "Visible"    , DataKind.BOOL        , PropertyTextItem.isVisible     ),
     DisplayFieldSpec  ( "Cleat"      , DataKind.DUMMY       , PropertyTextItem.cleat         ),

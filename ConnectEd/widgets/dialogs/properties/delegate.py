@@ -28,7 +28,7 @@ from ..components.combo.font_family import FontFamilyComboBox
 from ..components.combo.font_size   import FontSizeComboBox
 from ..components.combo.font_bool   import FontBoolComboBox
 
-from .item                          import PropertiesItem
+from .item                          import PropertiesItem, PropertiesValueItem
 
 EditorType = (
     StrEditor,
@@ -62,7 +62,7 @@ class PropertiesDelegate(QStyledItemDelegate):
     ) -> QWidget | None:
         if not isinstance(model := index.model(), QStandardItemModel):
             return None
-        if not isinstance(item := model.itemFromIndex(index), PropertiesItem):
+        if not isinstance(item := model.itemFromIndex(index), PropertiesValueItem):
             return None
         if item.value() is None:
             return None

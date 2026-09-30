@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QItemSelection
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QTabWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox, QCheckBox, QPushButton
@@ -143,7 +143,7 @@ class PropertiesEditorWidget(QWidget):
         # clear selection
         self._main_widget.clearSelection()
         # update button enables
-        self.selectionChanged(self._main_widget, QItemSelection(), QItemSelection())
+        self.onSelectionChanged(self._main_widget, 0, 0)
         # update transpose checkbox
         if self._main_widget == self._grid_widget:
             # set transposed checkbox
