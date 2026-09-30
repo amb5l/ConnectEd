@@ -158,6 +158,7 @@ class PropertyTextItem(TextItem):
             self._tether.onPositionChanged(pos)
 
     def onSelectionChanged(self : Self, selected : bool) -> None:
+        super().onSelectionChanged(selected)
         if (tether := self._tether) is None:
             return
         cleat = self._cleat

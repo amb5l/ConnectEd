@@ -6,11 +6,14 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 
 from ConnectEd.app                                       import ConnectEdApp
-from ConnectEd.core.palette                              import mid_cyan, mid_red
+from ConnectEd.core.palette                              import bright_magenta, mid_cyan, \
+                                                                mid_red
 from ConnectEd.core.settings                             import Settings
 from ConnectEd.core.types                                import DataKind
 from ConnectEd.widgets.graphics.items.block              import BlockItem
+from ConnectEd.widgets.graphics.items.block_pin          import BlockPinItem
 from ConnectEd.widgets.graphics.items.property_text      import PropertyTextItem
+from ConnectEd.widgets.graphics.scenes.diagram           import DiagramScene
 from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 
 
@@ -62,3 +65,20 @@ def test_resources_quill_lazy_loads_property_text_fallback(
     resources = DiagramSceneResources()
     quill = resources.quill("PropertyText", False)
     assert quill.color() == mid_red
+
+
+def test_block_pin_name_turns_magenta_when_selected(
+    connect_ed_app : ConnectEdApp,
+) -> None:
+    scene = DiagramScene()
+    pin = BlockPinItem()
+    pin.setName("clk")
+    scene.addItem(pin)
+    texts = pin.propertyTextItems(pin.properties["Name"])
+    assert texts
+    pt = texts[0]
+    assert pt.color() != bright_magenta
+    pt.setSelected(True)
+    assert pt.color() == bright_magenta
+    pt.setSelected(False)
+    assert pt.color() != bright_magenta
