@@ -9,11 +9,11 @@ from PyQt6.QtGui     import QAction
 from ....core.check  import checked
 from ....core.types  import RectHandleId, DataKind
 
-from ..properties    import PropertySpec
+from ..properties import PropertySpec
 
-from .role           import FunctionalItem
-from .base_rect      import BaseRectangleItem
-from .part           import PartItemMixin
+from .role      import FunctionalItem
+from .base_rect import BaseRectangleItem
+from .part      import PartItemMixin
 
 from .mixin.edge_loc import ItemLocParentMixin
 
@@ -44,6 +44,7 @@ class BlockItem(
     _XML_CHILDREN = frozenset({"BlockPin", "PropertyText"})
 
     # instance attributes
+    _path : str
     _line_color = None  # enable per-item appearance control
     _fill_color = None  # enable per-item appearance control
     _fill_style = None  # enable per-item appearance control
@@ -56,6 +57,7 @@ class BlockItem(
         fresh : bool = True
     ) -> None:
         self.initPart()
+        self._path = ""
         super().__init__(p1, p2, fresh)
 
     def path(self : Self) -> str:

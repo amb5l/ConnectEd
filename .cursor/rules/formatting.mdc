@@ -14,6 +14,7 @@ When editing or adding code in this repo, **vertically align** punctuation withi
 - **Grouped assignments** — consecutive related `name : value` or `name = value` lines in specs, constants, or small tables.
 - **Multi-line calls** — keyword arguments, especially in validators and scripting; align `=` or `:` if the project uses typed kwargs.
 - **Multi-line signatures** — pad parameter names so `:` align on wrapped `def` lines (see `withModal` in `ConnectEd/scripting/qt/modal.py`). When some parameters use union types, find the row whose type name is longest before the first `|` (no wriggle room); pad shorter type names to that width so every `|` in the block shares the same column — do not pad after `None` or other union members instead.
+- **Imports** — align `import` only inside a contiguous group (no blank line). The longest module path in that group gets one space before `import`; pad shorter paths so every `import` shares that column. A blank line or a section comment starts a new group — do not pad a short group to match a longer one across the gap. A wrapped import continues under the first imported name. See `ConnectEd/widgets/graphics/scenes/diagram/xml.py`.
 
 ## When extending an aligned block
 
@@ -26,6 +27,23 @@ When a block mixes `T | NoChange` and `T | None | NoChange`, pad type names so `
 - A block is huge or deeply nested (e.g. large menu trees) — alignment adds noise without clarity.
 - A formatter (Ruff, Black) would immediately undo the change — prefer project formatter settings if we adopt one for alignment later.
 - It would require very wide spacing or harm diff readability.
+
+## Example (imports — `import` aligned per group)
+
+```python
+from .....app import logger
+
+from .....core.check import checked
+from .....core.utils import val2str
+from .....core.xml   import toXmlStartElement, toXmlEndElement, \
+                            fromXml, copyXml, pasteXml, XmlProtocol
+
+# functional items
+from ...items.port     import PortItem
+from ...items.gate     import GateItem, BufGateItem, AndGateItem, \
+                              OrGateItem, XorGateItem
+from ...items.port_pin import PortPinMixin
+```
 
 ## Example (dict keys → types)
 

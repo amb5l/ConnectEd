@@ -5,27 +5,36 @@ from typing          import Self, cast
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app           import logger
+from .....app import logger
 
-from .....core.check    import checked
-from .....core.utils    import val2str
-from .....core.xml      import toXmlStartElement, toXmlEndElement, \
+from .....core.check import checked
+from .....core.utils import val2str
+from .....core.xml   import toXmlStartElement, toXmlEndElement, \
                             fromXml, copyXml, pasteXml, XmlProtocol
 
-from ...xml             import toXmlProperties, fromXmlProperties
+from ...xml import toXmlProperties, fromXmlProperties, \
+                   surveyXmlDefaults, writeXmlDefaults, \
+                   readXmlDefaults, bindXmlDefaults, unbindXmlDefaults
 
-from ...items.role      import DocumentItem
+from ...properties import PropertiesMixin
+
+from ...items.role import DocumentItem
+
 # decorative items
 from ...items.line      import LineItem
 from ...items.rectangle import RectangleItem
 from ...items.ellipse   import EllipseItem
 from ...items.polyline  import PolylineItem
 from ...items.text      import TextItem
+
 # functional items
-from ...items.port      import PortItem
-from ...items.gate      import BufGateItem, AndGateItem, OrGateItem, XorGateItem
-from ...items.block     import BlockItem
-from ...items.symbol    import SymbolDefinitionItem, SymbolInstanceItem
+from ...items.port     import PortItem
+from ...items.gate     import GateItem, BufGateItem, AndGateItem, \
+                              OrGateItem, XorGateItem
+from ...items.block    import BlockItem
+from ...items.symbol   import SymbolDefinitionItem, SymbolInstanceItem
+from ...items.port_pin import PortPinMixin
+
 # connectivity items
 from ...items.segment   import SegmentItem
 from ...items.node      import NodeItem, FreeNodeItem, FixedNodeItem
@@ -33,8 +42,25 @@ from ...items.net_label import NetLabelItem
 
 from ...items.mixin.xml import ItemXmlMixin
 
-from .netlist           import _netNameAndSuffix
-from .host              import asDiagramScene
+from .netlist import _netNameAndSuffix
+from .host    import asDiagramScene
+
+
+def _iter_xml_tree(item : QGraphicsItem, pins : bool) -> list[QGraphicsItem]:
+    found = [item]
+    if pins:
+        for child in item.childItems():
+            if isinstance(child, PortPinMixin):
+                found.extend(_iter_xml_tree(child, True))
+    if isinstance(item, PropertiesMixin):
+        seen : set[int] = set()
+        for prop in item.properties.values():
+            for text in item.propertyTextItems(prop):
+                if id(text) in seen:
+                    continue
+                seen.add(id(text))
+                found.extend(_iter_xml_tree(text, False))
+    return found
 
 
 class DiagramSceneXmlMixin:
@@ -59,28 +85,71 @@ class DiagramSceneXmlMixin:
         if not items:
             return
         # output
+        token    = None
+        defaults : dict[str, dict[str, str]] = {}
         if full_scene:
-            # start scene element
-            toXmlStartElement(xw, host._XML_TAG)
-            toXmlProperties(host, xw)
-        # symbol definitions
-        host._toXmlSymbolDefinitions(xw, items)
-        # non-connectivity items
+            defaults = surveyXmlDefaults(host._xmlDefaultsItems(items))
+            token = bindXmlDefaults(defaults)
+        try:
+            if full_scene:
+                # start scene element
+                toXmlStartElement(xw, host._XML_TAG)
+                toXmlProperties(host, xw)
+                writeXmlDefaults(xw, defaults)
+            # symbol definitions
+            host._toXmlSymbolDefinitions(xw, items)
+            # non-connectivity items
+            for item in items:
+                if not isinstance(item, DocumentItem) \
+                or not isinstance(item, ItemXmlMixin) \
+                or item.parentItem() is not None \
+                or isinstance(item, SegmentItem | NodeItem):
+                    continue
+                item.toXml(xw)
+            # segments
+            for item in items:
+                if isinstance(item, SegmentItem):
+                    item.toXml(xw)
+            host._toXmlNetlist(xw)
+            if full_scene:
+                # end scene element
+                toXmlEndElement(xw)
+        finally:
+            if token is not None:
+                unbindXmlDefaults(token)
+
+    def _xmlDefaultsItems(
+        self  : Self,
+        items : list[QGraphicsItem],
+    ) -> list[PropertiesMixin]:
+        host = asDiagramScene(self)
+        found : list[PropertiesMixin] = []
+
+        def add(item : QGraphicsItem, pins : bool) -> None:
+            for obj in _iter_xml_tree(item, pins):
+                if isinstance(obj, PropertiesMixin) \
+                and callable(getattr(type(obj), "xmlTag", None)):
+                    found.append(obj)
+
+        symbols = host.getSymbols().values()
+        instances = [
+            item for item in items if isinstance(item, SymbolInstanceItem)
+        ]
+        if instances:
+            symbol_names = {symbol.name() for symbol in symbols}
+            used_names = {instance.name() for instance in instances}
+            for symbol in symbols:
+                if symbol.name() in symbol_names & used_names:
+                    add(symbol, True)
         for item in items:
             if not isinstance(item, DocumentItem) \
             or not isinstance(item, ItemXmlMixin) \
             or item.parentItem() is not None \
             or isinstance(item, SegmentItem | NodeItem):
                 continue
-            item.toXml(xw)
-        # segments
-        for item in items:
-            if isinstance(item, SegmentItem):
-                item.toXml(xw)
-        host._toXmlNetlist(xw)
-        if full_scene:
-            # end scene element
-            toXmlEndElement(xw)
+            pins = not isinstance(item, GateItem | SymbolInstanceItem)
+            add(item, pins)
+        return found
 
     @checked
     def copy(
@@ -339,16 +408,27 @@ class DiagramSceneXmlMixin:
             )
         fromXmlProperties(host, xr)
 
+        defaults_token = None
+
+        def fromXmlDefaults(xr : QXmlStreamReader) -> None:
+            nonlocal defaults_token
+            defaults_token = bindXmlDefaults(readXmlDefaults(xr))
+
         xref = {
-            "Symbols" : fromXmlDefinitions,
-            "Netlist" : fromXmlNetlist
+            "Defaults" : fromXmlDefaults,
+            "Symbols"  : fromXmlDefinitions,
+            "Netlist"  : fromXmlNetlist
         }
         for item_name, item_cls in diagram_scene_xml_items.items():
             xref[item_name] = \
                 lambda xr, cls=item_cls: (fromXmlItem(xr, cls), None)[1]
 
-        fromXml(xr, xref, ptag=top_element_name)
-        host.setPropertiesLive(True)
+        try:
+            fromXml(xr, xref, ptag=top_element_name)
+            host.setPropertiesLive(True)
+        finally:
+            if defaults_token is not None:
+                unbindXmlDefaults(defaults_token)
 
     @checked
     def paste(self : Self) -> tuple[list[QGraphicsItem], QPointF | None]:
