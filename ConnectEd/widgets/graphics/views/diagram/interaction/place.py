@@ -282,6 +282,7 @@ class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
         snap   : QPointF | None = None
     ) -> None:
         self._loc = None
+        pin.setParentItem(parent)
         super().__init__(view, parent, pin, pos, snap)
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:

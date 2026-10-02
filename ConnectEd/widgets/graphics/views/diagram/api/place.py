@@ -4,9 +4,13 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......app import logger
+
 from ......core.check import checked
 
-from ..host           import asDiagramView
+from ....items.block import BlockItem
+
+from ..host import asDiagramView
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -55,9 +59,19 @@ class DiagramViewApiPlaceMixin:
         host.state.go(host.statePlaceBlock1)
 
     @checked
-    def placeBlockPin(self : Self) -> None:
+    def placeBlockPin(
+        self  : Self,
+        block : BlockItem | None = None
+    ) -> None:
         host = asDiagramView(self)
-        host.state.go(host.statePlaceBlockPin)
+        if block is None:
+            selected = host._selectedItems(BlockItem)
+            if len(selected) == 1 and isinstance(selected[0], BlockItem):
+                block = selected[0]
+        if not isinstance(block, BlockItem):
+            logger().warning("No block selected")
+            return
+        host.state.go(host.statePlaceBlockPin, block)
 
     @checked
     def placeSymbolPin(self : Self) -> None:

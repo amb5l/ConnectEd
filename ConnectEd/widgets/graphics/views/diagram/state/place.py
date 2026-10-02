@@ -290,22 +290,20 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
         items : Sequence[QGraphicsItem],
         spos  : QPointF
     ) -> None:
-        if len(items) != 1:
-            raise ValueError("Expected one item")
-        block = items[0]
-        if isinstance(block, BlockItem):
-            pin = BlockPinItem() # don't parent to block yet
-            dialog = PortPinItemDialog("Block Pin", pin, self.view)
-            if dialog.exec():
-                pin.setName(dialog.getName())
-                pin.setDirection(dialog.getDirection())
-                self.interact(DiagramPlaceBlockPinInteraction(
-                    self.view, block, pin, self.view._snap(spos),
-                    self.view.grid.pitch if self.view.grid.snap else None
-                ))
-        else:
+        if len(items) != 1 or not isinstance(items[0], BlockItem):
             logger().warning("No pin rect selected")
             self.view.state.go(self.view.stateIdle)
+            return
+        block = items[0]
+        pin = BlockPinItem() # don't parent to block yet
+        dialog = PortPinItemDialog("Block Pin", pin, self.view)
+        if dialog.exec():
+            pin.setName(dialog.getName())
+            pin.setDirection(dialog.getDirection())
+            self.interact(DiagramPlaceBlockPinInteraction(
+                self.view, block, pin, self.view._snap(spos),
+                self.view.grid.pitch if self.view.grid.snap else None
+            ))
 
     @override
     def mouseLeftClick(

@@ -85,7 +85,7 @@ class BlockItem(
         spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
-            view.action("Add Pin...", view.placeBlockPin),
+            view.action("Add Pin...", lambda: view.placeBlockPin(self)),
             view.separator(),
             view.action("Appearance...", lambda: view.editAppearance(self)),
             view.action("Properties...", lambda: view.editItemProperties(self))
