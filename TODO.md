@@ -1,3 +1,6 @@
+- unite property text and net label
 - ensure alt-move disconnects (does not rubber band) connections
 - review selection propagation especially for marquee selection
 - handle net labels during rubber banding
+- use of @override
+- XML item defaults
