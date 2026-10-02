@@ -205,7 +205,7 @@ class ResizeGripItem(MoveGripItem):
         view : DiagramView,
         spos : QPointF
     ) -> list[QAction | QMenu]:
-        raise NotImplementedError("Need PropertyText support")
+        raise NotImplementedError("Need Label support")
         entries : list[QAction | QMenu] = [
             view.action("Resize", lambda: view.editMoveGrip(self, self.scenePos())),
         ]

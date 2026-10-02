@@ -4,13 +4,13 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
-from ....properties                   import populatePropertyText
+from ....properties import populateLabel
 
-from ....table.row                    import TableRow
-from ....table.model                  import TableModel
-from ....table.view                   import TableView
+from ....table.row   import TableRow
+from ....table.model import TableModel
+from ....table.view  import TableView
 
-from ....graphics.items.property_text import PropertyTextPending, PropertyTextEdit
+from ....graphics.items.label import LabelPending, LabelEdit
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -44,16 +44,16 @@ _COLUMNS = [
 ]
 
 
-class PropertyTextTableWidget(TableView):
+class LabelTableWidget(TableView):
     """
-    Table for displaying/editing property texts.
+    Table for displaying/editing labels.
     """
 
-    _drafts : list[PropertyTextPending]
+    _drafts : list[LabelPending]
 
     def __init__(
         self   : Self,
-        drafts : list[PropertyTextPending],
+        drafts : list[LabelPending],
         parent : QWidget | None = None
     ) -> None:
         # store drafts
@@ -66,11 +66,11 @@ class PropertyTextTableWidget(TableView):
             if draft.state is None:
                 continue
             row = TableRow(_COLUMNS)
-            populatePropertyText(row, draft)
+            populateLabel(row, draft)
             model.appendRow(row.cells())
         # superclass init
         super().__init__(model, parent)
 
 
-    def getEdits(self : Self) -> list[PropertyTextEdit]:
+    def getEdits(self : Self) -> list[LabelEdit]:
         return []  # TODO: implement

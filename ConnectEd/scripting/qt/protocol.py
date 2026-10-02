@@ -136,5 +136,5 @@ class GuiDriver(Protocol):
     def viewPos(self : Self, view : QGraphicsView, scene : QPointF) -> QPoint:
         ...
 
-    def scenePos(self : Self, view : QGraphicsView, view_pt : QPoint) -> QPointF:
+    def scenePos(self : Self, view : QGraphicsView, pos : QPoint) -> QPointF:
         ...

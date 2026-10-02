@@ -26,7 +26,7 @@ from .edit  import (
     DiagramViewStateEditDiagramProperties,
     DiagramViewStateEditQuery,
     DiagramViewStateEditText,
-    DiagramViewStateEditPropertyText,
+    DiagramViewStateEditLabel,
     DiagramViewStateEditPort,
     DiagramViewStateEditBlockPin
 )
@@ -75,7 +75,7 @@ class DiagramViewStateMixin:
     stateEditText               : DiagramViewStateEditText                # noqa N815
     stateEditPort               : DiagramViewStateEditPort                # noqa N815
     stateEditBlockPin           : DiagramViewStateEditBlockPin            # noqa N815
-    stateEditPropertyText       : DiagramViewStateEditPropertyText        # noqa N815
+    stateEditLabel       : DiagramViewStateEditLabel        # noqa N815
     statePlaceSymbolPin         : DiagramViewStatePlaceSymbolPin          # noqa N815
     statePlaceLine1             : DiagramViewStatePlaceLine1              # noqa N815
     statePlaceLine2             : DiagramViewStatePlaceLine2              # noqa N815
@@ -120,7 +120,7 @@ class DiagramViewStateMixin:
         host.stateEditText               = DiagramViewStateEditText               (host)
         host.stateEditPort               = DiagramViewStateEditPort               (host)
         host.stateEditBlockPin           = DiagramViewStateEditBlockPin           (host)
-        host.stateEditPropertyText       = DiagramViewStateEditPropertyText       (host)
+        host.stateEditLabel       = DiagramViewStateEditLabel       (host)
         host.statePlaceSymbolPin         = DiagramViewStatePlaceSymbolPin         (host)
         host.statePlaceLine1             = DiagramViewStatePlaceLine1             (host)
         host.statePlaceLine2             = DiagramViewStatePlaceLine2             (host)

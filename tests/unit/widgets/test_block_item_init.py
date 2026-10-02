@@ -28,8 +28,8 @@ def connect_ed_app() -> ConnectEdApp:
 
 def test_block_item_set_label_after_init(connect_ed_app : ConnectEdApp) -> None:
     block = BlockItem(QPointF(10.0, 20.0), QPointF(110.0, 80.0))
-    block.setLabel("U1")
+    block.setReference("U1")
     block.setName("MyBlock")
     assert block.mirrorH() is False
-    assert block.label() == "U1"
+    assert block.reference() == "U1"
     assert block.name() == "MyBlock"

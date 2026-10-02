@@ -5,7 +5,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QShowEvent
 
-from ...properties           import populateProperty, populatePropertyText
+from ...properties           import populateProperty, populateLabel
 
 from ...table.row            import TableRow
 from ...table.model          import TableModel
@@ -31,9 +31,9 @@ _COLUMNS : dict[str, list[str]] = {
         "Custom",
         "Type",
         "Value",
-        "Property Text Expander"
+        "Label Expander"
     ],
-    "Property Text" : [
+    "Label" : [
         "Visible",
         "Cleat",
         "X",
@@ -63,11 +63,11 @@ _COLUMNS : dict[str, list[str]] = {
 
 class PropertiesBushWidget(TableView):
     """
-    Compressed tree of owners, properties, and property texts.
+    Compressed tree of owners, properties, and labels.
 
     An owner's first row carries its first property and that property's first
-    text. Further texts of that property follow on their own rows. The next
-    row carries the next property and its first text, and so on. Owner cells
+    label. Further labels of that property follow on their own rows. The next
+    row carries the next property and its first label, and so on. Owner cells
     span every row of that owner. Property cells span the rows of that
     property. Each level has its own columns, so the promoted cells sit side
     by side. Expanders hide the rows after the promoted one.
@@ -113,11 +113,11 @@ class PropertiesBushWidget(TableView):
         if not isinstance(model, TableModel):
             raise ValueError("Bad model")
         # capture expander states
-        property_expanders      : dict[PropertiesMixin, bool] = {}
-        property_text_expanders : dict[object, bool] = {}
+        property_expanders : dict[PropertiesMixin, bool] = {}
+        label_expanders    : dict[object, bool]           = {}
         if (row_count := model.rowCount()) > 0:
             p_exp_idx = self._header_names.index("Property Expander")
-            pt_exp_idx = self._header_names.index("Property Text Expander")
+            label_exp_idx = self._header_names.index("Label Expander")
             name_idx = self._header_names.index("Name")
             for row_idx in range(row_count):
                 p_exp_item = model.item(row_idx, p_exp_idx)
@@ -131,15 +131,15 @@ class PropertiesBushWidget(TableView):
                     if not isinstance(owner, PropertiesMixin):
                         raise ValueError("Unexpected owner type")
                     property_expanders[owner] = p_exp
-                pt_exp_item = model.item(row_idx, pt_exp_idx)
-                if isinstance(pt_exp_item, PropertiesExpanderItem) \
-                and isinstance(pt_exp := pt_exp_item.value(), bool):
+                label_exp_item = model.item(row_idx, label_exp_idx)
+                if isinstance(label_exp_item, PropertiesExpanderItem) \
+                and isinstance(label_exp := label_exp_item.value(), bool):
                     name_item = model.item(row_idx, name_idx)
                     if not isinstance(name_item, PropertiesItem):
                         raise ValueError("Unexpected property name item")
                     if (state := name_item.ref()) is None:
                         raise ValueError("Unexpected property name ref")
-                    property_text_expanders[state] = pt_exp
+                    label_expanders[state] = label_exp
             model.removeRows(0, row_count)
         # sort items
         pass  # TODO: sort items
@@ -161,30 +161,30 @@ class PropertiesBushWidget(TableView):
                 continue
             for property_idx, property_draft in enumerate(property_drafts):
                 property_row_idx = model.rowCount()
-                texts = property_draft.texts
-                pt_exp = \
-                    property_text_expanders.get(property_draft.state, True) \
-                    if len(texts) > 1 else None
-                for text_idx in range(max(1, len(texts))):
+                labels = property_draft.labels
+                label_exp = \
+                    label_expanders.get(property_draft.state, True) \
+                    if len(labels) > 1 else None
+                for label_idx in range(max(1, len(labels))):
                     row = self._emptyRow()
-                    if property_idx == 0 and text_idx == 0:
+                    if property_idx == 0 and label_idx == 0:
                         self._populateOwner(row, owner)
                         if p_exp is not None:
                             row["Property Expander"] = \
                                 PropertiesExpanderItem(p_exp)
-                    if text_idx == 0:
+                    if label_idx == 0:
                         populateProperty(row, property_draft)
-                        if pt_exp is not None:
-                            row["Property Text Expander"] = \
-                                PropertiesExpanderItem(pt_exp)
-                    if text_idx < len(texts):
-                        populatePropertyText(row, texts[text_idx])
+                        if label_exp is not None:
+                            row["Label Expander"] = \
+                                PropertiesExpanderItem(label_exp)
+                    if label_idx < len(labels):
+                        populateLabel(row, labels[label_idx])
                     model.appendRow(row.cells())
                 row_span = model.rowCount() - property_row_idx
                 if row_span > 1:
                     for col_idx in range(property_col, property_col_stop):
                         self.setSpan(property_row_idx, col_idx, row_span, 1)
-                    if pt_exp is False:
+                    if label_exp is False:
                         for row_idx in range(
                             property_row_idx + 1, model.rowCount()
                         ):

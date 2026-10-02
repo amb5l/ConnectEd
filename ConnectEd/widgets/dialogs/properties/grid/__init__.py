@@ -72,7 +72,7 @@ class PropertiesGridWidget(TableView):
         editor_widget = self.parent()
         if not isinstance(editor_widget, PropertiesEditorWidget):
             return
-        # TODO: count selected properties and texts
+        # TODO: count selected properties and labels
         editor_widget.onSelectionChanged(self, 0, 0)
 
     def onTransposedChanged(self : Self, transposed : bool) -> None:

@@ -5,19 +5,17 @@ from collections.abc import Sequence
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
 
-from ....core.check                  import checked
+from ....core.check import checked
 
-from ...graphics.properties          import (
-    PropertyPending, PropertyAndTextsEdit, PropertiesMixin
+from ...graphics.properties import (
+    PropertyPending, PropertyAndLabelsEdit, PropertiesMixin
 )
 
-from ...graphics.items.property_text import PropertyTextItem
+from ...graphics.items.label import LabelItem
 
-from ..components.layout.ok_cancel   import OkCancelLayout
+from ..components.layout.ok_cancel import OkCancelLayout
 
-from .editor                         import (
-    PropertiesEditorWidget, PropertiesEditorTabWidget
-)
+from .editor import PropertiesEditorWidget, PropertiesEditorTabWidget
 
 
 OwnerStore = dict[PropertiesMixin, list[PropertyPending]]
@@ -48,12 +46,12 @@ class PropertiesDialog(QDialog):
         for owner in owner_set:
             if not isinstance(owner, PropertiesMixin):
                 continue
-            if isinstance(owner, PropertyTextItem):
-                # exclude scene property texts
-                if (pt_owner := owner.owner()) is None:
+            if isinstance(owner, LabelItem):
+                # exclude scene labels
+                if (label_owner := owner.owner()) is None:
                     continue
-                # exclude property texts whose parent is present
-                if pt_owner in owner_set:
+                # exclude labels whose parent is present
+                if label_owner in owner_set:
                     continue
             clean_owners.append(owner)
         # process items into items_dict
@@ -94,8 +92,8 @@ class PropertiesDialog(QDialog):
         self.setLayout(layout)
 
     @checked
-    def getEdits(self : Self) -> list[PropertyAndTextsEdit]:
-        edits : list[PropertyAndTextsEdit] = []
+    def getEdits(self : Self) -> list[PropertyAndLabelsEdit]:
+        edits : list[PropertyAndLabelsEdit] = []
         for owner_store in self._store.values():
             for owner, store_properties in owner_store.items():
                 for store_property in store_properties:

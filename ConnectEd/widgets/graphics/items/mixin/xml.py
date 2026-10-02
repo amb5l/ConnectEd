@@ -56,8 +56,8 @@ class ItemXmlMixin:
                     child.toXml(xw)
         if isinstance(self, PropertiesMixin):
             for prop in self.properties.values():
-                for pt in self.propertyTextItems(prop):
-                    pt.toXml(xw)
+                for label in self.labelItems(prop):
+                    label.toXml(xw)
 
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -93,7 +93,7 @@ class ItemXmlMixin:
         if tag in ("GatePin", "BufGatePin", "OrGatePin"):
             _skipXmlElement(xr, tag)
             return True
-        if tag == "PropertyText":
+        if tag == "Label":
             name = next(
                 (
                     xml_attr.value()
@@ -104,14 +104,14 @@ class ItemXmlMixin:
             )
             if name is None or name not in self.properties:
                 logger().warning(
-                    f"PropertyText for unknown property: {name}"
+                    f"Label for unknown property: {name}"
                 )
-                _skipXmlElement(xr, "PropertyText")
+                _skipXmlElement(xr, tag)
                 return True
-            pt = self.propertyTextAdd(self.properties[name])
-            fromXmlProperties(pt, xr)
-            if not (xr.isEndElement() and xr.name() == "PropertyText"):
-                fromXml(xr, {}, ptag="PropertyText")
+            label = self.labelAdd(self.properties[name])
+            fromXmlProperties(label, xr)
+            if not (xr.isEndElement() and xr.name() == tag):
+                fromXml(xr, {}, ptag=tag)
             return True
         elif tag in _child_items_xref:
             child_cls = _child_items_xref[tag]
@@ -142,8 +142,8 @@ class ItemXmlMixin:
             instance.onSceneOrientationChanged()
         if isinstance(instance, PropertiesMixin):
             for prop in instance.properties.values():
-                for pt in instance.propertyTextItems(prop):
-                    pt.onTextChanged()
+                for label in instance.labelItems(prop):
+                    label.onTextChanged()
 
     @classmethod
     @checked

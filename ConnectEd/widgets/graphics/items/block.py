@@ -41,7 +41,7 @@ class BlockItem(
         PartItemMixin._PROPERTIES_PART | \
         _PROPERTIES_PATH | \
         BaseRectangleItem._PROPERTIES
-    _XML_CHILDREN = frozenset({"BlockPin", "PropertyText"})
+    _XML_CHILDREN = frozenset({"BlockPin", "Label"})
 
     # instance attributes
     _path : str

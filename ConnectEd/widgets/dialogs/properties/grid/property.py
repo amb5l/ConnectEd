@@ -12,13 +12,13 @@ from .....core.types                import NoChange, DataKind
 from ....utils                      import kind2dialogEditor
 
 from ....graphics.properties        import (
-    Property, PropertyPending, PropertyAndTextsEdit, PropertiesMixin
+    Property, PropertyPending, PropertyAndLabelsEdit, PropertiesMixin
 )
 
 from ...components.combo.enum       import EnumComboBox
 from ...components.layout.ok_cancel import OkCancelLayout
 
-from .text_table                    import PropertyTextTableWidget
+from .text_table                    import LabelTableWidget
 
 
 @runtime_checkable
@@ -28,7 +28,7 @@ class _ValueEditor(Protocol):
 
 class PropertyDialog(QDialog):
     """
-    Dialog for editing a property and its texts.
+    Dialog for editing a property and its labels.
     Normally opened from PropertiesGridWidget.
     Text editing launches another dialog.
     """
@@ -49,8 +49,8 @@ class PropertyDialog(QDialog):
     _value_layout  : QHBoxLayout
     _value_label   : QLabel
     _value_value   : QWidget  # various widgets for various kinds
-    _texts_label   : QLabel
-    _texts_widget  : PropertyTextTableWidget  # texts table
+    _labels_label  : QLabel
+    _labels_widget : LabelTableWidget
 
     @checked
     def __init__(
@@ -74,7 +74,7 @@ class PropertyDialog(QDialog):
         self._initUI()
 
     @checked
-    def getEdits(self : Self) -> PropertyAndTextsEdit | None:
+    def getEdits(self : Self) -> PropertyAndLabelsEdit | None:
         """Copy the widgets into the pending and return its edits."""
         self._sync()
         return self._pending.getEdit(self._owner)
@@ -120,16 +120,16 @@ class PropertyDialog(QDialog):
             self._pending.state.kind, self._pending.state.value
         )
         # text table
-        self._texts_label = QLabel("Texts:")
-        self._texts_widget = PropertyTextTableWidget(self._pending.texts)
+        self._labels_label = QLabel("Labels:")
+        self._labels_widget = LabelTableWidget(self._pending.labels)
         # put it all together
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(self._name_layout)
         self._layout.addLayout(self._nature_layout)
         self._layout.addLayout(self._kind_layout)
         self._layout.addLayout(self._value_layout)
-        self._layout.addWidget(self._texts_label)
-        self._layout.addWidget(self._texts_widget, 1)
+        self._layout.addWidget(self._labels_label)
+        self._layout.addWidget(self._labels_widget, 1)
         self._layout.addLayout(OkCancelLayout(self))
 
     def _installValueEditor(self : Self, kind : DataKind, value : Any) -> None:

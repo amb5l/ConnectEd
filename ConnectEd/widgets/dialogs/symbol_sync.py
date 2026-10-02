@@ -14,14 +14,14 @@ class SymbolSyncDialog(QDialog):
     its definition.
     """
 
-    _dialog_layout        : QVBoxLayout
-    _checkbox_layout      : QVBoxLayout
-    _inherent_checkbox    : QCheckBox
-    _custom_checkbox      : QCheckBox
-    _text_add_checkbox    : QCheckBox
-    _text_remove_checkbox : QCheckBox
-    _text_reset_checkbox  : QCheckBox
-    _ok_cancel_layout     : OkCancelLayout
+    _dialog_layout          : QVBoxLayout
+    _checkbox_layout        : QVBoxLayout
+    _inherent_checkbox      : QCheckBox
+    _custom_checkbox        : QCheckBox
+    _label_add_checkbox     : QCheckBox
+    _label_remove_checkbox  : QCheckBox
+    _label_reset_checkbox   : QCheckBox
+    _ok_cancel_layout       : OkCancelLayout
 
     @checked
     def __init__(
@@ -44,21 +44,21 @@ class SymbolSyncDialog(QDialog):
         )
         self._checkbox_layout.addWidget(self._inherent_checkbox)
         self._custom_checkbox = QCheckBox(
-            "Remove custom properties and their texts"
+            "Remove custom properties and their labels"
         )
         self._checkbox_layout.addWidget(self._custom_checkbox)
-        self._text_add_checkbox = QCheckBox(
-            "Add definition property texts missing from instance"
+        self._label_add_checkbox = QCheckBox(
+            "Add definition labels missing from instance"
         )
-        self._checkbox_layout.addWidget(self._text_add_checkbox)
-        self._text_remove_checkbox = QCheckBox(
-            "Remove instance property texts not in definition"
+        self._checkbox_layout.addWidget(self._label_add_checkbox)
+        self._label_remove_checkbox = QCheckBox(
+            "Remove instance labels not in definition"
         )
-        self._checkbox_layout.addWidget(self._text_remove_checkbox)
-        self._text_reset_checkbox = QCheckBox(
-            "Reset instance property text positions to match definition"
+        self._checkbox_layout.addWidget(self._label_remove_checkbox)
+        self._label_reset_checkbox = QCheckBox(
+            "Reset instance label positions to match definition"
         )
-        self._checkbox_layout.addWidget(self._text_reset_checkbox)
+        self._checkbox_layout.addWidget(self._label_reset_checkbox)
         self._dialog_layout.addLayout(self._checkbox_layout)
         self._ok_cancel_layout = OkCancelLayout(self)
         self._dialog_layout.addLayout(self._ok_cancel_layout)
@@ -73,13 +73,13 @@ class SymbolSyncDialog(QDialog):
         return self._custom_checkbox.isChecked()
 
     @checked
-    def text_add(self : Self) -> bool:
-        return self._text_add_checkbox.isChecked()
+    def label_add(self : Self) -> bool:
+        return self._label_add_checkbox.isChecked()
 
     @checked
-    def text_remove(self : Self) -> bool:
-        return self._text_remove_checkbox.isChecked()
+    def label_remove(self : Self) -> bool:
+        return self._label_remove_checkbox.isChecked()
 
     @checked
-    def text_reset(self : Self) -> bool:
-        return self._text_reset_checkbox.isChecked()
+    def label_reset(self : Self) -> bool:
+        return self._label_reset_checkbox.isChecked()

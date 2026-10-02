@@ -88,7 +88,7 @@ presets:
   GatePinArrowFill     : apricot
   BlockLine            : mid_grey
   BlockFill            : dull_grey
-  BlockLabel           : sky_blue
+  BlockReference       : sky_blue
   BlockName            : sky_blue
   BlockPinWire         : mid_grey
   BlockPinBus          : mid_grey
@@ -104,7 +104,7 @@ presets:
   SymbolPinArrowFill   : apricot
   SymbolPinName        : apricot
   SymbolPinComment     : light_grey
-  PropertyText         : orchid
+  Label                : orchid
   Line                 : mid_grey
   RectangleLine        : mid_grey
   RectangleFill        : dull_grey
@@ -305,9 +305,9 @@ items:
     fill:
       color : '@BlockFill'
       style : SolidPattern
-  BlockLabel:
+  BlockReference:
     text:
-      color     : '@BlockLabel'
+      color     : '@BlockReference'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false
@@ -315,7 +315,7 @@ items:
       underline : false
   BlockName:
     text:
-      color     : '@BlockLabel'
+      color     : '@BlockReference'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false
@@ -407,9 +407,9 @@ items:
       bold      : false
       italic    : false
       underline : false
-  PropertyText:
+  Label:
     text:
-      color     : '@PropertyText'
+      color     : '@Label'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false

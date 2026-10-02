@@ -6,24 +6,21 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ......core.check        import checked
 
-from ....items.grip          import GripItem, MoveGripItem, ResizeGripItem
-from ....items.polyline      import PolySegItem, PolylineItem
-from ....items.text          import TextItem
-from ....items.property_text import PropertyTextItem
-from ....items.block         import BlockItem
-from ....items.mixin         import ItemMixin
+from ....items.grip     import GripItem, MoveGripItem, ResizeGripItem
+from ....items.polyline import PolySegItem, PolylineItem
+from ....items.text     import TextItem
+from ....items.label    import LabelItem
+from ....items.block    import BlockItem
+from ....items.mixin    import ItemMixin
 
-from ..mouse                 import MouseModifier
+from ..mouse import MouseModifier
 
-from ..interaction.edit      import (
-    EditAdjustPolySegInteraction,
-    EditDuplicateInteraction
-)
-from ..interaction.move      import (
-    MoveInteraction,
-    MoveBlockPinsInteraction,
-    MoveGripInteraction
-)
+from ..interaction.edit import EditAdjustPolySegInteraction, \
+                               EditDuplicateInteraction
+
+from ..interaction.move import MoveInteraction,          \
+                               MoveBlockPinsInteraction, \
+                               MoveGripInteraction
 
 from .base                   import DiagramViewState
 
@@ -55,9 +52,9 @@ class DiagramViewStateIdle(DiagramViewState):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, PropertyTextItem):
+            if isinstance(item, LabelItem):
                 self.view.state.go(
-                    self.view.stateEditPropertyText, item
+                    self.view.stateEditLabel, item
                 )
                 return
             if isinstance(item, TextItem):

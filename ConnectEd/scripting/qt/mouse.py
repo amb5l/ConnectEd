@@ -79,8 +79,8 @@ class MouseMixin:
     def viewPos(self : Self, view : QGraphicsView, scene : QPointF) -> QPoint:
         return view.mapFromScene(scene)
 
-    def scenePos(self : Self, view : QGraphicsView, view_pt : QPoint) -> QPointF:
-        return view.mapToScene(view_pt)
+    def scenePos(self : Self, view : QGraphicsView, pos : QPoint) -> QPointF:
+        return view.mapToScene(pos)
 
     def _mouseWidget(self : Self, widget : QWidget) -> QWidget | None:
         if isinstance(widget, QGraphicsView):

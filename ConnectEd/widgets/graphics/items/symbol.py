@@ -149,8 +149,7 @@ class SymbolBaseItem(
 class SymbolDefinitionItem(SymbolBaseItem):
     # class attributes
     _XML_CHILDREN = frozenset({
-        "SymbolPin", "PropertyText", \
-        "Line", "Rectangle", "Ellipse", "Polyline", "Text"
+        "SymbolPin", "Label", "Line", "Rectangle", "Ellipse", "Polyline", "Text"
     })
 
     @checked
@@ -173,7 +172,7 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
         propertySpecs(SymbolBaseItem._PROPERTIES) | \
         propertySpecs(ItemTransformMixin._PROPERTIES_RECT_ORIGIN) | \
         propertySpecs(ItemTransformMixin._PROPERTIES_NO_ORIGIN)
-    _XML_CHILDREN = frozenset({"PropertyText"})
+    _XML_CHILDREN = frozenset({"Label"})
 
     # instance attributes
     _definition : SymbolDefinitionItem | None = None  # master symbol definition
@@ -184,7 +183,7 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         """
-        Serialize the instance to XML: properties, position, property texts.
+        Serialize the instance to XML: properties, position, labels.
         """
         self.toXmlBegin(xw)
         self.toXmlChildren(xw, pins=False)
@@ -220,63 +219,63 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
             )
             if added is None:
                 continue
-            for source_text in definition.propertyTextItems(source):
-                dest_text = self.propertyTextAdd(added)
-                _copyPropertyDisplay(source_text, dest_text)
+            for source_label in definition.labelItems(source):
+                dest_label = self.labelAdd(added)
+                _copyPropertyDisplay(source_label, dest_label)
 
-    def addMissingPropertyTextsFrom(
+    def addMissingLabelsFrom(
         self       : Self,
         definition : SymbolDefinitionItem,
     ) -> None:
-        """Add definition property texts the instance does not already have."""
+        """Add definition labels the instance does not already have."""
         for name, source in definition.properties.items():
             dest = self.properties.get(name)
             if dest is None:
                 continue
-            source_texts = definition.propertyTextItems(source)
-            dest_texts   = self.propertyTextItems(dest)
-            for source_text in source_texts[len(dest_texts):]:
-                dest_text = self.propertyTextAdd(dest)
-                _copyPropertyDisplay(source_text, dest_text)
+            source_labels = definition.labelItems(source)
+            dest_labels   = self.labelItems(dest)
+            for source_label in source_labels[len(dest_labels):]:
+                dest_label = self.labelAdd(dest)
+                _copyPropertyDisplay(source_label, dest_label)
 
-    def removePropertyTextsNotIn(
+    def removeLabelsNotIn(
         self       : Self,
         definition : SymbolDefinitionItem,
     ) -> None:
-        """Remove instance property texts whose property is not on the definition."""
+        """Remove instance labels whose property is not on the definition."""
         defined = set(definition.properties)
-        for text in list(self.propertyTextItems()):
-            name = self.propertyName(text.property())
+        for label in list(self.labelItems()):
+            name = self.propertyName(label.property())
             if name not in defined:
-                self.propertyTextRemove(text)
+                self.labelRemove(label)
 
-    def syncPropertyTextFrom(
+    def syncLabelsFrom(
         self       : Self,
         definition : SymbolDefinitionItem,
     ) -> None:
-        """Reset instance property-text placement to match the definition."""
+        """Reset instance label placement to match the definition."""
         for name, source in definition.properties.items():
             dest = self.properties.get(name)
             if dest is None:
                 continue
-            source_texts = definition.propertyTextItems(source)
-            dest_texts   = self.propertyTextItems(dest)
-            for source_text, dest_text in zip(
-                source_texts, dest_texts, strict = False
+            source_labels = definition.labelItems(source)
+            dest_labels   = self.labelItems(dest)
+            for source_label, dest_label in zip(
+                source_labels, dest_labels, strict = False
             ):
-                _copyPropertyDisplay(source_text, dest_text)
+                _copyPropertyDisplay(source_label, dest_label)
 
     @checked
     def syncFromDefinition(
         self        : Self,
         definition  : SymbolDefinitionItem,
         *,
-        inherent    : bool = False,
-        custom      : bool = False,
-        text_add    : bool = False,
-        text_remove : bool = False,
-        text_reset  : bool = False,
-        content     : bool = True,
+        inherent     : bool = False,
+        custom       : bool = False,
+        label_add    : bool = False,
+        label_remove : bool = False,
+        label_reset  : bool = False,
+        content      : bool = True,
     ) -> None:
         """
         Synchronize this instance with its definition.
@@ -284,12 +283,12 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
         Always rebinds _definition.
         Instance specific inherent properties (position etc) are not touched.
 
-        inherent    — copy definition inherent property values
-        custom      — remove custom properties and their texts
-        text_add    — add definition property texts missing from instance
-        text_remove — remove instance property texts not in definition
-        text_reset  — reset instance property text positions to match definition
-        content     — reset rectangle, pins and decorations from definition
+        inherent     — copy definition inherent property values
+        custom       — remove custom properties and their labels
+        label_add    — add definition labels missing from instance
+        label_remove — remove instance labels not in definition
+        label_reset  — reset instance label positions to match definition
+        content      — reset rectangle, pins and decorations from definition
         """
         def _clearChildren(cls : type) -> None:
             for child in self.childItems():
@@ -313,12 +312,12 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
                 self.propertySyncInherentFrom(definition)
             if custom:
                 self.propertySyncCustomFrom(definition)
-            if text_add:
-                self.addMissingPropertyTextsFrom(definition)
-            if text_remove:
-                self.removePropertyTextsNotIn(definition)
-            if text_reset:
-                self.syncPropertyTextFrom(definition)
+            if label_add:
+                self.addMissingLabelsFrom(definition)
+            if label_remove:
+                self.removeLabelsNotIn(definition)
+            if label_reset:
+                self.syncLabelsFrom(definition)
             if content:
                 self.setRect(definition.rect())
                 _clearChildren(SymbolPinItem)

@@ -320,9 +320,9 @@ class DiagramViewApiEditMixin:
         )
 
     @checked
-    def editPropertyTextDialog(
+    def editLabelDialog(
         self : Self,
         item : QGraphicsItem
     ) -> None:
         host = asDiagramView(self)
-        host.state.go(host.stateEditPropertyText, [item])
+        host.state.go(host.stateEditLabel, [item])

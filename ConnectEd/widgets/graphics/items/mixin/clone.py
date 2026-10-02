@@ -12,7 +12,7 @@ from ..protocols     import FreshItemConstructor
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..property_text import PropertyTextItem
+    from ..label import LabelItem
 
 
 class ItemCloneMixin:
@@ -26,7 +26,7 @@ class ItemCloneMixin:
         clone_item = constructor(fresh=False)
         if not isinstance(clone_item, QGraphicsItem):
             raise TypeError("Bad clone")
-        # clone properties and their texts
+        # clone properties and their labels
         if isinstance(self, PropertiesMixin):
             if not isinstance(clone_item, PropertiesMixin):
                 raise TypeError("Bad clone")
@@ -44,9 +44,9 @@ class ItemCloneMixin:
                         raise ValueError(
                             f"Failed to add property {name}"
                         )
-                for source_text in self.propertyTextItems(source_property):
-                    dest_text = clone_item.propertyTextAdd(clone_property)
-                    _copyPropertyDisplay(source_text, dest_text)
+                for source_label in self.labelItems(source_property):
+                    dest_label = clone_item.labelAdd(clone_property)
+                    _copyPropertyDisplay(source_label, dest_label)
         # clone pins (each pin clones its own properties and displays)
         for source_child in self.childItems():
             if isinstance(source_child, PortPinLineItem | PortPinPathItem):
@@ -63,8 +63,8 @@ class ItemCloneMixin:
 
 
 def _copyPropertyDisplay(
-    source : PropertyTextItem,
-    dest   : PropertyTextItem,
+    source : LabelItem,
+    dest   : LabelItem,
 ) -> None:
     dest.setVisible       ( source.isVisible()     )
     dest.setCleat         ( source.cleat()         )

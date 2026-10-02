@@ -24,7 +24,7 @@ class DiagramSceneResources:
     # class attributes
     _PEN_ITEMS   = ["Rectangle", "Ellipse", "Block", "Line", "Polyline", "Gate"]
     _BRUSH_ITEMS = ["Rectangle", "Ellipse", "Block", "Polyline", "Gate"]
-    _QUILL_ITEMS = ["Text", "PropertyText", "NetLabel"]
+    _QUILL_ITEMS = ["Text", "Label", "NetLabel"]
     _PIN_PATH_ITEMS = ["SymbolPin", "GatePin"]
     _PIN_LINE_ITEMS = {"Port" : PITCH, "BlockPin" : -PITCH}
     _PIN_ARROW_ITEMS = {

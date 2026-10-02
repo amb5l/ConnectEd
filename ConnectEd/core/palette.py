@@ -39,7 +39,7 @@ class ThemePalette:
     GatePinArrowFill     : QColor
     BlockLine            : QColor
     BlockFill            : QColor
-    BlockLabel           : QColor
+    BlockReference       : QColor
     BlockName            : QColor
     BlockPinWire         : QColor
     BlockPinBus          : QColor
@@ -55,7 +55,7 @@ class ThemePalette:
     SymbolPinArrowFill   : QColor
     SymbolPinName        : QColor
     SymbolPinComment     : QColor
-    PropertyText         : QColor
+    Label                : QColor
     Line                 : QColor
     RectangleLine        : QColor
     RectangleFill        : QColor
@@ -147,7 +147,7 @@ palette_dark = ThemePalette(
     GatePinArrowFill     = mid_yellow,
     BlockLine            = mid_gray,
     BlockFill            = dark_gray,
-    BlockLabel           = mid_cyan,
+    BlockReference       = mid_cyan,
     BlockName            = mid_cyan,
     BlockPinWire         = mid_gray,
     BlockPinBus          = mid_gray,
@@ -163,7 +163,7 @@ palette_dark = ThemePalette(
     SymbolPinArrowFill   = mid_yellow,
     SymbolPinName        = mid_yellow,
     SymbolPinComment     = mid_yellow,
-    PropertyText         = mid_red,
+    Label                = mid_red,
     Line                 = light_gray,
     RectangleLine        = light_gray,
     RectangleFill        = dark_gray,
@@ -218,7 +218,7 @@ palette_light_mono = ThemePalette(
     GatePinArrowFill     = bright_white,
     BlockLine            = black,
     BlockFill            = bright_white,
-    BlockLabel           = black,
+    BlockReference       = black,
     BlockName            = black,
     BlockPinWire         = black,
     BlockPinBus          = black,
@@ -234,7 +234,7 @@ palette_light_mono = ThemePalette(
     SymbolPinArrowFill   = bright_white,
     SymbolPinName        = black,
     SymbolPinComment     = black,
-    PropertyText         = black,
+    Label                = black,
     NetLabel             = black,
     Line                 = black,
     RectangleLine        = black,

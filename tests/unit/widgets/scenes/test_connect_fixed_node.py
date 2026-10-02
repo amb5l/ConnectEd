@@ -146,7 +146,7 @@ def test_netlist_changed_on_subnet_rename(
     _wire(scene, reset_pin, far_a)
 
     block = BlockItem(QPointF(200, -50), QPointF(300, 50))
-    block.setLabel("U_DECODE")
+    block.setReference("U_DECODE")
     scene.addItem(block)
     block_pin = BlockPinItem()
     block_pin.setName("reset")
@@ -186,7 +186,7 @@ def test_detach_merged_port_purges_lone_pin_net(
     _wire(scene, reset_pin, far_a)
 
     block = BlockItem(QPointF(200, -50), QPointF(300, 50))
-    block.setLabel("U_DECODE")
+    block.setReference("U_DECODE")
     scene.addItem(block)
     block_pin = BlockPinItem()
     block_pin.setName("reset")
@@ -252,7 +252,7 @@ def test_detach_merged_port_refreshes_netlist_browser(
     _wire(scene, reset_pin, far_a)
 
     block = BlockItem(QPointF(200, -50), QPointF(300, 50))
-    block.setLabel("U_DECODE")
+    block.setReference("U_DECODE")
     scene.addItem(block)
     block_pin = BlockPinItem()
     block_pin.setName("reset")

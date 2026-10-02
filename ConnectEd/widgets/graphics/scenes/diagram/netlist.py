@@ -123,7 +123,7 @@ class Netlist:
                 if not isinstance(pin_parent, PinParent):
                     logger().error("Bad pin parent")
                     return "", "", "?"
-                label = pin_parent.label()
+                label = pin_parent.reference()
                 pin_name = node_parent.name()
                 full_name = f"{label}_{pin_name}"
         if full_name is None:
@@ -533,7 +533,7 @@ class Netlist:
                 elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
                     pin_parent = node_parent.parentItem()
                     if isinstance(pin_parent, PinParent):
-                        pin_parent_label = pin_parent.label() or ""
+                        pin_parent_label = pin_parent.reference() or ""
                         pin_name_tuples.append(
                             (pin_parent_label, node_parent.name())
                         )

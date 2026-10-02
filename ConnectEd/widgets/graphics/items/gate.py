@@ -8,16 +8,16 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
 
-from ....core.check   import checked
-from ....core.types   import Direction, DataKind, RectHandleId, HandleId
+from ....core.check import checked
+from ....core.types import Direction, DataKind, RectHandleId, HandleId
 
-from ..properties     import PropertySpec
-from ..painter_path   import PainterPath
+from ..properties   import PropertySpec
+from ..painter_path import PainterPath
 
-from .role            import FunctionalItem
-from .property_text   import PropertyTextSpec
-from .grip            import GripItem, MoveGripItem
-from .gate_pin        import GatePinItem, BufGatePinItem, OrGatePinItem
+from .role     import FunctionalItem
+from .label    import LabelSpec
+from .grip     import GripItem, MoveGripItem
+from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -43,22 +43,22 @@ class GateItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _PROPERTIES_LABEL = {
-        "Label" : PropertySpec["GateItem"](
+    _PROPERTIES_REFERENCE = {
+        "Reference" : PropertySpec["GateItem"](
             kind   = DataKind.STR,
-            worthy = lambda self: self.label() != "",
-            getter = lambda self: self.label(),
-            setter = lambda self, value: self.setLabel(value)
+            worthy = lambda self: self.reference() != "",
+            getter = lambda self: self.reference(),
+            setter = lambda self, value: self.setReference(value)
         )
     }
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(
+    _LABELS = {
+        "Reference" : LabelSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         )
     }
     _PIN_CLS : type[GatePinItem]
     _XML_CHILDREN = frozenset({
-        "PropertyText", "GatePin", "BufGatePin", "OrGatePin",
+        "Label", "GatePin", "BufGatePin", "OrGatePin",
     })
 
     @classmethod
@@ -70,7 +70,7 @@ class GateItem(
         return MoveGripItem
 
     # instance attributes
-    _label : str = ""
+    _reference : str = ""
 
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:
@@ -95,13 +95,13 @@ class GateItem(
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         self.moveBy(d.x(), d.y())
 
-    def label(self : Self) -> str | None:
-        return self._label
+    def reference(self : Self) -> str | None:
+        return self._reference
 
     @checked
-    def setLabel(self : Self, label : str) -> None:
-        self._label = label
-        self.properties["Label"].notify()
+    def setReference(self : Self, reference : str) -> None:
+        self._reference = reference
+        self.properties["Reference"].notify()
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -142,7 +142,7 @@ class BufGateItem(GateItem):
         )
     }
     _PROPERTIES = \
-        GateItem._PROPERTIES_LABEL | \
+        GateItem._PROPERTIES_REFERENCE | \
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE | \
@@ -216,7 +216,7 @@ class LogicGateItem(GateItem):
         )
     }
     _PROPERTIES = \
-        GateItem._PROPERTIES_LABEL | \
+        GateItem._PROPERTIES_REFERENCE | \
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE | \

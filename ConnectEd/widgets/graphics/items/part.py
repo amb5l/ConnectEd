@@ -7,49 +7,49 @@ from ....core.types import RectHandleId, DataKind
 
 from ..properties   import PropertySpec, PropertiesMixin
 
-from .property_text import PropertyTextSpec
+from .label import LabelSpec
 
 
 class PartItemMixin:
     """Common functionality for blocks and symbols."""
     _PROPERTIES_PART = {
-            "Label" : PropertySpec["PartItemMixin"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.label(),
-                setter = lambda self, value: self.setLabel(value)
-            ),
-            "Name" : PropertySpec["PartItemMixin"](
-                kind   = DataKind.STR,
-                getter = lambda self: self.name(),
-                setter = lambda self, value: self.setName(value)
-            )
-        }
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(
+        "Reference" : PropertySpec["PartItemMixin"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.reference(),
+            setter = lambda self, value: self.setReference(value)
+        ),
+        "Name" : PropertySpec["PartItemMixin"](
+            kind   = DataKind.STR,
+            getter = lambda self: self.name(),
+            setter = lambda self, value: self.setName(value)
+        )
+    }
+    _LABELS = {
+        "Reference" : LabelSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
         ),
-        "Name"  : PropertyTextSpec(
+        "Name" : LabelSpec(
             cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
         )
     }
 
     # instance attributes
-    _label : str
-    _name  : str
+    _reference : str
+    _name      : str
 
     @checked
     def initPart(self : Self) -> None:
-        self._label = ""
+        self._reference = ""
         self._name = ""
 
-    def label(self : Self) -> str:
-        return self._label
+    def reference(self : Self) -> str:
+        return self._reference
 
     @checked
-    def setLabel(self : Self, label : str) -> None:
-        self._label = label
+    def setReference(self : Self, reference : str) -> None:
+        self._reference = reference
         if isinstance(self, PropertiesMixin):
-            self.properties["Label"].notify()
+            self.properties["Reference"].notify()
 
     def name(self : Self) -> str:
         return self._name

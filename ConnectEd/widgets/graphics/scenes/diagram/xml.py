@@ -55,11 +55,11 @@ def _iter_xml_tree(item : QGraphicsItem, pins : bool) -> list[QGraphicsItem]:
     if isinstance(item, PropertiesMixin):
         seen : set[int] = set()
         for prop in item.properties.values():
-            for text in item.propertyTextItems(prop):
-                if id(text) in seen:
+            for label in item.labelItems(prop):
+                if id(label) in seen:
                     continue
-                seen.add(id(text))
-                found.extend(_iter_xml_tree(text, False))
+                seen.add(id(label))
+                found.extend(_iter_xml_tree(label, False))
     return found
 
 

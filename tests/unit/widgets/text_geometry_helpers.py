@@ -1,4 +1,4 @@
-"""Helpers for the parented PropertyText permutation matrix."""
+"""Helpers for the parented Label permutation matrix."""
 
 from __future__ import annotations
 
@@ -10,13 +10,15 @@ from dataclasses import dataclass
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsTextItem
 
-from ConnectEd.core.db                              import DesignDbNode
-from ConnectEd.core.types                           import AlignH, AlignV, DataKind, RectHandleId
-from ConnectEd.core.utils                           import val2str
-from ConnectEd.widgets.graphics.items.polyline      import PolylineItem
-from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.items.text          import TextItem, TextLineRenderer
-from ConnectEd.widgets.graphics.scenes.diagram      import DiagramScene
+from ConnectEd.core.db    import DesignDbNode
+from ConnectEd.core.types import AlignH, AlignV, DataKind, RectHandleId
+from ConnectEd.core.utils import val2str
+
+from ConnectEd.widgets.graphics.items.polyline import PolylineItem
+from ConnectEd.widgets.graphics.items.label    import LabelItem
+from ConnectEd.widgets.graphics.items.text     import TextItem, TextLineRenderer
+
+from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
 
 SHORT        = "short"
 LONG         = "longer"
@@ -43,10 +45,10 @@ _CHEVRON_VERTICES = [
 
 @dataclass(frozen=True)
 class TextCase:
-    row     : int
-    col     : int
-    poly    : PolylineItem
-    text    : PropertyTextItem
+    row   : int
+    col   : int
+    poly  : PolylineItem
+    label : LabelItem
 
 
 @dataclass(frozen=True)
@@ -108,16 +110,16 @@ def _apply_parent_transform(item : PolylineItem, rotation : float, mirror_h : bo
 
 
 def _apply_text_transform(
-    pt       : PropertyTextItem,
+    label    : LabelItem,
     rotation : float,
     mirror_h : bool,
     mirror_v : bool,
 ) -> None:
-    pt.setRotation(rotation)
-    pt.setMirrorH(mirror_h)
-    pt.setMirrorV(mirror_v)
+    label.setRotation(rotation)
+    label.setMirrorH(mirror_h)
+    label.setMirrorV(mirror_v)
     if mirror_h or mirror_v:
-        pt.updateTransform()
+        label.updateTransform()
 
 
 def apply_permutation(poly : PolylineItem, row : int, col : int) -> None:
@@ -133,12 +135,12 @@ def apply_permutation(poly : PolylineItem, row : int, col : int) -> None:
 
     _apply_parent_transform(poly, parent_rot, parent_mh, parent_mv)
 
-    pt = poly.properties.text(CAPTION)
-    assert pt is not None
-    pt.setAlignH(align_h)
-    pt.setAlignV(align_v)
-    _apply_text_transform(pt, text_rot, text_mh, text_mv)
-    pt.setOrigin(origin)
+    label = poly.properties.text(CAPTION)
+    assert label is not None
+    label.setAlignH(align_h)
+    label.setAlignV(align_v)
+    _apply_text_transform(label, text_rot, text_mh, text_mv)
+    label.setOrigin(origin)
 
 
 def make_chevron_polyline() -> PolylineItem:
@@ -174,9 +176,9 @@ def build_parented_text_matrix(scene : DiagramScene) -> list[TextCase]:
             )
             apply_permutation(poly, row, col)
             scene.addItem(poly)
-            pt = poly.properties.text(CAPTION)
-            assert pt is not None
-            cases.append(TextCase(row = row, col = col, poly = poly, text = pt))
+            label = poly.properties.text(CAPTION)
+            assert label is not None
+            cases.append(TextCase(row = row, col = col, poly = poly, label = label))
     return cases
 
 
@@ -199,9 +201,9 @@ def collect_cases_from_scene(scene : DiagramScene) -> list[TextCase]:
         pos = poly.pos()
         col = int((pos.x() - GRID_ORIGIN.x()) / X_STEP)
         row = int((pos.y() - GRID_ORIGIN.y()) / Y_STEP)
-        pt = poly.properties.text(CAPTION)
-        assert pt is not None
-        cases.append(TextCase(row = row, col = col, poly = poly, text = pt))
+        label = poly.properties.text(CAPTION)
+        assert label is not None
+        cases.append(TextCase(row = row, col = col, poly = poly, label = label))
     return cases
 
 
@@ -215,7 +217,7 @@ def _glyph_scene_rect(item : TextItem) -> QRectF:
 
 
 def display_text(item : TextItem) -> str:
-    if isinstance(item, PropertyTextItem):
+    if isinstance(item, LabelItem):
         return val2str(item.value())
     return item.text()
 

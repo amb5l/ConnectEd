@@ -8,18 +8,22 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QListWidget, QMdiSubWindow, QMenu
 from PyQt6.QtTest    import QTest
 
-from ConnectEd.app                                  import settings
-from ConnectEd.scripting                            import Window, gui
-from ConnectEd.core.types                           import RectHandleId
-from ConnectEd.scripting.gui                        import Gui
-from integration.gui.text_theme                     import assert_text_theme
-from ConnectEd.scripting.qt.modal                   import activeModal, withModal
-from ConnectEd.widgets.dialogs.file                 import FileNewDialog
-from ConnectEd.widgets.graphics.items.block         import BlockItem
-from ConnectEd.widgets.graphics.items.grip          import GripItem
-from ConnectEd.widgets.graphics.items.handle        import HandleItem
-from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.views.diagram       import DiagramView
+from ConnectEd.app       import settings
+from ConnectEd.scripting import Window, gui
+
+from ConnectEd.core.types import RectHandleId
+
+from ConnectEd.scripting.gui import Gui
+
+from integration.gui.text_theme import assert_text_theme
+
+from ConnectEd.scripting.qt.modal             import activeModal, withModal
+from ConnectEd.widgets.dialogs.file           import FileNewDialog
+from ConnectEd.widgets.graphics.items.block   import BlockItem
+from ConnectEd.widgets.graphics.items.grip    import GripItem
+from ConnectEd.widgets.graphics.items.handle  import HandleItem
+from ConnectEd.widgets.graphics.items.label   import LabelItem
+from ConnectEd.widgets.graphics.views.diagram import DiagramView
 
 from ConnectEd.widgets.graphics.views.diagram.mouse import MouseState
 
@@ -33,10 +37,10 @@ class CommandInput(Enum):
 
 _DOC_TYPE = "HDL Schematic Diagram"
 
-# cleat, origin — from PartItemMixin._PROPERTY_TEXTS
-_PROPERTY_TEXTS : dict[str, tuple[RectHandleId, RectHandleId]] = {
-    "Label" : (RectHandleId.TOP_LEFT,    RectHandleId.BOTTOM_LEFT),
-    "Name"  : (RectHandleId.BOTTOM_LEFT, RectHandleId.TOP_LEFT),
+# cleat, origin — from PartItemMixin._LABELS
+_LABELS : dict[str, tuple[RectHandleId, RectHandleId]] = {
+    "Reference" : (RectHandleId.TOP_LEFT,    RectHandleId.BOTTOM_LEFT),
+    "Name"      : (RectHandleId.BOTTOM_LEFT, RectHandleId.TOP_LEFT),
 }
 
 
@@ -208,7 +212,7 @@ def _block_on_scene(view : DiagramView) -> BlockItem:
     return block
 
 
-def _assert_block_texts(block : BlockItem) -> None:
+def _assert_block_labels(block : BlockItem) -> None:
     handles = {
         child.id() : child
         for child in block.childItems()
@@ -225,26 +229,26 @@ def _assert_block_texts(block : BlockItem) -> None:
         ]
         assert len(grips) == 1, f"{handle_id} grip count {len(grips)}"
 
-    texts : dict[str, PropertyTextItem] = {}
+    labels : dict[str, LabelItem] = {}
     for handle in handles.values():
         for child in handle.childItems():
-            if isinstance(child, PropertyTextItem):
-                assert child.name() not in texts
-                texts[child.name()] = child
+            if isinstance(child, LabelItem):
+                assert child.name() not in labels
+                labels[child.name()] = child
                 assert child.parentItem() is handle
                 assert handle.parentItem() is block
-    assert set(texts) == set(_PROPERTY_TEXTS), (
-        f"property texts {set(texts)!r}"
+    assert set(labels) == set(_LABELS), (
+        f"labels {set(labels)!r}"
     )
-    for name, (cleat, origin) in _PROPERTY_TEXTS.items():
-        text = texts[name]
-        assert text.cleat() == cleat
-        assert text.origin() == origin
-        assert text.isVisible()
-        parent = text.parentItem()
+    for name, (cleat, origin) in _LABELS.items():
+        label = labels[name]
+        assert label.cleat() == cleat
+        assert label.origin() == origin
+        assert label.isVisible()
+        parent = label.parentItem()
         assert isinstance(parent, HandleItem)
         assert parent.id() == cleat
-        assert_text_theme(text, f"<{name}>")
+        assert_text_theme(label, f"<{name}>")
 
 
 def validateDiagram(
@@ -262,4 +266,4 @@ def validateDiagram(
         _new_diagram(driver, window, mode)
         view = _active_diagram_view(driver)
         _place_block(driver, window, view, mode)
-        _assert_block_texts(_block_on_scene(view))
+        _assert_block_labels(_block_on_scene(view))

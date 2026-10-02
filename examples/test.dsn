@@ -6,19 +6,19 @@
       <Line X1="30" Y1="40" X2="100" Y2="70"/>
       <Text Text="123&#10;456" X="740" Y="60" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
       <Block Origin="Middle Center" X="120" Y="155" Width="80" Height="50">
-        <PropertyText Name="Label" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
-        <PropertyText Name="Name" Cleat="Bottom Left" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+        <Label Name="Reference" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
+        <Label Name="Name" Cleat="Bottom Left" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
         <BlockPin Name="A" Dir="in" Edge="Left" Offset="10">
-          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+          <Label Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
         </BlockPin>
         <BlockPin Name="B" Dir="out" Edge="Right" Offset="10">
-          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+          <Label Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
         </BlockPin>
         <BlockPin Name="C" Dir="out" Edge="Right" Offset="20">
-          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+          <Label Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
         </BlockPin>
         <BlockPin Name="D" Dir="out" Edge="Right" Offset="30">
-          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+          <Label Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
         </BlockPin>
       </Block>
       <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
@@ -36,7 +36,7 @@
       <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
       <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
       <Port Name="X[7:0]" Dir="in" X="70" Y="220" Rotation="180">
-        <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        <Label Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
       </Port>
       <Connectivity>
         <FreeNode ID="0" X="360.0" Y="170.0"/>

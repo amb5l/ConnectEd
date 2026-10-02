@@ -7,24 +7,24 @@ from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QGroupBox, \
                             QLabel, QLineEdit, QTextEdit, \
                             QGraphicsItem
 
-from ....core.check                   import checked
-from ....core.types                   import NoChange, NO_CHANGE, HandleId, DataKind
-from ....core.utils                   import numtrim, pascal2proper, str2val
+from ....core.check import checked
+from ....core.types import NoChange, NO_CHANGE, HandleId, DataKind
+from ....core.utils import numtrim, pascal2proper, str2val
 
-from ...utils                         import kind2dialogEditor
+from ...utils import kind2dialogEditor
 
-from ...graphics.properties           import PropertiesMixin, PropertyChange, \
-                                   PropertyAndTextsEdit
+from ...graphics.properties import PropertiesMixin, PropertyChange, \
+                                   PropertyAndLabelsEdit
 
-from ...graphics.items.property_text  import PropertyTextItem, PropertyTextChange
+from ...graphics.items.label import LabelItem, LabelChange
 
 from ...graphics.items.mixin.edge_loc import ItemEdgeLocMixin
 
-from ..components.edit                import StrEditor
+from ..components.edit import StrEditor
 
-from ..components.combo.enum          import EnumComboBox
+from ..components.combo.enum import EnumComboBox
 
-from .text                            import BaseTextItemDialog
+from .text import BaseTextItemDialog
 
 
 class PropertyLayout(QVBoxLayout):
@@ -46,7 +46,7 @@ class PropertyLayout(QVBoxLayout):
     _value_value         : QLabel | QLineEdit | QTextEdit
 
     @checked
-    def __init__(self : Self, item : PropertyTextItem, name : str) -> None:
+    def __init__(self : Self, item : LabelItem, name : str) -> None:
         super().__init__()
         owner    = item.owner()
         if owner is None:
@@ -144,7 +144,7 @@ class PropertyGroupBox(QGroupBox):
     _layout : PropertyLayout
 
     @checked
-    def __init__(self : Self, item : PropertyTextItem, name : str) -> None:
+    def __init__(self : Self, item : LabelItem, name : str) -> None:
         super().__init__()
         # get property
         property = item.property()
@@ -159,12 +159,12 @@ class PropertyGroupBox(QGroupBox):
         )
         title += owner_name
         # append label or name
-        if "Label" in owner.properties:
-            label = owner.properties["Label"].value()
-            if label: title += f' labelled "{label}"'
+        if "Reference" in owner.properties:
+            reference = owner.properties["Reference"].value()
+            if reference: title += f' (reference = "{reference}")'
         elif "Name" in owner.properties:
             name = owner.properties["Name"].value()
-            if name: title += f' named "{name}"'
+            if name: title += f' (name = "{name}")'
         # append position or edge location
         if isinstance(owner, QGraphicsItem):
             if isinstance(owner, ItemEdgeLocMixin):
@@ -195,14 +195,14 @@ class PropertyGroupBox(QGroupBox):
         return self._layout.getValue()
 
 
-class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
-    _TITLE : ClassVar[str] = "Property Text"
+class LabelItemDialog(BaseTextItemDialog[LabelItem]):
+    _TITLE : ClassVar[str] = "Label"
 
-    _item        : PropertyTextItem
+    _item        : LabelItem
     _top_section : PropertyGroupBox
 
     @checked
-    def initTopSection(self : Self, item : PropertyTextItem) -> None:
+    def initTopSection(self : Self, item : LabelItem) -> None:
         if not isinstance(name := item.name(), str):
             raise TypeError("Bad name")
         self._item = item
@@ -210,7 +210,7 @@ class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
         self._layout.addWidget(self._top_section)
 
     @checked
-    def getEdits(self : Self) -> list[PropertyAndTextsEdit]:
+    def getEdits(self : Self) -> list[PropertyAndLabelsEdit]:
         item = self._item
         owner = item.owner()
         if not isinstance(owner, PropertiesMixin):
@@ -220,7 +220,7 @@ class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
             kind  = self.getKind(),
             value = self.getValue()
         )
-        text = PropertyTextChange(
+        label = LabelChange(
             item       = item,
             cleat      = self.getCleat(),
             rotation   = self.getRotation(),
@@ -242,10 +242,10 @@ class PropertyTextItemDialog(BaseTextItemDialog[PropertyTextItem]):
             underline  = self.getUnderline()
         )
         edit = None if change.noop() else change
-        texts = [] if text.noop() else [text]
-        if edit is None and len(texts) == 0:
+        labels = [] if label.noop() else [label]
+        if edit is None and len(labels) == 0:
             return []
-        return [PropertyAndTextsEdit(owner, item.property(), edit, texts)]
+        return [PropertyAndLabelsEdit(owner, item.property(), edit, labels)]
 
     @checked
     def getName(self : Self) -> str | NoChange:

@@ -12,13 +12,13 @@ from .....dialogs.appearance          import AppearanceDialog
 from .....dialogs.properties          import PropertiesDialog
 
 from .....dialogs.items.text          import TextItemDialog
-from .....dialogs.items.property_text import PropertyTextItemDialog
+from .....dialogs.items.label         import LabelItemDialog
 from .....dialogs.items.port_pin      import PortPinItemDialog
 
 from ....properties                   import PropertiesMixin
 
 from ....items.text                   import TextItem
-from ....items.property_text          import PropertyTextItem
+from ....items.label                  import LabelItem
 from ....items.port                   import PortItem
 from ....items.block_pin              import BlockPinItem
 
@@ -304,8 +304,8 @@ class DiagramViewStateEditText(DiagramViewState):
         self.view.state.go(self.view.stateIdle)
 
 
-class DiagramViewStateEditPropertyText(DiagramViewState):
-    STATUS = "Edit Property Text: specify changes"
+class DiagramViewStateEditLabel(DiagramViewState):
+    STATUS = "Edit Label: specify changes"
 
     @checked
     def entry(
@@ -315,12 +315,12 @@ class DiagramViewStateEditPropertyText(DiagramViewState):
     ) -> None:
         if len(items) != 1:
             raise ValueError("Expected one item")
-        if isinstance(item := items[0], PropertyTextItem):
-            dialog = PropertyTextItemDialog(item, self.view)
+        if isinstance(item := items[0], LabelItem):
+            dialog = LabelItemDialog(item, self.view)
             if dialog.exec():
                 self.scene.editProperties(dialog.getEdits(), undoable=True)
         else:
-            logger().warning("No property text selected")
+            logger().warning("No label selected")
         self.view.state.go(self.view.stateIdle)
 
 

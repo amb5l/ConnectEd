@@ -6,15 +6,17 @@ import pytest
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsSimpleTextItem
 
-from ConnectEd.app                                  import ConnectEdApp
-from ConnectEd.core.db                              import DesignDbNode
-from ConnectEd.core.settings                        import Settings
-from ConnectEd.core.types                           import RectHandleId
-from ConnectEd.widgets.graphics.items.block         import BlockItem
-from ConnectEd.widgets.graphics.items.block_pin     import BlockPinItem
-from ConnectEd.widgets.graphics.items.port          import PortItem
-from ConnectEd.widgets.graphics.items.property_text import PropertyTextItem
-from ConnectEd.widgets.graphics.scenes.diagram      import DiagramScene
+from ConnectEd.app import ConnectEdApp
+
+from ConnectEd.core.db       import DesignDbNode
+from ConnectEd.core.settings import Settings
+from ConnectEd.core.types    import RectHandleId
+
+from ConnectEd.widgets.graphics.items.block     import BlockItem
+from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
+from ConnectEd.widgets.graphics.items.port      import PortItem
+from ConnectEd.widgets.graphics.items.label     import LabelItem
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 
 @pytest.fixture
@@ -27,28 +29,28 @@ def connect_ed_app() -> ConnectEdApp:
     return app
 
 
-def _text_anchored_to_cleat(pt : PropertyTextItem) -> bool:
-    origin = pt.mapToScene(pt.getOriginHandle().pos()).x()
-    right_h = pt.mapToScene(pt.getHandle(RectHandleId.MIDDLE_RIGHT).pos()).x()
-    rect = pt._child.mapToScene(
-        QGraphicsSimpleTextItem.boundingRect(pt._child)
+def _text_anchored_to_cleat(label : LabelItem) -> bool:
+    origin = label.mapToScene(label.getOriginHandle().pos()).x()
+    right_h = label.mapToScene(label.getHandle(RectHandleId.MIDDLE_RIGHT).pos()).x()
+    rect = label._child.mapToScene(
+        QGraphicsSimpleTextItem.boundingRect(label._child)
     ).boundingRect()
-    if pt.sceneRotation() > 90:
+    if label.sceneRotation() > 90:
         return abs(rect.right() - origin) < 1 and abs(rect.left() - right_h) < 1
     return abs(rect.left() - origin) < 1 and abs(rect.right() - right_h) < 1
 
 
-def _glyph_scene_rect(pt : PropertyTextItem) -> tuple[float, float, float, float]:
-    rect = pt._child.mapToScene(
-        QGraphicsSimpleTextItem.boundingRect(pt._child)
+def _glyph_scene_rect(label : LabelItem) -> tuple[float, float, float, float]:
+    rect = label._child.mapToScene(
+        QGraphicsSimpleTextItem.boundingRect(label._child)
     ).boundingRect()
     return rect.left(), rect.right(), rect.top(), rect.bottom()
 
 
 def _child_scene_rect(port : PortItem) -> tuple[float, float]:
-    pt = port.properties.text("Name")
-    assert pt is not None
-    left, right, _top, _bottom = _glyph_scene_rect(pt)
+    label = port.properties.text("Name")
+    assert label is not None
+    left, right, _top, _bottom = _glyph_scene_rect(label)
     return left, right
 
 
@@ -62,19 +64,19 @@ def test_input_port_name_grows_away_from_cleat(
     port.setName("A")
     scene.addItem(port)
 
-    pt = port.properties.text("Name")
-    assert pt is not None
-    origin_x = pt.mapToScene(pt.getOriginHandle().pos()).x()
-    right_h_x = pt.mapToScene(
-        pt.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
+    label = port.properties.text("Name")
+    assert label is not None
+    origin_x = label.mapToScene(label.getOriginHandle().pos()).x()
+    right_h_x = label.mapToScene(
+        label.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
     ).x()
     child_l, child_r = _child_scene_rect(port)
 
     port.setName("ABCDEFGH")
 
-    origin_x2 = pt.mapToScene(pt.getOriginHandle().pos()).x()
-    right_h_x2 = pt.mapToScene(
-        pt.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
+    origin_x2 = label.mapToScene(label.getOriginHandle().pos()).x()
+    right_h_x2 = label.mapToScene(
+        label.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
     ).x()
     child_l2, child_r2 = _child_scene_rect(port)
 
@@ -94,19 +96,19 @@ def test_output_port_name_grows_away_from_cleat(
     port.setName("A")
     scene.addItem(port)
 
-    pt = port.properties.text("Name")
-    assert pt is not None
-    origin_x = pt.mapToScene(pt.getOriginHandle().pos()).x()
-    right_h_x = pt.mapToScene(
-        pt.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
+    label = port.properties.text("Name")
+    assert label is not None
+    origin_x = label.mapToScene(label.getOriginHandle().pos()).x()
+    right_h_x = label.mapToScene(
+        label.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
     ).x()
     child_l, child_r = _child_scene_rect(port)
 
     port.setName("ABCDEFGH")
 
-    origin_x2 = pt.mapToScene(pt.getOriginHandle().pos()).x()
-    right_h_x2 = pt.mapToScene(
-        pt.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
+    origin_x2 = label.mapToScene(label.getOriginHandle().pos()).x()
+    right_h_x2 = label.mapToScene(
+        label.getHandle(RectHandleId.MIDDLE_RIGHT).pos()
     ).x()
     child_l2, child_r2 = _child_scene_rect(port)
 
@@ -126,14 +128,14 @@ def test_port_name_origin_change_keeps_scene_position(
     port.setPos(QPointF(70, 220))
     scene.addItem(port)
 
-    pt = port.properties.text("Name")
-    assert pt is not None
-    before_l, before_r, before_t, before_b = _glyph_scene_rect(pt)
-    handle_before = pt.mapToScene(pt.handleRect()).boundingRect()
+    label = port.properties.text("Name")
+    assert label is not None
+    before_l, before_r, before_t, before_b = _glyph_scene_rect(label)
+    handle_before = label.mapToScene(label.handleRect()).boundingRect()
 
-    pt.setOrigin(RectHandleId.MIDDLE_RIGHT)
-    after_l, after_r, after_t, after_b = _glyph_scene_rect(pt)
-    handle_after = pt.mapToScene(pt.handleRect()).boundingRect()
+    label.setOrigin(RectHandleId.MIDDLE_RIGHT)
+    after_l, after_r, after_t, after_b = _glyph_scene_rect(label)
+    handle_after = label.mapToScene(label.handleRect()).boundingRect()
 
     assert after_l == pytest.approx(before_l,  abs=0.5)
     assert after_r == pytest.approx(before_r, abs=0.5)
@@ -152,11 +154,11 @@ def test_loaded_test_dsn_port_and_right_block_pins(
     scene = db.scene()
 
     port = next(item for item in scene.items() if isinstance(item, PortItem))
-    pt = port.properties.text("Name")
-    assert pt is not None
-    assert _text_anchored_to_cleat(pt)
-    pt.onSceneOrientationChanged()
-    assert _text_anchored_to_cleat(pt)
+    label = port.properties.text("Name")
+    assert label is not None
+    assert _text_anchored_to_cleat(label)
+    label.onSceneOrientationChanged()
+    assert _text_anchored_to_cleat(label)
 
     block = next(item for item in scene.items() if isinstance(item, BlockItem))
     for pin in block.childItems():
@@ -164,8 +166,8 @@ def test_loaded_test_dsn_port_and_right_block_pins(
             continue
         if pin.loc().edge.value != "Right":
             continue
-        pin_pt = pin.properties.text("Name")
-        assert pin_pt is not None
-        assert _text_anchored_to_cleat(pin_pt)
-        pin_pt.onSceneOrientationChanged()
-        assert _text_anchored_to_cleat(pin_pt)
+        pin_label = pin.properties.text("Name")
+        assert pin_label is not None
+        assert _text_anchored_to_cleat(pin_label)
+        pin_label.onSceneOrientationChanged()
+        assert _text_anchored_to_cleat(pin_label)

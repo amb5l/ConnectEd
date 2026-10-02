@@ -11,7 +11,7 @@
       <ConnSeg X1="240" Y1="180" X2="240" Y2="130"/>
       <ConnSeg X1="240" Y1="130" X2="140" Y2="130"/>
       <ConnSeg X1="240" Y1="180" X2="260" Y2="180"/>
-      <XorGate Label="" Output="L" Inputs="LHHHHH" X="230" Y="180"/>
+      <XorGate Reference="" Output="L" Inputs="LHHHHH" X="230" Y="180"/>
       <ConnSeg X1="240" Y1="180" X2="230" Y2="180"/>
       <ConnSeg X1="140" Y1="40" X2="170" Y2="40"/>
       <ConnSeg X1="140" Y1="130" X2="140" Y2="40"/>
@@ -19,7 +19,7 @@
       <Rectangle Origin="Middle Center" X="80" Y="70" Width="100" Height="80"/>
       <TextLine Origin="Top Left" X="30" Y="130" Text="ABC"/>
       <Block Origin="Middle Center" X="235" Y="70" Width="110" Height="80">
-        <PropertyTextLine Property="Label" Cleat="Top Left" Origin="Bottom Left"/>
+        <PropertyTextLine Property="Reference" Cleat="Top Left" Origin="Bottom Left"/>
         <PropertyTextLine Property="Name" Cleat="Bottom Left" Origin="Top Left"/>
         <BlockPin Name="A" Dir="in" Edge="Left" Offset="10">
           <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>

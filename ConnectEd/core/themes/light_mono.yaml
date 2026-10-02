@@ -48,7 +48,7 @@ presets:
   GatePinArrowFill     : white
   BlockLine            : black
   BlockFill            : white
-  BlockLabel           : black
+  BlockReference       : black
   BlockName            : black
   BlockPinWire         : black
   BlockPinBus          : black
@@ -64,7 +64,7 @@ presets:
   SymbolPinArrowFill   : white
   SymbolPinName        : black
   SymbolPinComment     : black
-  PropertyText         : black
+  Label                : black
   Line                 : black
   RectangleLine        : black
   RectangleFill        : black
@@ -265,7 +265,7 @@ items:
     fill:
       color : '@Sheet'
       style : SolidPattern
-  BlockLabel:
+  BlockReference:
     text:
       color     : '@Origin'
       font      : 'Liberation Sans'
@@ -367,7 +367,7 @@ items:
       bold      : false
       italic    : false
       underline : false
-  PropertyText:
+  Label:
     text:
       color     : '@Origin'
       font      : 'Liberation Sans'

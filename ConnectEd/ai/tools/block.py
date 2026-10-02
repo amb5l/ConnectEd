@@ -25,9 +25,9 @@ _BLOCK_PARAM_PROPS = {
         "type"        : "string",
         "description" : "Diagram view reference from get_active_view.",
     },
-    "label"  : {
+    "reference"  : {
         "type"        : "string",
-        "description" : "Instance label (e.g. U1, U2, U3).",
+        "description" : "Instance reference (e.g. U1, U2, U3).",
     },
     "name"   : {
         "type"        : "string",
@@ -53,7 +53,7 @@ _BLOCK_PARAM_PROPS = {
 
 @aitool(
     description = (
-        "Add a block to the diagram with an HDL instance label, HDL module "
+        "Add a block to the diagram with an HDL instance reference, HDL module "
         "name, top-left position, and size. Returns the block's reference."
     ),
     parameters  = {
@@ -78,7 +78,7 @@ def add_block(
     p1 = QPointF(arguments["left"], arguments["top"])
     p2 = p1 + QPointF(arguments["width"], arguments["height"])
     block = BlockItem(p1, p2)
-    block.setLabel(arguments["label"])
+    block.setReference(arguments["reference"])
     block.setName(arguments["name"])
     scene.addItems([block], undoable=True)
     return toolOk(ref = registry.issue("item", block))

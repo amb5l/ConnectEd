@@ -1,5 +1,5 @@
 """
-Parented PropertyText geometry matrix: 144×144 permutation grid on DiagramScene.
+Parented Label geometry matrix: 144×144 permutation grid on DiagramScene.
 
 Builds the full matrix in memory, validates geometry, XML round-trip, and growth.
 No committed golden .dsn — suitable for CI (~few minutes).
@@ -65,7 +65,7 @@ def text_matrix(
     reference : dict[tuple[int, int], TextGeometry] = {}
     for case in cases:
         try:
-            reference[(case.row, case.col)] = assert_geometry(case.text)
+            reference[(case.row, case.col)] = assert_geometry(case.label)
         except AssertionError as exc:
             raise AssertionError(f"{case_label(case)}: {exc}") from exc
     return node, cases, reference
@@ -93,7 +93,7 @@ def test_matrix_xml_roundtrip(
         for case in reloaded_cases:
             key = (case.row, case.col)
             try:
-                after = assert_geometry(case.text)
+                after = assert_geometry(case.label)
                 assert after.matches(reference[key]), case_label(case)
             except AssertionError as exc:
                 raise AssertionError(f"{case_label(case)}: {exc}") from exc
@@ -106,9 +106,9 @@ def test_matrix_caption_growth(
 ) -> None:
     _node, cases, _reference = text_matrix
     for case in cases:
-        short_geom = measure(case.text)
+        short_geom = measure(case.label)
         case.poly.properties.setValue(CAPTION, LONG)
-        long_geom = assert_geometry(case.text)
+        long_geom = assert_geometry(case.label)
         assert long_geom.text == LONG, case_label(case)
         assert long_geom.width >= short_geom.width, case_label(case)
         assert long_geom.origin_scene.x() == pytest.approx(

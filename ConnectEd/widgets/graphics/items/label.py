@@ -30,9 +30,9 @@ if TYPE_CHECKING:
     from ..views.diagram  import DiagramView
 
 
-class PropertyTextTetherItem(TextTetherItem):
+class LabelTetherItem(TextTetherItem):
     """
-    Tether line from the origin of a PropertyTextItem to its parent cleat.
+    Tether line from the origin of a LabelItem to its parent cleat.
     """
 
     def anchor(self : Self) -> QGraphicsItem | None:
@@ -41,24 +41,24 @@ class PropertyTextTetherItem(TextTetherItem):
         return None
 
 
-class PropertyTextItem(TextItem):
+class LabelItem(TextItem):
     """A tethered text item for displaying a property value."""
 
     # class attributes
     _PROPERTIES = \
         {
-            "Name" : PropertySpec["PropertyTextItem"](
+            "Name" : PropertySpec["LabelItem"](
                 kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
-            "Visible" : PropertySpec["PropertyTextItem"](
+            "Visible" : PropertySpec["LabelItem"](
                 kind   = DataKind.BOOL,
                 worthy = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             ),
-            "Cleat" : PropertySpec["PropertyTextItem"](
+            "Cleat" : PropertySpec["LabelItem"](
                 kind   = lambda self: self.cleatKind(),
                 getter = lambda self: self.cleat(),
                 setter = lambda self, value: self.setCleat(value)
@@ -76,15 +76,15 @@ class PropertyTextItem(TextItem):
 
     # instance attributes
     _property : Property
-    _cleat    : HandleId               | None
-    _tether   : PropertyTextTetherItem | None
+    _cleat    : HandleId        | None
+    _tether   : LabelTetherItem | None
 
     def settingsName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Instance method in this case."""
         if isinstance(owner := self.owner(), ItemNamesMixin) \
         and hasattr(self, "_property"):
             return type(self)._themeItemName(owner, self.name())
-        return "PropertyText"
+        return "Label"
 
     def resourcesName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Instance method in this case."""
@@ -144,7 +144,7 @@ class PropertyTextItem(TextItem):
         self._property = property
         self.setVisible(visible)
         self.setCleat(cleat)
-        self._tether = PropertyTextTetherItem(self)
+        self._tether = LabelTetherItem(self)
         self.onTextChanged()
         self._updateQuill()
         self._property.subscribe(self.onTextChanged)
@@ -265,11 +265,11 @@ class PropertyTextItem(TextItem):
             return
         self._property.setValue(value)
 
-    def state(self : Self) -> PropertyTextState:
+    def state(self : Self) -> LabelState:
         origin = self.origin()
         if not isinstance(origin, RectHandleId):
             raise ValueError(f"Origin {origin} is not a rect handle ID")
-        return PropertyTextState(
+        return LabelState(
             visible    = self.isVisible(),
             cleat      = self.cleat(),
             x          = self.pos().x(),
@@ -298,7 +298,7 @@ class PropertyTextItem(TextItem):
     @checked
     def apply(
         self    : Self,
-        payload : PropertyTextSpec | PropertyTextState | PropertyTextChange
+        payload : LabelSpec | LabelState | LabelChange
     ) -> None:
         if not isinstance(payload.visible, NoChange):
             self.setVisible(payload.visible)
@@ -354,7 +354,7 @@ class PropertyTextItem(TextItem):
         spos : QPointF
     ) -> list[QAction | QMenu]:
         items : list[QAction | QMenu] = [
-            view.action("Edit...", lambda: view.editPropertyTextDialog(self)),
+            view.action("Edit...", lambda: view.editLabelDialog(self)),
             view.separator(),
             view.action(
                 "Auto Width",
@@ -386,12 +386,12 @@ class PropertyTextItem(TextItem):
         items = settings().get("theme/items")
         if hasattr(items, settings_name):
             return settings_name
-        return "PropertyText"
+        return "Label"
 
 
 @dataclass
-class PropertyTextSpec:
-    """Used to specify property texts during owner construction."""
+class LabelSpec:
+    """Used to specify labels during owner construction."""
 
     visible    : bool            = True
     cleat      : HandleId | None = None
@@ -419,8 +419,8 @@ class PropertyTextSpec:
 
 
 @dataclass
-class PropertyTextState:
-    """Used to capture property text states in editor dialogs."""
+class LabelState:
+    """Used to capture label states in editor dialogs."""
 
     visible    : bool
     cleat      : HandleId | None
@@ -448,18 +448,18 @@ class PropertyTextState:
 
 
 @dataclass
-class PropertyTextPending:
-    """Working copy of a property text inside an editor dialog."""
+class LabelPending:
+    """Working copy of a label inside an editor dialog."""
 
-    obj   : PropertyTextItem  | None  # None if new
-    state : PropertyTextState | None  # None if deleted
+    obj   : LabelItem  | None  # None if new
+    state : LabelState | None  # None if deleted
 
     @checked
     def __init__(
         self   : Self,
-        source : PropertyTextItem | PropertyTextState
+        source : LabelItem | LabelState
     ) -> None:
-        if isinstance(source, PropertyTextItem):
+        if isinstance(source, LabelItem):
             self.obj   = source
             self.state = source.state()
         else:
@@ -471,48 +471,48 @@ class PropertyTextPending:
         self     : Self,
         owner    : PropertiesMixin,
         property : Property
-    ) -> PropertyTextAdd | PropertyTextDelete | PropertyTextChange | None:
-        """Return the property text edit this pending produces, or None."""
+    ) -> LabelAdd | LabelDelete | LabelChange | None:
+        """Return the label edit this pending produces, or None."""
         if self.state is None:
             if self.obj is None:
                 return None
-            return PropertyTextDelete(self.obj)
+            return LabelDelete(self.obj)
         if self.obj is None:
-            return PropertyTextAdd(owner, property, self.state)
-        change = PropertyTextChange.fromComparison(self)
+            return LabelAdd(owner, property, self.state)
+        change = LabelChange.fromComparison(self)
         if change.noop():
             return None
         return change
 
 
 @dataclass
-class PropertyTextEdit:
-    """Base class for property text edits."""
+class LabelEdit:
+    """Base class for label edits."""
 
     pass
 
 
 @dataclass
-class PropertyTextAdd(PropertyTextEdit):
-    """Property Text Edit: add a new property text."""
+class LabelAdd(LabelEdit):
+    """Label edit: add a new label."""
 
     owner    : PropertiesMixin
     property : Property
-    state    : PropertyTextState
+    state    : LabelState
 
 
 @dataclass
-class PropertyTextDelete(PropertyTextEdit):
-    """Property Text Edit: delete an existing property text."""
+class LabelDelete(LabelEdit):
+    """Label edit: delete an existing label."""
 
-    item : PropertyTextItem
+    item : LabelItem
 
 
 @dataclass
-class PropertyTextChange(PropertyTextEdit):
-    """Property Text Edit: change an existing property text."""
+class LabelChange(LabelEdit):
+    """Label edit: change an existing label."""
 
-    item       : PropertyTextItem
+    item       : LabelItem
     visible    : bool            | NoChange = NO_CHANGE
     cleat      : HandleId | None | NoChange = NO_CHANGE
     x          : float           | NoChange = NO_CHANGE
@@ -540,7 +540,7 @@ class PropertyTextChange(PropertyTextEdit):
     @classmethod
     def fromComparison(
         cls     : type[Self],
-        pending : PropertyTextPending
+        pending : LabelPending
     ) -> Self:
         if pending.obj is None or pending.state is None:
             raise ValueError("Property text pending has no item or state")
@@ -558,5 +558,5 @@ class PropertyTextChange(PropertyTextEdit):
         """Return True if the edit is a no-op."""
         return all(
             isinstance(getattr(self, field.name), NoChange)
-            for field in fields(PropertyTextState)
+            for field in fields(LabelState)
         )

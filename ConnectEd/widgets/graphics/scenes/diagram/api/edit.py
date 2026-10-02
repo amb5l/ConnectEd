@@ -7,41 +7,40 @@ from PyQt6.QtCore    import Qt, QPointF, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from ......app                 import logger
+from ......app import logger
 
-from ......core.check          import checked
-from ......core.types          import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check import checked
+from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              EdgeLoc, Direction, HandleId, RectHandleId
-from ......core.xml            import XmlProtocol
+from ......core.xml   import XmlProtocol
 
-from ....items.grip            import GripItem
-from ....items.polyline        import PolylineItem, PolySegItem
-from ....items.text            import TextItem
-from ....items.port_pin        import PortPinMixin, PortPinPathItem
-from ....items.block_pin       import BlockPinItem
-from ....items.symbol_pin      import SymbolPinItem
-from ....items.block           import BlockItem
-from ....items.symbol          import SymbolInstanceItem
-from ....items.property_text   import PropertyTextItem
-from ....items.segment         import SegmentItem
-from ....items.mixin           import ItemMixin
+from ....items.grip       import GripItem
+from ....items.polyline   import PolylineItem, PolySegItem
+from ....items.text       import TextItem
+from ....items.port_pin   import PortPinMixin, PortPinPathItem
+from ....items.block_pin  import BlockPinItem
+from ....items.symbol_pin import SymbolPinItem
+from ....items.block      import BlockItem
+from ....items.symbol     import SymbolInstanceItem
+from ....items.label      import LabelItem
+from ....items.segment    import SegmentItem
+from ....items.mixin      import ItemMixin
 
 from ....items.mixin.move      import ItemMoveMixin
 from ....items.mixin.transform import ItemTransformMixin
 
-from ..cmd                     import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
+from ..cmd import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
                   CmdDelete
-from ..xml                     import diagram_scene_xml_items
-from ..host                    import asDiagramScene
+from ..xml  import diagram_scene_xml_items
+from ..host import asDiagramScene
 
-from ..cmd.block_pin           import CmdMoveBlockPins
+from ..cmd.block_pin import CmdMoveBlockPins
 
-from ..cmd.edit.pin            import CmdEditPortPin, \
-                                  CmdEditPinDot, CmdEditPinClk
-from ..cmd.edit.origin         import CmdEditOrigin
-from ..cmd.edit.polyline       import CmdEditPolylineClosed, CmdEditPolySeg
-from ..cmd.edit.text           import CmdEditText
-from ..cmd.edit.appearance     import CmdEditAppearance
+from ..cmd.edit.pin        import CmdEditPortPin, CmdEditPinDot, CmdEditPinClk
+from ..cmd.edit.origin     import CmdEditOrigin
+from ..cmd.edit.polyline   import CmdEditPolylineClosed, CmdEditPolySeg
+from ..cmd.edit.text       import CmdEditText
+from ..cmd.edit.appearance import CmdEditAppearance
 
 
 class DiagramSceneApiEditMixin:
@@ -200,10 +199,10 @@ class DiagramSceneApiEditMixin:
             items = [items]
         else:
             items = list(items)
-        # filter out items with parents apart from property texts
+        # filter out items with parents apart from labels
         for item in items:
             if item.parentItem() is not None:
-                if isinstance(item, PropertyTextItem):
+                if isinstance(item, LabelItem):
                     continue
                 items.remove(item)
         # check that there is something to do

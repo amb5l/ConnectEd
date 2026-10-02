@@ -2,19 +2,18 @@ from __future__ import annotations
 
 from typing import Self
 
-from .......app               import logger
+from .......app import logger
 
-from .......core.check        import checked
-from .......core.types        import NoChange, DataKind
-from .......core.utils        import camel2proper
+from .......core.check import checked
+from .......core.types import NoChange, DataKind
+from .......core.utils import camel2proper
 
-from .....properties          import PropertiesMixin, Property, PropertyState, \
+from .....properties import PropertiesMixin, Property, PropertyState, \
                             PropertyChange
 
-from .....items.property_text import PropertyTextItem, PropertyTextState, \
-                                     PropertyTextChange
+from .....items.label import LabelItem, LabelState, LabelChange
 
-from ..                       import CmdBase
+from .. import CmdBase
 
 
 class CmdPropertyBase(CmdBase):
@@ -127,11 +126,11 @@ class CmdEditProperty(CmdPropertyBase):
 
 
 class CmdDelProperty(CmdPropertyBase):
-    """Command to delete a property and its texts."""
+    """Command to delete a property and its labels."""
 
     _name     : str
     _property : Property
-    _texts    : list[CmdDelPropertyText]
+    _labels   : list[CmdDelLabel]
 
     @checked
     def __init__(
@@ -151,15 +150,15 @@ class CmdDelProperty(CmdPropertyBase):
             return
         self._name     = name
         self._property = property
-        self._texts    = [
-            CmdDelPropertyText(owner, text)
-            for text in owner.propertyTextItems(property)
+        self._labels   = [
+            CmdDelLabel(owner, label)
+            for label in owner.labelItems(property)
         ]
 
     @checked
     def redo(self : Self) -> None:
-        for text in self._texts:
-            text.redo()
+        for label in self._labels:
+            label.redo()
         name = self._owner.propertyName(self._property)
         if name is None:
             logger().error(f"Property '{self._name}' not found")
@@ -172,23 +171,23 @@ class CmdDelProperty(CmdPropertyBase):
             logger().error(f"Property '{self._name}' already exists")
             return
         self._owner.properties[self._name] = self._property
-        for text in reversed(self._texts):
-            text.undo()
+        for label in reversed(self._labels):
+            label.undo()
 
 
-class CmdAddPropertyText(CmdPropertyBase):
-    """Command to add a property text."""
+class CmdAddLabel(CmdPropertyBase):
+    """Command to add a label."""
 
     _property : Property
-    _state    : PropertyTextState
-    _item     : PropertyTextItem | None
+    _state    : LabelState
+    _item     : LabelItem | None
 
     @checked
     def __init__(
         self     : Self,
         owner    : PropertiesMixin,
         property : Property,
-        state    : PropertyTextState
+        state    : LabelState
     ) -> None:
         super().__init__(owner)
         if owner.propertyName(property) is None:
@@ -202,45 +201,45 @@ class CmdAddPropertyText(CmdPropertyBase):
     @checked
     def redo(self : Self) -> None:
         if self._item is None:
-            text = self._owner.propertyTextAdd(self._property)
-            text.apply(self._state)
-            self._item = text
+            label = self._owner.labelAdd(self._property)
+            label.apply(self._state)
+            self._item = label
             return
-        self._owner.propertyTextAttach(self._item)
+        self._owner.labelAttach(self._item)
 
     @checked
     def undo(self : Self) -> None:
         if self._item is None:
             return
-        self._owner.propertyTextRemove(self._item)
+        self._owner.labelRemove(self._item)
 
 
-class CmdEditPropertyText(CmdPropertyBase):
-    """Command to edit a property text."""
+class CmdEditLabel(CmdPropertyBase):
+    """Command to edit a label."""
 
-    _item   : PropertyTextItem
-    _before : PropertyTextState
-    _change : PropertyTextChange
+    _item   : LabelItem
+    _before : LabelState
+    _change : LabelChange
 
     @checked
     def __init__(
         self   : Self,
-        item   : PropertyTextItem,
-        change : PropertyTextChange
+        item   : LabelItem,
+        change : LabelChange
     ) -> None:
         super().__init__(item.property().owner())
         if change.item is not item:
-            logger().error("Property text change is for a different text")
+            logger().error("Label change is for a different label")
             self.setObsolete(True)
             return
         if change.noop():
             self.setObsolete(True)
             return
         if not any(
-            text is item
-            for text in self._owner.propertyTextItems(item.property())
+            label is item
+            for label in self._owner.labelItems(item.property())
         ):
-            logger().error("Property text is not on owner")
+            logger().error("Label is not on owner")
             self.setObsolete(True)
             return
         self._item   = item
@@ -256,35 +255,35 @@ class CmdEditPropertyText(CmdPropertyBase):
         self._item.apply(self._before)
 
 
-class CmdDelPropertyText(CmdPropertyBase):
-    """Command to delete a property text."""
+class CmdDelLabel(CmdPropertyBase):
+    """Command to delete a label."""
 
-    _item : PropertyTextItem
+    _item : LabelItem
 
     @checked
     def __init__(
         self  : Self,
         owner : PropertiesMixin,
-        item  : PropertyTextItem
+        item  : LabelItem
     ) -> None:
         super().__init__(owner)
         if item.property().owner() is not owner:
-            logger().error("Property text does not belong to owner")
+            logger().error("Label does not belong to owner")
             self.setObsolete(True)
             return
         if not any(
-            text is item
-            for text in owner.propertyTextItems(item.property())
+            label is item
+            for label in owner.labelItems(item.property())
         ):
-            logger().error("Property text is not on owner")
+            logger().error("Label is not on owner")
             self.setObsolete(True)
             return
         self._item = item
 
     @checked
     def redo(self : Self) -> None:
-        self._owner.propertyTextRemove(self._item)
+        self._owner.labelRemove(self._item)
 
     @checked
     def undo(self : Self) -> None:
-        self._owner.propertyTextAttach(self._item)
+        self._owner.labelAttach(self._item)

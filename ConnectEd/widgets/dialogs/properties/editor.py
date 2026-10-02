@@ -38,8 +38,8 @@ class PropertiesEditorWidget(QWidget):
     _transpose_checkbox  : QCheckBox
     _add_property_button : QPushButton
     _del_property_button : QPushButton
-    _add_text_button     : QPushButton
-    _del_text_button     : QPushButton
+    _add_label_button    : QPushButton
+    _del_label_button    : QPushButton
     _filter_button       : QPushButton
     _sort_button         : QPushButton
 
@@ -89,14 +89,14 @@ class PropertiesEditorWidget(QWidget):
         self._del_property_button.clicked.connect(self._onDelProperty)
         self._control_layout.addWidget(self._del_property_button)
         # text buttons
-        self._add_text_button = QPushButton("+ Text")
-        self._add_text_button.setEnabled(False)
-        self._add_text_button.clicked.connect(self._onAddText)
-        self._control_layout.addWidget(self._add_text_button)
-        self._del_text_button = QPushButton("- Text")
-        self._del_text_button.setEnabled(False)
-        self._del_text_button.clicked.connect(self._onDelText)
-        self._control_layout.addWidget(self._del_text_button)
+        self._add_label_button = QPushButton("+ Label")
+        self._add_label_button.setEnabled(False)
+        self._add_label_button.clicked.connect(self._onAddLabel)
+        self._control_layout.addWidget(self._add_label_button)
+        self._del_label_button = QPushButton("- Label")
+        self._del_label_button.setEnabled(False)
+        self._del_label_button.clicked.connect(self._onDelLabel)
+        self._control_layout.addWidget(self._del_label_button)
         # filter button
         self._filter_button = QPushButton("Filter")
         self._filter_button.setEnabled(False)
@@ -112,7 +112,7 @@ class PropertiesEditorWidget(QWidget):
         self       : Self,
         widget     : PropertiesGridWidget | PropertiesBushWidget,
         properties : int,
-        texts      : int
+        labels     : int
     ) -> None:
         """Main widget has changed selection -> update button enables."""
         # filter unwanted calls
@@ -121,8 +121,8 @@ class PropertiesEditorWidget(QWidget):
         # update button enables
         self._add_property_button .setEnabled(True)
         self._del_property_button .setEnabled(properties > 0)
-        self._add_text_button     .setEnabled(properties == 1)
-        self._del_text_button     .setEnabled(texts > 0)
+        self._add_label_button    .setEnabled(properties == 1)
+        self._del_label_button    .setEnabled(labels > 0)
         self._filter_button       .setEnabled(True)
         self._sort_button         .setEnabled(True)
 
@@ -175,10 +175,10 @@ class PropertiesEditorWidget(QWidget):
     def _onDelProperty(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onAddText(self : Self) -> None:
+    def _onAddLabel(self : Self) -> None:
         pass  # TODO: implement
 
-    def _onDelText(self : Self) -> None:
+    def _onDelLabel(self : Self) -> None:
         pass  # TODO: implement
 
     def _onFilter(self : Self) -> None:
@@ -201,7 +201,7 @@ _TAB_ORDER = [
     "Ellipses",
     "Polylines",
     "Bitmaps",
-    "Property Texts"
+    "Labels"
 ]
 
 

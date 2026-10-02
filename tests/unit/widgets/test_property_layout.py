@@ -1,14 +1,17 @@
-"""PropertyLayout must resolve owner properties (e.g. Block Label), not PropertyText names."""
+"""PropertyLayout must resolve owner properties (e.g. Block Label), not Label names."""
 
 import pytest
 
 from PyQt6.QtCore    import QObject, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QLabel
 
-from ConnectEd.app                                 import ConnectEdApp
-from ConnectEd.widgets.dialogs.components.edit     import StrEditor
-from ConnectEd.widgets.dialogs.items.property_text import PropertyLayout
-from ConnectEd.widgets.graphics.items.block        import BlockItem
+from ConnectEd.app import ConnectEdApp
+
+from ConnectEd.widgets.dialogs.components.edit import StrEditor
+
+from ConnectEd.widgets.dialogs.items.label import PropertyLayout
+
+from ConnectEd.widgets.graphics.items.block import BlockItem
 
 
 @pytest.fixture
@@ -30,15 +33,16 @@ def connect_ed_app() -> ConnectEdApp:
 
 def test_property_layout_resolves_block_label(connect_ed_app : ConnectEdApp) -> None:
     block = BlockItem(QPointF(0.0, 0.0), QPointF(100.0, 50.0))
-    block.setLabel("U1")
-    texts = block.propertyTextItems(block.properties["Label"])
-    assert texts
-    label_pt = texts[0]
-    assert label_pt.name() == "Label"
+    block.setReference("U1")
+    labels = block.labelItems(block.properties["Reference"])
+    assert labels
+    label = labels[0]
+    assert label.name() == "Reference"
 
-    layout = PropertyLayout(label_pt, "Label")
+    layout = PropertyLayout(label, "Reference")
 
-    assert layout._owner_value.text() != PropertyLayout._NOT_FOUND
+    assert isinstance(layout._name_value, QLabel)
+    assert layout._name_value.text() == "Reference"
     assert isinstance(layout._kind_value, QLabel)
     assert layout._kind_value.text() == "String"
     assert isinstance(layout._value_value, StrEditor)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from .table.row                    import TableRow
 from .graphics.properties          import PropertyPending
 
-from .graphics.items.property_text import PropertyTextPending
+from .graphics.items.label import LabelPending
 
 
 def populateProperty(
@@ -30,14 +30,14 @@ def populateProperty(
     row[ "Value"  ] = v(kind, value, draft.state, "value", new, editable)
 
 
-def populatePropertyText(
+def populateLabel(
     row   : TableRow,
-    draft : PropertyTextPending,
+    draft : LabelPending,
     new   : bool = False
 ) -> None:
     from .dialogs.properties.item import PropertiesItem
     if draft.state is None:
-        raise ValueError("Property text pending state is None")
+        raise ValueError("Label pending state is None")
     p = PropertiesItem
     c = draft.state
     row[ "Visible"    ] = p( c.visible    , c , "visible"    , new )

@@ -5,35 +5,34 @@ from dataclasses import fields
 
 from PyQt6.QtGui import QColor
 
-from ......app               import logger
+from ......app import logger
 
-from ......core.check        import checked
-from ......core.types        import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check import checked
+from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId, DataKind
 
-from ....properties          import PropertyState, \
+from ....properties import PropertyState, \
                            PropertyAdd, PropertyDelete, PropertyChange, \
-                           PropertyAndTextsEdit
+                           PropertyAndLabelsEdit
 
-from ....items.property_text import PropertyTextState, PropertyTextChange, \
-                                    PropertyTextAdd, PropertyTextDelete
+from ....items.label import LabelState, LabelChange, LabelAdd, LabelDelete
 
-from ..cmd                   import cmdExec
-from ..host                  import asDiagramScene
+from ..cmd  import cmdExec
+from ..host import asDiagramScene
 
-from ..cmd.edit.properties   import (
+from ..cmd.edit.properties import (
     CmdAddProperty, CmdEditProperty, CmdDelProperty,
-    CmdAddPropertyText, CmdEditPropertyText, CmdDelPropertyText
+    CmdAddLabel, CmdEditLabel, CmdDelLabel
 )
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....properties          import PropertiesMixin, Property
-    from ....items.property_text import PropertyTextItem
+    from ....properties  import PropertiesMixin, Property
+    from ....items.label import LabelItem
 
 
-def _textKwargs(
-    source : PropertyTextState | PropertyTextChange
+def _labelKwargs(
+    source : LabelState | LabelChange
 ) -> dict[str, Any]:
     return {
         state_field.name : getattr(source, state_field.name)
@@ -99,7 +98,7 @@ class DiagramSceneApiPropertiesMixin:
         cmdExec(host, cmd, undoable)
 
     @checked
-    def addPropertyText(
+    def addLabel(
         self       : Self,
         owner      : PropertiesMixin,
         property   : Property,
@@ -132,7 +131,7 @@ class DiagramSceneApiPropertiesMixin:
         if owner.propertyName(property) is None:
             logger().error("Property does not belong to owner")
             return
-        cmd = CmdAddPropertyText(owner, property, PropertyTextState(
+        cmd = CmdAddLabel(owner, property, LabelState(
             visible    = visible,
             cleat      = cleat,
             x          = x,
@@ -160,9 +159,9 @@ class DiagramSceneApiPropertiesMixin:
         cmdExec(host, cmd, undoable)
 
     @checked
-    def editPropertyText(
+    def editLabel(
         self       : Self,
-        item       : PropertyTextItem,
+        item       : LabelItem,
         visible    : bool            | NoChange = NO_CHANGE,
         cleat      : HandleId | None | NoChange = NO_CHANGE,
         x          : float           | NoChange = NO_CHANGE,
@@ -191,12 +190,12 @@ class DiagramSceneApiPropertiesMixin:
         host = asDiagramScene(self)
         owner = item.property().owner()
         if not any(
-            text is item
-            for text in owner.propertyTextItems(item.property())
+            label is item
+            for label in owner.labelItems(item.property())
         ):
-            logger().error("Property text is not on owner")
+            logger().error("Label is not on owner")
             return
-        cmd = CmdEditPropertyText(item, PropertyTextChange(
+        cmd = CmdEditLabel(item, LabelChange(
             item       = item,
             visible    = visible,
             cleat      = cleat,
@@ -225,20 +224,20 @@ class DiagramSceneApiPropertiesMixin:
         cmdExec(host, cmd, undoable)
 
     @checked
-    def delPropertyText(
+    def delLabel(
         self     : Self,
         owner    : PropertiesMixin,
-        item     : PropertyTextItem,
+        item     : LabelItem,
         undoable : bool = False
     ) -> None:
         host = asDiagramScene(self)
-        cmd = CmdDelPropertyText(owner, item)
+        cmd = CmdDelLabel(owner, item)
         cmdExec(host, cmd, undoable)
 
     @checked
     def editProperties(
         self     : Self,
-        edits    : list[PropertyAndTextsEdit],
+        edits    : list[PropertyAndLabelsEdit],
         undoable : bool = False
     ) -> None:
         host = asDiagramScene(self)
@@ -257,11 +256,11 @@ class DiagramSceneApiPropertiesMixin:
                     undoable
                 )
                 if property is not None:
-                    for text_state in edit.texts:
-                        self.addPropertyText(
+                    for label_state in edit.labels:
+                        self.addLabel(
                             group.owner,
                             property,
-                            **_textKwargs(text_state),
+                            **_labelKwargs(label_state),
                             undoable = undoable
                         )
             elif isinstance(edit, PropertyDelete):
@@ -281,20 +280,20 @@ class DiagramSceneApiPropertiesMixin:
                         value    = edit.value,
                         undoable = undoable
                     )
-            for text in group.texts:
-                if isinstance(text, PropertyTextAdd):
-                    self.addPropertyText(
-                        text.owner,
-                        text.property,
-                        **_textKwargs(text.state),
+            for label in group.labels:
+                if isinstance(label, LabelAdd):
+                    self.addLabel(
+                        label.owner,
+                        label.property,
+                        **_labelKwargs(label.state),
                         undoable = undoable
                     )
-                elif isinstance(text, PropertyTextDelete):
-                    self.delPropertyText(group.owner, text.item, undoable)
-                elif isinstance(text, PropertyTextChange):
-                    self.editPropertyText(
-                        text.item,
-                        **_textKwargs(text),
+                elif isinstance(label, LabelDelete):
+                    self.delLabel(group.owner, label.item, undoable)
+                elif isinstance(label, LabelChange):
+                    self.editLabel(
+                        label.item,
+                        **_labelKwargs(label),
                         undoable = undoable
                     )
         if undoable:

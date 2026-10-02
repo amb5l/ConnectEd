@@ -17,10 +17,8 @@ from ...core.utils import val2str, pascal2proper
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .items.property_text import (
-        PropertyTextItem,
-        PropertyTextSpec, PropertyTextState, PropertyTextPending,
-        PropertyTextEdit
+    from .items.label import (
+        LabelItem, LabelSpec, LabelState, LabelPending, LabelEdit
     )
 
 
@@ -238,9 +236,9 @@ class PropertyState:
 class PropertyPending:
     """Working copy of a property inside an editor dialog."""
 
-    obj   : Property      | None  # None if new
-    state : PropertyState | None  # None if deleted
-    texts : list[PropertyTextPending]
+    obj    : Property      | None  # None if new
+    state  : PropertyState | None  # None if deleted
+    labels : list[LabelPending]
 
     @checked
     def __init__(
@@ -248,43 +246,43 @@ class PropertyPending:
         source : Property | PropertyState
     ) -> None:
         if isinstance(source, Property):
-            from .items.property_text import PropertyTextPending
-            self.obj   = source
-            self.state = source.state()
-            self.texts = [
-                PropertyTextPending(item)
-                for item in source.owner().propertyTextItems(source)
+            from .items.label import LabelPending
+            self.obj    = source
+            self.state  = source.state()
+            self.labels = [
+                LabelPending(item)
+                for item in source.owner().labelItems(source)
             ]
         else:
-            self.obj   = None
-            self.state = source
-            self.texts = []
+            self.obj    = None
+            self.state  = source
+            self.labels = []
 
     @checked
     def getEdit(
         self  : Self,
         owner : PropertiesMixin
-    ) -> PropertyAndTextsEdit | None:
+    ) -> PropertyAndLabelsEdit | None:
         """Return this pending's edits, or None when it produces none."""
         if self.state is None:
             if self.obj is None:
                 return None
-            return PropertyAndTextsEdit(owner, self.obj, PropertyDelete(), [])
+            return PropertyAndLabelsEdit(owner, self.obj, PropertyDelete(), [])
         if self.obj is None:
-            return PropertyAndTextsEdit(owner, None, PropertyAdd(self.state, [
-                text.state
-                for text in self.texts
-                if text.state is not None
+            return PropertyAndLabelsEdit(owner, None, PropertyAdd(self.state, [
+                label.state
+                for label in self.labels
+                if label.state is not None
             ]), [])
         change = PropertyChange.fromComparison(self.obj.state(), self.state)
         edit = None if change.noop() else change
-        texts = []
-        for text in self.texts:
-            if (text_edit := text.getEdit(owner, self.obj)) is not None:
-                texts.append(text_edit)
-        if edit is None and len(texts) == 0:
+        edits = []
+        for label in self.labels:
+            if (label_edit := label.getEdit(owner, self.obj)) is not None:
+                edits.append(label_edit)
+        if edit is None and len(edits) == 0:
             return None
-        return PropertyAndTextsEdit(owner, self.obj, edit, texts)
+        return PropertyAndLabelsEdit(owner, self.obj, edit, edits)
 
 
 @dataclass
@@ -298,8 +296,8 @@ class PropertyEdit:
 class PropertyAdd(PropertyEdit):
     """Property Edit: add a new property."""
 
-    state : PropertyState
-    texts : list[PropertyTextState] = field(default_factory=list)
+    state  : PropertyState
+    labels : list[LabelState] = field(default_factory=list)
 
 
 @dataclass
@@ -340,32 +338,32 @@ class PropertyChange(PropertyEdit):
 
 
 @dataclass
-class PropertyAndTextsEdit:
-    """A property edit and the text edits that belong with it."""
+class PropertyAndLabelsEdit:
+    """A property edit and the label edits that belong with it."""
 
     owner    : PropertiesMixin
     property : Property                                      | None
     edit     : PropertyAdd | PropertyDelete | PropertyChange | None
-    texts    : Sequence[PropertyTextEdit]
+    labels   : Sequence[LabelEdit]
 
 
 class PropertiesMixin:
-    _PROPERTIES     : dict[str, PropertySpec]
-    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
-    properties      : dict[str, Property]
+    _PROPERTIES : dict[str, PropertySpec]
+    _LABELS     : dict[str, LabelSpec]
+    properties  : dict[str, Property]
 
     def initProperties(self : Self, live : bool) -> None:
         self.properties = {}
         self._live = live
         for name, spec in self._PROPERTIES.items():
             self.properties[name] = Property.fromSpec(self, spec)
-        if live and hasattr(self, "_PROPERTY_TEXTS"):
-            for name, text_spec in self._PROPERTY_TEXTS.items():
+        if live and hasattr(self, "_LABELS"):
+            for name, label_spec in self._LABELS.items():
                 if name not in self.properties:
                     logger().error(f"Property {name} does not exist")
                     continue
-                text = self.propertyTextAdd(self.properties[name])
-                text.apply(text_spec)
+                label = self.labelAdd(self.properties[name])
+                label.apply(label_spec)
 
     def propertiesLive(self : Self) -> bool:
         return self._live
@@ -445,7 +443,7 @@ class PropertiesMixin:
     @checked
     def propertyDelete(self : Self, name : str) -> bool:
         """
-        Remove a property and its texts.
+        Remove a property and its labels.
         Returns True if the property was removed, False otherwise.
         """
         # check property existence
@@ -458,8 +456,8 @@ class PropertiesMixin:
         if property.isInherent():
             logger().error(f"Inherent property '{name}' cannot be removed")
             return False
-        for text in self.propertyTextItems(property):
-            self.propertyTextRemove(text)
+        for label in self.labelItems(property):
+            self.labelRemove(label)
         # notify property receivers
         property.notify()
         # remove property from dictionary
@@ -474,51 +472,51 @@ class PropertiesMixin:
             None
         )
 
-    def propertyTextAdd(self : Self, property : Property) -> PropertyTextItem:
-        from .items.property_text import PropertyTextItem
-        text = PropertyTextItem(property = property)
+    def labelAdd(self : Self, property : Property) -> LabelItem:
+        from .items.label import LabelItem
+        label = LabelItem(property = property)
         if isinstance(self, QGraphicsScene):
-            self.addItem(text)
-        return text
+            self.addItem(label)
+        return label
 
-    def propertyTextRemove(self : Self, text : PropertyTextItem) -> None:
-        text.property().unsubscribe(text.onTextChanged)
+    def labelRemove(self : Self, label : LabelItem) -> None:
+        label.property().unsubscribe(label.onTextChanged)
         if isinstance(self, QGraphicsItem):
-            text.setParentItem(None)
-            if (scene := text.scene()) is not None:
-                scene.removeItem(text)
+            label.setParentItem(None)
+            if (scene := label.scene()) is not None:
+                scene.removeItem(label)
         elif isinstance(self, QGraphicsScene):
-            self.removeItem(text)
+            self.removeItem(label)
         else:
             raise ValueError("Owner is not a scene or item")
 
-    def propertyTextAttach(self : Self, text : PropertyTextItem) -> None:
-        text.property().subscribe(text.onTextChanged)
+    def labelAttach(self : Self, label : LabelItem) -> None:
+        label.property().subscribe(label.onTextChanged)
         if isinstance(self, QGraphicsScene):
-            self.addItem(text)
+            self.addItem(label)
         elif isinstance(self, QGraphicsItem):
-            text.setCleat(text.cleat())
+            label.setCleat(label.cleat())
         else:
             raise ValueError("Owner is not a scene or item")
 
-    def propertyTextItems(
+    def labelItems(
         self     : Self,
         property : Property | None = None
-    ) -> list[PropertyTextItem]:
-        from .items.property_text import PropertyTextItem
+    ) -> list[LabelItem]:
+        from .items.label import LabelItem
         if isinstance(self, QGraphicsScene):
             items = [
                 item
                 for item in self.items()
-                if isinstance(item, PropertyTextItem)
+                if isinstance(item, LabelItem)
             ]
         elif isinstance(self, QGraphicsItem):
             items = []
             for child in self.childItems():
-                if isinstance(child, PropertyTextItem):
+                if isinstance(child, LabelItem):
                     items.append(child)
                 for grandchild in child.childItems():
-                    if isinstance(grandchild, PropertyTextItem):
+                    if isinstance(grandchild, LabelItem):
                         items.append(grandchild)
         else:
             return []
