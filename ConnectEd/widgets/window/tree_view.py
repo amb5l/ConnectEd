@@ -63,7 +63,7 @@ class TreeView(UiFontSizeMixin, QTreeView):
 
 
 class TreeViewDock(QDockWidget):
-    WINDOW_TITLE = "Tree Viewer"
+    _TITLE : str
 
     @checked
     def __init__(
@@ -72,7 +72,7 @@ class TreeViewDock(QDockWidget):
         parent : QWidget
     ) -> None:
         super().__init__(parent)
-        self.setObjectName(self.WINDOW_TITLE)
-        self.setWindowTitle(self.WINDOW_TITLE)
+        self.setObjectName(self._TITLE)
+        self.setWindowTitle(self._TITLE)
         if widget is not None:
             self.setWidget(widget)

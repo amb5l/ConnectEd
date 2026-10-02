@@ -92,10 +92,11 @@ class TextView(QPlainTextEdit):
                 line_edit.selectAll()
 
 class TextViewDockWidget(QDockWidget):
-    WINDOW_TITLE = "Text Viewer"
-    _main_widget  : QWidget
-    _text_view    : TextView
-    _find_bar     : FindBar
+    _VIEW_CLS    : type[TextView] = TextView
+    _TITLE       : str
+    _main_widget : QWidget
+    _text_view   : TextView
+    _find_bar    : FindBar
 
     @checked
     def __init__(
@@ -104,9 +105,9 @@ class TextViewDockWidget(QDockWidget):
         filename : str     | None = None
     ) -> None:
         super().__init__(parent)
-        self.setObjectName(self.WINDOW_TITLE)
-        self.setWindowTitle(self.WINDOW_TITLE)
-        self._text_view = TextView(self, filename)
+        self.setObjectName(self._TITLE)
+        self.setWindowTitle(self._TITLE)
+        self._text_view = self._VIEW_CLS(self, filename)
         self._find_bar = FindBar(self, self._text_view)
         self._text_view.setFindBar(self._find_bar)
         self._main_widget = QWidget()

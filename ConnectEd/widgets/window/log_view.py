@@ -31,7 +31,8 @@ class LogView(TextView):
 
 
 class LogViewDock(TextViewDockWidget):
-    WINDOW_TITLE = "Log"
+    _VIEW_CLS = LogView
+    _TITLE    = "Log"
 
     @checked
     def __init__(

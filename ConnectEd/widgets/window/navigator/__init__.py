@@ -73,7 +73,7 @@ class Navigator(
 class NavigatorDock(TreeViewDock):
     """Dock for the Navigator widget."""
 
-    WINDOW_TITLE = "Navigator"
+    _TITLE = "Navigator"
 
     _navigator : Navigator
 

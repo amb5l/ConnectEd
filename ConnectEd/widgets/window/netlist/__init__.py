@@ -91,7 +91,7 @@ class NetlistBrowser(TreeView):
 
 
 class NetlistBrowserDock(TreeViewDock):
-    WINDOW_TITLE = "Netlist"
+    _TITLE = "Netlist"
 
     _browser : NetlistBrowser
 
