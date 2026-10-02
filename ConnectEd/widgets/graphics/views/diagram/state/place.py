@@ -304,6 +304,8 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
                 self.view, block, pin, self.view._snap(spos),
                 self.view.grid.pitch if self.view.grid.snap else None
             ))
+        else:
+            self.view.state.go(self.view.stateIdle)
 
     @override
     def mouseLeftClick(
@@ -312,6 +314,8 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
+        if self.view.interaction is None:
+            return
         self._interaction().commit(
             self.view._snap(spos),
             self.view.grid.pitch if self.view.grid.snap else None
@@ -325,6 +329,8 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
         spos      : QPointF,
         modifiers : MouseModifier
     ) -> None:
+        if self.view.interaction is None:
+            return
         self._interaction().update(
             self.view._snap(spos),
             self.view.grid.pitch if self.view.grid.snap else None
