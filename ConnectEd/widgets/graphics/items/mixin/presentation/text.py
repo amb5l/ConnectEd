@@ -305,24 +305,24 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(
             self.resourcesName(), self._resourceKey()
         )
-        unselected = not self.isSelected()
-        override_color = self._text_color if unselected \
+        # Selection replaces color. Font, size, and style overrides stay.
+        override_color = self._text_color if not self.isSelected() \
             and hasattr(self, "_text_color") and self._text_color is not None \
             else None
-        override_font = self._text_font if unselected \
-            and hasattr(self, "_text_font") and self._text_font is not None \
+        override_font = self._text_font \
+            if hasattr(self, "_text_font") and self._text_font is not None \
             else None
-        override_size = self._text_size if unselected \
-            and hasattr(self, "_text_size") and self._text_size is not None \
+        override_size = self._text_size \
+            if hasattr(self, "_text_size") and self._text_size is not None \
             else None
-        override_bold = self._text_bold if unselected \
-            and hasattr(self, "_text_bold") and self._text_bold is not None \
+        override_bold = self._text_bold \
+            if hasattr(self, "_text_bold") and self._text_bold is not None \
             else None
-        override_italic = self._text_italic if unselected \
-            and hasattr(self, "_text_italic") and self._text_italic is not None \
+        override_italic = self._text_italic \
+            if hasattr(self, "_text_italic") and self._text_italic is not None \
             else None
-        override_underline = self._text_underline if unselected \
-            and hasattr(self, "_text_underline") and self._text_underline is not None \
+        override_underline = self._text_underline \
+            if hasattr(self, "_text_underline") and self._text_underline is not None \
             else None
         quill = Quill(quill)
         if override_color     is not None: quill.setColor(override_color)
