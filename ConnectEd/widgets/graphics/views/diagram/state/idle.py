@@ -131,7 +131,10 @@ class DiagramViewStateIdle(DiagramViewState):
         and not (modifiers & (MouseModifier.CTRL | MouseModifier.SHIFT)):
             self.scene.clearSelection()
             items = []
-        self.view._selectDrag(press_spos, modifiers)
+        if not self.view._selectDrag(press_spos, modifiers):
+            self.view.marquee.begin(vpos)
+            self.view.state.go(self.view.stateEditSelectArea2)
+            return
         items = self.scene.selectedItems()
         if items: # slide/move
             pins = self.view._siblingBlockPins(items)

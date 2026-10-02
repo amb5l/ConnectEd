@@ -14,8 +14,7 @@ from .....core.check       import checked
 from ....menu              import Menu
 
 from ...items.block     import BlockItem
-from ...items.block_pin import BlockPinItem, BlockPinArrowItem
-from ...items.node      import FixedNodeItem
+from ...items.block_pin import BlockPinItem
 
 from ...items.mixin.select import ItemSelectMixin
 
@@ -155,22 +154,31 @@ class DiagramViewPrivateMixin:
         self  : Self,
         items : list[QGraphicsItem]
     ) -> list[BlockPinItem]:
-        pins = []
+        pins : list[BlockPinItem] = []
         common_parent = None
         for item in items:
-            if isinstance(item, BlockPinItem):
-                item_parent = item.parentItem()
-                if not isinstance(item_parent, BlockItem):
-                    logger().error("Block pin item has non-block parent")
-                    return []
-                if common_parent is None:
-                    common_parent = item_parent
-                elif item_parent != common_parent:
-                    return []  # multiple blocks - no go
-                pins.append(item)
-            elif not isinstance(item, BlockPinArrowItem | FixedNodeItem):
+            if not isinstance(item, BlockPinItem):
+                continue
+            item_parent = item.parentItem()
+            if not isinstance(item_parent, BlockItem):
+                logger().error("Block pin item has non-block parent")
                 return []
-        return [] if common_parent is None else pins
+            if common_parent is None:
+                common_parent = item_parent
+            elif item_parent != common_parent:
+                return []  # multiple blocks - no go
+            pins.append(item)
+        if common_parent is None:
+            return []
+        for item in items:
+            if item in pins:
+                continue
+            parent = item.parentItem()
+            while parent is not None and parent not in pins:
+                parent = parent.parentItem()
+            if parent not in pins:
+                return []
+        return pins
 
     @checked
     def _selectRect(
@@ -286,10 +294,10 @@ class DiagramViewPrivateMixin:
         self      : Self,
         pos       : QPointF,
         modifiers : MouseModifier
-    ) -> None:
+    ) -> bool:
         """
-        Should only be called when there is an item at the given position.
-        Otherwise a marquee selection is happening.
+        Select the top selectable item at ``pos``.
+        Returns False when nothing there is selectable; the caller marquees.
         """
         host = asDiagramView(self)
         if (scene := host.scene()) is None:
@@ -307,10 +315,9 @@ class DiagramViewPrivateMixin:
             if fresh and not item.isSelected():
                 scene.clearSelection()
             item.setSelected(True)
-        else:
-            # this should never happen
-            logger().warning("No items at position")
-            scene.clearSelection()
+            return True
+        scene.clearSelection()
+        return False
 
     @checked
     def _selectedItems(
