@@ -1,11 +1,12 @@
-"""Report functions and methods that nothing calls.
+"""Report functions, methods, and classes that nothing calls or names.
 
 Scans ``ConnectEd``, ``tests``, ``tools``, ``scripts``, and ``examples``.
 Skips ANTLR output and anything under pyVHDLParser. A name counts as
 used when some other function calls it, loads it to pass it on (for
 example into ``connect``), or names it in a string (for example a
 subscriber method). Dunder methods, tests, pytest hooks, and methods
-that override a third-party base are left out.
+that override a third-party base are left out. Classes named ``Test*``
+are left out too.
 
 Published surfaces are left out too. A module that imports ``export``
 from ``pyTooling.Decorators`` is an HDL model API. ``ConnectEd/scripting``
@@ -76,9 +77,12 @@ class Defn:
 @dataclass
 class ClassInfo:
     path     : str
+    line     : int
     name     : str
+    qual     : str
     bases    : tuple[str, ...]
     bindings : dict[str, str]
+    skip     : bool = False
 
 
 def rel(path : Path) -> str:
@@ -173,7 +177,15 @@ class _Scan(ast.NodeVisitor):
             dotted for base in node.bases
             if (dotted := _dotted(base)) is not None
         )
-        self.classes.append(ClassInfo(self.path, node.name, bases, self.bindings))
+        qual = ".".join([*(name for _, name in self._stack), node.name])
+        self.classes.append(ClassInfo(
+            path     = self.path,
+            line     = node.lineno,
+            name     = node.name,
+            qual     = qual,
+            bases    = bases,
+            bindings = self.bindings,
+        ))
         self._stack.append(("class", node.name))
         self.generic_visit(node)
         self._stack.pop()
@@ -351,6 +363,8 @@ def scan_file(path : Path) -> tuple[list[Defn], list[ClassInfo], set[str]] | str
     if _api_path(scanner.path) or _exported_model(tree):
         for item in scanner.defs:
             item.skip = True
+        for info in scanner.classes:
+            info.skip = True
     return scanner.defs, scanner.classes, scanner.uses
 
 
@@ -383,6 +397,19 @@ def unused(raws : list[str]) -> list[Defn]:
         if any(base == "Protocol" or base.endswith(".Protocol") for base in bases):
             continue
         found.append(item)
+    for info in classes:
+        if info.skip or info.name in uses:
+            continue
+        if info.name.startswith("Test") or info.name.startswith("test_"):
+            continue
+        found.append(Defn(
+            path = info.path,
+            line = info.line,
+            name = info.name,
+            qual = info.qual,
+            cls  = "",
+        ))
+    found.sort(key = lambda item : (item.path, item.line, item.qual))
     return found
 
 
