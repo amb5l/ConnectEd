@@ -1,5 +1,5 @@
 from typing          import Self, Protocol, Any, cast, runtime_checkable
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QByteArray, QMimeData
@@ -50,8 +50,8 @@ def toXmlEndElement(xw : QXmlStreamWriter) -> None:
 
 def fromXml(
     xr   : QXmlStreamReader,
-    xref : dict[str, XmlHandler | type[XmlProtocol]],  # tag : handler mapping
-    ptag : str | None = None,                          # parent tag
+    xref : Mapping[str, XmlHandler | type],  # tag : handler mapping
+    ptag : str | None = None,                # parent tag
 ) -> list[Any]:
     output = []
     while not xr.atEnd():
@@ -63,7 +63,10 @@ def fromXml(
             if handler is None:
                 logger().warning(f"Unknown element: {tag}")
             else:
-                obj = handler.fromXml(xr) if isinstance(handler, type) else handler(xr)
+                if isinstance(handler, type):
+                    obj = cast(type[XmlProtocol], handler).fromXml(xr)
+                else:
+                    obj = handler(xr)
                 if obj is not None:
                     output.append(obj)
         xr.readNext()
@@ -73,13 +76,14 @@ def fromXml(
 def fromXmlWrapper(
     xr   : QXmlStreamReader,
     tag  : str,
-    xref : dict[str, XmlHandler | type[XmlProtocol]]
+    xref : Mapping[str, XmlHandler | type]
 ) -> tuple[list[Any], dict[str, str]]:
     if not xr.readNextStartElement() or xr.name() != tag:
         logger().warning(f"No {tag} element found")
         return [], {}
-    attributes = {a.name(): a.value() for a in xr.attributes()}
-    return fromXml(xr, xref), attributes
+    attributes = {str(a.name()): str(a.value()) for a in xr.attributes()}
+    xr.readNext()
+    return fromXml(xr, xref, ptag=tag), attributes
 
 
 def saveXml(
@@ -210,15 +214,20 @@ def copyXml(
 
 @checked
 def pasteXml(
-    xref : dict[str, type[XmlProtocol]]
-) -> tuple[list[XmlProtocol], dict[str, str]]:
+    xref : Mapping[str, type]
+) -> tuple[list[Any], dict[str, str]]:
     """
     Builds objects from clipboard XML; returns them and envelope metadata.
+
+    The map and the returned objects stay untyped as ``XmlProtocol``.
+    Typeguard rejects ``classmethod fromXml`` as an instance method.
     """
     if (clipboard := QApplication.clipboard()) is None:
         return [], {}
-    buffer = clipboard.text()
-    xr = QXmlStreamReader(buffer)
+    mime_data = clipboard.mimeData()
+    if mime_data is None or not mime_data.hasFormat(MIME_TYPE):
+        return [], {}
+    xr = QXmlStreamReader(mime_data.data(MIME_TYPE))
     items, attributes = fromXmlWrapper(xr, "Clipboard", xref)
     return items, attributes
 

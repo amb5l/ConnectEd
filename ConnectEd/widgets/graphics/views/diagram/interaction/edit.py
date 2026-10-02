@@ -37,16 +37,14 @@ class EditPasteInteraction(
         view : DiagramView,
         pos  : QPointF
     ) -> None:
+        super().__init__(view, [])
         items, copy_pos = self._scene.paste()
         if items:
-            super().__init__(view, items)
             self._cpos = self._ipos = copy_pos or pos
             self._items = items
             self._previewSave()
             self._addToScene(select=True)
             self.update(pos)  # Move to initial position
-        else:
-            self._items = []
 
     @checked
     def _commit(self : Self, pos : QPointF) -> bool:
