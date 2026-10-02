@@ -210,7 +210,13 @@ class RubberPreviewMixin:
                 group.remove(jog)
 
         for group in groups:
-            if len(group) <= 1:
+            if not group:
+                continue
+            # One jog has nothing to dodge, so it stays on the span midpoint.
+            # That midpoint moves as the inline length changes.
+            if len(group) == 1:
+                jog = group[0]
+                jog.setLane(jog.prefLane())
                 continue
 
             group_axis = group[0].axis()
@@ -235,7 +241,8 @@ class RubberPreviewMixin:
                 jogs = quad_to_jogs[q]
                 jogs.sort(key=lambda j: jog_across_center[j])
                 n = len(jogs)
-                if n <= 1:
+                if n == 1:
+                    jogs[0].setLane(jogs[0].prefLane())
                     continue
 
                 reverse = _staircaseReverse(group_axis or Axis.H, q[0], q[1])
