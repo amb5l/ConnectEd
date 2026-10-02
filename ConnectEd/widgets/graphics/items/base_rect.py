@@ -7,9 +7,9 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check   import checked
-from ....core.defs    import PITCH
-from ....core.types   import RectHandleId, DataKind
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import RectHandleId, DataKind
 
 from ..properties     import PropertySpec, PropertiesMixin
 

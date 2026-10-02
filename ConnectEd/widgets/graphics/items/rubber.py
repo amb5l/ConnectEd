@@ -13,10 +13,10 @@ from PyQt6.QtGui     import QPainterPath
 from ....core.check import checked
 from ....core.types import Axis, Polarity
 
-from .segment       import SegmentItem
-from .node          import NodeItem
-from .role          import ChromeItem
-from .mixin         import ItemNamesMixin
+from .segment import SegmentItem
+from .node    import NodeItem
+from .role    import ChromeItem
+from .mixin   import ItemNamesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

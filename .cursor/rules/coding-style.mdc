@@ -1,0 +1,18 @@
+---
+description: Run tools/coding_style.py on Python edits
+alwaysApply: true
+---
+
+# Coding style check
+
+Python style for this repo is `tools/coding_style.py`. After editing Python, run it from the repo root and fix what it reports before finishing:
+
+```powershell
+.venv\Scripts\python.exe tools/coding_style.py
+```
+
+Pass specific files when the change is small. The `@override` check still reads the whole tree so base classes resolve.
+
+`@override` comes from `typing_extensions` (the project supports Python 3.11). Put it on a method that overrides a concrete in-project base method, above `@checked`. Do not add it only because the base method is `@abstractmethod` or `@required`. `__init__` and `__new__` are exempt. Do not enable mypy `explicit-override` or pyright `reportImplicitOverride`; those also flag abstract implementations.
+
+`@required` lives in `ConnectEd.core.required`. Use it for a hook the subclass must implement when the class is not an `ABC`. The body is `...`; the decorator raises `NotImplementedError`. Put `@classmethod` above `@required`. On an `ABC`, use `@abstractmethod`.

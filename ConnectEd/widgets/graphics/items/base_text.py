@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing          import Self, Any, Protocol
-from collections.abc import Callable
-from dataclasses     import dataclass
+from typing            import Self, Any, Protocol
+from typing_extensions import override
+from collections.abc   import Callable
+from dataclasses       import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
@@ -31,16 +32,17 @@ from ....resources.icons import AnchorTopLeftIcon,      \
                                 TextAlignMiddleIcon,    \
                                 TextAlignBottomIcon
 from ....core.check      import checked
+from ....core.required   import required
 
-from ..properties        import PropertySpec
-from ..quill             import Quill
+from ..properties import PropertySpec
+from ..quill      import Quill
 
 from .grip               import ResizeGripItem
 
-from .mixin.transform    import ItemTransformMixin
-from .mixin.handle       import ItemRectHandlesMixin
-from .mixin.shape        import ItemShapeMixin
-from .mixin.primary      import PrimaryItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.shape     import ItemShapeMixin
+from .mixin.primary   import PrimaryItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -75,6 +77,7 @@ class _TextItemDialog(_TextAppearanceDialog, Protocol):
 class TextResizeGripItem(ResizeGripItem):
     """Grip for resizing text items."""
 
+    @override
     @checked
     def moveSave(self : Self) -> tuple[QPointF, float, float]:  # pyright: ignore[reportIncompatibleMethodOverride]
         item = self.item()
@@ -82,6 +85,7 @@ class TextResizeGripItem(ResizeGripItem):
             raise TypeError("Bad item")
         return self.scenePos(), item.width(), item.height()
 
+    @override
     @checked
     def moveRestore(self  : Self, state : tuple[QPointF, float, float]) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         pos, width, height = state
@@ -280,6 +284,7 @@ class BaseTextItem(
     def onSceneOrientationChanged(self : Self) -> None:
         self._child.onSceneOrientationChanged()
 
+    @override
     def onOriginChanged(
         self : Self,
         _old : HandleId | None,
@@ -434,6 +439,7 @@ class BaseTextItem(
         """Return the rectangle used for handles."""
         return self._brect
 
+    @override
     @checked
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         """
@@ -783,11 +789,12 @@ class TextRendererMixin(ItemShapeMixin):
             raise TypeError("Bad parent")
         parent.contextMenuEvent(event)
 
+    @required
     def _setText(
         self : Self | TextLineRenderer | TextBlockRenderer,
         text : str,
     ) -> None:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
     @staticmethod
     def _autoflipPivot(

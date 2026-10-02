@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check   import checked
-from ....core.types   import HandleId, LineHandleId, DataKind
+from ....core.check import checked
+from ....core.types import HandleId, LineHandleId, DataKind
 
 from ..properties     import PropertySpec
 
-from .role            import DecorativeItem
-from .handle          import HandleItem
-from .grip            import GripItem, ResizeGripItem
+from .role   import DecorativeItem
+from .handle import HandleItem
+from .grip   import GripItem, ResizeGripItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.primary   import PrimaryItemMixin
@@ -87,6 +88,7 @@ class LineItem(
         self._line = QLineF()
         self.setPoints(p1, p2)
 
+    @override
     @checked
     def initHandles(self : Self) -> None:
         self._handles = {

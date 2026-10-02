@@ -9,14 +9,14 @@ from PyQt6.QtGui     import QColor
 from ......core.check import checked
 from ......core.types import DataKind
 
-from ....properties   import PropertySpec
-from ....scenes       import withScene
+from ....properties import PropertySpec
+from ....scenes     import withScene
 
 from ...protocols     import OnSceneChangedProtocol
 
-from .line            import ItemPresentationLineMixin  # noqa: E402
-from .fill            import ItemPresentationFillMixin  # noqa: E402
-from .text            import ItemPresentationTextMixin  # noqa: E402
+from .line import ItemPresentationLineMixin  # noqa: E402
+from .fill import ItemPresentationFillMixin  # noqa: E402
+from .text import ItemPresentationTextMixin  # noqa: E402
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

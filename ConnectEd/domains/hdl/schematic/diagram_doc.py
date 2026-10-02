@@ -10,7 +10,8 @@
 
 from __future__ import annotations
 
-from typing import Self, cast
+from typing            import Self, cast
+from typing_extensions import override
 
 from PyQt6.QtCore    import QSize, QXmlStreamWriter, QXmlStreamReader
 
@@ -109,6 +110,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         doc._object = scene
         return doc
 
+    @override
     @checked
     def save(self : Self, path : str | None = None) -> bool:
         self._object.undo_stack.setClean()
@@ -316,6 +318,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
 
     # --- editor lifecycle (close / save) --------------------------------------
 
+    @override
     @checked
     def commit(self : Self, subwindow : DocSubWindow) -> None:
         subject = self._subjectFromSubwindow(subwindow)
@@ -334,6 +337,7 @@ class HdlSchematicDiagramDoc(Doc[DiagramScene]):
         else:
             raise RuntimeError("Bad subject")
 
+    @override
     @checked
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
         return subject is self._object

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing      import Self, overload
-from dataclasses import dataclass
+from typing            import Self, overload
+from typing_extensions import override
+from dataclasses       import dataclass
 
 from PyQt6.QtCore    import QPointF, QRectF, \
                             QXmlStreamWriter, QXmlStreamReader
@@ -10,19 +11,19 @@ from PyQt6.QtGui     import QAction
 
 from ....app          import logger
 
-from ....core.check   import checked
-from ....core.defs    import PITCH
-from ....core.types   import DataKind, RectHandleId
-from ....core.utils   import val2str
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import DataKind, RectHandleId
+from ....core.utils import val2str
 
 from ...dialogs.arc   import ArcDialog
 
-from ..properties     import PropertySpec
-from ..xml            import fromXmlProperties
-from ..painter_path   import PainterPath
+from ..properties   import PropertySpec
+from ..xml          import fromXmlProperties
+from ..painter_path import PainterPath
 
-from .grip            import GripShape, GripShapeMixin, GripItem, ResizeGripItem
-from .role            import DecorativeItem
+from .grip import GripShape, GripShapeMixin, GripItem, ResizeGripItem
+from .role import DecorativeItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -171,12 +172,14 @@ class PolylineMoveState:
 class PolylineResizeGripItem(ResizeGripItem):
     """Grip for resizing polyline items."""
 
+    @override
     @checked
     def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:  # pyright: ignore[reportIncompatibleMethodOverride]
         if not isinstance(item := self.item(), PolylineItem):
             raise TypeError("Bad item")
         return self.scenePos(), [v.pos() for v in item.vertices()]
 
+    @override
     @checked
     def moveRestore(self : Self, state : tuple[QPointF, list[QPointF]]) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         if not isinstance(item := self.item(), PolylineItem):
@@ -247,6 +250,7 @@ class PolylineItem(
         self.updatePath()
         self._select_mode = 1 if fresh else 0
 
+    @override
     @checked
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         """Initialize vertices, segments, and APs on scene change."""
@@ -259,6 +263,7 @@ class PolylineItem(
             for h in self._handles.values():
                 h._grip.onSceneChanged(scene)
 
+    @override
     def onSelectionModeChanged(self : Self) -> None:
         scene : DiagramScene | None = self.scene()
         if scene is not None:
@@ -412,6 +417,7 @@ class PolylineItem(
             vertex.setPos(vertex.pos() - v0)
         self.updatePath()
 
+    @override
     @checked
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         """Resize bbox from handles; mixin assumes rect top-left at item (0,0)."""
@@ -439,6 +445,7 @@ class PolylineItem(
             case _:
                 raise ValueError(f"Invalid handle: {id}")
 
+    @override
     def setGripsVisible(self : Self, visible : bool) -> None:
         super().setGripsVisible(visible)
         show_vtx = visible and self.selectMode() == 1
@@ -511,6 +518,7 @@ class PolylineItem(
         if hasattr(self, '_handles'):
             self.updateHandlePositions()
 
+    @override
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
@@ -527,6 +535,7 @@ class PolylineItem(
         self.toXmlChildren(xw)
         self.toXmlEnd(xw)
 
+    @override
     @checked
     @classmethod
     def fromXml(
@@ -583,6 +592,7 @@ class PolylineItem(
             if i == n - 1 and self._closed:
                 self._segments.append(PolySegItem(self, v2, self._vertices[0]))
 
+    @override
     @checked
     def _cloneAfter(self : Self, clone : ItemCloneMixin) -> None:
         """Copy vertex graph and segment sweeps after ItemCloneMixin clone."""

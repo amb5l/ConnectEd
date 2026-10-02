@@ -7,10 +7,10 @@ from PyQt6.QtGui     import QShowEvent
 
 from ...properties           import populateProperty, populateLabel
 
-from ...table.row            import TableRow
-from ...table.model          import TableModel
-from ...table.view           import TableView
-from ...graphics.properties  import PropertiesMixin
+from ...table.row           import TableRow
+from ...table.model         import TableModel
+from ...table.view          import TableView
+from ...graphics.properties import PropertiesMixin
 
 from ...graphics.items.mixin import ItemMixin
 

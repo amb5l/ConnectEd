@@ -5,8 +5,8 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QComboBox
 
-from ....core.check                import checked
-from ....core.types                import Direction
+from ....core.check import checked
+from ....core.types import Direction
 
 from ..components.layout.ok_cancel import OkCancelLayout
 

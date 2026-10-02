@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from contextvars import ContextVar, Token
-from dataclasses import dataclass
 from typing      import Any
+from dataclasses import dataclass
+from contextvars import ContextVar, Token
 
 from PyQt6.QtCore import QXmlStreamReader, QXmlStreamWriter
 

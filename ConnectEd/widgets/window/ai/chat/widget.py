@@ -26,11 +26,11 @@ from PyQt6.QtGui     import (
 
 from .....app                import logger, settings
 
-from .....core.check         import checked
-from .....ai.chat_mru        import recordChatConnection
-from .....ai.html            import escape, historyStyleSheet, linkify, userMessageHtml
-from .....ai.session         import AiChatSession
-from .....ai.welcome         import parseChatLink, welcomeHtml
+from .....core.check  import checked
+from .....ai.chat_mru import recordChatConnection
+from .....ai.html     import escape, historyStyleSheet, linkify, userMessageHtml
+from .....ai.session  import AiChatSession
+from .....ai.welcome  import parseChatLink, welcomeHtml
 
 from ....dialogs.ai_profiles import AiProfilesDialog
 

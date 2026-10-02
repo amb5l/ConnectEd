@@ -1,5 +1,6 @@
-from typing          import Self, cast
-from collections.abc import Sequence
+from typing            import Self, cast
+from typing_extensions import override
+from collections.abc   import Sequence
 
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -8,19 +9,19 @@ from ......app                        import logger
 
 from ......core.check                 import checked
 
-from .....dialogs.appearance          import AppearanceDialog
-from .....dialogs.properties          import PropertiesDialog
+from .....dialogs.appearance import AppearanceDialog
+from .....dialogs.properties import PropertiesDialog
 
-from .....dialogs.items.text          import TextItemDialog
-from .....dialogs.items.label         import LabelItemDialog
-from .....dialogs.items.port_pin      import PortPinItemDialog
+from .....dialogs.items.text     import TextItemDialog
+from .....dialogs.items.label    import LabelItemDialog
+from .....dialogs.items.port_pin import PortPinItemDialog
 
 from ....properties                   import PropertiesMixin
 
-from ....items.text                   import TextItem
-from ....items.label                  import LabelItem
-from ....items.port                   import PortItem
-from ....items.block_pin              import BlockPinItem
+from ....items.text      import TextItem
+from ....items.label     import LabelItem
+from ....items.port      import PortItem
+from ....items.block_pin import BlockPinItem
 
 from ....items.mixin.presentation     import ItemPresentationMixin
 
@@ -28,13 +29,14 @@ from ..mouse                          import MouseModifier
 
 from ..interaction.edit               import EditPasteInteraction
 
-from .base                            import DiagramViewState
-from .mixin                           import ClickMixin, DragMixin
+from .base  import DiagramViewState
+from .mixin import ClickMixin, DragMixin
 
 
 class DiagramViewStateEditSelectArea1(DiagramViewState):
     STATUS = "Select: pick the first point of the marquee"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -44,6 +46,7 @@ class DiagramViewStateEditSelectArea1(DiagramViewState):
         self.view.marquee.begin(vpos)
         self.view.state.go(self.view.stateEditSelectArea2)
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -56,6 +59,7 @@ class DiagramViewStateEditSelectArea1(DiagramViewState):
 class DiagramViewStateEditSelectArea2(DiagramViewState):
     STATUS = "Select: complete the marquee selection"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -66,6 +70,7 @@ class DiagramViewStateEditSelectArea2(DiagramViewState):
         self.view._selectRect(self.view.marquee.rect(), modifiers & MouseModifier.CTRL)
         self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseMove(
         self      : Self,
         vpos      : QPoint,
@@ -74,6 +79,7 @@ class DiagramViewStateEditSelectArea2(DiagramViewState):
     ) -> None:
         self.view.marquee.resize(vpos)
 
+    @override
     def mouseLeftDragCont(
         self      : Self,
         vpos      : QPoint,
@@ -82,6 +88,7 @@ class DiagramViewStateEditSelectArea2(DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseLeftDragEnd(
         self      : Self,
         vpos      : QPoint,
@@ -94,6 +101,7 @@ class DiagramViewStateEditSelectArea2(DiagramViewState):
 class DiagramViewStateEditPaste(ClickMixin, DiagramViewState):
     STATUS = "Paste: select the paste position"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -128,6 +136,7 @@ class DiagramViewStateEditMoveGrip(ClickMixin, DragMixin, DiagramViewState):
 class DiagramViewStateEditMovePins(DiagramViewState):
     STATUS = "Move Pins: position the selected pin(s) as required"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -138,6 +147,7 @@ class DiagramViewStateEditMovePins(DiagramViewState):
         self._interaction().commit(spos, g.pitch if g.snap else None)
         self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseMove(
         self      : Self,
         vpos      : QPoint,
@@ -147,6 +157,7 @@ class DiagramViewStateEditMovePins(DiagramViewState):
         g = self.view.grid
         self._interaction().update(spos, g.pitch if g.snap else None)
 
+    @override
     def mouseLeftDragCont(
         self      : Self,
         vpos      : QPoint,
@@ -156,6 +167,7 @@ class DiagramViewStateEditMovePins(DiagramViewState):
         g = self.view.grid
         self._interaction().update(spos, g.pitch if g.snap else None)
 
+    @override
     def mouseLeftDragEnd(
         self      : Self,
         vpos      : QPoint,
@@ -174,6 +186,7 @@ class DiagramViewStateEditAdjustPolySeg(DragMixin, DiagramViewState):
 class DiagramViewStateEditAppearance(DiagramViewState):
     STATUS = "Appearance: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -211,6 +224,7 @@ class DiagramViewStateEditAppearance(DiagramViewState):
 class DiagramViewStateEditItemProperties(DiagramViewState):
     STATUS = "{Item} Properties: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -235,6 +249,7 @@ class DiagramViewStateEditItemProperties(DiagramViewState):
 class DiagramViewStateEditDiagramProperties(DiagramViewState):
     STATUS = "{Diagram} Properties: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -252,6 +267,7 @@ class DiagramViewStateEditDiagramProperties(DiagramViewState):
 class DiagramViewStateEditQuery(DiagramViewState):
     STATUS = "Query: pick an item"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -265,6 +281,7 @@ class DiagramViewStateEditQuery(DiagramViewState):
 class DiagramViewStateEditText(DiagramViewState):
     STATUS = "Edit Text: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -307,6 +324,7 @@ class DiagramViewStateEditText(DiagramViewState):
 class DiagramViewStateEditLabel(DiagramViewState):
     STATUS = "Edit Label: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -327,6 +345,7 @@ class DiagramViewStateEditLabel(DiagramViewState):
 class DiagramViewStateEditPort(DiagramViewState):
     STATUS = "Edit Port: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -349,6 +368,7 @@ class DiagramViewStateEditPort(DiagramViewState):
 class DiagramViewStateEditBlockPin(DiagramViewState):
     STATUS = "Edit Block Pin: specify changes"
 
+    @override
     @checked
     def entry(
         self  : Self,

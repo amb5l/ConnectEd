@@ -9,10 +9,10 @@ from PyQt6.QtCore import QPointF, QLineF
 
 from .....app            import logger
 
-from .....core.defs      import PITCH
-from .....core.types     import Direction, NetKind
-from .....core.expr      import evaluate
-from .....core.check     import checked
+from .....core.defs  import PITCH
+from .....core.types import Direction, NetKind
+from .....core.expr  import evaluate
+from .....core.check import checked
 
 from ...items.node       import NodeItem, FreeNodeItem, FixedNodeItem, \
                                 TapMajorNodeItem, TapMinorNodeItem

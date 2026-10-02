@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing          import Self
+from abc             import ABC, abstractmethod
 from collections.abc import Callable
 
 from PyQt6.QtCore    import QPoint, QPointF
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     from .base         import DiagramViewState
 
 
-class StartMixin:
+class StartMixin(ABC):
     """
     For states that need a click (or context-menu Start) to create an
     interaction and advance to the next state.
@@ -27,8 +28,9 @@ class StartMixin:
     # Constructors take (view, first snap point); item is created inside.
     _INTERACTION_CLS : Callable[[DiagramView, QPointF], DiagramInteraction]
 
+    @abstractmethod
     def _nextState(self : Self) -> DiagramViewState:
-        raise NotImplementedError
+        ...
 
     def _start(self : Self, spos : QPointF) -> None:
         host = asDiagramViewState(self)

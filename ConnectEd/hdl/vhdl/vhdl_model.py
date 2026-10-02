@@ -8,9 +8,9 @@ from antlr4.error.ErrorListener import ErrorListener
 
 from pyTooling.Decorators import export
 
-from .vhdl_lexer          import vhdl_lexer as vhl
-from .vhdl_parser         import vhdl_parser as vhp
-from .vhdl_visitor        import VhdlVisitor
+from .vhdl_lexer   import vhdl_lexer as vhl
+from .vhdl_parser  import vhdl_parser as vhp
+from .vhdl_visitor import VhdlVisitor
 
 
 T = TypeVar("T")

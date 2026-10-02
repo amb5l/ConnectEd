@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QWidget, QLineEdit, QApplication, QStyle, \
                             QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QPainter, QMouseEvent, QStandardItemModel
 
-from ....core.check                 import checked
-from ....core.types                 import DataKind
+from ....core.check import checked
+from ....core.types import DataKind
 
 from ...utils                       import kind2dialogEditor
 

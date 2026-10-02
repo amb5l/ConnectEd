@@ -4,8 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ...core.check                       import checked
-from ...core.types                       import NoChange, NO_CHANGE
+from ...core.check import checked
+from ...core.types import NoChange, NO_CHANGE
 
 from ..graphics.items.mixin.presentation import ItemPresentationMixin
 
@@ -13,10 +13,10 @@ from .private                            import _lineTheme, _lineOverrides, \
                      _fillTheme, _fillOverrides, \
                      _textTheme, _textOverrides
 
-from .components.layout.line_appearance  import LineAppearanceLayout
-from .components.layout.fill_appearance  import FillAppearanceLayout
-from .components.layout.text_typography  import TextTypographyPreviewLayout
-from .components.layout.ok_cancel        import OkCancelLayout
+from .components.layout.line_appearance import LineAppearanceLayout
+from .components.layout.fill_appearance import FillAppearanceLayout
+from .components.layout.text_typography import TextTypographyPreviewLayout
+from .components.layout.ok_cancel       import OkCancelLayout
 
 
 class AppearanceDialog(QDialog):

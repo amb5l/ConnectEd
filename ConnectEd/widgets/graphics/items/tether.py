@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
@@ -59,6 +60,7 @@ class TextTetherItem(
     ) -> None:
         self._text_item.mouseDoubleClickEvent(event)
 
+    @override
     def onSettingsChanged(self : Self) -> None:
         from ..scenes.diagram import DiagramScene
         if isinstance(scene := self.scene(), DiagramScene):

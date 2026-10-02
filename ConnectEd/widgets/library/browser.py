@@ -7,10 +7,10 @@ from ...core.check                    import checked
 
 from ...domains.hdl.schematic.library import HdlSchematicLibrary
 
-from .properties                      import LibraryPropertiesPane
-from .list                            import LibraryListPane
-from .preview                         import LibraryPreviewPane
-from .sub_window                      import LibrarySubWindow
+from .properties import LibraryPropertiesPane
+from .list       import LibraryListPane
+from .preview    import LibraryPreviewPane
+from .sub_window import LibrarySubWindow
 
 
 class LibraryBrowser(QSplitter):

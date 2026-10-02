@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing      import Self, Any
-from dataclasses import dataclass, fields
+from typing            import Self, Any
+from typing_extensions import override
+from dataclasses       import dataclass, fields
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsScene, QMenu
@@ -9,21 +10,21 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....app           import settings
 
-from ....core.check    import checked
-from ....core.types    import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ....core.check import checked
+from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
-from ....core.utils    import val2str
+from ....core.utils import val2str
 
 
 from ..properties      import Property, PropertiesMixin, PropertySpec
 
-from .text             import TextItem
-from .handle           import HandleItem
-from .tether           import TextTetherItem
+from .text   import TextItem
+from .handle import HandleItem
+from .tether import TextTetherItem
 
-from .mixin.names      import ItemNamesMixin
-from .mixin.transform  import ItemTransformMixin
-from .mixin.handle     import ItemHandlesMixin
+from .mixin.names     import ItemNamesMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -35,6 +36,7 @@ class LabelTetherItem(TextTetherItem):
     Tether line from the origin of a LabelItem to its parent cleat.
     """
 
+    @override
     def anchor(self : Self) -> QGraphicsItem | None:
         if isinstance(self._text_item, QGraphicsItem):
             return self._text_item.parentItem()
@@ -79,6 +81,7 @@ class LabelItem(TextItem):
     _cleat    : HandleId        | None
     _tether   : LabelTetherItem | None
 
+    @override
     def settingsName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Instance method in this case."""
         if isinstance(owner := self.owner(), ItemNamesMixin) \
@@ -86,6 +89,7 @@ class LabelItem(TextItem):
             return type(self)._themeItemName(owner, self.name())
         return "Label"
 
+    @override
     def resourcesName(self : Self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """Instance method in this case."""
         return self.settingsName()
@@ -149,6 +153,7 @@ class LabelItem(TextItem):
         self._updateQuill()
         self._property.subscribe(self.onTextChanged)
 
+    @override
     def onPositionChanged(
         self : Self,
         pos  : QPointF | None = None
@@ -157,6 +162,7 @@ class LabelItem(TextItem):
         if hasattr(self, "_tether") and self._tether is not None:
             self._tether.onPositionChanged(pos)
 
+    @override
     def onSelectionChanged(self : Self, selected : bool) -> None:
         super().onSelectionChanged(selected)
         if (tether := self._tether) is None:
@@ -216,6 +222,7 @@ class LabelItem(TextItem):
         self._cleat = id
         self._property.notify()
 
+    @override
     @checked
     def setOrigin(self : Self, id : HandleId) -> None:
         """Override to update tether line."""
@@ -224,16 +231,20 @@ class LabelItem(TextItem):
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChanged(self.pos())
 
+    @override
     def text(self : Self) -> str:
         raise NotImplementedError("text() is not implemented")
 
+    @override
     @checked
     def setText(self : Self, text : str) -> None:
         raise NotImplementedError("setText() is not implemented")
 
+    @override
     def block(self : Self) -> bool:
         raise NotImplementedError("block() is not implemented")
 
+    @override
     @checked
     def setBlock(self : Self, block : bool) -> None:
         raise NotImplementedError("setBlock() is not implemented")
@@ -347,6 +358,7 @@ class LabelItem(TextItem):
         if not isinstance(payload.underline, NoChange):
             self.setTextUnderline(payload.underline)
 
+    @override
     @checked
     def ctxMenuItems(
         self : Self,

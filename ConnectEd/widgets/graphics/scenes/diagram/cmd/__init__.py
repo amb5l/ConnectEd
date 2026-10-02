@@ -6,12 +6,13 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
-from ......core.check          import checked
-from ......core.utils          import camel2proper
+from ......core.check    import checked
+from ......core.required import required
+from ......core.utils    import camel2proper
 
-from ....items.grip            import GripItem
-from ....items.segment         import SegmentItem
-from ....items.mixin           import ItemMoveMixin
+from ....items.grip    import GripItem
+from ....items.segment import SegmentItem
+from ....items.mixin   import ItemMoveMixin
 
 from ....items.mixin.transform import ItemTransformMixin
 
@@ -32,15 +33,13 @@ class CmdBase(QUndoCommand):
         """Merge this command with another identical command."""
         return False  # never merge (for now)
 
+    @required
     def redo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement redo"
-        )
+        ...
 
+    @required
     def undo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement redo"
-        )
+        ...
 
 
 def cmdExec(
@@ -294,11 +293,13 @@ class CmdRotateBase(CmdSceneItems):
             if self._pos is not None:
                 item.setPos(self._before[item])
 
+    @required
     def _rotate(self : Self, item : QGraphicsItem) -> None:
-        raise NotImplementedError("Subclass must implement _rotate")
+        ...
 
+    @required
     def _unrotate(self : Self, item : QGraphicsItem) -> None:
-        raise NotImplementedError("Subclass must implement _unrotate")
+        ...
 
 
 class CmdRotateCW(CmdRotateBase):

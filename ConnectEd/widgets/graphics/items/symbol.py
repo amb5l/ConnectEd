@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsRectItem
 
-from ....core.check      import checked
-from ....core.types      import RectHandleId, DataKind
+from ....core.check import checked
+from ....core.types import RectHandleId, DataKind
 
 from ..properties        import PropertySpec, PropertiesMixin, propertySpecs
 
-from .part               import PartItemMixin
-from .role               import DecorativeItem, FunctionalItem
-from .symbol_pin         import SymbolPinItem
-from .mixin              import ItemMixin
+from .part       import PartItemMixin
+from .role       import DecorativeItem, FunctionalItem
+from .symbol_pin import SymbolPinItem
+from .mixin      import ItemMixin
 
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
@@ -72,6 +73,7 @@ class SymbolBaseItem(
     }
     _PROPERTIES = PartItemMixin._PROPERTIES_PART | _PROPERTIES_VHDL
 
+    @override
     @classmethod
     def resourcesName(cls : type[Self]) -> str:
         return "Symbol"
@@ -141,6 +143,7 @@ class SymbolBaseItem(
         if isinstance(self, PropertiesMixin):
             self.properties["VHDL Architecture"].notify()
 
+    @override
     def _resourceKey(self : Self) -> tuple[bool, bool]:
         from ..scenes.symbol import SymbolScene
         return (isinstance(self.scene(), SymbolScene), self.isSelected())
@@ -180,6 +183,7 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
     def definition(self : Self) -> SymbolDefinitionItem | None:
         return self._definition
 
+    @override
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         """
@@ -267,8 +271,8 @@ class SymbolInstanceItem(ItemTransformMixin, SymbolBaseItem):
 
     @checked
     def syncFromDefinition(
-        self        : Self,
-        definition  : SymbolDefinitionItem,
+        self         : Self,
+        definition   : SymbolDefinitionItem,
         *,
         inherent     : bool = False,
         custom       : bool = False,

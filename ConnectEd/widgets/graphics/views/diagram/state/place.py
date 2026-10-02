@@ -1,28 +1,29 @@
-from typing          import Self
-from collections.abc import Sequence
+from typing            import Self
+from typing_extensions import override
+from collections.abc   import Sequence
 
 from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from ......app                    import logger
 
-from ......core.check             import checked
-from ......core.types             import Direction
+from ......core.check import checked
+from ......core.types import Direction
 
 from .....dialogs.items.text      import TextItemDialog
 from .....dialogs.items.port_pin  import PortPinItemDialog
 from .....dialogs.items.gate      import GateItemDialog
 from .....dialogs.items.net_label import NetLabelItemDialog
 
-from ....items.text               import TextItem
-from ....items.port               import PortItem
-from ....items.gate               import GateFunc, BufGateItem, \
+from ....items.text       import TextItem
+from ....items.port       import PortItem
+from ....items.gate       import GateFunc, BufGateItem, \
                                  AndGateItem, OrGateItem, XorGateItem
-from ....items.block              import BlockItem
-from ....items.block_pin          import BlockPinItem
-from ....items.symbol_pin         import SymbolPinItem
-from ....items.segment            import SegmentItem
-from ....items.net_label          import NetLabelItem
+from ....items.block      import BlockItem
+from ....items.block_pin  import BlockPinItem
+from ....items.symbol_pin import SymbolPinItem
+from ....items.segment    import SegmentItem
+from ....items.net_label  import NetLabelItem
 
 from ..mouse                      import MouseModifier
 
@@ -42,8 +43,8 @@ from ..interaction.place          import (
     DiagramPlaceNetLabelInteraction
 )
 
-from .mixin                       import StartMixin, ClickMixin, DragMixin
-from .base                        import DiagramViewState
+from .mixin import StartMixin, ClickMixin, DragMixin
+from .base  import DiagramViewState
 
 
 class DiagramViewStatePlaceLine1(StartMixin, ClickMixin, DiagramViewState):
@@ -54,6 +55,7 @@ class DiagramViewStatePlaceLine1(StartMixin, ClickMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlaceLine2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -62,6 +64,7 @@ class DiagramViewStatePlaceLine1(StartMixin, ClickMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -83,6 +86,7 @@ class DiagramViewStatePlaceRectangle1(StartMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlaceRectangle2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -91,6 +95,7 @@ class DiagramViewStatePlaceRectangle1(StartMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -112,6 +117,7 @@ class DiagramViewStatePlaceEllipse1(StartMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlaceEllipse2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -120,6 +126,7 @@ class DiagramViewStatePlaceEllipse1(StartMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -141,6 +148,7 @@ class DiagramViewStatePlacePolyline1(StartMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlacePolyline2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -149,6 +157,7 @@ class DiagramViewStatePlacePolyline1(StartMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -165,6 +174,7 @@ class DiagramViewStatePlacePolyline2(ClickMixin, DragMixin, DiagramViewState):
 class DiagramViewStatePlaceText(ClickMixin, DiagramViewState):
     STATUS = "Place Text: pick a position"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -187,6 +197,7 @@ class DiagramViewStatePlaceText(ClickMixin, DiagramViewState):
 class DiagramViewStatePlacePort(ClickMixin, DiagramViewState):
     STATUS = "Place Port: pick a location"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -214,6 +225,7 @@ class DiagramViewStatePlacePort(ClickMixin, DiagramViewState):
 class DiagramViewStatePlaceGate(ClickMixin, DiagramViewState):
     STATUS = "Place Gate: pick a location"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -245,6 +257,7 @@ class DiagramViewStatePlaceBlock1(StartMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlaceBlock2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -253,6 +266,7 @@ class DiagramViewStatePlaceBlock1(StartMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -269,6 +283,7 @@ class DiagramViewStatePlaceBlock2(ClickMixin, DragMixin, DiagramViewState):
 class DiagramViewStatePlaceBlockPin(DiagramViewState):
     STATUS = "Place Block Pin: pick a location"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -292,6 +307,7 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
             logger().warning("No pin rect selected")
             self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -304,6 +320,7 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
         )
         self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseMove(
         self      : Self,
         vpos      : QPoint,
@@ -318,6 +335,7 @@ class DiagramViewStatePlaceBlockPin(DiagramViewState):
 class DiagramViewStatePlaceSymbolPin(ClickMixin, DiagramViewState):
     STATUS = "Place Symbol Pin: pick a location"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -347,6 +365,7 @@ class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewState):
     def _nextState(self : Self) -> DiagramViewState:
         return self.view.statePlaceConn2
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -355,6 +374,7 @@ class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewState):
     ) -> None:
         self._start(self.view._snap(spos))
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -367,6 +387,7 @@ class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewState):
 class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
     STATUS = "Place Connection: place a mid- or end-point"
 
+    @override
     def mouseLeftDoubleClick(
         self      : Self,
         vpos      : QPoint,
@@ -377,6 +398,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
             self._interaction().cancel()
         self.view.state.go(self.view.statePlaceConn1)
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -386,6 +408,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
         if self._interaction().commit(self.view._snap(spos)):
             self.view.state.go(self.view.statePlaceConn1)
 
+    @override
     def mouseMove(
         self      : Self,
         vpos      : QPoint,
@@ -394,6 +417,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
     ) -> None:
         self._interaction().update(self.view._snap(spos))
 
+    @override
     def mouseLeftDragCont(
         self      : Self,
         vpos      : QPoint,
@@ -402,6 +426,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseLeftDragEnd(
         self      : Self,
         vpos      : QPoint,
@@ -415,6 +440,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewState):
 class DiagramViewStatePlaceTap(ClickMixin, DiagramViewState):
     STATUS = "Place Tap: pick a location"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -425,6 +451,7 @@ class DiagramViewStatePlaceTap(ClickMixin, DiagramViewState):
             raise ValueError("Expected no items")
         self._interact(spos)
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -443,6 +470,7 @@ class DiagramViewStatePlaceTap(ClickMixin, DiagramViewState):
 class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewState):
     STATUS = "Place Net Label: pick a position"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -465,6 +493,7 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewState):
 class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DiagramViewState):
     STATUS = "Place Net Label on Connection: edit details"
 
+    @override
     @checked
     def entry(
         self  : Self,

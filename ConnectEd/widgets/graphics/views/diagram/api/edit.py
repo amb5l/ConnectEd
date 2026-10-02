@@ -7,18 +7,18 @@ from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
-from ......core.check    import checked
-from ......core.types    import NoChange, NO_CHANGE, AlignH, AlignV, \
+from ......core.check import checked
+from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId
 
-from ....query           import QueryWindow
-from ....scenes          import withScene
+from ....query  import QueryWindow
+from ....scenes import withScene
 
 from ....items.port      import PortItem
 from ....items.block_pin import BlockPinItem
 
-from ..interaction       import RotateItemMixin
-from ..host              import asDiagramView
+from ..interaction import RotateItemMixin
+from ..host        import asDiagramView
 
 from ..interaction.move  import MoveInteraction, MoveGripInteraction
 

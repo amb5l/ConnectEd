@@ -5,8 +5,9 @@ from typing import Self, cast
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsEllipseItem
 
-from .....core.check import checked
-from .....core.types import HandleId, RectHandleId, DataKind
+from .....core.check    import checked
+from .....core.required import required
+from .....core.types    import HandleId, RectHandleId, DataKind
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,16 +20,19 @@ class ItemHandlesMixin:
     _handles : dict[HandleId, HandleItem]
 
     @classmethod
+    @required
     def handleIdType(cls) -> type[HandleId]:
-        raise NotImplementedError("Subclass must implement handleIdType")
+        ...
 
     @classmethod
+    @required
     def handleIdKind(cls) -> DataKind:
-        raise NotImplementedError("Subclass must implement handleIdKind")
+        ...
 
     @classmethod
+    @required
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
-        raise NotImplementedError("Subclass must implement handleGripType")
+        ...
 
     def initHandles(self : Self) -> None:
         from ..handle import HandleItem
@@ -74,8 +78,9 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         return MoveGripItem if id == RectHandleId.MIDDLE_CENTER \
             else ResizeGripItem
 
+    @required
     def handleRect(self : Self) -> QRectF:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
     def updateHandlePositions(self : Self) -> None:
         from .transform import ItemTransformMixin

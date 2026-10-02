@@ -1,22 +1,24 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....app          import settings
 
-from ....core.check   import checked
-from ....core.defs    import WIDTH
-from ....core.types   import Direction, DataKind
-from ....core.utils   import qtItemClass
+from ....core.check    import checked
+from ....core.defs     import WIDTH
+from ....core.required import required
+from ....core.types    import Direction, DataKind
+from ....core.utils    import qtItemClass
 
-from ..properties     import PropertySpec, PropertiesMixin
-from ..scenes         import withScene
+from ..properties import PropertySpec, PropertiesMixin
+from ..scenes     import withScene
 
-from .role            import FunctionalItem
-from .node            import FixedNodeItem
-from .protocols       import SetPenProtocol
+from .role      import FunctionalItem
+from .node      import FixedNodeItem
+from .protocols import SetPenProtocol
 
 from .mixin.names     import ItemNamesMixin
 from .mixin.transform import ItemTransformMixin
@@ -108,10 +110,12 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         # initialize the item
         self.initItem(fresh)
 
+    @override
     def onSettingsChanged(self : Self) -> None:
         if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
+    @override
     @checked
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
@@ -124,6 +128,7 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
         for handle in self._handles.values():
             handle.onSceneOrientationChanged()
 
+    @override
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         if (scene := self.scene()) is None:
@@ -172,13 +177,17 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
     def bus(self : Self) -> bool:
         return self._bus
 
+    @override
     def _resourceKey(self : Self) -> tuple[bool, bool]:
         if not isinstance(self, QGraphicsItem): raise TypeError("Bad host")
         return (self.bus(), self.isSelected())
 
+    @override
+    @required
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        ...
 
+    @override
     def _updatePen(
         self  : Self,
         scene : DiagramScene
@@ -206,8 +215,9 @@ class PortPinMixin(FunctionalItem, PrimaryItemMixin):
             scene.resources.brush(self._arrow.resourcesName(), key)
         )
 
+    @required
     def _updateNameHandle(self : Self) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        ...
 
 
 class PortPinLineItem(PortPinMixin, QGraphicsLineItem):

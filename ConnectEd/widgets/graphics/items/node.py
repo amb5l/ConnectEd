@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from typing import Self
-from enum   import StrEnum
+from typing            import Self
+from typing_extensions import override
+from enum              import StrEnum
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
 from ....app             import logger
 
-from ....core.check      import checked
-from ....core.utils      import val2str
+from ....core.check import checked
+from ....core.utils import val2str
 
 from ..scenes            import withScene
 
@@ -121,9 +122,11 @@ class NodeItem(
                     )
         return id, pos
 
+    @override
     def _resourceKey(self : Self) -> tuple[NodeState, bool]:
         return (self._state, self.isSelected())
 
+    @override
     def _updateGraphics(self : Self, scene : DiagramScene) -> None:
         self.setPath(
             scene.resources.path(self.resourcesName(), self._state)
@@ -142,6 +145,7 @@ class FreeNodeItem(NodeItem):
         if pos is not None:
             self.setPos(pos)
 
+    @override
     @classmethod
     @checked
     def fromXml(cls : type[Self], xr : QXmlStreamReader) -> tuple[int, Self]:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -166,6 +170,7 @@ class FreeNodeItem(NodeItem):
 class FixedNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 2
 
+    @override
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         super().onSelectionChanged(selected)

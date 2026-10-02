@@ -3,7 +3,8 @@
 import logging
 
 import pytest
-from PyQt6.QtCore import (
+
+from PyQt6.QtCore    import (
     QBuffer, QByteArray, QIODevice, QPointF,
     QXmlStreamReader, QXmlStreamWriter,
 )

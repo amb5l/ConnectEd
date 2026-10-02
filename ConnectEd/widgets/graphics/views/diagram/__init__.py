@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Self
-from math   import ceil
+from typing            import Self
+from typing_extensions import override
+from math              import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsTextItem
@@ -10,24 +11,24 @@ from PyQt6.QtGui     import QPen, QPainter, \
 
 from .....app                     import logger, settings
 
-from .....core.check              import checked
-from .....core.doc                import DocBinding
+from .....core.check import checked
+from .....core.doc   import DocBinding
 
 from ....marquee                  import Marquee
 
-from ....window.mdi_area          import MdiArea
-from ....window.sub_window        import DocSubWindow
+from ....window.mdi_area   import MdiArea
+from ....window.sub_window import DocSubWindow
 
 from ...scenes.diagram            import DiagramScene
 
 from ...views.diagram.interaction import DiagramInteraction
 
-from .api                         import DiagramViewApiMixin
-from .mouse                       import DiagramViewMouseMixin
-from .state                       import DiagramViewStateMixin
-from .menu                        import DiagramViewMenuMixin
-from .private                     import DiagramViewPrivateMixin
-from .defs                        import DiagramViewLayer, DiagramViewGrid
+from .api     import DiagramViewApiMixin
+from .mouse   import DiagramViewMouseMixin
+from .state   import DiagramViewStateMixin
+from .menu    import DiagramViewMenuMixin
+from .private import DiagramViewPrivateMixin
+from .defs    import DiagramViewLayer, DiagramViewGrid
 
 from .state.base                  import DiagramViewState
 
@@ -182,6 +183,7 @@ class DiagramSubWindow(DocSubWindow):
         super().__init__(parent, binding)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
+    @override
     def closeEvent(self : Self, closeEvent : QCloseEvent | None) -> None:  # noqa: N803
         if closeEvent is None:
             logger().warning("No close event")

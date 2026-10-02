@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Self
-from enum   import Enum
+from typing            import Self
+from typing_extensions import override
+from enum              import Enum
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
 
-from ....core.check import checked
-from ....core.types import Direction, DataKind, RectHandleId, HandleId
+from ....core.check    import checked
+from ....core.required import required
+from ....core.types    import Direction, DataKind, RectHandleId, HandleId
 
 from ..properties   import PropertySpec
 from ..painter_path import PainterPath
@@ -61,10 +63,12 @@ class GateItem(
         "Label", "GatePin", "BufGatePin", "OrGatePin",
     })
 
+    @override
     @classmethod
     def settingsName(cls : type[Self]) -> str:
         return "Gate"
 
+    @override
     @classmethod
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
         return MoveGripItem
@@ -79,6 +83,7 @@ class GateItem(
         self.initPath()
         self.updateHandlePositions()
 
+    @override
     def toXmlChildren(
         self : Self,
         xw   : QXmlStreamWriter,
@@ -91,6 +96,7 @@ class GateItem(
     def handleRect(self : Self) -> QRectF:
         return self.path().controlPointRect()
 
+    @override
     @checked
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         self.moveBy(d.x(), d.y())
@@ -103,8 +109,9 @@ class GateItem(
         self._reference = reference
         self.properties["Reference"].notify()
 
+    @required
     def initPath(self : Self) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        ...
 
     @checked
     def ctxMenuItems(
@@ -224,6 +231,7 @@ class LogicGateItem(GateItem):
     _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
     _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
+    @override
     @classmethod
     def resourcesName(cls : type[Self]) -> str:
         return "GateRound"  # gate pen with round cap and round join
@@ -317,6 +325,7 @@ class OrGateItem(LogicGateItem):
         path.closeSubpath()
         self.setPath(path)
 
+    @override
     @checked
     def setInputs(self : Self, levels : str) -> None:
         super().setInputs(levels)
@@ -329,6 +338,7 @@ class OrGateItem(LogicGateItem):
 class XorGateItem(OrGateItem):
     _VHDL_OPERATOR = "xor"
 
+    @override
     def initPath(self : Self) -> None:
         path = PainterPath()
         path.moveTo(-26, -10)

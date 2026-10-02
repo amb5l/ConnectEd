@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Self
-from enum   import StrEnum
+from typing            import Self
+from typing_extensions import override
+from enum              import StrEnum
 
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem, QGraphicsItem
@@ -9,12 +10,13 @@ from PyQt6.QtGui     import QAction, QPen
 
 from ....app          import settings
 
-from ....core.check   import checked
+from ....core.check    import checked
+from ....core.required import required
 
 from ..scenes         import withScene
 
-from .role            import ChromeItem
-from .protocols       import MoveHandleByProtocol
+from .role      import ChromeItem
+from .protocols import MoveHandleByProtocol
 
 from .mixin.move      import ItemMoveMixin
 from .mixin.scene     import ItemSceneMixin
@@ -75,15 +77,14 @@ class GripItem(
         self.setBrush(scene.resources.brush("Grip"))
         self.updatePath(scene)
 
-    @withScene
-    @checked
+    @required
     def updatePath(self : Self, scene : DiagramScene | None = None) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        ...
 
-    @checked
+    @required
     def moveBy(
         self : Self, dx : float, dy : float) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        ...
 
 
 class HandleGripItem(GripItem):
@@ -199,6 +200,7 @@ class MoveGripItem(OriginGripShapeMixin, HandleGripItem):
 class ResizeGripItem(MoveGripItem):
     """Grip for resizing the item."""
 
+    @override
     @checked
     def ctxMenuItems(
         self : Self,
@@ -216,9 +218,11 @@ class ResizeGripItem(MoveGripItem):
 class FixedGripItem(MoveGripItem):
     """No-move grip e.g. for gate pins."""
 
+    @override
     def movable(self : Self) -> bool:
         return False
 
+    @override
     @checked
     def ctxMenuItems(
         self : Self,

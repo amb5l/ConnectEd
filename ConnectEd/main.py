@@ -6,8 +6,8 @@ from collections.abc import Callable
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui  import QIcon, QUndoStack
 
-from .app            import ConnectEdApp
-from .resources      import getIconPath, initResources
+from .app       import ConnectEdApp
+from .resources import getIconPath, initResources
 
 from .core.log       import logger
 from .core.args      import known_args

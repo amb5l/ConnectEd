@@ -29,8 +29,8 @@ from ....items.mixin      import ItemMixin
 from ....items.mixin.move      import ItemMoveMixin
 from ....items.mixin.transform import ItemTransformMixin
 
-from ..cmd import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
-                  CmdDelete
+from ..cmd  import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
+                   CmdDelete
 from ..xml  import diagram_scene_xml_items
 from ..host import asDiagramScene
 

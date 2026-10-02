@@ -4,9 +4,9 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check  import checked
-from ....core.defs   import PITCH
-from ....core.types  import HandleId, RectHandleId, BlockPinHandleId, DataKind
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import HandleId, RectHandleId, BlockPinHandleId, DataKind
 
 from .grip     import GripItem, ResizeGripItem
 from .port_pin import PortPinArrowItem, PortPinLineItem

@@ -12,8 +12,8 @@ from PyQt6.QtWidgets import (
 
 from ...app                       import session
 
-from ...core.check                import checked
-from ...core.session              import DocType
+from ...core.check   import checked
+from ...core.session import DocType
 
 from .components.layout.ok_cancel import OkCancelLayout
 

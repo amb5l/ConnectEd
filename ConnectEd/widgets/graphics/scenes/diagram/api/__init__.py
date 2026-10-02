@@ -6,11 +6,11 @@ from ......core.check import checked
 
 from ..host           import asDiagramScene
 
-from .edit            import DiagramSceneApiEditMixin
-from .add             import DiagramSceneApiAddMixin
-from .conn            import DiagramSceneApiConnMixin
-from .properties      import DiagramSceneApiPropertiesMixin
-from .util            import DiagramSceneApiUtilMixin
+from .edit       import DiagramSceneApiEditMixin
+from .add        import DiagramSceneApiAddMixin
+from .conn       import DiagramSceneApiConnMixin
+from .properties import DiagramSceneApiPropertiesMixin
+from .util       import DiagramSceneApiUtilMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

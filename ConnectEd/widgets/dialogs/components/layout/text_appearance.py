@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtWidgets import QDialog, QLayout, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui     import QColor
 
-from typing_extensions import override
-
-from .....core.check              import checked
-from .....core.types              import NoChange, AlignH, AlignV, RectHandleId
+from .....core.check import checked
+from .....core.types import NoChange, AlignH, AlignV, RectHandleId
 
 from ....graphics.presentation    import TextOverrides
 

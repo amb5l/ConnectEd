@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Self, Any
-from types  import SimpleNamespace
+from typing            import Self, Any
+from typing_extensions import override
+from types             import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, \
                             QTransposeProxyModel, QAbstractItemModel
@@ -771,6 +772,7 @@ class SpreadsheetSubWindow(DocSubWindow):
             self.setWidget(label)
             self.setWindowTitle("Properties")
 
+    @override
     def closeEvent(self : Self, closeEvent : QCloseEvent | None) -> None:  # noqa: N803
         """Handle subwindow close event."""
         if closeEvent is None:

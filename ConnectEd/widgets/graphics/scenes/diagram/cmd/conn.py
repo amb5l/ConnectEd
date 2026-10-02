@@ -11,8 +11,8 @@ from ......core.check  import checked
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
 
-from ..cmd             import CmdSceneBase
-from ..netlist         import Net
+from ..cmd     import CmdSceneBase
+from ..netlist import Net
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

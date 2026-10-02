@@ -11,8 +11,8 @@ from ......core.check  import checked
 from ....items.node    import NodeItem, FreeNodeItem, FixedNodeItem
 from ....items.segment import SegmentItem
 
-from ..cmd             import cmdExec
-from ..host            import asDiagramScene
+from ..cmd  import cmdExec
+from ..host import asDiagramScene
 
 from ..cmd.conn        import (
     CmdAddFreeNode, CmdRemoveFreeNode,

@@ -6,15 +6,18 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from .....core.required import required
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...views.diagram import DiagramView
 
 
 class ItemMenuMixin:
+    @required
     def ctxMenuItems(
         self : Self,
         view : DiagramView,
         spos : QPointF
     ) -> list[QAction | QMenu]:
-        raise NotImplementedError("Subclass must implement this method")
+        ...

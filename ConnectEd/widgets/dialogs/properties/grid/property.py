@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import QDialog, QWidget, \
                             QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit
 
-from .....core.check                import checked
-from .....core.types                import NoChange, DataKind
+from .....core.check import checked
+from .....core.types import NoChange, DataKind
 
 from ....utils                      import kind2dialogEditor
 

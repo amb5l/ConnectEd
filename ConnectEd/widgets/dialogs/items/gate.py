@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
 
 from ....resources                 import getIconPath
 
-from ....core.check                import checked
-from ....core.icon                 import SvgIconSingleton
+from ....core.check import checked
+from ....core.icon  import SvgIconSingleton
 
 from ...graphics.items.gate        import GateFunc
 

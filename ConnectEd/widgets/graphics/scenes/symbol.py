@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import weakref
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore import QRectF
 from PyQt6.QtGui  import QPainter
@@ -63,6 +64,7 @@ class SymbolScene(DiagramScene):
     ) -> None:
         self._instance = None if instance is None else weakref.ref(instance)
 
+    @override
     def drawBackground(
         self    : Self,
         painter : QPainter | None,

@@ -1,4 +1,5 @@
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
@@ -10,6 +11,7 @@ from .base   import DiagramViewState
 class DiagramViewStateViewPan1(DiagramViewState):
     STATUS = "Pan: pick the first point"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -24,6 +26,7 @@ class DiagramViewStateViewPan1(DiagramViewState):
 class DiagramViewStateViewPan2(DiagramViewState):
     STATUS = "Pan: pick the second point"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -47,6 +50,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
         self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseMove(
         self      : Self,
         vpos      : QPoint,
@@ -68,6 +72,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
         )
         self.view._pan_pos = vpos
 
+    @override
     def mouseLeftDragCont(
         self      : Self,
         vpos      : QPoint,
@@ -76,6 +81,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseLeftDragEnd(
         self      : Self,
         vpos      : QPoint,
@@ -84,6 +90,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
     ) -> None:
         self.mouseLeftClick(vpos, spos, modifiers)
 
+    @override
     def mouseMiddleDragCont(
         self      : Self,
         vpos      : QPoint,
@@ -92,6 +99,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseMiddleDragEnd(
         self      : Self,
         vpos      : QPoint,
@@ -104,6 +112,7 @@ class DiagramViewStateViewPan2(DiagramViewState):
 class DiagramViewStateViewZoomArea1(DiagramViewState):
     STATUS = "Zoom Window: pick the first point"
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -113,6 +122,7 @@ class DiagramViewStateViewZoomArea1(DiagramViewState):
         self.view.marquee.begin(vpos)
         self.view.state.go(self.view.stateViewZoomArea2)
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -125,6 +135,7 @@ class DiagramViewStateViewZoomArea1(DiagramViewState):
 class DiagramViewStateViewZoomArea2(DiagramViewState):
     STATUS = "Zoom Window: pick the second point"
 
+    @override
     def mouseLeftClick(self : Self,
         vpos      : QPoint,
         spos      : QPointF,
@@ -134,6 +145,7 @@ class DiagramViewStateViewZoomArea2(DiagramViewState):
         self.view._zoomRect(self.view.marquee.rect())
         self.view.state.go(self.view.stateIdle)
 
+    @override
     def mouseMove(self : Self,
         vpos      : QPoint,
         spos      : QPointF,
@@ -141,6 +153,7 @@ class DiagramViewStateViewZoomArea2(DiagramViewState):
     ) -> None:
         self.view.marquee.resize(vpos)
 
+    @override
     def mouseLeftDragCont(self : Self,
         vpos      : QPoint,
         spos      : QPointF,
@@ -148,6 +161,7 @@ class DiagramViewStateViewZoomArea2(DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseLeftDragEnd(self : Self,
         vpos      : QPoint,
         spos      : QPointF,
@@ -155,6 +169,7 @@ class DiagramViewStateViewZoomArea2(DiagramViewState):
     ) -> None:
         self.mouseLeftClick(vpos, spos, modifiers)
 
+    @override
     def mouseMiddleDragCont(self : Self,
         vpos      : QPoint,
         spos      : QPointF,
@@ -162,6 +177,7 @@ class DiagramViewStateViewZoomArea2(DiagramViewState):
     ) -> None:
         self.mouseMove(vpos, spos, modifiers)
 
+    @override
     def mouseMiddleDragEnd(self : Self,
         vpos      : QPoint,
         spos      : QPointF,

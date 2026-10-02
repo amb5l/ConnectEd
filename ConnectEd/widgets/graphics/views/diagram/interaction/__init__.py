@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Self, Any, Protocol, cast, Generic, TypeVar
+from typing            import Self, Any, Protocol, cast, Generic, TypeVar
+from typing_extensions import override
+from abc               import ABC, abstractmethod
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QUndoStack
 
 from ......core.check    import checked
+from ......core.required import required
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
@@ -75,20 +78,25 @@ class DiagramInteraction:
 
     # Subclass hooks --------------------------------------------------------
 
+    @required
     def valid(self : Self) -> bool:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
+    @required
     def update(self : Self, *args : Any, **kwargs : Any) -> None:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
+    @required
     def _commit(self : Self, *args : Any, **kwargs : Any) -> bool:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
+    @required
     def _complete(self : Self, *args : Any, **kwargs : Any) -> None:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
+    @required
     def _cancel(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         return [
@@ -163,20 +171,23 @@ class RotateItemMixin:
         ] + mro_next.ctxMenuItems(pos)
 
 
-class PreviewStateMixin:
+class PreviewStateMixin(ABC):
     """Mixin for interactions that need to save/restore pre-preview state."""
 
     # instance attributes
     _preview_state : dict[Any, Any]
 
+    @abstractmethod
     def _previewTargets(self : Self) -> list[Any]:
-        raise NotImplementedError("Subclass must define preview targets")
+        ...
 
+    @abstractmethod
     def _previewSaveTarget(self : Self, target : Any) -> Any:
-        raise NotImplementedError("Subclass must define target state save")
+        ...
 
+    @abstractmethod
     def _previewRestoreTarget(self : Self, target : Any, state : Any) -> None:
-        raise NotImplementedError("Subclass must define target state restore")
+        ...
 
     def _previewDidRestore(self : Self) -> None:
         """Hook for interactions that need post-restore cleanup."""
@@ -210,8 +221,9 @@ class MoveBaseMixin(PreviewStateMixin):
             self._moveBy(pos - self._cpos)
         self._cpos = pos
 
+    @abstractmethod
     def _moveBy(self : Self, offset : QPointF) -> None:
-        raise NotImplementedError("Subclass must implement this method")
+        ...
 
     def _previewSaveTarget(
         self   : Self,
@@ -230,6 +242,7 @@ class MoveBaseMixin(PreviewStateMixin):
             raise TypeError("Bad target")
         target.moveRestore(state)
 
+    @override
     def _previewDidRestore(self : Self) -> None:
         self._cpos = self._ipos
 

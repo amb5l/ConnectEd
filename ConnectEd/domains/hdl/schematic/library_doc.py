@@ -1,28 +1,29 @@
 from __future__ import annotations
 
-from typing import Self, cast
+from typing            import Self, cast
+from typing_extensions import override
 
 from PyQt6.QtCore import QSize, QXmlStreamWriter, QXmlStreamReader
 
-from ....app                             import window
-from ....resources                       import getIconPath
+from ....app       import window
+from ....resources import getIconPath
 
-from ....core.check                      import checked
-from ....core.session                    import DocType, Session
-from ....core.types                      import MenuSub, MenuAction, MenuSeparator, MenuEntry
-from ....core.doc                        import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
-from ....core.icon                       import SvgIconSingleton
-from ....core.xml                        import toXmlStartElement, toXmlEndElement, fromXml, loadXml
-from ....core.utils                      import space2underscore, cleanPath
+from ....core.check   import checked
+from ....core.session import DocType, Session
+from ....core.types   import MenuSub, MenuAction, MenuSeparator, MenuEntry
+from ....core.doc     import NavItemSpec, DocSubjectProtocol, Doc, DocBinding
+from ....core.icon    import SvgIconSingleton
+from ....core.xml     import toXmlStartElement, toXmlEndElement, fromXml, loadXml
+from ....core.utils   import space2underscore, cleanPath
 
 from ....widgets.dialogs.unsaved_changes import UnsavedChangesDialog
 from ....widgets.window.sub_window       import DocSubWindow
 from ....widgets.library.sub_window      import LibrarySubWindow
 
-from ....widgets.graphics.views.symbol   import SymbolView
-from ....widgets.graphics.scenes.symbol  import SymbolScene
-from ....widgets.graphics.items.symbol   import SymbolDefinitionItem
-from ....domains.hdl.schematic.library   import HdlSchematicLibrary
+from ....widgets.graphics.views.symbol  import SymbolView
+from ....widgets.graphics.scenes.symbol import SymbolScene
+from ....widgets.graphics.items.symbol  import SymbolDefinitionItem
+from ....domains.hdl.schematic.library  import HdlSchematicLibrary
 
 
 class BaseIcon(SvgIconSingleton):
@@ -105,6 +106,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
         fromXml(xr, xref, cls._XML_TAG)
         return doc
 
+    @override
     @checked
     def save(self : Self, path : str | None = None) -> bool:
         # commit all modified scenes
@@ -325,6 +327,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
 
     # --- editor lifecycle (close / save) --------------------------------------
 
+    @override
     @checked
     def commit(self : Self, subwindow : DocSubWindow) -> None:
         binding = subwindow.docBinding()
@@ -349,6 +352,7 @@ class HdlSchematicLibraryDoc(Doc[HdlSchematicLibrary]):
         scene.undo_stack.setClean()
         self._modified.add(subject)
 
+    @override
     @checked
     def isPrimarySubject(self : Self, subject : DocSubjectProtocol) -> bool:
         return subject is self

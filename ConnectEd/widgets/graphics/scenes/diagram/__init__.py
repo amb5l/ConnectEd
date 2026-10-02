@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import uuid
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, pyqtSignal
 from PyQt6.QtWidgets import QGraphicsScene
@@ -10,20 +11,20 @@ from PyQt6.QtGui     import QUndoStack, QPainter, QPen, QBrush
 
 from .....app                           import settings
 
-from .....core.check                    import checked
-from .....core.types                    import DataKind
+from .....core.check import checked
+from .....core.types import DataKind
 
 from .....domains.hdl.schematic.symbols import SymbolsMixin
 
 from ...properties                      import PropertySpec, PropertiesMixin
 
-from .api                               import DiagramSceneApiMixin
-from .grips                             import DiagramSceneGripsMixin
-from .guides                            import DiagramSceneGuidesMixin
-from .xml                               import DiagramSceneXmlMixin
-from .private                           import DiagramScenePrivateMixin
-from .resources                         import DiagramSceneResources
-from .netlist                           import Netlist
+from .api       import DiagramSceneApiMixin
+from .grips     import DiagramSceneGripsMixin
+from .guides    import DiagramSceneGuidesMixin
+from .xml       import DiagramSceneXmlMixin
+from .private   import DiagramScenePrivateMixin
+from .resources import DiagramSceneResources
+from .netlist   import Netlist
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -131,6 +132,7 @@ class DiagramScene(
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()
 
+    @override
     def description(self : Self) -> str:
         return self.__class__.__name__.replace("Scene", "")
 

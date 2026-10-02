@@ -11,8 +11,8 @@ from .....core.types import NetKind, Direction
 
 from ...quill        import Quill
 
-from ...items.grip   import GripShape
-from ...items.node   import NodeState
+from ...items.grip import GripShape
+from ...items.node import NodeState
 
 
 PenTable   : TypeAlias = dict[Any, QPen]

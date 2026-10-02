@@ -1,12 +1,13 @@
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore import Qt, QPoint, QPointF,QRectF
 from PyQt6.QtGui  import QColor, QPainter, QPen
 
 from ....app            import settings
 
-from ....core.check     import checked
-from ....core.doc       import DocBinding
+from ....core.check import checked
+from ....core.doc   import DocBinding
 
 from ...window.mdi_area import MdiArea
 
@@ -25,6 +26,7 @@ class SymbolView(DiagramView):
         self.onSettingsChanged()
         settings().changed.connect(self.onSettingsChanged)
 
+    @override
     def drawForeground(
         self    : Self,
         painter : QPainter | None,

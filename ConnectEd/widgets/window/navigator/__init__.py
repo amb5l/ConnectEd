@@ -10,12 +10,12 @@ from ....core.doc   import Doc
 
 from ..tree_view    import TreeView, TreeViewDock
 
-from .types         import NavItem, NavModel
-from .delegate      import NavItemDelegate
-from .private       import NavigatorPrivateMixin
-from .events        import NavigatorEventsMixin
-from .menu          import NavigatorMenuMixin
-from .api           import NavigatorApiMixin
+from .types    import NavItem, NavModel
+from .delegate import NavItemDelegate
+from .private  import NavigatorPrivateMixin
+from .events   import NavigatorEventsMixin
+from .menu     import NavigatorMenuMixin
+from .api      import NavigatorApiMixin
 
 
 class Navigator(

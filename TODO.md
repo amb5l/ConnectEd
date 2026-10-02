@@ -1,9 +1,9 @@
+- remove XML_DEFAULTS.md
 - unite property text and net label
-  - PropertyTextItem => LabelItem
-  - property "Label" => "Reference"
+  - PropertyTextItem => LabelItem - DONE
+  - property "Label" => "Reference" - DONE
+  - add LabelNodeItem
 - ensure alt-move disconnects (does not rubber band) connections
 - review selection propagation especially for marquee selection
-- handle net labels during rubber banding
 - use of @override
-- XML item defaults
-- check YAML vs code
+- combined linter including cruft (CmdSplitNet)

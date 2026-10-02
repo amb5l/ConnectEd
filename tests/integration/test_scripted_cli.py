@@ -5,8 +5,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF, QSizeF
 
-from ConnectEd.core.db                          import DesignDbNode, DiagramNode
-from ConnectEd.widgets.graphics.items           import DEFAULT
+from ConnectEd.core.db                import DesignDbNode, DiagramNode
+from ConnectEd.widgets.graphics.items import DEFAULT
 
 from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene

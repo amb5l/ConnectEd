@@ -2,8 +2,8 @@ from typing import Self, ClassVar
 
 from PyQt6.QtCore import Qt
 
-from ....core.check                   import checked
-from ....core.types                   import NoChange
+from ....core.check import checked
+from ....core.types import NoChange
 
 from ...graphics.items.net_label      import NetLabelItem
 

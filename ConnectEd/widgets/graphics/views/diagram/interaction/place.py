@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import Self, TypeVar
+from typing            import Self, TypeVar
+from typing_extensions import override
 
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ......core.check     import checked
-from ......core.types     import EdgeLoc
-from ......core.utils     import sign
+from ......core.check import checked
+from ......core.types import EdgeLoc
+from ......core.utils import sign
 
 from .....dialogs.arc     import ArcDialog
 
@@ -97,6 +98,7 @@ class DiagramPlaceBase1PosInteraction(DiagramPlaceBaseInteraction[TItem]):
         if self.commit(pos):
             self._view.state.go(self._view.stateIdle)
 
+    @override
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         pos = self._view._snap(pos)
         return [
@@ -120,6 +122,7 @@ class DiagramPlaceBase2PosInteraction(DiagramPlaceBase1PosInteraction[TItem]):
         super().__init__(view, pos, item)
         self._p1 = pos
 
+    @override
     def update(self : Self, pos : QPointF) -> None:
         if pos == self._pos:
             return  # filter redundant updates
@@ -158,6 +161,7 @@ class DiagramPlacePolylineInteraction(DiagramPlaceBase1PosInteraction):
         self._item.setSelectMode(1)
         self._sweep = None
 
+    @override
     def update(self : Self, pos : QPointF) -> None:
         if pos == self._pos:
             return  # filter redundant updates
@@ -167,11 +171,13 @@ class DiagramPlacePolylineInteraction(DiagramPlaceBase1PosInteraction):
     def _releaseItem(self : Self) -> None:
         self._item.setAcceptedMouseButtons(Qt.MouseButton.AllButtons)
 
+    @override
     def _complete(self : Self, pos : QPointF) -> None:
         if not self.commit(pos):
             self._item.delLastVertex()  # remove WIP vertex
         self._releaseItem()
 
+    @override
     @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         # Ensure last vertex is at the click position
@@ -200,12 +206,14 @@ class DiagramPlacePolylineInteraction(DiagramPlaceBase1PosInteraction):
         self._sweep = None
         return False  # continue interaction
 
+    @override
     def _cancel(self : Self) -> None:
         """Escape works a bit differently here."""
         self._item.delLastVertex()  # remove WIP vertex
         if self._item.scene() is not None:
             self._releaseItem()
 
+    @override
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         pos = self._view._snap(pos)
         items = []
@@ -221,6 +229,7 @@ class DiagramPlacePolylineInteraction(DiagramPlaceBase1PosInteraction):
         items.append(self._view.action("Closed", self._toggleClosed, self._item.closed()))
         return items
 
+    @override
     def _finish(self : Self, pos : QPointF) -> None:
         self.complete(pos)
         self._view.state.go(self._view.stateIdle)
@@ -432,6 +441,7 @@ class DiagramPlaceTapInteraction(DiagramPlaceBase1PosInteraction):
         raise NotImplementedError("Not implemented")
         #self._item.reorientCCW()
 
+    @override
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         return [
             self._view.action("Rotate CW",  self.rotateCW,  shortcut="]"),

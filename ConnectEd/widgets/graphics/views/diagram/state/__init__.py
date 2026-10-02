@@ -75,7 +75,7 @@ class DiagramViewStateMixin:
     stateEditText               : DiagramViewStateEditText                # noqa N815
     stateEditPort               : DiagramViewStateEditPort                # noqa N815
     stateEditBlockPin           : DiagramViewStateEditBlockPin            # noqa N815
-    stateEditLabel       : DiagramViewStateEditLabel        # noqa N815
+    stateEditLabel              : DiagramViewStateEditLabel               # noqa N815
     statePlaceSymbolPin         : DiagramViewStatePlaceSymbolPin          # noqa N815
     statePlaceLine1             : DiagramViewStatePlaceLine1              # noqa N815
     statePlaceLine2             : DiagramViewStatePlaceLine2              # noqa N815

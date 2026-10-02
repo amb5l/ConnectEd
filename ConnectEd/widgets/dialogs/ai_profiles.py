@@ -21,8 +21,8 @@ from PyQt6.QtGui     import (
     QBrush, QFont, QFontMetrics, QPalette, QShowEvent, QResizeEvent
 )
 
-from ...ai.profile_refresh        import ProfileModelsRefreshWorker
-from ...ai.profiles               import (
+from ...ai.profile_refresh import ProfileModelsRefreshWorker
+from ...ai.profiles        import (
     AiProfile,
     PROVIDER_PRESETS,
     ProviderPreset,
@@ -32,8 +32,8 @@ from ...ai.profiles               import (
     providerShortName,
     saveProfiles,
 )
-from ...ai.providers              import defaultApiKeyName, defaultBaseUrl
-from ...core.check                import checked
+from ...ai.providers       import defaultApiKeyName, defaultBaseUrl
+from ...core.check         import checked
 
 from .components.layout.ok_cancel import OkCancelLayout
 

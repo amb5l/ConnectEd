@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import Self
-from math   import asin, degrees, copysign
+from typing            import Self
+from typing_extensions import override
+from math              import asin, degrees, copysign
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem
@@ -180,6 +181,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, DiagramInteraction):
     ) -> None:
         target.setSweep(state)
 
+    @override
     def _previewDidRestore(self : Self) -> None:
         self._polyline.updatePath()
 

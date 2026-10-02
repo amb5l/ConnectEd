@@ -14,8 +14,8 @@ from ConnectEd.core.types    import RectHandleId
 
 from ConnectEd.widgets.graphics.items.block     import BlockItem
 from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
-from ConnectEd.widgets.graphics.items.port      import PortItem
 from ConnectEd.widgets.graphics.items.label     import LabelItem
+from ConnectEd.widgets.graphics.items.port      import PortItem
 from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 

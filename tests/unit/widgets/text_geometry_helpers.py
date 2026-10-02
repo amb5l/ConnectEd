@@ -14,8 +14,8 @@ from ConnectEd.core.db    import DesignDbNode
 from ConnectEd.core.types import AlignH, AlignV, DataKind, RectHandleId
 from ConnectEd.core.utils import val2str
 
-from ConnectEd.widgets.graphics.items.polyline import PolylineItem
 from ConnectEd.widgets.graphics.items.label    import LabelItem
+from ConnectEd.widgets.graphics.items.polyline import PolylineItem
 from ConnectEd.widgets.graphics.items.text     import TextItem, TextLineRenderer
 
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene

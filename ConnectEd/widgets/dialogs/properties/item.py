@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing            import Self, Any
+from typing_extensions import override
 
 from PyQt6.QtCore import Qt
 
@@ -61,16 +62,19 @@ class PropertiesItem(TableItem):
             return
         super().setData(value, role)
 
+    @override
     @checked
     def setEnabled(self : Self, enabled : bool) -> None:
         super().setEnabled(enabled)
         self._updatePresentation()
 
+    @override
     @checked
     def setEditable(self : Self, editable : bool) -> None:
         super().setEditable(editable)
         self._updatePresentation()
 
+    @override
     @checked
     def setValue(self : Self, value : Any | NoChange) -> None:
         if isinstance(value, NoChange):
@@ -171,6 +175,7 @@ class PropertiesExpanderItem(TableItem):
             "PropertiesExpanderItem.setText() is not implemented"
         )
 
+    @override
     @checked
     def setValue(self : Self, value : bool | None | NoChange) -> None:
         if isinstance(value, NoChange):

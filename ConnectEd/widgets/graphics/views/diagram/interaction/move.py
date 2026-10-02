@@ -1,29 +1,30 @@
 from __future__ import annotations
 
-from typing          import Self, Any
-from collections.abc import Sequence
+from typing            import Self, Any
+from typing_extensions import override
+from collections.abc   import Sequence
 
 from PyQt6.QtCore    import QPointF, QLineF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoStack
 
-from ......core.check              import checked
-from ......core.defs               import PITCH
-from ......core.types              import Axis, Polarity, EdgeLoc
+from ......core.check import checked
+from ......core.defs  import PITCH
+from ......core.types import Axis, Polarity, EdgeLoc
 
-from ....items.grip                import GripItem
-from ....items.port_pin            import PortPinMixin
-from ....items.node                import NodeItem, FreeNodeItem, FixedNodeItem
-from ....items.segment             import SegmentItem
-from ....items.tap                 import TapItem
-from ....items.port                import PortItem
-from ....items.gate                import GateItem
-from ....items.block               import BlockItem
-from ....items.block_pin           import BlockPinItem
-from ....items.symbol              import SymbolInstanceItem
-from ....items.net_label           import NetLabelItem
-from ....items.rubber              import RubberItem, RubberJogItem
-from ....scenes.diagram            import DiagramScene
+from ....items.grip      import GripItem
+from ....items.port_pin  import PortPinMixin
+from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.segment   import SegmentItem
+from ....items.tap       import TapItem
+from ....items.port      import PortItem
+from ....items.gate      import GateItem
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.symbol    import SymbolInstanceItem
+from ....items.net_label import NetLabelItem
+from ....items.rubber    import RubberItem, RubberJogItem
+from ....scenes.diagram  import DiagramScene
 
 from ....views.diagram.interaction import PreviewStateMixin
 from ....items.mixin.move          import ItemMoveMixin
@@ -439,6 +440,7 @@ class MoveInteraction(
         self._previewSave()
         self._deferNetLabels(True)
 
+    @override
     def valid(self : Self) -> bool:
         return bool(self._items)
 
@@ -706,6 +708,7 @@ class MoveBlockPinsInteraction(
     ) -> None:
         target.setLoc(state)
 
+    @override
     def _previewDidRestore(self : Self) -> None:
         self._loc_snap = None
         self._corner   = None

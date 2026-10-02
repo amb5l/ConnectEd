@@ -1,10 +1,9 @@
-from typing import Self, Protocol, TypeVar
+from typing            import Self, Protocol, TypeVar
+from typing_extensions import runtime_checkable
 
 from PyQt6.QtCore    import QPointF, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QPen, QBrush
-
-from typing_extensions import runtime_checkable
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

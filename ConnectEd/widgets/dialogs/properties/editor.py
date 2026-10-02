@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QWidget, QTabWidget, \
 
 from ...table.model import TableModel
 
-from .grid          import PropertiesGridWidget
-from .bush          import PropertiesBushWidget
+from .grid import PropertiesGridWidget
+from .bush import PropertiesBushWidget
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

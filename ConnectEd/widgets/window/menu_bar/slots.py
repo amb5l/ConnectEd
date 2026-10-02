@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox, QWidget
 
 from ....app                            import logger, settings, window
 
-from ....core.check                     import checked
-from ....core.defs                      import APP_NAME
+from ....core.check import checked
+from ....core.defs  import APP_NAME
 
 from ....widgets.window.navigator       import Navigator
 

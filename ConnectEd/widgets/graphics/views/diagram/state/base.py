@@ -11,8 +11,8 @@ from ......app        import window
 
 from ......core.check import checked
 
-from ..interaction    import DiagramInteraction
-from ..mouse          import MouseModifier
+from ..interaction import DiagramInteraction
+from ..mouse       import MouseModifier
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

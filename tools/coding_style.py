@@ -1,4 +1,4 @@
-"""Report colon-alignment and import-style issues.
+"""Report colon-alignment, import-style, and @override issues.
 
 Colon alignment (a block of two or more lines):
   Multi-line parameters, consecutive ``name : type`` lines, and flat dict
@@ -12,7 +12,8 @@ Import style:
   imports. A blank line separates those, and also separates the
   ``from`` groups: standard library, Qt, other third-party, then the
   project (absolute imports, then relative imports with more leading
-  dots before fewer). A blank line also separates a project import
+  dots before fewer). ``typing_extensions`` is ordered with the
+  standard library, immediately after ``typing``. A blank line also separates a project import
   from one that extends it (``import xxx`` before ``import xxx.yyy``,
   and the same for ``from``), a change in leading-dot depth
   (``from ..x`` before ``from .y``), and a change in path length at
@@ -23,18 +24,27 @@ Import style:
   from every one of those blanks, and that block itself contains no
   blank lines. At the same distance a shorter path comes before a longer one
   (``x.y`` before ``x.y.z``). Standard-library ``from``
-  imports follow ``_STDLIB_ORDER`` (``typing``, then ``types``, then the
-  rest of that list). A standard-library name not listed sorts after
+  imports follow ``_STDLIB_ORDER`` (``typing``, then
+  ``typing_extensions``, then ``types``, then the rest of that list). A standard-library name not listed sorts after
   those, A–Z. PyQt6 submodules are
   ``QtCore``, ``QtWidgets``, ``QtGui``, then any other ``Qt*`` A–Z.
   Other third-party modules, and absolute project imports, run A–Z.
   Relative imports of equal length are left in place. ``from typing import
   TYPE_CHECKING`` is not part of that order: it stands alone on the line
-  immediately before ``if TYPE_CHECKING:``. Within a blank-line group,
-  ``from`` lines share one ``import`` column.
+  immediately before ``if TYPE_CHECKING:``. Consecutive ``from`` lines,
+  up to a blank line, share one ``import`` column: one space after the
+  longest path in that run. A blank line starts a new run.
 
 The leading import block and each ``if TYPE_CHECKING`` block are checked.
 ``=`` alignment is not checked.
+
+``@override`` (from ``typing`` or ``typing_extensions``) is required when
+a method overrides a concrete method defined on a base class in the
+scanned tree. A base method decorated with ``@abstractmethod`` or
+``@required`` does not require it. ``__init__`` and ``__new__`` are
+exempt. A base outside the tree (Qt, the standard library) is not
+visible here. A ``@override`` with no base method is still reported by
+mypy.
 
 Run from the repo root::
 
@@ -44,6 +54,7 @@ Run from the repo root::
 
 from __future__ import annotations
 
+import ast
 import io
 import sys
 import tokenize
@@ -61,6 +72,7 @@ STDLIB = sys.stdlib_module_names
 # its top-level name (``typing`` before ``typing.io``), then A–Z.
 _STDLIB_ORDER = (
     "typing",
+    "typing_extensions",
     "types",
     "abc",
     "collections",
@@ -111,8 +123,12 @@ _THIRD_PARTY = frozenset({
 _Key = tuple[int, int, int, int, str]
 
 _KINDS = (
-    "colon", "pipe", "import-order", "import-blank", "import-align", "parse",
+    "colon", "pipe", "import-order", "import-blank", "import-align",
+    "override", "parse",
 )
+
+# Constructors are not the rename hazard @override is for.
+_NO_OVERRIDE = frozenset({"__init__", "__new__"})
 
 
 @dataclass
@@ -140,6 +156,7 @@ class ImportStmt:
     module     : str
     plain      : bool
     import_col : int | None
+    from_col   : int = 0
     bound      : tuple[str, ...] = ()
 
 
@@ -551,7 +568,7 @@ def _from_group(stmt : ImportStmt) -> int:
     if stmt.level > 0:
         return 3
     top = _top(stmt)
-    if top in STDLIB:
+    if top in STDLIB or top in _STDLIB_RANK:
         return 0
     if top == "PyQt6":
         return 1
@@ -702,7 +719,7 @@ def _parse_import(
             break
     return ImportStmt(
         first.start[0], end_line, level, ".".join(names), plain, import_col,
-        tuple(bound),
+        _column(first), tuple(bound),
     ), i
 
 
@@ -903,22 +920,42 @@ def _blank_hits(
     return hits
 
 
-def _align_hits(path : str, stmts : list[ImportStmt]) -> list[Hit]:
+def _natural_import_col(stmt : ImportStmt) -> int:
+    """``import`` column with one space after this ``from`` path."""
+    return stmt.from_col + 6 + len(_shown(stmt))
+
+
+def _blank_between(lines : list[str], prev_end : int, line : int) -> bool:
+    return any(not lines[n - 1].strip() for n in range(prev_end + 1, line))
+
+
+def _align_hits(
+    path  : str,
+    lines : list[str],
+    stmts : list[ImportStmt],
+) -> list[Hit]:
+    """Align ``import`` on consecutive ``from`` lines. A blank line splits them."""
     hits  : list[Hit] = []
     group : list[ImportStmt] = []
 
     def flush() -> None:
-        points = [
-            (stmt.line, stmt.import_col)
-            for stmt in group
-            if not stmt.plain and stmt.import_col is not None
+        froms = [
+            stmt for stmt in group
+            if not stmt.plain and stmt.import_col is not None and stmt.from_col
         ]
-        hits.extend(_aligned(path, "import-align", points, "'import'"))
+        if len(froms) >= 2:
+            expected = max(_natural_import_col(stmt) for stmt in froms)
+            for stmt in froms:
+                if stmt.import_col != expected:
+                    hits.append(Hit(
+                        path, stmt.line, "import-align",
+                        f"'import' at column {stmt.import_col}, expected {expected}",
+                    ))
         group.clear()
 
     prev_end = 0
     for stmt in stmts:
-        if group and stmt.line > prev_end + 1:
+        if group and _blank_between(lines, prev_end, stmt.line):
             flush()
         group.append(stmt)
         prev_end = stmt.end
@@ -937,10 +974,296 @@ def scan_imports(
         ordered = [stmt for stmt in stmts if not _is_type_checking_prelude(stmt)]
         hits.extend(_order_hits(path, ordered))
         hits.extend(_blank_hits(path, ordered, index == 0))
-        hits.extend(_align_hits(path, ordered))
+        hits.extend(_align_hits(path, lines, ordered))
     hits.extend(_type_checking_hits(
         path, lines, [stmt for stmts in sections for stmt in stmts],
     ))
+    return hits
+
+
+@dataclass
+class MethodInfo:
+    line     : int
+    abstract : bool
+    marked   : bool
+
+
+@dataclass
+class ClassInfo:
+    qual    : str
+    name    : str
+    path    : str
+    bases   : list[str]
+    methods : dict[str, MethodInfo]
+
+
+@dataclass
+class ModInfo:
+    name     : str
+    package  : str
+    classes  : dict[str, ClassInfo]
+    bindings : dict[str, tuple[str, str]]
+    modules  : dict[str, str]
+
+
+def _module_name(path : Path) -> str:
+    parts = list(path.resolve().relative_to(ROOT).parts)
+    if parts[-1] == "__init__.py":
+        parts = parts[:-1]
+    else:
+        parts[-1] = Path(parts[-1]).stem
+    return ".".join(parts)
+
+
+def _package_of(path : Path, module : str) -> str:
+    if path.name == "__init__.py":
+        return module
+    if "." not in module:
+        return ""
+    return module.rsplit(".", 1)[0]
+
+
+def _abs_from(
+    package : str,
+    level   : int,
+    module  : str | None,
+) -> str:
+    if level == 0:
+        return module or ""
+    parts = package.split(".") if package else []
+    keep = parts[: len(parts) - (level - 1)] if level - 1 <= len(parts) else []
+    if module:
+        keep.extend(module.split("."))
+    return ".".join(keep)
+
+
+def _dec_name(expr : ast.expr) -> str:
+    if isinstance(expr, ast.Call):
+        expr = expr.func
+    if isinstance(expr, ast.Name):
+        return expr.id
+    if isinstance(expr, ast.Attribute):
+        return expr.attr
+    return ""
+
+
+def _member_stmts(stmts : list[ast.stmt]) -> Iterator[ast.stmt]:
+    for stmt in stmts:
+        if isinstance(stmt, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            yield stmt
+            continue
+        bodies : list[list[ast.stmt]] = []
+        for key in ("body", "orelse", "finalbody"):
+            val = getattr(stmt, key, None)
+            if isinstance(val, list) and val and isinstance(val[0], ast.stmt):
+                bodies.append(val)
+        if isinstance(stmt, ast.Try):
+            for handler in stmt.handlers:
+                bodies.append(handler.body)
+        for body in bodies:
+            yield from _member_stmts(body)
+
+
+def _take_classes(
+    stmts  : list[ast.stmt],
+    prefix : str,
+    module : str,
+    path   : str,
+    found  : dict[str, ClassInfo],
+    raw    : dict[str, list[ast.expr]],
+) -> None:
+    for stmt in _member_stmts(stmts):
+        if not isinstance(stmt, ast.ClassDef):
+            continue
+        local = f"{prefix}.{stmt.name}" if prefix else stmt.name
+        methods : dict[str, MethodInfo] = {}
+        for member in _member_stmts(stmt.body):
+            if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            names = {_dec_name(dec) for dec in member.decorator_list}
+            if "overload" in names:
+                continue
+            methods[member.name] = MethodInfo(
+                line     = member.lineno,
+                abstract = bool(names & {"abstractmethod", "required"}),
+                marked   = "override" in names,
+            )
+        qual = f"{module}.{local}"
+        found[local] = ClassInfo(
+            qual    = qual,
+            name    = stmt.name,
+            path    = path,
+            bases   = [],
+            methods = methods,
+        )
+        raw[qual] = list(stmt.bases)
+        _take_classes(stmt.body, local, module, path, found, raw)
+
+
+def _resolve_base(mod : ModInfo, expr : ast.expr) -> str | None:
+    while isinstance(expr, ast.Subscript):
+        expr = expr.value
+    if isinstance(expr, ast.Name):
+        if expr.id in mod.classes:
+            return mod.classes[expr.id].qual
+        bound = mod.bindings.get(expr.id)
+        if bound is None:
+            return None
+        return f"{bound[0]}.{bound[1]}"
+    if isinstance(expr, ast.Attribute) and isinstance(expr.value, ast.Name):
+        head = expr.value.id
+        if head in mod.modules:
+            return f"{mod.modules[head]}.{expr.attr}"
+        bound = mod.bindings.get(head)
+        if bound is not None:
+            return f"{bound[0]}.{bound[1]}.{expr.attr}"
+    return None
+
+
+def _c3_merge(seqs : list[list[str]]) -> list[str] | None:
+    pending = [list(seq) for seq in seqs if seq]
+    merged : list[str] = []
+    while pending:
+        choice : str | None = None
+        for seq in pending:
+            head = seq[0]
+            if all(head not in other[1:] for other in pending):
+                choice = head
+                break
+        if choice is None:
+            return None
+        merged.append(choice)
+        for seq in pending:
+            if seq[0] == choice:
+                del seq[0]
+        pending = [seq for seq in pending if seq]
+    return merged
+
+
+def _linearize(
+    qual  : str,
+    index : dict[str, ClassInfo],
+    cache : dict[str, list[str]],
+    stack : set[str],
+) -> list[str]:
+    if qual.startswith("~") or qual not in index:
+        return [qual]
+    if qual in cache:
+        return cache[qual]
+    if qual in stack:
+        return [qual]
+    stack.add(qual)
+    info = index[qual]
+    seqs = [_linearize(base, index, cache, stack) for base in info.bases]
+    seqs.append(list(info.bases))
+    merged = _c3_merge(seqs)
+    stack.remove(qual)
+    if merged is None:
+        result = [qual]
+        seen = {qual}
+        for base in info.bases:
+            for item in _linearize(base, index, cache, stack):
+                if item not in seen:
+                    seen.add(item)
+                    result.append(item)
+    else:
+        result = [qual, *merged]
+    cache[qual] = result
+    return result
+
+
+def _read_modules(
+    files : list[Path],
+) -> tuple[dict[str, ModInfo], dict[str, ClassInfo], list[Hit]]:
+    mods  : dict[str, ModInfo] = {}
+    raw   : dict[str, list[ast.expr]] = {}
+    hits  : list[Hit] = []
+    index : dict[str, ClassInfo] = {}
+    for path in files:
+        name = rel(path)
+        loaded = load(path)
+        if isinstance(loaded, str):
+            hits.append(Hit(name, 1, "parse", loaded))
+            continue
+        source, _tokens = loaded
+        try:
+            tree = ast.parse(source)
+        except SyntaxError as exc:
+            hits.append(Hit(name, exc.lineno or 1, "parse", str(exc)))
+            continue
+        module  = _module_name(path)
+        package = _package_of(path, module)
+        classes : dict[str, ClassInfo] = {}
+        _take_classes(tree.body, "", module, name, classes, raw)
+        bindings : dict[str, tuple[str, str]] = {}
+        modules  : dict[str, str] = {}
+        for stmt in tree.body:
+            if isinstance(stmt, ast.Import):
+                for alias in stmt.names:
+                    if alias.asname:
+                        modules[alias.asname] = alias.name
+                    else:
+                        modules[alias.name.split(".")[0]] = alias.name.split(".")[0]
+            elif isinstance(stmt, ast.ImportFrom):
+                base = _abs_from(package, stmt.level, stmt.module)
+                for alias in stmt.names:
+                    if alias.name == "*":
+                        continue
+                    bindings[alias.asname or alias.name] = (base, alias.name)
+        mods[module] = ModInfo(
+            name     = module,
+            package  = package,
+            classes  = classes,
+            bindings = bindings,
+            modules  = modules,
+        )
+        for info in classes.values():
+            index[info.qual] = info
+    unknown = 0
+    for mod in mods.values():
+        for info in mod.classes.values():
+            resolved : list[str] = []
+            for expr in raw.get(info.qual, []):
+                qual = _resolve_base(mod, expr)
+                if qual is None or qual not in index:
+                    unknown += 1
+                    resolved.append(f"~{unknown}")
+                else:
+                    resolved.append(qual)
+            info.bases = resolved
+    return mods, index, hits
+
+
+def scan_overrides(report : set[str]) -> list[Hit]:
+    """Require @override when the nearest in-tree base method is concrete."""
+    _mods, index, hits = _read_modules(py_files([]))
+    hits = [hit for hit in hits if hit.path in report]
+    cache : dict[str, list[str]] = {}
+    for info in index.values():
+        if info.path not in report:
+            continue
+        order = _linearize(info.qual, index, cache, set())
+        for method_name, method in info.methods.items():
+            if method_name in _NO_OVERRIDE or method.marked:
+                continue
+            base_name = ""
+            base_method : MethodInfo | None = None
+            for qual in order[1:]:
+                other = index.get(qual)
+                if other is None or method_name not in other.methods:
+                    continue
+                base_name = other.name
+                base_method = other.methods[method_name]
+                break
+            if base_method is None or base_method.abstract:
+                continue
+            hits.append(Hit(
+                info.path,
+                method.line,
+                "override",
+                f"Method {method_name!r} overrides concrete "
+                f"{base_name}.{method_name} without @override",
+            ))
     return hits
 
 
@@ -965,6 +1288,7 @@ def main(argv : Sequence[str] | None = None) -> int:
     files = py_files(args)
     for path in files:
         hits.extend(scan_file(path))
+    hits.extend(scan_overrides({rel(path) for path in files}))
     hits.sort(key=lambda hit: (hit.path, hit.line, hit.kind))
     counts : dict[str, int] = dict.fromkeys(_KINDS, 0)
     for hit in hits:

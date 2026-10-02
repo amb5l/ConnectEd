@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Self, TypeVar, Generic, ClassVar
+from typing            import Self, TypeVar, Generic, ClassVar
+from typing_extensions import override
 
 from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from typing_extensions import override
-
-from ....core.check import checked
-from ....core.types import NoChange, AlignH, AlignV, RectHandleId
+from ....core.check    import checked
+from ....core.required import required
+from ....core.types    import NoChange, AlignH, AlignV, RectHandleId
 
 from ...graphics.items.base_text import BaseTextItem
 from ...graphics.items.text      import TextItem
@@ -46,8 +46,9 @@ class BaseTextItemDialog(QDialog, Generic[T]):
         self._main_layout = TextAppearanceLayout(item, self, view)
         self._layout.addLayout(self._main_layout)
 
+    @required
     def initTopSection(self : Self, _item : T) -> None:
-        raise NotImplementedError("subclass must implement initTopSection()")
+        ...
 
     @override
     @checked
@@ -124,9 +125,9 @@ class BaseTextItemDialog(QDialog, Generic[T]):
     def getUnderline(self : Self) -> bool | None | NoChange:
         return self._main_layout.getUnderline()
 
-    @checked
+    @required
     def _focusEditor(self : Self) -> None:
-        raise NotImplementedError("subclass must implement _focusEditor()")
+        ...
 
 
 class TextItemDialog(BaseTextItemDialog[TextItem]):

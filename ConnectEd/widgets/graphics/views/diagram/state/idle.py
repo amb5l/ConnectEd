@@ -1,5 +1,6 @@
-from typing          import Self
-from collections.abc import Sequence
+from typing            import Self
+from typing_extensions import override
+from collections.abc   import Sequence
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -28,6 +29,7 @@ from .base                   import DiagramViewState
 class DiagramViewStateIdle(DiagramViewState):
     STATUS = "Idle"
 
+    @override
     @checked
     def entry(
         self  : Self,
@@ -36,6 +38,7 @@ class DiagramViewStateIdle(DiagramViewState):
     ) -> None:
         self.view.interaction = None
 
+    @override
     def mouseLeftClick(
         self      : Self,
         vpos      : QPoint,
@@ -44,6 +47,7 @@ class DiagramViewStateIdle(DiagramViewState):
     ) -> None:
         self.view._selectClick(spos, modifiers)
 
+    @override
     def mouseLeftDoubleClick(
         self      : Self,
         vpos      : QPoint,
@@ -61,6 +65,7 @@ class DiagramViewStateIdle(DiagramViewState):
                 self.view.state.go(self.view.stateEditText, item)
                 return
 
+    @override
     def mouseLeftDragBegin(
         self      : Self,
         vpos      : QPoint,
@@ -154,6 +159,7 @@ class DiagramViewStateIdle(DiagramViewState):
             self.view.marquee.begin(vpos)
             self.view.state.go(self.view.stateEditSelectArea2)
 
+    @override
     def mouseMiddleDragBegin(self : Self,
         vpos      : QPoint,
         spos      : QPointF,

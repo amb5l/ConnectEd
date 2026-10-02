@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check  import checked
-from ....core.types  import RectHandleId, DataKind
+from ....core.check import checked
+from ....core.types import RectHandleId, DataKind
 
 from ..properties import PropertySpec
 
@@ -68,6 +69,7 @@ class BlockItem(
         self._path = path
         self.properties["Path"].notify()
 
+    @override
     def onGeometryChanged(self : Self) -> None:
         super().onGeometryChanged()
         # TODO: reposition pins
@@ -75,6 +77,7 @@ class BlockItem(
         #    if isinstance(item, Pin):
         #        item.onPositionChanged()
 
+    @override
     @checked
     def ctxMenuItems(
         self : Self,

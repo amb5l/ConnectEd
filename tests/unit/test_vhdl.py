@@ -4,8 +4,8 @@ from typing  import Self, TextIO
 from io      import StringIO
 from pathlib import Path
 
-from tests.utils                     import MinMax
-from ConnectEd.hdl.vhdl              import VhdlDocument, VhdlEntity, \
+from tests.utils        import MinMax
+from ConnectEd.hdl.vhdl import VhdlDocument, VhdlEntity, \
                                VhdlGeneric, VhdlPortGroup, VhdlPort
 
 from ConnectEd.hdl.vhdl.vhdl_visitor import VhdlVisitor

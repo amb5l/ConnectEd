@@ -5,8 +5,8 @@ from PyQt6.QtGui     import QKeySequence
 
 from ....app                             import logger, window
 
-from ....core.check                      import checked
-from ....core.defs                       import MIME_TYPE
+from ....core.check import checked
+from ....core.defs  import MIME_TYPE
 
 from ....widgets.graphics.views.diagram  import DiagramView
 from ....widgets.graphics.scenes.diagram import DiagramScene

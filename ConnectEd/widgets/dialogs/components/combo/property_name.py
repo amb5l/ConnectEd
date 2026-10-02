@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QComboBox
 
 from .....app                import logger
 
-from .....core.check         import checked
-from .....core.types         import NoChange, NO_CHANGE
+from .....core.check import checked
+from .....core.types import NoChange, NO_CHANGE
 
 from ....graphics.properties import PropertiesMixin
 

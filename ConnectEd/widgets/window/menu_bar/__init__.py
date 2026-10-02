@@ -6,17 +6,17 @@ from PyQt6.QtWidgets import QMenuBar
 
 from ....app                   import settings, window
 
-from ....core.check            import checked
-from ....ai.profiles           import loadProfiles, profileMenuLabel
+from ....core.check  import checked
+from ....ai.profiles import loadProfiles, profileMenuLabel
 
-from ...splash                 import progress
-from ...menu                   import Menu, PlaceMenu
-from ...action                 import Action
+from ...splash import progress
+from ...menu   import Menu, PlaceMenu
+from ...action import Action
 
 from ...graphics.views.diagram import DiagramSubWindow
 
-from .actions                  import Actions
-from .slots                    import Slots
+from .actions import Actions
+from .slots   import Slots
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

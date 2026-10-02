@@ -3,8 +3,8 @@
 import pytest
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtGui     import QColor
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui     import QColor
 
 from ConnectEd.app import ConnectEdApp
 
@@ -12,10 +12,10 @@ from ConnectEd.core.palette  import bright_magenta
 from ConnectEd.core.settings import Settings
 from ConnectEd.core.types    import DataKind
 
-from ConnectEd.widgets.graphics.items.block              import BlockItem
-from ConnectEd.widgets.graphics.items.block_pin          import BlockPinItem
-from ConnectEd.widgets.graphics.items.label              import LabelItem
-from ConnectEd.widgets.graphics.scenes.diagram           import DiagramScene
+from ConnectEd.widgets.graphics.items.block     import BlockItem
+from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
+from ConnectEd.widgets.graphics.items.label     import LabelItem
+from ConnectEd.widgets.graphics.scenes.diagram  import DiagramScene
 
 from ConnectEd.widgets.graphics.scenes.diagram.resources import DiagramSceneResources
 

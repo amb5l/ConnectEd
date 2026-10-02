@@ -1,7 +1,7 @@
 from typing import Self
 
-from ......core.check    import checked
-from ......core.types    import EdgeLoc
+from ......core.check import checked
+from ......core.types import EdgeLoc
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem

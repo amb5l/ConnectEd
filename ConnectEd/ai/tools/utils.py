@@ -10,8 +10,8 @@ from functools       import wraps
 
 from ...core.check import checked
 
-from ..types       import ToolSpec, ToolEntry
-from ..refs        import RefRegistry
+from ..types import ToolSpec, ToolEntry
+from ..refs  import RefRegistry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -6,9 +6,9 @@ from PyQt6.QtCore    import QItemSelection
 from PyQt6.QtWidgets import QWidget, QCheckBox, QHeaderView
 from PyQt6.QtGui     import QShowEvent
 
-from ....table.row            import TableRow
-from ....table.model          import TableModel, TableProxy
-from ....table.view           import TableView
+from ....table.row   import TableRow
+from ....table.model import TableModel, TableProxy
+from ....table.view  import TableView
 
 from ....graphics.items.mixin import ItemMixin
 

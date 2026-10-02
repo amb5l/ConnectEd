@@ -1,6 +1,7 @@
 """ConnectEd-aware GUI scripting driver."""
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from ..widgets.window          import Window
 
@@ -17,6 +18,7 @@ class Gui(QtScripting, MouseMixin):
     def __init__(self : Self, window : Window) -> None:
         super().__init__(window)
 
+    @override
     def window(self : Self) -> Window:
         return self._window  # type: ignore[return-value]
 

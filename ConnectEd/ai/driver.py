@@ -8,9 +8,9 @@ from typing import Any, Self
 
 from ..core.check import checked
 
-from .refs        import RefRegistry
-from .tools       import allToolSpecs, callTool, writeToolNames
-from .types       import ToolSpec
+from .refs  import RefRegistry
+from .tools import allToolSpecs, callTool, writeToolNames
+from .types import ToolSpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

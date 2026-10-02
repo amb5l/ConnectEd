@@ -11,8 +11,8 @@ from .....core.check import checked
 from .....core.utils import underscore2space
 from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
 
-from ...properties   import PropertiesMixin
-from ...xml          import toXmlProperties, fromXmlProperties
+from ...properties import PropertiesMixin
+from ...xml        import toXmlProperties, fromXmlProperties
 
 from ..protocols     import (
     OnGeometryChangedProtocol,

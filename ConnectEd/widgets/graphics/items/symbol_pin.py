@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
@@ -52,6 +53,7 @@ class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
     def handleGripType(cls, id : HandleId) -> type[GripItem]:
         return MoveGripItem
 
+    @override
     @checked
     def initHandles(self : Self) -> None:
         PortPinPathItem.initHandles(self)

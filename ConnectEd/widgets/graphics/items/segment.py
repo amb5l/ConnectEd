@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self, Any
+from typing            import Self, Any
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
@@ -8,16 +9,16 @@ from PyQt6.QtGui     import QAction
 
 from ....app             import logger, settings
 
-from ....core.check      import checked
-from ....core.defs       import Z_SEGMENT
-from ....core.types      import Axis, NetKind
-from ....core.utils      import val2str
+from ....core.check import checked
+from ....core.defs  import Z_SEGMENT
+from ....core.types import Axis, NetKind
+from ....core.utils import val2str
 
 from ..scenes            import withScene
 
-from .role               import FunctionalItem
-from .mixin              import ItemMixin
-from .node               import NodeItem
+from .role  import FunctionalItem
+from .mixin import ItemMixin
+from .node  import NodeItem
 
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
@@ -131,6 +132,7 @@ class SegmentItem(
         self._net_kind = kind
         self._updatePen(scene)
 
+    @override
     @withScene
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         from ..scenes.diagram import DiagramScene
@@ -146,6 +148,7 @@ class SegmentItem(
             return None
         return Axis.H if self.line().dy() == 0.0 else Axis.V
 
+    @override
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         super().onSelectionChanged(selected)
@@ -197,6 +200,7 @@ class SegmentItem(
             )
         ]
 
+    @override
     @checked
     def toXml(
         self : Self,
@@ -241,6 +245,7 @@ class SegmentItem(
             self._subscribeNode(node)
         self.onGeometryChanged()
 
+    @override
     def _resourceKey(self : Self) -> tuple[NetKind, bool]:
         return (self._net_kind, self.isSelected())
 

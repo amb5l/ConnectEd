@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
@@ -84,11 +85,13 @@ class TapItem(
         self._minor_node.setPos(PITCH, PITCH)
         self._net_kind = NetKind.UNRESOLVED
 
+    @override
     @checked
     def onSettingsChanged(self : Self) -> None:
         if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
+    @override
     @checked
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
@@ -102,6 +105,7 @@ class TapItem(
         # update self._state based on self._node1 and self._node2
         pass
 
+    @override
     @checked
     def initHandles(self : Self) -> None:
         self._handles = {

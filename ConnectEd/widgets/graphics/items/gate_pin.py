@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from typing import Self
+from typing            import Self
+from typing_extensions import override
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.check   import checked
-from ....core.defs    import PITCH
-from ....core.types   import GatePinHandleId, HandleId, DataKind
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import GatePinHandleId, HandleId, DataKind
 
-from .port_pin        import PortPinArrowItem, PortPinPathItem
-from .handle          import HandleItem
-from .grip            import GripItem, FixedGripItem
+from .port_pin import PortPinArrowItem, PortPinPathItem
+from .handle   import HandleItem
+from .grip     import GripItem, FixedGripItem
 
 from .mixin.transform import ItemTransformMixin
 
@@ -31,6 +32,7 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
     _ARROW_CLS = GatePinArrowItem
     _ARROW_POS = 0
 
+    @override
     @classmethod
     def settingsName(cls : type[Self]) -> str:
         return "GatePin"  # fixed for self and subclasses
@@ -57,6 +59,7 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
         super().__init__(parent)
         self._extension = 0
 
+    @override
     @checked
     def initHandles(self : Self) -> None:
         PortPinPathItem.initHandles(self)
@@ -67,6 +70,7 @@ class GatePinItem(ItemTransformMixin, PortPinPathItem):
             parent   = self
         )
 
+    @override
     def movable(self : Self) -> bool:
         return False
 
@@ -103,6 +107,7 @@ class BufGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 2)
     _ARROW_POS = -2
 
+    @override
     @classmethod
     def resourcesName(cls : type[Self]) -> str:
         return "BufGatePin"
@@ -112,6 +117,7 @@ class OrGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 4)
     _ARROW_POS = -4
 
+    @override
     @classmethod
     def resourcesName(cls : type[Self]) -> str:
         return "OrGatePin"
