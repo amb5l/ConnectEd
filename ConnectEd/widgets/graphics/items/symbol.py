@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing            import Self
 from typing_extensions import override
 
-from PyQt6.QtCore    import QXmlStreamWriter
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsRectItem
 
 from ....core.check import checked
+from ....core.defs  import PITCH
 from ....core.types import RectHandleId, DataKind
 
 from ..properties        import PropertySpec, PropertiesMixin, propertySpecs
@@ -19,6 +20,7 @@ from .mixin      import ItemMixin
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.handle       import ItemRectHandlesMixin
+from .mixin.edge_loc     import ItemEdgeLocParentMixin
 from .mixin.transform    import ItemTransformMixin
 from .mixin.change       import ItemChangeMixin
 from .mixin.clone        import ItemCloneMixin, _copyPropertyDisplay
@@ -28,6 +30,7 @@ from .mixin.menu         import ItemMenuMixin
 
 class SymbolBaseItem(
     FunctionalItem,
+    ItemEdgeLocParentMixin,
     ItemMixin,
     ItemPresentationMixin,
     ItemSelectMixin,
@@ -86,8 +89,8 @@ class SymbolBaseItem(
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:
         super().__init__()
-        self.initItem(fresh)
         self.initPart()
+        self.initItem(fresh)
         self._verilog_library          = ""
         self._verilog_name             = ""
         self._vhdl_instantiation_style = ""
@@ -101,6 +104,7 @@ class SymbolBaseItem(
 
     @checked
     def setWidth(self : Self, width : float) -> None:
+        width, _height = self.clipEdgeSize(width, self.height())
         rect = self.rect()
         rect.setWidth(width)
         self.setRect(rect)
@@ -110,9 +114,64 @@ class SymbolBaseItem(
 
     @checked
     def setHeight(self : Self, height : float) -> None:
+        _width, height = self.clipEdgeSize(self.width(), height)
         rect = self.rect()
         rect.setHeight(height)
         self.setRect(rect)
+
+    def handleRect(self : Self) -> QRectF:
+        return self.rect()
+
+    @checked
+    def setRect(self : Self, rect : QRectF) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+        super().setRect(rect)
+        self.refreshEdgeLocs()
+        if hasattr(self, "_handles"):
+            self.updateHandlePositions()
+
+    @override
+    @checked
+    def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
+        d = self.clipHandleDelta(id, d)
+        self.rewriteEdgeOffsets(id, d)
+        if id == RectHandleId.MIDDLE_CENTER:
+            self.moveBy(d.x(), d.y())
+            return
+        origin = self.transformOriginPoint()
+        p1 = self.pos() - origin
+        p2 = p1 + self.rect().bottomRight()
+        x1, y1 = p1.x(), p1.y()
+        x2, y2 = p2.x(), p2.y()
+        match id:
+            case RectHandleId.TOP_LEFT:
+                x1 += d.x()
+                y1 += d.y()
+            case RectHandleId.TOP_CENTER:
+                y1 += d.y()
+            case RectHandleId.TOP_RIGHT:
+                y1 += d.y()
+                x2 += d.x()
+            case RectHandleId.MIDDLE_LEFT:
+                x1 += d.x()
+            case RectHandleId.MIDDLE_RIGHT:
+                x2 += d.x()
+            case RectHandleId.BOTTOM_LEFT:
+                x1 += d.x()
+                y2 += d.y()
+            case RectHandleId.BOTTOM_CENTER:
+                y2 += d.y()
+            case RectHandleId.BOTTOM_RIGHT:
+                x2 += d.x()
+                y2 += d.y()
+            case _:
+                raise ValueError(f"Invalid handle: {id}")
+        rect = self.rect()
+        rect.setSize(QSizeF(
+            max(abs(x2 - x1), PITCH),
+            max(abs(y2 - y1), PITCH)
+        ))
+        self.setRect(rect)
+        self.setPos(QPointF(min(x1, x2), min(y1, y2)) + self.transformOriginPoint())
 
     # HDL properties
 

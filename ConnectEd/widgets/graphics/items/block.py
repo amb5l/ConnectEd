@@ -70,12 +70,28 @@ class BlockItem(
         self.properties["Path"].notify()
 
     @override
+    @checked
+    def setWidth(self : Self, width : float | int) -> None:
+        width, _height = self.clipEdgeSize(float(width), self.height())
+        super().setWidth(width)
+
+    @override
+    @checked
+    def setHeight(self : Self, height : float | int) -> None:
+        _width, height = self.clipEdgeSize(self.width(), float(height))
+        super().setHeight(height)
+
+    @override
+    @checked
+    def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
+        d = self.clipHandleDelta(id, d)
+        self.rewriteEdgeOffsets(id, d)
+        super().moveHandleBy(id, d)
+
+    @override
     def onGeometryChanged(self : Self) -> None:
         super().onGeometryChanged()
-        # TODO: reposition pins
-        #for item in self.childItems():
-        #    if isinstance(item, Pin):
-        #        item.onPositionChanged()
+        self.refreshEdgeLocs()
 
     @override
     @checked

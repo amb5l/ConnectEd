@@ -739,6 +739,16 @@ class MoveGripInteraction(
         self._cpos  = self._ipos = pos
         self._previewSave()  # record initial positions
 
+    @override
+    @checked
+    def update(self : Self, pos : QPointF) -> None:
+        """Apply the offset from the press point, so a clip stays with the mouse."""
+        if pos == self._cpos:
+            return
+        self._previewRestore()
+        self._moveBy(pos - self._ipos)
+        self._cpos = pos
+
     @checked
     def _commit(self : Self, pos : QPointF) -> bool:
         self._previewRestore()  # restore initial positions

@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem
 from .....app import logger
 
 from .....core.check import checked
-from .....core.types import DataKind, EdgeLoc, Edge
+from .....core.defs  import PITCH
+from .....core.types import DataKind, EdgeLoc, Edge, RectHandleId
 from .....core.utils import qtItemClass
 
 from ...properties import PropertySpec, PropertiesMixin
@@ -110,6 +111,17 @@ class ItemEdgeLocChildMixin:
     @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._edge_loc.edge, offset))
+        if isinstance(self, PropertiesMixin):
+            self.properties["Offset"].notify()
+
+    @checked
+    def addLocOffset(self : Self, delta : float) -> None:
+        """Shift the stored offset. ``refreshEdgeLocs`` writes the position."""
+        edge   = self._edge_loc.edge
+        offset = self._edge_loc.offset
+        if edge is None or offset is None or delta == 0.0:
+            return
+        self._edge_loc = EdgeLoc(edge, offset + delta)
         if isinstance(self, PropertiesMixin):
             self.properties["Offset"].notify()
 
@@ -284,3 +296,129 @@ class ItemEdgeLocParentMixin:
                 loc.offset = edgeLen(loc.edge) \
                     if loc.edge in [bottom, left] else 0
         return loc
+
+    def _edgeChildren(self : Self) -> list[ItemEdgeLocChildMixin]:
+        if not isinstance(self, QGraphicsItem):
+            raise TypeError("Bad host")
+        return [
+            child for child in self.childItems()
+            if isinstance(child, ItemEdgeLocChildMixin)
+        ]
+
+    def _offsetSpan(
+        self  : Self,
+        edges : tuple[Edge, ...]
+    ) -> tuple[float | None, float | None]:
+        offsets = [
+            loc.offset for child in self._edgeChildren()
+            if (loc := child.loc()).edge in edges and loc.offset is not None
+        ]
+        if not offsets:
+            return None, None
+        return min(offsets), max(offsets)
+
+    @checked
+    def clipEdgeSize(
+        self   : Self,
+        width  : float,
+        height : float
+    ) -> tuple[float, float]:
+        """Floor width and height so every pin offset still lies on its edge."""
+        _min_x, max_x = self._offsetSpan((Edge.TOP, Edge.BOTTOM))
+        _min_y, max_y = self._offsetSpan((Edge.LEFT, Edge.RIGHT))
+        floor_w = PITCH if max_x is None else max(PITCH, max_x)
+        floor_h = PITCH if max_y is None else max(PITCH, max_y)
+        return max(width, floor_w), max(height, floor_h)
+
+    @checked
+    def clipHandleDelta(
+        self : Self,
+        id   : RectHandleId,
+        d    : QPointF
+    ) -> QPointF:
+        """
+        Clip a resize delta so a pin cannot pass either corner.
+        Left and top deltas are positive when that edge moves inward.
+        """
+        if not isinstance(self, QGraphicsRectItem):
+            raise TypeError("Bad host")
+        if id == RectHandleId.MIDDLE_CENTER:
+            return d
+        dx = d.x()
+        dy = d.y()
+        w  = self.rect().width()
+        h  = self.rect().height()
+        min_x, max_x = self._offsetSpan((Edge.TOP, Edge.BOTTOM))
+        min_y, max_y = self._offsetSpan((Edge.LEFT, Edge.RIGHT))
+        if id in (
+            RectHandleId.TOP_LEFT,
+            RectHandleId.MIDDLE_LEFT,
+            RectHandleId.BOTTOM_LEFT
+        ):
+            limit = w - PITCH
+            if min_x is not None:
+                limit = min(limit, min_x)
+            dx = min(dx, limit)
+        elif id in (
+            RectHandleId.TOP_RIGHT,
+            RectHandleId.MIDDLE_RIGHT,
+            RectHandleId.BOTTOM_RIGHT
+        ):
+            floor = PITCH if max_x is None else max(PITCH, max_x)
+            if w + dx < floor:
+                dx = floor - w
+        if id in (
+            RectHandleId.TOP_LEFT,
+            RectHandleId.TOP_CENTER,
+            RectHandleId.TOP_RIGHT
+        ):
+            limit = h - PITCH
+            if min_y is not None:
+                limit = min(limit, min_y)
+            dy = min(dy, limit)
+        elif id in (
+            RectHandleId.BOTTOM_LEFT,
+            RectHandleId.BOTTOM_CENTER,
+            RectHandleId.BOTTOM_RIGHT
+        ):
+            floor = PITCH if max_y is None else max(PITCH, max_y)
+            if h + dy < floor:
+                dy = floor - h
+        return QPointF(dx, dy)
+
+    @checked
+    def rewriteEdgeOffsets(
+        self : Self,
+        id   : RectHandleId,
+        d    : QPointF
+    ) -> None:
+        """
+        Keep pins planted when the top or left edge moves.
+        ``d`` is the delta that will actually be applied.
+        """
+        dx = d.x() if id in (
+            RectHandleId.TOP_LEFT,
+            RectHandleId.MIDDLE_LEFT,
+            RectHandleId.BOTTOM_LEFT
+        ) else 0.0
+        dy = d.y() if id in (
+            RectHandleId.TOP_LEFT,
+            RectHandleId.TOP_CENTER,
+            RectHandleId.TOP_RIGHT
+        ) else 0.0
+        if dx == 0.0 and dy == 0.0:
+            return
+        for child in self._edgeChildren():
+            edge = child.loc().edge
+            if edge in (Edge.TOP, Edge.BOTTOM) and dx != 0.0:
+                child.addLocOffset(-dx)
+            elif edge in (Edge.LEFT, Edge.RIGHT) and dy != 0.0:
+                child.addLocOffset(-dy)
+
+    @checked
+    def refreshEdgeLocs(self : Self) -> None:
+        for child in self._edgeChildren():
+            loc = child.loc()
+            if loc.edge is None or loc.offset is None:
+                continue
+            child.setLoc(loc)
