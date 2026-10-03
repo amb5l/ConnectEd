@@ -23,7 +23,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         from .presentation  import ItemPresentationMixin
         from .select        import ItemSelectMixin
         from .handle        import ItemHandlesMixin
-        from .edge_loc      import ItemEdgeLocMixin
+        from .edge_loc      import ItemEdgeLocChildMixin
         from .transform     import ItemTransformMixin
         from .change        import ItemChangeMixin
         from .subscribe     import ItemSubscribeMixin
@@ -47,7 +47,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             self.initHandles()
         if isinstance(self, PropertiesMixin):
             self.initProperties(fresh)
-        if isinstance(self, ItemEdgeLocMixin):
+        if isinstance(self, ItemEdgeLocChildMixin):
             self.initEdgeLoc()
         if isinstance(self, ItemTransformMixin):
             self.initTransform()

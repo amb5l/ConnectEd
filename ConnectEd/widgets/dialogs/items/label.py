@@ -18,7 +18,7 @@ from ...graphics.properties import PropertiesMixin, PropertyChange, \
 
 from ...graphics.items.label import LabelItem, LabelChange
 
-from ...graphics.items.mixin.edge_loc import ItemEdgeLocMixin
+from ...graphics.items.mixin.edge_loc import ItemEdgeLocChildMixin
 
 from ..components.edit import StrEditor
 
@@ -167,7 +167,7 @@ class PropertyGroupBox(QGroupBox):
             if name: title += f' (name = "{name}")'
         # append position or edge location
         if isinstance(owner, QGraphicsItem):
-            if isinstance(owner, ItemEdgeLocMixin):
+            if isinstance(owner, ItemEdgeLocChildMixin):
                 edge = owner.loc().edge
                 offset = owner.loc().offset
                 if edge is not None and offset is not None:

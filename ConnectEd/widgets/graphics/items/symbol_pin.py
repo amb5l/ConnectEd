@@ -16,7 +16,7 @@ from .handle   import HandleItem
 from .grip     import GripItem, MoveGripItem
 from .port_pin import PortPinArrowItem, PortPinPathItem
 
-from .mixin.edge_loc import ItemEdgeLocMixin
+from .mixin.edge_loc import ItemEdgeLocChildMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,12 +28,12 @@ class SymbolPinArrowItem(PortPinArrowItem):
     pass
 
 
-class SymbolPinItem(ItemEdgeLocMixin, PortPinPathItem):
+class SymbolPinItem(ItemEdgeLocChildMixin, PortPinPathItem):
     # class attributes
     _NODE_POS   = -PITCH
     _ARROW_CLS  = SymbolPinArrowItem
     _ARROW_POS  = 0
-    _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
+    _PROPERTIES = PortPinPathItem._PROPERTIES | ItemEdgeLocChildMixin._PROPERTIES
     _LABELS = {
         "Name" : LabelSpec(
             cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT

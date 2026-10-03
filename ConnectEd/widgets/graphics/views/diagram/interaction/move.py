@@ -28,7 +28,7 @@ from ....scenes.diagram  import DiagramScene
 
 from ....views.diagram.interaction import PreviewStateMixin
 from ....items.mixin.move          import ItemMoveMixin
-from ....items.mixin.edge_loc      import ItemEdgeLocMixin
+from ....items.mixin.edge_loc      import ItemEdgeLocChildMixin
 
 from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
 from ....scenes.diagram.cmd.rubber import (
@@ -432,7 +432,7 @@ class MoveInteraction(
                         break
                     parent = parent.parentItem()
                 else:
-                    if isinstance(item, ItemEdgeLocMixin):
+                    if isinstance(item, ItemEdgeLocChildMixin):
                         continue  # positioned by setLoc, not pos/setPos
                     if isinstance(item, ItemMoveMixin) and item.movable():
                         filtered_items.append(item)

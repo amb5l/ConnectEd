@@ -16,7 +16,7 @@ from .role      import FunctionalItem
 from .base_rect import BaseRectangleItem
 from .part      import PartItemMixin
 
-from .mixin.edge_loc import ItemLocParentMixin
+from .mixin.edge_loc import ItemEdgeLocParentMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 class BlockItem(
     FunctionalItem,
-    ItemLocParentMixin,
+    ItemEdgeLocParentMixin,
     PartItemMixin,
     BaseRectangleItem
 ):

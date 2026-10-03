@@ -12,7 +12,7 @@ from .grip     import GripItem, ResizeGripItem
 from .port_pin import PortPinArrowItem, PortPinLineItem
 from .label    import LabelSpec
 
-from .mixin.edge_loc import ItemEdgeLocMixin
+from .mixin.edge_loc import ItemEdgeLocChildMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -23,12 +23,12 @@ class BlockPinArrowItem(PortPinArrowItem):
     pass
 
 
-class BlockPinItem(ItemEdgeLocMixin, PortPinLineItem):
+class BlockPinItem(ItemEdgeLocChildMixin, PortPinLineItem):
     # class attributes
     _NODE_POS   = -PITCH
     _ARROW_CLS  = BlockPinArrowItem
     _ARROW_POS  = 0
-    _PROPERTIES = PortPinLineItem._PROPERTIES | ItemEdgeLocMixin._PROPERTIES
+    _PROPERTIES = PortPinLineItem._PROPERTIES | ItemEdgeLocChildMixin._PROPERTIES
     _LABELS = {
         "Name" : LabelSpec(
             cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT

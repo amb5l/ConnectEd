@@ -3,33 +3,33 @@ from typing import Self, cast, overload
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem
 
-from .....app        import logger
+from .....app import logger
 
 from .....core.check import checked
 from .....core.types import DataKind, EdgeLoc, Edge
 from .....core.utils import qtItemClass
 
-from ...properties   import PropertySpec, PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
-from ..protocols     import (
+from ..protocols import (
     OnSceneChangedProtocol,
     OnSceneOrientationChangedProtocol
 )
 
 
-class ItemEdgeLocMixin:
+class ItemEdgeLocChildMixin:
     """
     Block and symbol pins use this mixin for edge location positioning.
     """
 
     # class attributes
     _PROPERTIES = {
-        "Edge" : PropertySpec["ItemEdgeLocMixin"](
+        "Edge" : PropertySpec["ItemEdgeLocChildMixin"](
             kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
             setter = lambda self, value: self.setLocEdge(value)
         ),
-        "Offset" : PropertySpec["ItemEdgeLocMixin"](
+        "Offset" : PropertySpec["ItemEdgeLocChildMixin"](
             kind   = DataKind.FLOAT,
             getter = lambda self: self.loc().offset,
             setter = lambda self, value: self.setLocOffset(value)
@@ -93,7 +93,7 @@ class ItemEdgeLocMixin:
         self.setRotation(angle)
         # Parent may be absent during XML load; onParentChanged reapplies.
         parent = self.parentItem()
-        if not isinstance(parent, ItemLocParentMixin):
+        if not isinstance(parent, ItemEdgeLocParentMixin):
             return
         if loc.edge is None or loc.offset is None:
             return
@@ -146,7 +146,7 @@ class ItemEdgeLocMixin:
         raise TypeError("Use setLoc() — edge-located items are not free-positioned")
 
 
-class ItemLocParentMixin:
+class ItemEdgeLocParentMixin:
     @checked
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:
         if not isinstance(self, QGraphicsRectItem):
