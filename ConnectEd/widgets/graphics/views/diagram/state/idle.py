@@ -7,12 +7,13 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ......core.check        import checked
 
-from ....items.grip     import GripItem, MoveGripItem, ResizeGripItem
-from ....items.polyline import PolySegItem, PolylineItem
-from ....items.text     import TextItem
-from ....items.label    import LabelItem
-from ....items.block    import BlockItem
-from ....items.mixin    import ItemMixin
+from ....items.grip      import GripItem, MoveGripItem, ResizeGripItem
+from ....items.polyline  import PolySegItem, PolylineItem
+from ....items.text      import TextItem
+from ....items.label     import LabelItem
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.mixin     import ItemMixin
 
 from ..mouse import MouseModifier
 
@@ -100,12 +101,26 @@ class DiagramViewStateIdle(DiagramViewState):
                         self.view.stateEditAdjustPolySeg
                     )
                 elif isinstance(grip, MoveGripItem | ResizeGripItem):
-                    self.interact(
-                        MoveGripInteraction(
-                            self.view, grip, grip.scenePos()
-                        ),
-                        self.view.stateEditMoveGrip
-                    )
+                    owner = grip.item()
+                    block = owner.parentItem() if owner is not None else None
+                    if isinstance(owner, BlockPinItem) \
+                    and isinstance(block, BlockItem):
+                        pins = self.view._siblingBlockPins(
+                            self.scene.selectedItems()
+                        )
+                        if owner not in pins:
+                            pins = [owner]
+                        self.interact(
+                            MoveBlockPinsInteraction(self.view, block, pins),
+                            self.view.stateEditMovePins
+                        )
+                    else:
+                        self.interact(
+                            MoveGripInteraction(
+                                self.view, grip, grip.scenePos()
+                            ),
+                            self.view.stateEditMoveGrip
+                        )
             return
         # Check for CTRL+drag duplication when starting on an item
         if (modifiers & MouseModifier.CTRL) and raw_items_at:
