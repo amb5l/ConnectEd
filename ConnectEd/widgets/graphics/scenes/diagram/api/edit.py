@@ -34,7 +34,7 @@ from ..cmd  import cmdExec, CmdMove, CmdMoveGrip, CmdRotateCW, CmdRotateCCW, \
 from ..xml  import diagram_scene_xml_items
 from ..host import asDiagramScene
 
-from ..cmd.block_pin import CmdMoveBlockPins
+from ..cmd.block_pin import CmdDeleteBlockPin, CmdMoveBlockPins
 
 from ..cmd.edit.pin        import CmdEditPortPin, CmdEditPinDot, CmdEditPinClk
 from ..cmd.edit.origin     import CmdEditOrigin
@@ -195,10 +195,20 @@ class DiagramSceneApiEditMixin:
         host = asDiagramScene(self)
         if items is None:
             items = host._selectedTopItems()
+            pool  = host._selectedItems()
         elif isinstance(items, QGraphicsItem):
             items = [items]
+            pool  = items
         else:
             items = list(items)
+            pool  = items
+        pins : list[BlockPinItem] = []
+        for item in pool:
+            if not isinstance(item, BlockPinItem):
+                continue
+            parent = item.parentItem()
+            if isinstance(parent, BlockItem) and parent not in items:
+                pins.append(item)
         # filter out items with parents apart from labels
         for item in items:
             if item.parentItem() is not None:
@@ -206,12 +216,19 @@ class DiagramSceneApiEditMixin:
                     continue
                 items.remove(item)
         # check that there is something to do
-        if items == []:
+        if items == [] and pins == []:
             logger().warning("No items to delete")
             return
         # start macro
         if undoable:
             host.undo_stack.beginMacro("editDelete")
+        for pin in pins:
+            block = pin.parentItem()
+            if not isinstance(block, BlockItem):
+                continue
+            for seg in list(pin.node().segments()):
+                host.removeSegment(seg, undoable)
+            cmdExec(host, CmdDeleteBlockPin(block, pin), undoable)
         # remove segments (netlist aware)
         for item in items[:]:
             if isinstance(item, SegmentItem):
