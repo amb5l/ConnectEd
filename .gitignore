@@ -1,5 +1,6 @@
 *.log
 *.ce*
+!examples/**/*.ce
 ConnectEd.egg-info/
 **/__pycache__/**
 **/*.tokens

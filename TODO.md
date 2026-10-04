@@ -1,4 +1,3 @@
-- fix edge located pin issues - constrain resize, maintain edge
 - unite property text and net label
   - PropertyTextItem => LabelItem - DONE
   - property "Label" => "Reference" - DONE
