@@ -637,6 +637,8 @@ class MoveBlockPinsInteraction(
     # instance attributes
     _block    : BlockItem
     _pins     : list[BlockPinItem]  # first item is primary pin
+    _slide    : bool                # true => retain connections
+    _vacated  : list[tuple[SegmentItem, FixedNodeItem]]
     _loc_snap : EdgeLoc | None
     _corner   : int     | None
 
@@ -645,11 +647,14 @@ class MoveBlockPinsInteraction(
         self  : Self,
         view  : DiagramView,
         block : BlockItem,
-        pins  : list[BlockPinItem]
+        pins  : list[BlockPinItem],
+        slide : bool = True
     ) -> None:
         super().__init__(view)
         self._block    = block
         self._pins     = pins
+        self._slide    = slide
+        self._vacated  = []
         self._loc_snap = None
         self._corner   = None
         self.initRubber()
@@ -660,10 +665,12 @@ class MoveBlockPinsInteraction(
                 other = seg.otherNode(node)
                 if other in mobile:
                     continue  # both ends are moving pins; the wire follows
-                if seg.isOrthogonal():
+                if slide and seg.isOrthogonal():
                     self._rubber(seg, node)
                 else:
                     self._detachSegmentNode(seg, node)
+                    if not slide:
+                        self._vacated.append((seg, node))
         self._previewSave()
 
     def valid(self : Self) -> bool:
@@ -686,7 +693,8 @@ class MoveBlockPinsInteraction(
         self._pins[0].setLoc(loc_new_snap)
         for pin in self._pins[1:]:
             pin.setLoc(self._block.locOffset(pin.loc(), offset, corner))
-        self._updateJogs()
+        if self._slide:
+            self._updateJogs()
         self._loc_snap = loc_new_snap
         self._corner = corner
 
@@ -698,6 +706,22 @@ class MoveBlockPinsInteraction(
         if after == before:
             self._cancel()
             return True  # no change so skip command push
+        if not self._slide:
+            vacated = list(self._vacated)
+            self._previewRestore()
+            self._undo_stack.setIndex(0)
+            self._scene.undo_stack.beginMacro("editMoveBlockPins")
+            for seg, node in vacated:
+                self._scene.detachSegmentNode(seg, node, undoable=True)
+            self._scene.editMoveBlockPins(
+                self._block,
+                self._pins,
+                after,
+                before,
+                undoable=True
+            )
+            self._scene.undo_stack.endMacro()
+            return True
         rubber_lines = [
             line for rubber in self._rubbers for line in rubber.geometry()
         ]

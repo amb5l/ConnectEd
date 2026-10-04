@@ -85,43 +85,54 @@ class DiagramViewStateIdle(DiagramViewState):
             elif isinstance(item, GripItem):
                 grips_at.append(item)
         # grips
-        if len(grips_at) == 1 and not (modifiers & MouseModifier.ALT):
-            # single grip
+        # Alt on a block-pin grip still moves the pin, but leaves its wires.
+        alt = bool(modifiers & MouseModifier.ALT)
+        if len(grips_at) == 1:
             grip = grips_at[0]
-            if grip.movable():
-                if isinstance(grip, PolySegItem):
-                    # adjust polyline segment/arc
-                    polyline = grip.parentItem()
-                    if not isinstance(polyline, PolylineItem):
-                        raise RuntimeError("Expected polyline")
-                    self.interact(
-                        EditAdjustPolySegInteraction(
-                            self.view, polyline, grip, grip.scenePos()
-                        ),
-                        self.view.stateEditAdjustPolySeg
-                    )
-                elif isinstance(grip, MoveGripItem | ResizeGripItem):
-                    owner = grip.item()
-                    block = owner.parentItem() if owner is not None else None
-                    if isinstance(owner, BlockPinItem) \
-                    and isinstance(block, BlockItem):
+            owner = grip.item() if grip.movable() else None
+            parent = owner.parentItem() if owner is not None else None
+            pin_drag = (
+                isinstance(grip, MoveGripItem | ResizeGripItem)
+                and isinstance(owner, BlockPinItem)
+                and isinstance(parent, BlockItem)
+            )
+            if not alt or pin_drag:
+                if grip.movable():
+                    if isinstance(grip, PolySegItem):
+                        # adjust polyline segment/arc
+                        polyline = grip.parentItem()
+                        if not isinstance(polyline, PolylineItem):
+                            raise RuntimeError("Expected polyline")
+                        self.interact(
+                            EditAdjustPolySegInteraction(
+                                self.view, polyline, grip, grip.scenePos()
+                            ),
+                            self.view.stateEditAdjustPolySeg
+                        )
+                    elif (
+                        isinstance(grip, MoveGripItem | ResizeGripItem)
+                        and isinstance(owner, BlockPinItem)
+                        and isinstance(parent, BlockItem)
+                    ):
                         pins = self.view._siblingBlockPins(
                             self.scene.selectedItems()
                         )
                         if owner not in pins:
                             pins = [owner]
                         self.interact(
-                            MoveBlockPinsInteraction(self.view, block, pins),
+                            MoveBlockPinsInteraction(
+                                self.view, parent, pins, slide=not alt
+                            ),
                             self.view.stateEditMovePins
                         )
-                    else:
+                    elif isinstance(grip, MoveGripItem | ResizeGripItem):
                         self.interact(
                             MoveGripInteraction(
                                 self.view, grip, grip.scenePos()
                             ),
                             self.view.stateEditMoveGrip
                         )
-            return
+                return
         # Check for CTRL+drag duplication when starting on an item
         if (modifiers & MouseModifier.CTRL) and raw_items_at:
             # Add item under cursor to selection if not already selected
@@ -159,7 +170,9 @@ class DiagramViewStateIdle(DiagramViewState):
                 if not isinstance(block, BlockItem):
                     raise RuntimeError("Expected block parent")
                 self.interact(
-                    MoveBlockPinsInteraction(self.view, block, pins),
+                    MoveBlockPinsInteraction(
+                        self.view, block, pins, slide=not alt
+                    ),
                     self.view.stateEditMovePins
                 )
             else:
