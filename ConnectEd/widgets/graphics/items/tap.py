@@ -72,12 +72,15 @@ class TapItem(
     @checked
     def __init__(
         self  : Self,
-        pos   : QPointF,
+        pos   : QPointF | None = None,
         fresh : bool = True
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self.setPos(pos)
+        # The place tool constructs the item, then setPos to the cursor.
+        self.setPos(QPointF() if pos is None else pos)
         self.setLine(self._LINE)
+        # properties read this while building the suffix label
+        self._suffix = ""
         self.initItem(fresh)
         self._major_node = TapMajorNodeItem(self)
         self._major_node.setPos(0, 0)
@@ -92,13 +95,15 @@ class TapItem(
             self.onSceneChanged(scene)
 
     @override
+    def _resourceKey(self : Self) -> tuple[NetKind, bool]:
+        return (self._net_kind, self.isSelected())
+
+    @override
     @checked
     def onSceneChanged(self : Self, scene : DiagramScene | None) -> None:
         if scene is None:
             return
-        self.setPen(scene.resources.pen(
-            "Tap", (self._net_kind, self.isSelected()))
-        )
+        self.setPen(scene.resources.pen("Tap", self._resourceKey()))
 
     @checked
     def onConnectivityChanged(self : Self) -> None:

@@ -180,11 +180,17 @@ class FixedNodeItem(NodeItem):
 
 
 class TapMajorNodeItem(FixedNodeItem):
-    pass
+    @override
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
+        return "FixedNode"
 
 
 class TapMinorNodeItem(FixedNodeItem):
-    pass
+    @override
+    @classmethod
+    def resourcesName(cls : type[Self]) -> str:
+        return "FixedNode"
 
 
 # Pin/tap attachment nodes used by diagram connectivity APIs (not free vertices).
