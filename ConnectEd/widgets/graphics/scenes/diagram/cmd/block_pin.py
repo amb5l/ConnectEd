@@ -58,7 +58,7 @@ class CmdAddBlockPin(CmdBlockPinBase):
 
     @checked
     def undo(self : Self) -> None:
-        self._pin.setParentItem(None)
+        _dropBlockPin(self._pin)
 
 
 class CmdDeleteBlockPin(CmdBlockPinBase):
@@ -66,7 +66,7 @@ class CmdDeleteBlockPin(CmdBlockPinBase):
 
     @checked
     def redo(self : Self) -> None:
-        self._pin.setParentItem(None)
+        _dropBlockPin(self._pin)
 
     @checked
     def undo(self : Self) -> None:
@@ -101,3 +101,15 @@ class CmdMoveBlockPins(CmdBlockPinsBase):
     def undo(self : Self) -> None:
         for pin in self._pins:
             pin.setLoc(self._before[pin])
+
+
+def _dropBlockPin(pin : BlockPinItem) -> None:
+    """Unparent a pin and take it out of the scene.
+
+    ``setParentItem(None)`` alone leaves the pin as a top-level scene
+    item, and the next save writes it as a diagram-level ``BlockPin``.
+    """
+    scene = pin.scene()
+    pin.setParentItem(None)
+    if scene is not None:
+        scene.removeItem(pin)

@@ -299,7 +299,10 @@ class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
         return True
 
     def _cancel(self : Self) -> None:
+        scene = self._pin.scene()
         self._pin.setParentItem(None)
+        if scene is not None:
+            scene.removeItem(self._pin)
 
 
 class DiagramPlaceSymbolPinInteraction(DiagramPlaceBase1PosInteraction):
