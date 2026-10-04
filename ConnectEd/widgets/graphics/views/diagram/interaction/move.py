@@ -63,18 +63,39 @@ def _staircaseReverse(
     return (axis == Axis.H) == (inline == across)
 
 
-def _jogsShareStaircase(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
-    """
-    True when two jogs route in parallel along the same inline span and need
-    separated lanes even if their preview bounds do not yet intersect.
-    """
-    if j1.axis() != j2.axis():
+def _staticInline(jog : RubberJogItem) -> float:
+    """Inline coordinate of the jog's fixed end."""
+    lo, hi = jog.inlineSpan()
+    return lo if jog.inlinePolarity() == Polarity.POS else hi
+
+
+def _jogsShareCorridor(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
+    """Same axis, direction, and static-end column."""
+    if j1.axis() != j2.axis() or j1.axis() is None:
         return False
     if j1.inlinePolarity() != j2.inlinePolarity():
+        return False
+    return abs(_staticInline(j1) - _staticInline(j2)) <= 2 * PITCH
+
+
+def _jogsShareStaircase(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
+    """
+    True when two jogs in one corridor run in parallel and need separated
+    lanes even if their preview bounds do not yet intersect.
+    """
+    if not _jogsShareCorridor(j1, j2):
         return False
     s1 = j1.inlineSpan()
     s2 = j2.inlineSpan()
     return s1[0] < s2[1] and s2[0] < s1[1]
+
+
+def _clampJogLane(jog : RubberJogItem, lane : float) -> float:
+    """Keep a lane inside the jog's inline span, one grid clear of each end."""
+    lo, hi = jog.inlineSpan()
+    if hi - lo <= 2 * PITCH:
+        return (lo + hi) / 2
+    return min(max(lane, lo + PITCH), hi - PITCH)
 
 
 class RubberPreviewMixin:
@@ -194,7 +215,10 @@ class RubberPreviewMixin:
                 if (axis1 := jog1.axis()) is None:
                     continue
                 if _jogsShareStaircase(jog1, jog2) \
-                or _conflict(rect1, jog_rects[jog2], axis1):
+                or (
+                    _jogsShareCorridor(jog1, jog2)
+                    and _conflict(rect1, jog_rects[jog2], axis1)
+                ):
                     group.append(jog2)
                     processed.add(jog2)
             groups.append(group)
@@ -267,6 +291,10 @@ class RubberPreviewMixin:
                         jog.setLane(start + j * PITCH)
 
         for jog in self._rubber_jogs:
+            if (lane := jog.lane()) is not None:
+                clamped = _clampJogLane(jog, lane)
+                if clamped != lane:
+                    jog.setLane(clamped)
             jog.updatePath()
 
 
