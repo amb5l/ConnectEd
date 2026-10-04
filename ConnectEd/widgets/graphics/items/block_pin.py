@@ -55,7 +55,7 @@ class BlockPinItem(ItemEdgeLocChildMixin, PortPinLineItem):
         spos : QPointF
     ) -> list[QAction | QMenu]:
         return [
-            view.action("Edit...", view.editBlockPin),
+            view.action("Edit...", lambda: view.editBlockPin(self)),
             view.separator(),
             view.action("Appearance...", lambda: view.editAppearance(self)),
             view.action("Properties...", lambda: view.editItemProperties(self))

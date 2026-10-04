@@ -57,13 +57,19 @@ class DiagramViewStateIdle(DiagramViewState):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, LabelItem):
+            pin = item
+            while pin is not None and not isinstance(pin, BlockPinItem):
+                pin = pin.parentItem()
+            if isinstance(item, LabelItem) and not isinstance(pin, BlockPinItem):
                 self.view.state.go(
                     self.view.stateEditLabel, item
                 )
                 return
             if isinstance(item, TextItem):
                 self.view.state.go(self.view.stateEditText, item)
+                return
+            if isinstance(pin, BlockPinItem):
+                self.view.editBlockPin(pin)
                 return
 
     @override
